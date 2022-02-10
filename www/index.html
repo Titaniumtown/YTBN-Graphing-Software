@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Integral Demonstration</title>
+	<link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
+        <script src="./bootstrap.js"></script>
+	<main>
+	<h1>Integral Demonstration</h1>
+	<div id="coord"></div>
+        <canvas id="canvas" width="600" height="400"></canvas>
+	<div id="status">Loading WebAssembly...</div>
+	<div id="control">
+			<label for="math_function">y=</label> <input type="string" id="math_function" value="x^2">
+			<p></p>
+			<label for="minX">MinX: </label> <input type="number" id="minX" value="-10">
+			<p></p>
+			<label for="maxX">MaxX: </label> <input type="number" id="maxX" value="10">
+			<p></p>
+			<label for="minY">MinY: </label> <input type="number" id="minY" value="-10">
+			<p></p>
+			<label for="maxY">MaxY: </label> <input type="number" id="maxY" value="10">
+			<p></p>
+			<label for="num_interval">Interval: </label> <input type="number" id="num_interval" value="100" min="0">
+			<p></p>
+			<label for="resolution">Number of Points </label> <input type="number" id="resolution" value="10000" min="0">
+			<p></p>
+	</div>
+		<div id="area-msg">Area:</div>
+	</main>
+    </body>
+</html>
+
+<h3 id="Supported%20Expressions:">Supported Expressions:</h3>
+
+<ul>
+<li><p><code>sqrt</code>, <code>abs</code></p></li>
+<li><p><code>exp</code>, <code>ln</code>, <code>log10</code></p></li>
+<li><p><code>sin</code>, <code>cos</code>, <code>tan</code>, <code>asin</code>, <code>acos</code>, <code>atan</code>, <code>atan2</code></p></li>
+<li><p><code>sinh</code>, <code>cosh</code>, <code>tanh</code>, <code>asinh</code>, <code>acosh</code>, <code>atanh</code></p></li>
+<li><p><code>floor</code>, <code>ceil</code>, <code>round</code></p></li>
