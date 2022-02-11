@@ -21,10 +21,10 @@ pub fn draw(
     root.fill(&WHITE)?;
 
     let mut chart = ChartBuilder::on(&root)
-        .margin(20 as f32)
+        .margin(20.0)
         .caption(format!("y={}", func_str), font)
-        .x_label_area_size(30 as f32)
-        .y_label_area_size(30 as f32)
+        .x_label_area_size(30.0)
+        .y_label_area_size(30.0)
         .build_cartesian_2d(min_x..max_x, min_y..max_y)?;
 
     chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
