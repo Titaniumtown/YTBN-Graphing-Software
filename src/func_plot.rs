@@ -34,7 +34,7 @@ pub fn draw(element: HtmlCanvasElement, func_str: &str, minX: f32, maxX: f32, mi
 
     chart.draw_series(LineSeries::new(data, &RED))?;
 
-    let (data2, area) = integral_rectangles(minX, minY, maxY, absrange, step, num_interval, &func); // Get rectangle coordinates and the total area
+    let (data2, area) = integral_rectangles(minX, minY, maxY, step, num_interval, &func); // Get rectangle coordinates and the total area
 
     // Draw rectangles
     chart.draw_series(data2.iter().map(|(x1, x2, y)| Rectangle::new([(*x2, *y), (*x1, 0.0)], &BLUE)))?;
@@ -46,7 +46,7 @@ pub fn draw(element: HtmlCanvasElement, func_str: &str, minX: f32, maxX: f32, mi
 
 // Creates and does the math for creating all the rectangles under the graph
 #[inline(always)]
-fn integral_rectangles(minX: f32, minY: f32, maxY: f32, absrange: f32, step: f32, num_interval: usize, func: &dyn Fn(f64) -> f64) -> (Vec<(f32, f32, f32)>, f32) {
+fn integral_rectangles(minX: f32, minY: f32, maxY: f32, step: f32, num_interval: usize, func: &dyn Fn(f64) -> f64) -> (Vec<(f32, f32, f32)>, f32) {
     let mut area: f32 = 0.0; // sum of all rectangles' areas
     let mut tmp1: f32; // Top left Y value that's tested
     let mut tmp2: f32; // Top right Y value that's tested
