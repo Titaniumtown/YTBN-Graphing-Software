@@ -23,8 +23,8 @@ pub struct Point {
 
 #[wasm_bindgen]
 impl Chart {
-    pub fn draw(canvas: HtmlCanvasElement, func: &str, minX: f32, maxX: f32, minY: f32, maxY: f32, num_interval: usize, resolution: i32) -> Result<Chart, JsValue> {
-        let output = func_plot::draw(canvas, func, minX, maxX, minY, maxY, num_interval, resolution).map_err(|err| err.to_string())?;
+    pub fn draw(canvas: HtmlCanvasElement, func: &str, min_x: f32, max_x: f32, min_y: f32, max_y: f32, num_interval: usize, resolution: i32) -> Result<Chart, JsValue> {
+        let output = func_plot::draw(canvas, func, min_x, max_x, min_y, max_y, num_interval, resolution).map_err(|err| err.to_string())?;
         let map_coord = output.0;
         Ok(Chart {
             convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
@@ -35,12 +35,6 @@ impl Chart {
     pub fn get_area(&self) -> Result<f32, JsValue> {
         return Ok(self.area);
     }
-
-    // Does actual calculation of antiderivative
-    // pub fn actual_area(power: f32, minX: f32, maxX: f32) -> Result<f32, JsValue> {
-    //     let newpower = power + 1.0;
-    //     return Ok((maxX.powf(newpower as f32)/newpower) - (minX.powf(newpower as f32)/newpower));
-    // }
 
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
         (self.convert)((x, y)).map(|(x, y)| Point { x, y })
