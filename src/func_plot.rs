@@ -4,7 +4,6 @@ use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
 use web_sys::HtmlCanvasElement;
 
-/// Draw power function f(x) = x^power.
 pub fn draw(
     element: HtmlCanvasElement,
     func_str: &str,
