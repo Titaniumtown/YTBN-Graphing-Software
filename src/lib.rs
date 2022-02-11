@@ -1,7 +1,6 @@
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod func_plot;
-use meval::Expr;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
