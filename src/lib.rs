@@ -23,14 +23,8 @@ pub struct Point {
 #[wasm_bindgen]
 impl Chart {
     pub fn draw(
-        canvas: HtmlCanvasElement,
-        func_str: &str,
-        min_x: f32,
-        max_x: f32,
-        min_y: f32,
-        max_y: f32,
-        num_interval: usize,
-        resolution: i32,
+        canvas: HtmlCanvasElement, func_str: &str, min_x: f32, max_x: f32, min_y: f32, max_y: f32,
+        num_interval: usize, resolution: i32,
     ) -> Result<Chart, JsValue> {
         let draw_output = func_plot::draw(
             canvas,
@@ -51,9 +45,7 @@ impl Chart {
         });
     }
 
-    pub fn get_area(&self) -> f32 {
-        return self.area;
-    }
+    pub fn get_area(&self) -> f32 { return self.area; }
 
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
         (self.convert)((x, y)).map(|(x, y)| Point { x, y })

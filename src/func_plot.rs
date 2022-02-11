@@ -5,14 +5,8 @@ use plotters_canvas::CanvasBackend;
 use web_sys::HtmlCanvasElement;
 
 pub fn draw(
-    element: HtmlCanvasElement,
-    func_str: &str,
-    min_x: f32,
-    max_x: f32,
-    min_y: f32,
-    max_y: f32,
-    num_interval: usize,
-    resolution: i32,
+    element: HtmlCanvasElement, func_str: &str, min_x: f32, max_x: f32, min_y: f32, max_y: f32,
+    num_interval: usize, resolution: i32,
 ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
     let expr: Expr = func_str.parse().unwrap();
     let func = expr.bind("x").unwrap();
@@ -61,10 +55,7 @@ pub fn draw(
 // Creates and does the math for creating all the rectangles under the graph
 #[inline(always)]
 fn integral_rectangles(
-    min_x: f32,
-    step: f32,
-    num_interval: usize,
-    func: &dyn Fn(f64) -> f64,
+    min_x: f32, step: f32, num_interval: usize, func: &dyn Fn(f64) -> f64,
 ) -> (Vec<(f32, f32, f32)>, f32) {
     let mut area: f32 = 0.0; // sum of all rectangles' areas
     let mut tmp1: f32; // Top left Y value that's tested
