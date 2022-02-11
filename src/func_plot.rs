@@ -36,14 +36,16 @@ pub fn draw(
 
     chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
 
-    let data = (1..=resolution)
+    let data: Vec<(f32, f32)> = (1..=resolution)
         .map(|x| ((x as f32 / resolution as f32) * (&absrange)) + &min_x)
         .map(|x| (x, func(x as f64) as f32))
-        .filter(|(_, y)| &min_y <= y && y <= &max_y);
+        .filter(|(_, y)| &min_y <= y && y <= &max_y)
+        .collect();
 
     chart.draw_series(LineSeries::new(data, &RED))?;
 
-    let (data2, area) = integral_rectangles(min_x, step, num_interval, &func); // Get rectangle coordinates and the total area
+    let (data2, area): (Vec<(f32, f32, f32)>, f32) =
+        integral_rectangles(min_x, step, num_interval, &func); // Get rectangle coordinates and the total area
 
     // Draw rectangles
     chart.draw_series(
@@ -54,7 +56,7 @@ pub fn draw(
 
     root.present()?;
     let output = chart.into_coord_trans();
-    return Ok(((output), area));
+    return Ok((output, area));
 }
 
 // Creates and does the math for creating all the rectangles under the graph

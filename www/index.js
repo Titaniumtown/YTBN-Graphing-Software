@@ -1,5 +1,3 @@
-// If you only use `npm` you can simply
-// import { Chart } from "wasm-demo" and remove `setup` call from `bootstrap.js`.
 class Chart {}
 
 const canvas = document.getElementById("canvas");
@@ -57,7 +55,7 @@ function onMouseMove(event) {
     if (chart) {
 		var text = "Mouse is outside Chart.";
 
-		if(event.target == canvas) {
+		if (event.target == canvas) {
 			let actualRect = canvas.getBoundingClientRect();
 			let logicX = event.offsetX * canvas.width / actualRect.width;
 			let logicY = event.offsetY * canvas.height / actualRect.height;
@@ -72,10 +70,9 @@ function onMouseMove(event) {
 
 function updatePlot() {
     status.innerText = `Rendering y=${math_function.value}...`;
-    chart = null;
+    
     const start = performance.now();
-
-	chart = Chart.draw(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+    chart = Chart.draw(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
     const end = performance.now();
 
     area_msg.innerText = `Estimated Area: ${chart.get_area()}`;

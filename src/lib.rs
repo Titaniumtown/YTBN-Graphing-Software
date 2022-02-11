@@ -25,7 +25,7 @@ pub struct Point {
 impl Chart {
     pub fn draw(
         canvas: HtmlCanvasElement,
-        func: &str,
+        func_str: &str,
         min_x: f32,
         max_x: f32,
         min_y: f32,
@@ -33,9 +33,9 @@ impl Chart {
         num_interval: usize,
         resolution: i32,
     ) -> Result<Chart, JsValue> {
-        let output = func_plot::draw(
+        let draw_output = func_plot::draw(
             canvas,
-            func,
+            func_str,
             min_x,
             max_x,
             min_y,
@@ -44,15 +44,16 @@ impl Chart {
             resolution,
         )
         .map_err(|err| err.to_string())?;
-        let map_coord = output.0;
-        Ok(Chart {
+        let map_coord = draw_output.0;
+
+        return Ok(Chart {
             convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
-            area: output.1,
-        })
+            area: draw_output.1,
+        });
     }
 
-    pub fn get_area(&self) -> Result<f32, JsValue> {
-        return Ok(self.area);
+    pub fn get_area(&self) -> f32 {
+        return self.area;
     }
 
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
