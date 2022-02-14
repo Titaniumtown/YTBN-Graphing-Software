@@ -61,14 +61,26 @@ impl ChartManager {
     // Used in order to hook into `panic!()` to log in the browser's console
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
+    fn get_back_cache(&self) -> Vec<(f32, f32)> {
+        match &self.back_cache {
+            Some(x) => x.clone(),
+            None => panic!("use_back_cache is true, but back_cache is None!"),
+        }
+    }
+
+    fn get_front_cache(&self) -> (Vec<(f32, f32, f32)>, f32) {
+        match &self.front_cache {
+            Some(x) => x.clone(),
+            None => panic!("use_front_cache is true, but front_cache is None!"),
+        }
+    }
+
     fn draw(
         &mut self, element: HtmlCanvasElement,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
         let expr: Expr = self.func_str.parse().unwrap();
         let func = expr.bind("x").unwrap();
 
-        let absrange = (self.max_x - self.min_x).abs();
-        let step = absrange / (self.num_interval as f32);
         let backend = CanvasBackend::with_canvas_object(element).unwrap();
 
         let root = backend.into_drawing_area();
@@ -85,11 +97,9 @@ impl ChartManager {
 
         chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
 
+        let absrange = (self.max_x - self.min_x).abs();
         let data: Vec<(f32, f32)> = match self.use_back_cache {
-            true => match &self.back_cache {
-                Some(x) => x.clone(),
-                None => panic!("use_back_cache is true, but back_cache is None!"),
-            },
+            true => self.get_back_cache(),
             false => {
                 let output: Vec<(f32, f32)> = (1..=self.resolution)
                     .map(|x| ((x as f32 / self.resolution as f32) * absrange) + self.min_x)
@@ -104,11 +114,9 @@ impl ChartManager {
         chart.draw_series(LineSeries::new(data, &RED))?;
 
         let (data2, area): (Vec<(f32, f32, f32)>, f32) = match self.use_front_cache {
-            true => match &self.front_cache {
-                Some(x) => x.clone(),
-                None => panic!("use_front_cache is true, but front_cache is None!"),
-            },
+            true => self.get_front_cache(),
             false => {
+                let step = absrange / (self.num_interval as f32);
                 let output: (Vec<(f32, f32, f32)>, f32) = self.integral_rectangles(step, &func);
                 self.front_cache = Some(output.clone());
                 output
