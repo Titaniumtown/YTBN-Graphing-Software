@@ -1,4 +1,4 @@
-class Chart {}
+class ChartManager {}
 
 const canvas = document.getElementById("canvas");
 const coord = document.getElementById("coord");
@@ -14,6 +14,7 @@ const area_msg = document.getElementById("area-msg");
 const resolution = document.getElementById("resolution");
 
 let chart = null;
+let chart_manager = null;
 
 /** Main entry point */
 export function main() {
@@ -23,7 +24,8 @@ export function main() {
 
 /** This function is used in `bootstrap.js` to setup imports. */
 export function setup(WasmChart) {
-    Chart = WasmChart;
+    ChartManager = WasmChart;
+    ChartManager.init_panic_hook();
 }
 
 /** Add event listeners. */
@@ -71,8 +73,12 @@ function onMouseMove(event) {
 function updatePlot() {
     status.innerText = `Rendering y=${math_function.value}...`;
     
+    if (chart_manager == null) {
+        chart_manager = ChartManager.new(math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+    }
+
     const start = performance.now();
-    chart = Chart.draw(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+    chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
     const end = performance.now();
 
     area_msg.innerText = `Estimated Area: ${chart.get_area()}`;
