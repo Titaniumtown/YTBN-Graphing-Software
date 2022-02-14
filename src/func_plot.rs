@@ -74,7 +74,6 @@ fn integral_rectangles(
                 false => tmp2,
             };
 
-            // Add current rectangle's area to the total
             if !y.is_nan() {
                 (x, x2, y)
             } else {
