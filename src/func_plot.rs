@@ -57,35 +57,29 @@ pub fn draw(
 fn integral_rectangles(
     min_x: f32, step: f32, num_interval: usize, func: &dyn Fn(f64) -> f64,
 ) -> (Vec<(f32, f32, f32)>, f32) {
-    let mut area: f32 = 0.0; // sum of all rectangles' areas
-    let mut tmp1: f32; // Top left Y value that's tested
-    let mut tmp2: f32; // Top right Y value that's tested
-    let mut x2: f32; // X value of the right side of the rectangle
-    let mut y: f32; // Y value of the top of the rectangle
-    let mut x: f32; // X value of the left side of the rectangle
-    let mut data2: Vec<(f32, f32, f32)> = Vec::new();
-    for e in 0..num_interval {
-        x = ((e as f32) * step) + min_x;
+    let data2: Vec<(f32, f32, f32)> = (0..num_interval).map(|e| {
+        let x: f32 = ((e as f32) * step) + min_x;
 
-        if x > 0.0 {
-            x2 = x + step;
-        } else {
-            x2 = x - step;
-        }
-        tmp1 = func(x as f64) as f32;
-        tmp2 = func(x2 as f64) as f32;
+        let x2: f32 = match x > 0.1 {
+            true => x+step,
+            false => x-step,
+        };
 
-        if tmp2.abs() > tmp1.abs() {
-            y = tmp1;
-        } else {
-            y = tmp2;
-        }
+        let tmp1: f32 = func(x as f64) as f32;
+        let tmp2: f32 = func(x2 as f64) as f32;
+
+        let y: f32 = match tmp2.abs() > tmp1.abs() {
+            true => tmp1,
+            false => tmp2
+        };
 
         // Add current rectangle's area to the total
         if !y.is_nan() {
-            area += y * step;
-            data2.push((x, x2, y));
+            (x, x2, y)
+        } else {
+            (0.0, 0.0, 0.0)
         }
-    }
+    }).filter(|ele| ele != &(0.0, 0.0, 0.0)).collect();
+    let area: f32 = data2.iter().map(|(_, _, y)| y*step).sum(); // sum of all rectangles' areas
     return (data2, area);
 }
