@@ -165,17 +165,17 @@ impl ChartManager {
         &mut self, canvas: HtmlCanvasElement, func_str: &str, min_x: f32, max_x: f32, min_y: f32,
         max_y: f32, num_interval: usize, resolution: i32,
     ) -> Result<Chart, JsValue> {
-        let underlying_update = (func_str.to_string() != self.func_str)
+        let underlying_update = (*func_str != self.func_str)
             | (min_x != self.min_x)
             | (max_x != self.max_x)
             | (min_y != self.min_y)
             | (max_y != self.max_y);
 
         self.use_back_cache =
-            !underlying_update && self.resolution == resolution && !self.back_cache.is_none();
+            !underlying_update && self.resolution == resolution && self.back_cache.is_some();
         self.use_front_cache = match underlying_update {
             true => false,
-            false => num_interval == self.num_interval && !self.front_cache.is_none(),
+            false => num_interval == self.num_interval && self.front_cache.is_some(),
         };
 
         self.func_str = func_str.to_string();
