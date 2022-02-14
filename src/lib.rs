@@ -1,9 +1,9 @@
 use meval::Expr;
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
+use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
-use std::panic;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
