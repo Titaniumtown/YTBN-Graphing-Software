@@ -48,8 +48,7 @@ pub fn draw(
     )?;
 
     root.present()?;
-    let output = chart.into_coord_trans();
-    Ok((output, area))
+    Ok((chart.into_coord_trans(), area))
 }
 
 // Creates and does the math for creating all the rectangles under the graph
