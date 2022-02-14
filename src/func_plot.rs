@@ -61,7 +61,7 @@ fn integral_rectangles(
         .map(|e| {
             let x: f32 = ((e as f32) * step) + min_x;
 
-            let x2: f32 = match x > 0.1 {
+            let x2: f32 = match x > 0.0 {
                 true => x + step,
                 false => x - step,
             };
