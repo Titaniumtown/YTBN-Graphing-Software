@@ -49,7 +49,7 @@ pub fn draw(
 
     root.present()?;
     let output = chart.into_coord_trans();
-    return Ok((output, area));
+    Ok((output, area))
 }
 
 // Creates and does the math for creating all the rectangles under the graph
@@ -83,5 +83,5 @@ fn integral_rectangles(
         .filter(|ele| ele != &(0.0, 0.0, 0.0))
         .collect();
     let area: f32 = data2.iter().map(|(_, _, y)| y * step).sum(); // sum of all rectangles' areas
-    return (data2, area);
+    (data2, area)
 }

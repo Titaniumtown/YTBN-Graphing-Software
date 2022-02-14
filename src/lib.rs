@@ -44,13 +44,13 @@ impl Chart {
         .map_err(|err| err.to_string())?;
         let map_coord = draw_output.0;
 
-        return Ok(Chart {
-            convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
+        Ok(Chart {
+            convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x, y))),
             area: draw_output.1,
-        });
+        })
     }
 
-    pub fn get_area(&self) -> f32 { return self.area; }
+    pub fn get_area(&self) -> f32 { self.area }
 
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
         (self.convert)((x, y)).map(|(x, y)| Point::new(x, y))
