@@ -25,7 +25,7 @@ export function main() {
 /** This function is used in `bootstrap.js` to setup imports. */
 export function setup(WasmChart) {
     ChartManager = WasmChart;
-    ChartManager.init_panic_hook();
+    ChartManager.init_panic_hook(); // Allows `panic!()` to log in the browser's console
 }
 
 /** Add event listeners. */

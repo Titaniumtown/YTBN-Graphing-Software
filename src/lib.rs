@@ -19,6 +19,7 @@ fn integral_rectangles(
         .map(|e| {
             let x: f32 = ((e as f32) * step) + min_x;
 
+            // Makes sure rectangles are properly handled on x values below 0
             let x2: f32 = match x > 0.0 {
                 true => x + step,
                 false => x - step,
@@ -27,6 +28,7 @@ fn integral_rectangles(
             let tmp1: f32 = func(x as f64) as f32;
             let tmp2: f32 = func(x2 as f64) as f32;
 
+            // Chooses the y value who's absolute value is the smallest
             let y: f32 = match tmp2.abs() > tmp1.abs() {
                 true => tmp1,
                 false => tmp2,
