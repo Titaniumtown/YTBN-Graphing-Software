@@ -173,12 +173,14 @@ impl ChartManager {
             | (min_y != self.min_y)
             | (max_y != self.max_y);
 
-        if min_x >= max_x {
-            panic!("min_x is greater than (or equal to) than max_x!");
-        }
+        if underlying_update {
+            if min_x >= max_x {
+                panic!("min_x is greater than (or equal to) than max_x!");
+            }
 
-        if min_y >= max_y {
-            panic!("min_y is greater than (or equal to) than max_y!");
+            if min_y >= max_y {
+                panic!("min_y is greater than (or equal to) than max_y!");
+            }
         }
 
         if 0 > resolution {
