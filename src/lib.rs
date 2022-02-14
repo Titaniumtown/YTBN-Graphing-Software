@@ -173,6 +173,18 @@ impl ChartManager {
             | (min_y != self.min_y)
             | (max_y != self.max_y);
 
+        if min_x >= max_x {
+            panic!("min_x is greater than (or equal to) than max_x!");
+        }
+
+        if min_y >= max_y {
+            panic!("min_y is greater than (or equal to) than max_y!");
+        }
+
+        if 0 > resolution {
+            panic!("resolution cannot be less than 0");
+        }
+
         self.use_back_cache =
             !underlying_update && self.resolution == resolution && self.back_cache.is_some();
         self.use_front_cache = match underlying_update {
