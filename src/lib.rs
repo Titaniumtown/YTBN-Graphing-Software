@@ -3,8 +3,6 @@ use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
-extern crate console_error_panic_hook;
-use console_error_panic_hook::hook;
 use std::panic;
 
 #[global_allocator]
