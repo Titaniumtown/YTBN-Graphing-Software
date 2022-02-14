@@ -30,7 +30,7 @@ pub fn draw(
     chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
 
     let data: Vec<(f32, f32)> = (1..=resolution)
-        .map(|x| ((x as f32 / resolution as f32) * (&absrange)) + &min_x)
+        .map(|x| ((x as f32 / resolution as f32) * absrange) + min_x)
         .map(|x| (x, func(x as f64) as f32))
         .filter(|(_, y)| &min_y <= y && y <= &max_y)
         .collect();
