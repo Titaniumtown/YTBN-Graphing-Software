@@ -10,6 +10,7 @@ crate-type=["cdylib"]
 debug = 0
 codegen-units = 1
 opt-level = 3
+lto = "fat"
 
 [dependencies]
 wasm-bindgen = "0.2.79"
