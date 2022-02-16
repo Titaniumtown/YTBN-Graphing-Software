@@ -80,6 +80,14 @@ impl ChartManager {
         "".to_string()
     }
 
+    // Recommends a possible solution to an error from method `test_func`
+    pub fn error_recommend(error_string: String) -> String {
+        match error_string.as_str() {
+            "Parse error: Unexpected token x." => "Always explicitly state multiplication using an asterisk.",
+            _ => "Make sure you're using proper syntax! Check the 'Frequent issues' for more info"
+        }.to_string()
+    }
+
     fn get_func(&self) -> impl Fn(f64) -> f64 {
         let expr: Expr = self.func_str.parse().unwrap();
         let func = expr.bind("x").unwrap();
@@ -88,7 +96,7 @@ impl ChartManager {
 
     #[inline]
     fn draw(
-        &mut self, element: HtmlCanvasElement,
+        &mut self, element: HtmlCanvasElement, dark_mode: bool
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
         let func = self.get_func();
 
@@ -96,7 +104,11 @@ impl ChartManager {
         let root = backend.into_drawing_area();
         let font: FontDesc = ("sans-serif", 20.0).into();
 
-        root.fill(&WHITE)?;
+        if dark_mode {
+            root.fill(&RGBColor(28, 28, 28))?;
+        } else {
+            root.fill(&WHITE)?;
+        }
 
         let mut chart = ChartBuilder::on(&root)
             .margin(20.0)
@@ -105,7 +117,13 @@ impl ChartManager {
             .y_label_area_size(30.0)
             .build_cartesian_2d(self.min_x..self.max_x, self.min_y..self.max_y)?;
 
-        chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
+        let light_line_color = if dark_mode {
+            RGBColor(254, 254, 254)
+        } else {
+            RGBColor(28, 28, 28)
+        };
+
+        chart.configure_mesh().x_labels(3).y_labels(3).light_line_style(&light_line_color).draw()?;
 
         let absrange = (self.max_x - self.min_x).abs();
         let data: Vec<(f32, f32)> = match self.back_cache.is_valid() {
@@ -176,7 +194,7 @@ impl ChartManager {
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self, canvas: HtmlCanvasElement, func_str: &str, min_x: f32, max_x: f32, min_y: f32,
-        max_y: f32, num_interval: usize, resolution: i32,
+        max_y: f32, num_interval: usize, resolution: i32, dark_mode: bool
     ) -> Result<ChartOutput, JsValue> {
         let underlying_update = (*func_str != self.func_str)
             | (min_x != self.min_x)
@@ -214,7 +232,7 @@ impl ChartManager {
         self.num_interval = num_interval;
         self.resolution = resolution;
 
-        let draw_output = self.draw(canvas).map_err(|err| err.to_string())?;
+        let draw_output = self.draw(canvas, dark_mode).map_err(|err| err.to_string())?;
         let map_coord = draw_output.0;
 
         let chart_output = ChartOutput {

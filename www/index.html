@@ -15,7 +15,7 @@
 	<canvas id="canvas" width="600" height="400"></canvas>
 	<div id="status">Loading WebAssembly...</div>
 	<div id="control">
-			<label for="math_function">y=</label> <input type="string" id="math_function" value="x^2"> <a href="https://github.com/rekka/meval-rs#supported-expressions">Supported Expressions</a>
+			<label for="math_function">y=</label> <input type="string" id="math_function" value="x^2"> 
 			<p></p>
 			<label for="minX">MinX: </label> <input type="number" id="minX" value="-10">
 			<p></p>
@@ -35,4 +35,18 @@
     </body>
 </html>
 
-<p><a href="https://github.com/Titaniumtown/integral_site">I'm Open Source! (and licensed under AGPLv3)</a></p>
+<h3 id="%3Ca%20href=%22https://github.com/Titaniumtown/integral_site%22%3EI&amp;#8217;m%20Open%20Source!%3C/a%3E%20(and%20licensed%20under%20AGPLv3)"><a href="https://github.com/Titaniumtown/integral_site">I&#8217;m Open Source!</a> (and licensed under AGPLv3)</h3>
+
+<h3 id="Frequent%20Issues">Frequent Issues</h3>
+
+<h4 id="Not%20using%20explicit%20Multiplication">Not using explicit Multiplication</h4>
+
+<ul>
+<li>Equations such as <code>y=-2x</code> that doesn&#8217;t explicitly request multiplication through the use of an asterisk will fail. Also chaining variables such as <code>xxxx</code> will fail, whereas <code>x*x*x*x</code> (or <code>x^4</code>) will not fail, this also applies for static variables such as <code>e</code>.</li>
+</ul>
+
+<h4 id="What%20Expressions%20can%20I%20use?">What Expressions can I use?</h4>
+
+<ul>
+<li><a href="https://github.com/Titaniumtown/meval-rs#supported-expressions">Supported Expressions</a></li>
+</ul>

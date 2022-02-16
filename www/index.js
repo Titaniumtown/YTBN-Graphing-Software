@@ -13,6 +13,8 @@ const num_interval = document.getElementById("num_interval");
 const area_msg = document.getElementById("area-msg");
 const resolution = document.getElementById("resolution");
 
+let darkMode = false;
+
 let chart = null;
 let chart_manager = null;
 
@@ -30,6 +32,18 @@ export function setup(WasmChart) {
 
 /** Add event listeners. */
 function setupUI() {
+    
+    // Handles browser color preferences
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        darkMode = true;
+    }
+
+    // Watches for changes in color preferences
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        darkMode = event.matches;
+        updatePlot();
+    });
+
     status.innerText = "WebAssembly loaded!";
     math_function.addEventListener("change", updatePlot);
     minX.addEventListener("input", updatePlot);
@@ -38,6 +52,7 @@ function setupUI() {
     maxY.addEventListener("input", updatePlot);
     num_interval.addEventListener("input", updatePlot);
     resolution.addEventListener("input", updatePlot);
+
 
     window.addEventListener("resize", setupCanvas);
     window.addEventListener("mousemove", onMouseMove);
@@ -80,14 +95,19 @@ function updatePlot() {
 
     const test_result = ChartManager.test_func(math_function.value);
     if (test_result != "") {
+        const error_recommendation = ChartManager.error_recommend(test_result);
         status.style.color = "red";
-        status.innerText = test_result;
+        if (error_recommendation == "") {
+            status.innerText = test_result;
+        } else {
+            status.innerText = `${test_result}\nTip: ${error_recommendation}`
+        }
         return;
     }
 
     try {
         const start = performance.now();
-        chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+        chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value), false); // TODO: improve darkmode support
         const end = performance.now();
 
         area_msg.innerText = `Estimated Area: ${chart.get_area()}`;
