@@ -1,3 +1,6 @@
+#![allow(clippy::unused_unit)] // Fixes clippy keep complaining about wasm_bindgen
+#![allow(clippy::type_complexity)] // Clippy, my types are fine.
+
 use meval::Expr;
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
@@ -115,6 +118,7 @@ impl ChartManager {
         Ok((chart.into_coord_trans(), area))
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self, canvas: HtmlCanvasElement, func_str: &str, min_x: f32, max_x: f32, min_y: f32,
         max_y: f32, num_interval: usize, resolution: i32,
