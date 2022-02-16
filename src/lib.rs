@@ -219,10 +219,10 @@ impl ChartManager {
                 if !y.is_nan() {
                     (x, x2, y)
                 } else {
-                    (0.0, 0.0, 0.0)
+                    (f32::NAN, f32::NAN, f32::NAN)
                 }
             })
-            .filter(|ele| ele != &(0.0, 0.0, 0.0))
+            .filter(|ele| ele != &(f32::NAN, f32::NAN, f32::NAN))
             .collect();
         let area: f32 = data2.iter().map(|(_, _, y)| y * step).sum(); // sum of all rectangles' areas
         (data2, area)
