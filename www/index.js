@@ -71,17 +71,23 @@ function onMouseMove(event) {
 }
 
 function updatePlot() {
+    status.style.color = "grey";
     status.innerText = `Rendering y=${math_function.value}...`;
     
     if (chart_manager == null) {
         chart_manager = ChartManager.new(math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
     }
 
-    const start = performance.now();
-    chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
-    const end = performance.now();
+    try {
+        const start = performance.now();
+        chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+        const end = performance.now();
 
-    area_msg.innerText = `Estimated Area: ${chart.get_area()}`;
-
-    status.innerText = `Rendered ${math_function.innerText} in ${Math.ceil(end - start)}ms`;
+        area_msg.innerText = `Estimated Area: ${chart.get_area()}`;
+    
+        status.innerText = `Rendered ${math_function.innerText} in ${Math.ceil(end - start)}ms`;
+    } catch(err) {
+        status.style.color = "red";
+        status.innerText = `Error! check console logs for more detail`;
+    }
 }
