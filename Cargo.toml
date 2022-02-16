@@ -18,5 +18,5 @@ plotters = "0.3.1"
 plotters-canvas = "0.3.0"
 wee_alloc = "0.4.5"
 web-sys = { version = "0.3.56", features = ["HtmlCanvasElement"] }
-meval = { git = "https://github.com/rekka/meval-rs.git" }
+meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 console_error_panic_hook = "0.1.7"
