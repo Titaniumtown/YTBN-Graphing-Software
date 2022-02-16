@@ -116,13 +116,11 @@ impl ChartManager {
             .y_label_area_size(30.0)
             .build_cartesian_2d(self.min_x..self.max_x, self.min_y..self.max_y)?;
 
-        let light_line_color = if dark_mode {
-            RGBColor(254, 254, 254)
+        if dark_mode {
+            chart.configure_mesh().x_labels(3).y_labels(3).light_line_style(&RGBColor(254, 254, 254)).draw()?;
         } else {
-            RGBColor(28, 28, 28)
-        };
-
-        chart.configure_mesh().x_labels(3).y_labels(3).light_line_style(&light_line_color).draw()?;
+            chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
+        }
 
         let absrange = (self.max_x - self.min_x).abs();
         let data: Vec<(f32, f32)> = match self.back_cache.is_valid() {
