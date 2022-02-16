@@ -8,7 +8,7 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod misc;
-use crate::misc::{Cache, ChartOutput, DrawResult, add_asterisks, test_func_basic};
+use crate::misc::{Cache, ChartOutput, DrawResult, add_asterisks};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -58,7 +58,6 @@ impl ChartManager {
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
     fn get_func(&self) -> impl Fn(f64) -> f64 {
-
         let expr: Expr = self.func_str.parse().unwrap();
         let func = expr.bind("x").unwrap();
         func
@@ -66,12 +65,26 @@ impl ChartManager {
 
     pub fn test_func(function_string: String) -> String {
         let new_func_str: String = add_asterisks(function_string.clone());
-        let run1_result = test_func_basic(new_func_str);
-        if run1_result == "" {
-            return run1_result;
+        let expr_result = new_func_str.parse();
+        let expr_error = match &expr_result {
+            Ok(_) => "".to_string(),
+            Err(error) => format!("{}", error),
+        };
+        if !expr_error.is_empty() {
+            return expr_error;
         }
-
-        return test_func_basic(function_string);
+    
+        let expr: Expr = expr_result.unwrap();
+        let func_result = expr.bind("x");
+        let func_error = match &func_result {
+            Ok(_) => "".to_string(),
+            Err(error) => format!("{}", error),
+        };
+        if !func_error.is_empty() {
+            return func_error;
+        }
+    
+        "".to_string()
     }
 
     // Recommends a possible solution to an error from method `test_func`
@@ -181,15 +194,7 @@ impl ChartManager {
         &mut self, canvas: HtmlCanvasElement, func_str_new: String, min_x: f32, max_x: f32, min_y: f32,
         max_y: f32, num_interval: usize, resolution: i32, dark_mode: bool
     ) -> Result<ChartOutput, JsValue> {
-        let func_str: String;
-        let new_func_str: String = add_asterisks(func_str_new.clone());
-        if test_func_basic(add_asterisks(func_str_new.clone())) == "" {
-            func_str = new_func_str;
-        } else if test_func_basic(func_str_new.clone()) == "" {
-            func_str = func_str_new;
-        } else {
-            panic!("function is invalid");
-        }
+        let func_str: String = add_asterisks(func_str_new);
 
         
         let underlying_update = (func_str != self.func_str)

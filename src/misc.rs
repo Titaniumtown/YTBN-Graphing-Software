@@ -1,56 +1,74 @@
 use wasm_bindgen::prelude::*;
-use meval::Expr;
 
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-pub fn test_func_basic(function_string: String) -> String {
-    let expr_result = function_string.parse();
-    let expr_error = match &expr_result {
-        Ok(_) => "".to_string(),
-        Err(error) => format!("{}", error),
-    };
-    if !expr_error.is_empty() {
-        return expr_error;
-    }
-
-    let expr: Expr = expr_result.unwrap();
-    let func_result = expr.bind("x");
-    let func_error = match &func_result {
-        Ok(_) => "".to_string(),
-        Err(error) => format!("{}", error),
-    };
-    if !func_error.is_empty() {
-        return func_error;
-    }
-
-    "".to_string()
-}
-
-
-// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed
+// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed
 pub fn add_asterisks(function: String) -> String {
     let letters: Vec<char>= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect();
     let numbers: Vec<char> = "0123456789".chars().collect();
-    let function_chars = function.chars();
+    let function_chars: Vec<char> = function.chars().collect();
+    let func_chars_len = function_chars.len();
     let mut output_string: String = String::new();
-    let mut prev_char: char = ' ';
-    for c in function_chars {
+    let mut prev_chars: Vec<char> = Vec::new();
+    for c in function_chars.clone() {
+        let prev_chars_len = prev_chars.len();
+        let curr_i: usize = func_chars_len-prev_chars_len;
+
+        let prev_prev_char = if prev_chars_len >= 2 {
+            match prev_chars.get(prev_chars_len-2) {
+                Some(x) => *x,
+                None => panic!()
+            }
+        } else {
+            ' '
+        };
+
+        let prev_char = if prev_chars_len >= 1 {
+            match prev_chars.get(prev_chars_len-1) {
+                Some(x) => *x,
+                None => panic!()
+            }
+        } else {
+            ' '
+        };
+
+        let for_char =  match function_chars.get(curr_i) {
+            Some(x) => *x,
+            None => ' ',
+        };
+
+        let prev_pi = (prev_prev_char == 'p') && (prev_char == 'i');
+        let for_pi = (for_char == 'i') && (c == 'p');
+
         if prev_char == ')' {
             if c == '(' {
                 output_string += "*";
-            } else if (c == 'x') | numbers.contains(&c) {
-                output_string += "*"
+            } else if (c == 'x') | (c == 'e') | numbers.contains(&c) | for_pi {
+                output_string += "*";
+            }
+        } else if c == '(' {
+            if ((prev_char == 'x') | (prev_char == 'e') | (prev_char == ')') | numbers.contains(&prev_char)) && !letters.contains(&prev_prev_char) {
+                output_string += "*";
+            } else if prev_pi {
+                output_string += "*";
+            }
+        } else if numbers.contains(&prev_char) {
+            if (c == '(') | letters.contains(&c) | for_pi {
+                output_string += "*";
             }
         } else if letters.contains(&c) {
             if numbers.contains(&prev_char) {
                 output_string += "*";
+            } else if ((c == 'x') | (c == 'e')) && ((prev_char == 'x') | (prev_char == 'e')) | prev_pi {
+                output_string += "*";
             }
         } else if numbers.contains(&c) {
-            if letters.contains(&prev_char) {
+            if letters.contains(&prev_char) | prev_pi {
                 output_string += "*";
             }
         }
-        prev_char = c;
+
+        prev_chars.push(c);
         output_string += &c.to_string();
     }
 
@@ -134,4 +152,25 @@ impl<T> Cache<T> {
 
     #[inline]
     pub fn is_valid(&self) -> bool { self.valid }
+}
+
+#[test]
+fn asterisk_test() {
+    assert_eq!(&add_asterisks("2x".to_string()), "2*x");
+    assert_eq!(&add_asterisks("x2".to_string()), "x*2");
+    assert_eq!(&add_asterisks("x(1+3)".to_string()), "x*(1+3)");
+    assert_eq!(&add_asterisks("(1+3)x".to_string()), "(1+3)*x");
+    assert_eq!(&add_asterisks("sin(x)".to_string()), "sin(x)");
+    assert_eq!(&add_asterisks("2sin(x)".to_string()), "2*sin(x)");
+    assert_eq!(&add_asterisks("max(x)".to_string()), "max(x)");
+    assert_eq!(&add_asterisks("2e^x".to_string()), "2*e^x");
+    assert_eq!(&add_asterisks("2max(x)".to_string()), "2*max(x)");
+    assert_eq!(&add_asterisks("cos(sin(x))".to_string()), "cos(sin(x))");
+    assert_eq!(&add_asterisks("x^(1+2x)".to_string()), "x^(1+2*x)");
+    assert_eq!(&add_asterisks("(x+2)x(1+3)".to_string()), "(x+2)*x*(1+3)");
+    assert_eq!(&add_asterisks("xxx".to_string()), "x*x*x");
+    assert_eq!(&add_asterisks("eee".to_string()), "e*e*e");
+    assert_eq!(&add_asterisks("pi(x+2)".to_string()), "pi*(x+2)");
+    assert_eq!(&add_asterisks("(x)pi".to_string()), "(x))*pi");
+    assert_eq!(&add_asterisks("2e".to_string()), "2*e");
 }
