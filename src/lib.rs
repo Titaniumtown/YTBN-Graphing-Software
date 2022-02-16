@@ -83,8 +83,7 @@ impl ChartManager {
     // Recommends a possible solution to an error from method `test_func`
     pub fn error_recommend(error_string: String) -> String {
         match error_string.as_str() {
-            "Parse error: Unexpected token x." => "Always explicitly state multiplication using an asterisk.",
-            _ => "Make sure you're using proper syntax! Check the 'Frequent issues' for more info"
+            _ => "Make sure you're using proper syntax! Check the 'Frequent issues' for possible fixes."
         }.to_string()
     }
 
