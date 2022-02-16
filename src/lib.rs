@@ -123,6 +123,10 @@ impl ChartManager {
             let capped_data: Vec<(f32, f32)> = data
                 .iter()
                 .map(|(x, y)| {
+                    if y.is_nan() {
+                        return (*x, 0.0);
+                    }
+
                     let new_y: &f32 = if y > &self.max_y {
                         &self.max_y
                     } else if &self.min_y > y {
@@ -130,9 +134,11 @@ impl ChartManager {
                     } else {
                         y
                     };
+
                     (*x, *new_y)
                 })
                 .collect();
+                log(&format!("{:?}", capped_data));
             chart.draw_series(AreaSeries::new(capped_data, 0.0, &BLUE))?;
         }
 
@@ -216,13 +222,9 @@ impl ChartManager {
                     false => tmp2,
                 };
 
-                if !y.is_nan() {
-                    (x, x2, y)
-                } else {
-                    (f32::NAN, f32::NAN, f32::NAN)
-                }
+                (x, x2, y)
             })
-            .filter(|ele| ele != &(f32::NAN, f32::NAN, f32::NAN))
+            .filter(|(_, _, y)| !y.is_nan())
             .collect();
         let area: f32 = data2.iter().map(|(_, _, y)| y * step).sum(); // sum of all rectangles' areas
         (data2, area)
