@@ -152,7 +152,6 @@ impl ChartManager {
                     (*x, *new_y)
                 })
                 .collect();
-                log(&format!("{:?}", capped_data));
             chart.draw_series(AreaSeries::new(capped_data, 0.0, &BLUE))?;
         }
 
