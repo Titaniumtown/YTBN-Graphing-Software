@@ -57,12 +57,26 @@ impl ChartManager {
     // Used in order to hook into `panic!()` to log in the browser's console
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
+    pub fn test_func(function_string: String) -> String {
+        let expr: Expr = function_string.parse().unwrap();
+        let func_result = expr.bind("x");
+        match func_result {
+            Ok(_) => "".to_string(),
+            Err(error) => format!("{}", error),
+        }
+    }
+
+    fn get_func(&self) -> impl Fn(f64) -> f64 {
+        let expr: Expr = self.func_str.parse().unwrap();
+        let func = expr.bind("x").unwrap();
+        return func;
+    }
+
     #[inline]
     fn draw(
         &mut self, element: HtmlCanvasElement,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
-        let expr: Expr = self.func_str.parse().unwrap();
-        let func = expr.bind("x").unwrap();
+        let func = self.get_func();
 
         let backend = CanvasBackend::with_canvas_object(element).unwrap();
         let root = backend.into_drawing_area();

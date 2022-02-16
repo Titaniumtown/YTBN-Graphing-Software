@@ -78,6 +78,13 @@ function updatePlot() {
         chart_manager = ChartManager.new(math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
     }
 
+    const test_result = ChartManager.test_func(math_function.value);
+    if (test_result != "") {
+        status.style.color = "red";
+        status.innerText = test_result;
+        return;
+    }
+
     try {
         const start = performance.now();
         chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
