@@ -58,18 +58,32 @@ impl ChartManager {
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
     pub fn test_func(function_string: String) -> String {
-        let expr: Expr = function_string.parse().unwrap();
-        let func_result = expr.bind("x");
-        match func_result {
+        let expr_result = function_string.parse();
+        let expr_error = match &expr_result {
             Ok(_) => "".to_string(),
             Err(error) => format!("{}", error),
+        };
+        if !expr_error.is_empty() {
+            return expr_error;
         }
+
+        let expr: Expr = expr_result.unwrap();
+        let func_result = expr.bind("x");
+        let func_error = match &func_result {
+            Ok(_) => "".to_string(),
+            Err(error) => format!("{}", error),
+        };
+        if !func_error.is_empty() {
+            return func_error;
+        }
+
+        "".to_string()
     }
 
     fn get_func(&self) -> impl Fn(f64) -> f64 {
         let expr: Expr = self.func_str.parse().unwrap();
         let func = expr.bind("x").unwrap();
-        return func;
+        func
     }
 
     #[inline]
