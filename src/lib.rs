@@ -128,7 +128,7 @@ impl ChartManager {
                     } else if &self.min_y > y {
                         &self.min_y
                     } else {
-                        &y
+                        y
                     };
                     (*x, *new_y)
                 })
