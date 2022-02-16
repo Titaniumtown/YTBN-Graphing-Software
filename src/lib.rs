@@ -5,7 +5,7 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod misc;
-use crate::misc::{Chart, DrawResult};
+use crate::misc::{Chart, DrawResult, Cache};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -28,10 +28,8 @@ pub struct ChartManager {
     max_y: f32,
     num_interval: usize,
     resolution: i32,
-    back_cache: Option<Vec<(f32, f32)>>,
-    front_cache: Option<(Vec<(f32, f32, f32)>, f32)>,
-    use_back_cache: bool,
-    use_front_cache: bool,
+    back_cache: Cache<Vec<(f32, f32)>>,
+    front_cache: Cache<(Vec<(f32, f32, f32)>, f32)>,
 }
 
 #[wasm_bindgen]
@@ -48,35 +46,15 @@ impl ChartManager {
             max_y,
             num_interval,
             resolution,
-            back_cache: None,
-            front_cache: None,
-            use_back_cache: false,
-            use_front_cache: false,
+            back_cache: Cache::new_empty(),
+            front_cache: Cache::new_empty(),
         }
     }
 
     // Used in order to hook into `panic!()` to log in the browser's console
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
-    #[inline(always)]
-    fn get_back_cache(&self) -> Vec<(f32, f32)> {
-        log("Using back_cache");
-        match &self.back_cache {
-            Some(x) => x.clone(),
-            None => panic!("use_back_cache is true, but back_cache is None!"),
-        }
-    }
-
-    #[inline(always)]
-    fn get_front_cache(&self) -> (Vec<(f32, f32, f32)>, f32) {
-        log("Using front_cache");
-        match &self.front_cache {
-            Some(x) => x.clone(),
-            None => panic!("use_front_cache is true, but front_cache is None!"),
-        }
-    }
-
-    #[inline(always)]
+    #[inline]
     fn draw(
         &mut self, element: HtmlCanvasElement,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
@@ -99,8 +77,8 @@ impl ChartManager {
         chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
 
         let absrange = (self.max_x - self.min_x).abs();
-        let data: Vec<(f32, f32)> = match self.use_back_cache {
-            true => self.get_back_cache(),
+        let data: Vec<(f32, f32)> = match self.back_cache.is_valid() {
+            true => self.back_cache.get().clone(),
             false => {
                 log("Updating back_cache");
                 let output: Vec<(f32, f32)> = (1..=self.resolution)
@@ -108,20 +86,20 @@ impl ChartManager {
                     .map(|x| (x, func(x as f64) as f32))
                     .filter(|(_, y)| &self.min_y <= y && y <= &self.max_y)
                     .collect();
-                self.back_cache = Some(output.clone());
+                self.back_cache.set(output.clone());
                 output
             }
         };
 
         chart.draw_series(LineSeries::new(data, &RED))?;
 
-        let (rect_data, area): (Vec<(f32, f32, f32)>, f32) = match self.use_front_cache {
-            true => self.get_front_cache(),
+        let (rect_data, area): (Vec<(f32, f32, f32)>, f32) = match self.front_cache.is_valid() {
+            true => self.front_cache.get().clone(),
             false => {
                 log("Updating front_cache");
                 let step = absrange / (self.num_interval as f32);
                 let output: (Vec<(f32, f32, f32)>, f32) = self.integral_rectangles(step, &func);
-                self.front_cache = Some(output.clone());
+                self.front_cache.set(output.clone());
                 output
             }
         };
@@ -147,6 +125,10 @@ impl ChartManager {
             | (min_y != self.min_y)
             | (max_y != self.max_y);
 
+        if 0 > resolution {
+            panic!("resolution cannot be less than 0");
+        }
+
         if underlying_update {
             if min_x >= max_x {
                 panic!("min_x is greater than (or equal to) than max_x!");
@@ -157,14 +139,13 @@ impl ChartManager {
             }
         }
 
-        if 0 > resolution {
-            panic!("resolution cannot be less than 0");
+        if underlying_update | (self.resolution != resolution) {
+            self.back_cache.invalidate();
         }
 
-        self.use_back_cache =
-            !underlying_update && self.resolution == resolution && self.back_cache.is_some();
-        self.use_front_cache =
-            !underlying_update && num_interval == self.num_interval && self.front_cache.is_some();
+        if underlying_update | (num_interval != self.num_interval) {
+            self.front_cache.invalidate();
+        }
 
         self.func_str = func_str.to_string();
         self.min_x = min_x;
@@ -186,7 +167,7 @@ impl ChartManager {
     }
 
     // Creates and does the math for creating all the rectangles under the graph
-    #[inline(always)]
+    #[inline]
     fn integral_rectangles(
         &self, step: f32, func: &dyn Fn(f64) -> f64,
     ) -> (Vec<(f32, f32, f32)>, f32) {
