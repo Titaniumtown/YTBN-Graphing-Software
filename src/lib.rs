@@ -8,7 +8,7 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod misc;
-use crate::misc::{ChartOutput, DrawResult, Cache};
+use crate::misc::{Cache, ChartOutput, DrawResult};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -87,14 +87,18 @@ impl ChartManager {
                 let output: Vec<(f32, f32)> = (1..=self.resolution)
                     .map(|x| ((x as f32 / self.resolution as f32) * absrange) + self.min_x)
                     .map(|x| (x, func(x as f64) as f32))
-                    .filter(|(_, y)| &self.min_y <= y && y <= &self.max_y)
                     .collect();
                 self.back_cache.set(output.clone());
                 output
             }
         };
 
-        chart.draw_series(LineSeries::new(data, &RED))?;
+        let filtered_data: Vec<(f32, f32)> = data
+            .iter()
+            .filter(|(_, y)| &self.min_y <= y && y <= &self.max_y)
+            .map(|(x, y)| (*x, *y))
+            .collect();
+        chart.draw_series(LineSeries::new(filtered_data, &RED))?;
 
         let (rect_data, area): (Vec<(f32, f32, f32)>, f32) = match self.front_cache.is_valid() {
             true => self.front_cache.get().clone(),
@@ -107,12 +111,30 @@ impl ChartManager {
             }
         };
 
-        // Draw rectangles
-        chart.draw_series(
-            rect_data
+        if self.num_interval <= 200 {
+            // Draw rectangles
+            chart.draw_series(
+                rect_data
+                    .iter()
+                    .map(|(x1, x2, y)| Rectangle::new([(*x2, *y), (*x1, 0.0)], &BLUE)),
+            )?;
+        } else {
+            // Save resources by not graphing rectangles and using an AreaSeries when you can no longer see the rectangles
+            let capped_data: Vec<(f32, f32)> = data
                 .iter()
-                .map(|(x1, x2, y)| Rectangle::new([(*x2, *y), (*x1, 0.0)], &BLUE)),
-        )?;
+                .map(|(x, y)| {
+                    let new_y: &f32 = if y > &self.max_y {
+                        &self.max_y
+                    } else if &self.min_y > y {
+                        &self.min_y
+                    } else {
+                        &y
+                    };
+                    (*x, *new_y)
+                })
+                .collect();
+            chart.draw_series(AreaSeries::new(capped_data, 0.0, &BLUE))?;
+        }
 
         root.present()?;
         Ok((chart.into_coord_trans(), area))
