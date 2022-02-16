@@ -171,10 +171,8 @@ impl ChartManager {
 
         self.use_back_cache =
             !underlying_update && self.resolution == resolution && self.back_cache.is_some();
-        self.use_front_cache = match underlying_update {
-            true => false,
-            false => num_interval == self.num_interval && self.front_cache.is_some(),
-        };
+        self.use_front_cache =
+            !underlying_update && num_interval == self.num_interval && self.front_cache.is_some();
 
         self.func_str = func_str.to_string();
         self.min_x = min_x;
