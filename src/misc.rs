@@ -16,13 +16,13 @@ impl Point {
 }
 
 #[wasm_bindgen]
-pub struct Chart {
+pub struct ChartOutput {
     pub(crate) convert: Box<dyn Fn((i32, i32)) -> Option<(f32, f32)>>,
     pub(crate) area: f32,
 }
 
 #[wasm_bindgen]
-impl Chart {
+impl ChartOutput {
     pub fn get_area(&self) -> f32 { self.area }
 
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {

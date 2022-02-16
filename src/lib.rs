@@ -5,7 +5,7 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod misc;
-use crate::misc::{Chart, DrawResult, Cache};
+use crate::misc::{ChartOutput, DrawResult, Cache};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -118,7 +118,7 @@ impl ChartManager {
     pub fn update(
         &mut self, canvas: HtmlCanvasElement, func_str: &str, min_x: f32, max_x: f32, min_y: f32,
         max_y: f32, num_interval: usize, resolution: i32,
-    ) -> Result<Chart, JsValue> {
+    ) -> Result<ChartOutput, JsValue> {
         let underlying_update = (*func_str != self.func_str)
             | (min_x != self.min_x)
             | (max_x != self.max_x)
@@ -158,12 +158,12 @@ impl ChartManager {
         let draw_output = self.draw(canvas).map_err(|err| err.to_string())?;
         let map_coord = draw_output.0;
 
-        let chart = Chart {
+        let chart_output = ChartOutput {
             convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x, y))),
             area: draw_output.1,
         };
 
-        Ok(chart)
+        Ok(chart_output)
     }
 
     // Creates and does the math for creating all the rectangles under the graph
