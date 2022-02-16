@@ -4,11 +4,11 @@ use plotters_canvas::CanvasBackend;
 use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
+mod misc;
+use crate::misc::{Chart, DrawResult};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
-pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 #[wasm_bindgen]
 extern "C" {
@@ -18,18 +18,7 @@ extern "C" {
     fn log(s: &str);
 }
 
-/// Result of screen to chart coordinates conversion.
-#[wasm_bindgen]
-pub struct Point {
-    pub x: f32,
-    pub y: f32,
-}
-
-#[wasm_bindgen]
-impl Point {
-    pub fn new(x: f32, y: f32) -> Self { Self { x, y } }
-}
-
+// Manages Chart generation and caching of values
 #[wasm_bindgen]
 pub struct ChartManager {
     func_str: String,
@@ -69,6 +58,7 @@ impl ChartManager {
     // Used in order to hook into `panic!()` to log in the browser's console
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
+    #[inline(always)]
     fn get_back_cache(&self) -> Vec<(f32, f32)> {
         log("Using back_cache");
         match &self.back_cache {
@@ -77,6 +67,7 @@ impl ChartManager {
         }
     }
 
+    #[inline(always)]
     fn get_front_cache(&self) -> (Vec<(f32, f32, f32)>, f32) {
         log("Using front_cache");
         match &self.front_cache {
@@ -85,6 +76,7 @@ impl ChartManager {
         }
     }
 
+    #[inline(always)]
     fn draw(
         &mut self, element: HtmlCanvasElement,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
@@ -227,20 +219,5 @@ impl ChartManager {
             .collect();
         let area: f32 = data2.iter().map(|(_, _, y)| y * step).sum(); // sum of all rectangles' areas
         (data2, area)
-    }
-}
-
-#[wasm_bindgen]
-pub struct Chart {
-    convert: Box<dyn Fn((i32, i32)) -> Option<(f32, f32)>>,
-    area: f32,
-}
-
-#[wasm_bindgen]
-impl Chart {
-    pub fn get_area(&self) -> f32 { self.area }
-
-    pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
-        (self.convert)((x, y)).map(|(x, y)| Point::new(x, y))
     }
 }
