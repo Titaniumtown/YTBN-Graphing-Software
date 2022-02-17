@@ -98,13 +98,13 @@ function postNormalStatus(string) {
 function updatePlot() {
     postNormalStatus(`Rendering y=${math_function.value}...`);
     
-    if (minX.value > maxX.value) {
-        postErrorStatus("minX is larger than maxX!");
+    if (minX.value >= maxX.value) {
+        postErrorStatus("minX must be smaller than maxX!");
         return;
     }
 
-    if (minY.value > maxY.value) {
-        postErrorStatus("minY is larger than maxY!");
+    if (minY.value >= maxY.value) {
+        postErrorStatus("minY must be smaller than maxY!");
         return;
     }
 
