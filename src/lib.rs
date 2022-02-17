@@ -66,11 +66,11 @@ impl ChartManager {
     // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
     pub fn test_func(function_string: String) -> String {
         // Factorials do not work, and it would be really difficult to make them work
-        if function_string.contains("!") {
+        if function_string.contains('!') {
             return "Factorials are unsupported".to_string();
         }
 
-        let new_func_str: String = add_asterisks(function_string.clone());
+        let new_func_str: String = add_asterisks(function_string);
         let expr_result = new_func_str.parse();
         let expr_error = match &expr_result {
             Ok(_) => "".to_string(),

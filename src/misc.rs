@@ -72,10 +72,8 @@ pub fn add_asterisks(function_in: String) -> String {
             {
                 add_asterisk = true;
             }
-        } else if numbers.contains(&c) {
-            if letters.contains(&prev_char) | prev_pi {
-                add_asterisk = true;
-            }
+        } else if numbers.contains(&c) && letters.contains(&prev_char) | prev_pi {
+            add_asterisk = true;
         }
 
         if add_asterisk {
@@ -86,7 +84,7 @@ pub fn add_asterisks(function_in: String) -> String {
         output_string += &c.to_string();
     }
 
-    return output_string;
+    output_string
 }
 
 /// Result of screen to chart coordinates conversion.
