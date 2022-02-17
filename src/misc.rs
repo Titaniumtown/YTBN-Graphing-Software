@@ -2,12 +2,14 @@ use wasm_bindgen::prelude::*;
 
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again. 
+// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
 // One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
 pub fn add_asterisks(function_in: String) -> String {
     let function = function_in.replace("log10(", "log("); // replace log10 with log
     let valid_variables: Vec<char> = "xe".chars().collect();
-    let letters: Vec<char>= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect();
+    let letters: Vec<char> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        .chars()
+        .collect();
     let numbers: Vec<char> = "0123456789".chars().collect();
     let function_chars: Vec<char> = function.chars().collect();
     let func_chars_len = function_chars.len();
@@ -16,27 +18,27 @@ pub fn add_asterisks(function_in: String) -> String {
     for c in function_chars.clone() {
         let mut add_asterisk: bool = false;
         let prev_chars_len = prev_chars.len();
-        let curr_i: usize = func_chars_len-prev_chars_len;
+        let curr_i: usize = func_chars_len - prev_chars_len;
 
         let prev_prev_char = if prev_chars_len >= 2 {
-            match prev_chars.get(prev_chars_len-2) {
+            match prev_chars.get(prev_chars_len - 2) {
                 Some(x) => *x,
-                None => panic!()
+                None => panic!(),
             }
         } else {
             ' '
         };
 
         let prev_char = if prev_chars_len >= 1 {
-            match prev_chars.get(prev_chars_len-1) {
+            match prev_chars.get(prev_chars_len - 1) {
                 Some(x) => *x,
-                None => panic!()
+                None => panic!(),
             }
         } else {
             ' '
         };
 
-        let for_char =  match function_chars.get(curr_i) {
+        let for_char = match function_chars.get(curr_i) {
             Some(x) => *x,
             None => ' ',
         };
@@ -44,13 +46,16 @@ pub fn add_asterisks(function_in: String) -> String {
         let prev_pi = (prev_prev_char == 'p') && (prev_char == 'i');
         let for_pi = (for_char == 'i') && (c == 'p');
 
-        
         if prev_char == ')' {
             if (c == '(') | numbers.contains(&c) | letters.contains(&c) {
                 add_asterisk = true;
             }
         } else if c == '(' {
-            if (valid_variables.contains(&prev_char) | (prev_char == ')') | numbers.contains(&prev_char)) && !letters.contains(&prev_prev_char) {
+            if (valid_variables.contains(&prev_char)
+                | (prev_char == ')')
+                | numbers.contains(&prev_char))
+                && !letters.contains(&prev_prev_char)
+            {
                 add_asterisk = true;
             } else if prev_pi {
                 add_asterisk = true;
@@ -62,7 +67,9 @@ pub fn add_asterisks(function_in: String) -> String {
         } else if letters.contains(&c) {
             if numbers.contains(&prev_char) {
                 add_asterisk = true;
-            } else if (valid_variables.contains(&prev_char) && valid_variables.contains(&c)) | prev_pi {
+            } else if (valid_variables.contains(&prev_char) && valid_variables.contains(&c))
+                | prev_pi
+            {
                 add_asterisk = true;
             }
         } else if numbers.contains(&c) {

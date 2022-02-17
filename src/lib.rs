@@ -8,7 +8,7 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod misc;
-use crate::misc::{Cache, ChartOutput, DrawResult, add_asterisks};
+use crate::misc::{add_asterisks, Cache, ChartOutput, DrawResult};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -74,7 +74,7 @@ impl ChartManager {
         if !expr_error.is_empty() {
             return expr_error;
         }
-    
+
         let expr: Expr = expr_result.unwrap();
         let func_result = expr.bind("x");
         let func_error = match &func_result {
@@ -84,13 +84,13 @@ impl ChartManager {
         if !func_error.is_empty() {
             return func_error;
         }
-    
+
         "".to_string()
     }
 
     #[inline]
     fn draw(
-        &mut self, element: HtmlCanvasElement, dark_mode: bool
+        &mut self, element: HtmlCanvasElement, dark_mode: bool,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
         let func = self.get_func();
 
@@ -112,7 +112,12 @@ impl ChartManager {
             .build_cartesian_2d(self.min_x..self.max_x, self.min_y..self.max_y)?;
 
         if dark_mode {
-            chart.configure_mesh().x_labels(3).y_labels(3).light_line_style(&RGBColor(254, 254, 254)).draw()?;
+            chart
+                .configure_mesh()
+                .x_labels(3)
+                .y_labels(3)
+                .light_line_style(&RGBColor(254, 254, 254))
+                .draw()?;
         } else {
             chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
         }
@@ -185,18 +190,16 @@ impl ChartManager {
 
     #[allow(clippy::too_many_arguments)]
     pub fn update(
-        &mut self, canvas: HtmlCanvasElement, func_str_new: String, min_x: f32, max_x: f32, min_y: f32,
-        max_y: f32, num_interval: usize, resolution: usize, dark_mode: bool
+        &mut self, canvas: HtmlCanvasElement, func_str_new: String, min_x: f32, max_x: f32,
+        min_y: f32, max_y: f32, num_interval: usize, resolution: usize, dark_mode: bool,
     ) -> Result<ChartOutput, JsValue> {
         let func_str: String = add_asterisks(func_str_new);
 
-        
         let underlying_update = (func_str != self.func_str)
             | (min_x != self.min_x)
             | (max_x != self.max_x)
             | (min_y != self.min_y)
             | (max_y != self.max_y);
-
 
         if underlying_update | (self.resolution != resolution) {
             self.back_cache.invalidate();
@@ -214,7 +217,9 @@ impl ChartManager {
         self.num_interval = num_interval;
         self.resolution = resolution;
 
-        let draw_output = self.draw(canvas, dark_mode).map_err(|err| err.to_string())?;
+        let draw_output = self
+            .draw(canvas, dark_mode)
+            .map_err(|err| err.to_string())?;
         let map_coord = draw_output.0;
 
         let chart_output = ChartOutput {
