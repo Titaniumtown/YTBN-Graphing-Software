@@ -187,4 +187,5 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("2e".to_string()), "2*e");
     assert_eq!(&add_asterisks("2log10(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
+    assert_eq!(&add_asterisks("x!".to_string()), "x!");
 }
