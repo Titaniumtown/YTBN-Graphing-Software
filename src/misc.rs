@@ -3,7 +3,8 @@ use wasm_bindgen::prelude::*;
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 // EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed
-pub fn add_asterisks(function: String) -> String {
+pub fn add_asterisks(function_in: String) -> String {
+    let function = function_in.replace("log10(", "log("); // replace log10 with log
     let letters: Vec<char>= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect();
     let numbers: Vec<char> = "0123456789".chars().collect();
     let function_chars: Vec<char> = function.chars().collect();
@@ -41,9 +42,7 @@ pub fn add_asterisks(function: String) -> String {
         let for_pi = (for_char == 'i') && (c == 'p');
 
         if prev_char == ')' {
-            if c == '(' {
-                output_string += "*";
-            } else if (c == 'x') | (c == 'e') | numbers.contains(&c) | for_pi {
+            if (c == '(') | numbers.contains(&c) | letters.contains(&c) {
                 output_string += "*";
             }
         } else if c == '(' {
@@ -168,9 +167,12 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("cos(sin(x))".to_string()), "cos(sin(x))");
     assert_eq!(&add_asterisks("x^(1+2x)".to_string()), "x^(1+2*x)");
     assert_eq!(&add_asterisks("(x+2)x(1+3)".to_string()), "(x+2)*x*(1+3)");
+    assert_eq!(&add_asterisks("(x+2)(1+3)".to_string()), "(x+2)*(1+3)");
     assert_eq!(&add_asterisks("xxx".to_string()), "x*x*x");
     assert_eq!(&add_asterisks("eee".to_string()), "e*e*e");
     assert_eq!(&add_asterisks("pi(x+2)".to_string()), "pi*(x+2)");
-    assert_eq!(&add_asterisks("(x)pi".to_string()), "(x))*pi");
+    assert_eq!(&add_asterisks("(x)pi".to_string()), "(x)*pi");
     assert_eq!(&add_asterisks("2e".to_string()), "2*e");
+    assert_eq!(&add_asterisks("2log10(x)".to_string()), "2*log(x)");
+    assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
 }
