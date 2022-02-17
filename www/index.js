@@ -85,10 +85,40 @@ function onMouseMove(event) {
     }
 }
 
-function updatePlot() {
+function postErrorStatus(string) {
+    status.style.color = "red";
+    status.innerText = string;
+}
+
+function postNormalStatus(string) {
     status.style.color = "grey";
-    status.innerText = `Rendering y=${math_function.value}...`;
+    status.innerText = string;
+}
+
+function updatePlot() {
+    postNormalStatus(`Rendering y=${math_function.value}...`);
     
+    if (minX.value > maxX.value) {
+        postErrorStatus("minX is larger than maxX!");
+        return;
+    }
+
+    if (minY.value > maxY.value) {
+        postErrorStatus("minY is larger than maxY!");
+        return;
+    }
+
+    if (0 > num_interval.value) {
+        postErrorStatus("Interval is smaller than 0!");
+        return;
+    }
+
+    if (0 > resolution.value) {
+        postErrorStatus("resolution (Number of Points) is smaller than 0!");
+        return;
+    }
+
+
     if (chart_manager == null) {
         chart_manager = ChartManager.new(math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
     }
@@ -96,11 +126,10 @@ function updatePlot() {
     const test_result = ChartManager.test_func(math_function.value);
     if (test_result != "") {
         const error_recommendation = ChartManager.error_recommend(test_result);
-        status.style.color = "red";
         if (error_recommendation == "") {
-            status.innerText = test_result;
+            postErrorStatus(test_result);
         } else {
-            status.innerText = `${test_result}\nTip: ${error_recommendation}`
+            postErrorStatus(`${test_result}\nTip: ${error_recommendation}`);
         }
         return;
     }
@@ -112,9 +141,8 @@ function updatePlot() {
 
         area_msg.innerText = `Estimated Area: ${chart.get_area()}`;
     
-        status.innerText = `Rendered ${math_function.innerText} in ${Math.ceil(end - start)}ms`;
+        postNormalStatus(`Rendered ${math_function.innerText} in ${Math.ceil(end - start)}ms`);
     } catch(err) {
-        status.style.color = "red";
-        status.innerText = `Error! check console logs for more detail`;
+        postErrorStatus(`Error! check console logs for more detail`);
     }
 }
