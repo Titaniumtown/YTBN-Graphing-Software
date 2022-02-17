@@ -118,8 +118,7 @@ impl ChartOutput {
 }
 
 pub struct Cache<T> {
-    backing_data: Option<T>,
-    valid: bool,
+    backing_data: Option<T>
 }
 
 impl<T> Cache<T> {
@@ -127,25 +126,19 @@ impl<T> Cache<T> {
     #[inline]
     pub fn new(backing_data: T) -> Self {
         Self {
-            backing_data: Some(backing_data),
-            valid: true,
+            backing_data: Some(backing_data)
         }
     }
 
     #[inline]
     pub fn new_empty() -> Self {
         Self {
-            backing_data: None,
-            valid: false,
+            backing_data: None
         }
     }
 
     #[inline]
     pub fn get(&self) -> &T {
-        if !self.valid {
-            panic!("self.valid is false, but get() method was called!")
-        }
-
         match &self.backing_data {
             Some(x) => x,
             None => panic!("self.backing_data is None"),
@@ -154,18 +147,21 @@ impl<T> Cache<T> {
 
     #[inline]
     pub fn set(&mut self, data: T) {
-        self.valid = true;
         self.backing_data = Some(data);
     }
 
     #[inline]
     pub fn invalidate(&mut self) {
-        self.valid = false;
         self.backing_data = None;
     }
 
     #[inline]
-    pub fn is_valid(&self) -> bool { self.valid }
+    pub fn is_valid(&self) -> bool { 
+        match &self.backing_data {
+            Some(_) => true,
+            None => false
+        }
+    }
 }
 
 // Tests to make sure my cursed function works as intended
