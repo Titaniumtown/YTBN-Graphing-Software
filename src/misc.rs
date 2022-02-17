@@ -118,7 +118,7 @@ impl ChartOutput {
 }
 
 pub struct Cache<T> {
-    backing_data: Option<T>
+    backing_data: Option<T>,
 }
 
 impl<T> Cache<T> {
@@ -126,16 +126,12 @@ impl<T> Cache<T> {
     #[inline]
     pub fn new(backing_data: T) -> Self {
         Self {
-            backing_data: Some(backing_data)
+            backing_data: Some(backing_data),
         }
     }
 
     #[inline]
-    pub fn new_empty() -> Self {
-        Self {
-            backing_data: None
-        }
-    }
+    pub fn new_empty() -> Self { Self { backing_data: None } }
 
     #[inline]
     pub fn get(&self) -> &T {
@@ -146,20 +142,16 @@ impl<T> Cache<T> {
     }
 
     #[inline]
-    pub fn set(&mut self, data: T) {
-        self.backing_data = Some(data);
-    }
+    pub fn set(&mut self, data: T) { self.backing_data = Some(data); }
 
     #[inline]
-    pub fn invalidate(&mut self) {
-        self.backing_data = None;
-    }
+    pub fn invalidate(&mut self) { self.backing_data = None; }
 
     #[inline]
-    pub fn is_valid(&self) -> bool { 
+    pub fn is_valid(&self) -> bool {
         match &self.backing_data {
             Some(_) => true,
-            None => false
+            None => false,
         }
     }
 }
