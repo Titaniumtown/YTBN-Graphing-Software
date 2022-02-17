@@ -32,7 +32,8 @@ export function setup(WasmChart) {
 
 /** Add event listeners. */
 function setupUI() {
-    
+    status.innerText = "WebAssembly loaded!";
+
     // Handles browser color preferences
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         darkMode = true;
@@ -44,7 +45,6 @@ function setupUI() {
         updatePlot();
     });
 
-    status.innerText = "WebAssembly loaded!";
     math_function.addEventListener("change", updatePlot);
     minX.addEventListener("input", updatePlot);
     maxX.addEventListener("input", updatePlot);
@@ -95,9 +95,8 @@ function postNormalStatus(string) {
     status.innerText = string;
 }
 
-function updatePlot() {
-    postNormalStatus(`Rendering y=${math_function.value}...`);
-    
+// Checks variables put in input fields
+function checkVariables() {
     if (minX.value >= maxX.value) {
         postErrorStatus("minX must be smaller than maxX!");
         return;
@@ -114,27 +113,46 @@ function updatePlot() {
     }
 
     if (0 > resolution.value) {
-        postErrorStatus("resolution (Number of Points) is smaller than 0!");
+        postErrorStatus("Number of Points is smaller than 0!");
         return;
     }
+}
 
+// Generates a possible "tip" to assist the user when an error occurs.
+function errorRecommend(error_string) {
+    if (error_string.includes("Evaluation error: unknown variable ")) {
+        return "This variable is not considered valid. Make sure you used a valid variable.";
+    } else {
+        return "Make sure you're using proper syntax! Check console log (f12) as well for more details.";
+    }
+}
+
+
+function updatePlot() {
+    checkVariables();
 
     if (chart_manager == null) {
-        chart_manager = ChartManager.new(math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+        try {
+            chart_manager = ChartManager.new(math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value));
+        } catch(err) {
+            postErrorStatus("Error during ChartManager creation! Check logs for details.");
+            return;
+        }
     }
 
     const test_result = ChartManager.test_func(math_function.value);
     if (test_result != "") {
-        const error_recommendation = ChartManager.error_recommend(test_result);
-        if (error_recommendation == "") {
-            postErrorStatus(test_result);
-        } else {
-            postErrorStatus(`${test_result}\nTip: ${error_recommendation}`);
+        const error_recommendation = errorRecommend(test_result);
+        let error_status_str = test_result;
+        if (error_recommendation != "") {
+            error_status_str += `\nTip: ${error_recommendation}`;
         }
+        postErrorStatus(error_status_str);
         return;
     }
 
     try {
+        postNormalStatus(`Rendering y=${math_function.value}...`);
         const start = performance.now();
         chart = chart_manager.update(canvas, math_function.value, Number(minX.value), Number(maxX.value), Number(minY.value), Number(maxY.value), Number(num_interval.value), Number(resolution.value), false); // TODO: improve darkmode support
         const end = performance.now();

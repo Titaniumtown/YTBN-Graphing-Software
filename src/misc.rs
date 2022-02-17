@@ -2,9 +2,11 @@ use wasm_bindgen::prelude::*;
 
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed
+// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again. 
+// One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
 pub fn add_asterisks(function_in: String) -> String {
     let function = function_in.replace("log10(", "log("); // replace log10 with log
+    let valid_variables: Vec<char> = "xe".chars().collect();
     let letters: Vec<char>= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect();
     let numbers: Vec<char> = "0123456789".chars().collect();
     let function_chars: Vec<char> = function.chars().collect();
@@ -12,6 +14,7 @@ pub fn add_asterisks(function_in: String) -> String {
     let mut output_string: String = String::new();
     let mut prev_chars: Vec<char> = Vec::new();
     for c in function_chars.clone() {
+        let mut add_asterisk: bool = false;
         let prev_chars_len = prev_chars.len();
         let curr_i: usize = func_chars_len-prev_chars_len;
 
@@ -41,30 +44,35 @@ pub fn add_asterisks(function_in: String) -> String {
         let prev_pi = (prev_prev_char == 'p') && (prev_char == 'i');
         let for_pi = (for_char == 'i') && (c == 'p');
 
+        
         if prev_char == ')' {
             if (c == '(') | numbers.contains(&c) | letters.contains(&c) {
-                output_string += "*";
+                add_asterisk = true;
             }
         } else if c == '(' {
-            if ((prev_char == 'x') | (prev_char == 'e') | (prev_char == ')') | numbers.contains(&prev_char)) && !letters.contains(&prev_prev_char) {
-                output_string += "*";
+            if (valid_variables.contains(&prev_char) | (prev_char == ')') | numbers.contains(&prev_char)) && !letters.contains(&prev_prev_char) {
+                add_asterisk = true;
             } else if prev_pi {
-                output_string += "*";
+                add_asterisk = true;
             }
         } else if numbers.contains(&prev_char) {
             if (c == '(') | letters.contains(&c) | for_pi {
-                output_string += "*";
+                add_asterisk = true;
             }
         } else if letters.contains(&c) {
             if numbers.contains(&prev_char) {
-                output_string += "*";
-            } else if ((c == 'x') | (c == 'e')) && ((prev_char == 'x') | (prev_char == 'e')) | prev_pi {
-                output_string += "*";
+                add_asterisk = true;
+            } else if (valid_variables.contains(&prev_char) && valid_variables.contains(&c)) | prev_pi {
+                add_asterisk = true;
             }
         } else if numbers.contains(&c) {
             if letters.contains(&prev_char) | prev_pi {
-                output_string += "*";
+                add_asterisk = true;
             }
+        }
+
+        if add_asterisk {
+            output_string += "*";
         }
 
         prev_chars.push(c);
@@ -153,6 +161,7 @@ impl<T> Cache<T> {
     pub fn is_valid(&self) -> bool { self.valid }
 }
 
+// Tests to make sure my cursed function works as intended
 #[test]
 fn asterisk_test() {
     assert_eq!(&add_asterisks("2x".to_string()), "2*x");

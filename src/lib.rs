@@ -30,7 +30,7 @@ pub struct ChartManager {
     min_y: f32,
     max_y: f32,
     num_interval: usize,
-    resolution: i32,
+    resolution: usize,
     back_cache: Cache<Vec<(f32, f32)>>,
     front_cache: Cache<(Vec<(f32, f32, f32)>, f32)>,
 }
@@ -39,7 +39,7 @@ pub struct ChartManager {
 impl ChartManager {
     pub fn new(
         func_str: String, min_x: f32, max_x: f32, min_y: f32, max_y: f32, num_interval: usize,
-        resolution: i32,
+        resolution: usize,
     ) -> Self {
         Self {
             func_str,
@@ -63,6 +63,7 @@ impl ChartManager {
         func
     }
 
+    // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
     pub fn test_func(function_string: String) -> String {
         let new_func_str: String = add_asterisks(function_string.clone());
         let expr_result = new_func_str.parse();
@@ -85,13 +86,6 @@ impl ChartManager {
         }
     
         "".to_string()
-    }
-
-    // Recommends a possible solution to an error from method `test_func`
-    pub fn error_recommend(error_string: String) -> String {
-        match error_string.as_str() {
-            _ => "Make sure you're using proper syntax! Check the 'Frequent issues' for possible fixes."
-        }.to_string()
     }
 
     #[inline]
@@ -192,7 +186,7 @@ impl ChartManager {
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self, canvas: HtmlCanvasElement, func_str_new: String, min_x: f32, max_x: f32, min_y: f32,
-        max_y: f32, num_interval: usize, resolution: i32, dark_mode: bool
+        max_y: f32, num_interval: usize, resolution: usize, dark_mode: bool
     ) -> Result<ChartOutput, JsValue> {
         let func_str: String = add_asterisks(func_str_new);
 
@@ -203,20 +197,6 @@ impl ChartManager {
             | (min_y != self.min_y)
             | (max_y != self.max_y);
 
-
-        if 0 > resolution {
-            panic!("resolution cannot be less than 0");
-        }
-
-        if underlying_update {
-            if min_x >= max_x {
-                panic!("min_x is greater than (or equal to) than max_x!");
-            }
-
-            if min_y >= max_y {
-                panic!("min_y is greater than (or equal to) than max_y!");
-            }
-        }
 
         if underlying_update | (self.resolution != resolution) {
             self.back_cache.invalidate();

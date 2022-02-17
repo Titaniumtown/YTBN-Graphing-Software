@@ -6,6 +6,7 @@ html {
 }
 
 @media (prefers-color-scheme: dark) {
+  input,
   body {
     color: #c9d1d9;
     font-family: 'Open Sans', sans-serif;
@@ -23,6 +24,7 @@ html {
 }
 
 @media (prefers-color-scheme: light) {
+  input,
   body {
     color: #444;
     font-family: 'Open Sans', sans-serif;
