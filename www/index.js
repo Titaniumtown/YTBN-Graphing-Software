@@ -122,8 +122,10 @@ function checkVariables() {
 function errorRecommend(error_string) {
     if (error_string.includes("Evaluation error: unknown variable ")) {
         return "This variable is not considered valid. Make sure you used a valid variable.";
+    } else if (error_string == "Factorials are unsupported") {
+        return "";
     } else {
-        return "Make sure you're using proper syntax! Check console log (f12) as well for more details.";
+        return "Make sure you're using proper syntax! Check console log (press F12) as well for more details.";
     }
 }
 
