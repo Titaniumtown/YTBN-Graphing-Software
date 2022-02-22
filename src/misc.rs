@@ -179,3 +179,26 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("x!".to_string()), "x!");
 }
+
+
+// Tests cache when initialized with value
+#[test]
+fn cache_test_full() {
+    let mut cache = Cache::new("data");
+    assert_eq!(cache.is_valid(), true);
+    cache.invalidate();
+    assert_eq!(cache.is_valid(), false);
+    cache.set("data2");
+    assert_eq!(cache.is_valid(), true);
+}
+
+// Tests cache when initialized without value
+#[test]
+fn cache_test_empty() {
+    let mut cache: Cache<&str> = Cache::new_empty();
+    assert_eq!(cache.is_valid(), false);
+    cache.invalidate();
+    assert_eq!(cache.is_valid(), false);
+    cache.set("data");
+    assert_eq!(cache.is_valid(), true);
+}
