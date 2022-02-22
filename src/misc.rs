@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use meval::Expr;
 
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -86,6 +87,36 @@ pub fn add_asterisks(function_in: String) -> String {
 
     output_string
 }
+
+pub struct Function {
+    function: Box<dyn Fn(f64) -> f64>,
+    func_str: String
+}
+
+impl Function {
+    pub fn from_string(func_str: String) -> Self {
+        let expr: Expr = func_str.parse().unwrap();
+        let func = expr.bind("x").unwrap();
+        Self {
+            function: Box::new(func),
+            func_str
+        }
+    }
+
+    #[inline]
+    pub fn run(&self, x: f32) -> f32 {
+        (self.function)(x as f64) as f32
+    }
+
+    pub fn str_compare(&self, other_string: String) -> bool {
+        self.func_str == other_string
+    }
+
+    pub fn get_string(&self) -> String {
+        self.func_str.clone()
+    }
+}
+
 
 /// Result of screen to chart coordinates conversion.
 #[wasm_bindgen]

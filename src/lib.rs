@@ -8,7 +8,7 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 mod misc;
-use crate::misc::{add_asterisks, Cache, ChartOutput, DrawResult};
+use crate::misc::{add_asterisks, Cache, ChartOutput, DrawResult, Function};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -24,7 +24,7 @@ extern "C" {
 // Manages Chart generation and caching of values
 #[wasm_bindgen]
 pub struct ChartManager {
-    func_str: String,
+    function: Function,
     min_x: f32,
     max_x: f32,
     min_y: f32,
@@ -42,7 +42,7 @@ impl ChartManager {
         resolution: usize,
     ) -> Self {
         Self {
-            func_str,
+            function: Function::from_string(func_str),
             min_x,
             max_x,
             min_y,
@@ -56,12 +56,6 @@ impl ChartManager {
 
     // Used in order to hook into `panic!()` to log in the browser's console
     pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
-
-    fn get_func(&self) -> impl Fn(f64) -> f64 {
-        let expr: Expr = self.func_str.parse().unwrap();
-        let func = expr.bind("x").unwrap();
-        func
-    }
 
     // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
     pub fn test_func(function_string: String) -> String {
@@ -97,8 +91,6 @@ impl ChartManager {
     fn draw(
         &mut self, element: HtmlCanvasElement, dark_mode: bool,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
-        let func = self.get_func();
-
         let backend = CanvasBackend::with_canvas_object(element).unwrap();
         let root = backend.into_drawing_area();
         let font: FontDesc = ("sans-serif", 20.0).into();
@@ -111,7 +103,7 @@ impl ChartManager {
 
         let mut chart = ChartBuilder::on(&root)
             .margin(20.0)
-            .caption(format!("y={}", self.func_str), font)
+            .caption(format!("y={}", self.function.get_string()), font)
             .x_label_area_size(30.0)
             .y_label_area_size(30.0)
             .build_cartesian_2d(self.min_x..self.max_x, self.min_y..self.max_y)?;
@@ -134,7 +126,7 @@ impl ChartManager {
                 log("Updating back_cache");
                 let output: Vec<(f32, f32)> = (1..=self.resolution)
                     .map(|x| ((x as f32 / self.resolution as f32) * absrange) + self.min_x)
-                    .map(|x| (x, func(x as f64) as f32))
+                    .map(|x| (x, self.function.run(x)))
                     .collect();
                 self.back_cache.set(output.clone());
                 output
@@ -153,7 +145,7 @@ impl ChartManager {
             false => {
                 log("Updating front_cache");
                 let step = absrange / (self.num_interval as f32);
-                let output: (Vec<(f32, f32, f32)>, f32) = self.integral_rectangles(step, &func);
+                let output: (Vec<(f32, f32, f32)>, f32) = self.integral_rectangles(step);
                 self.front_cache.set(output.clone());
                 output
             }
@@ -199,8 +191,9 @@ impl ChartManager {
         min_y: f32, max_y: f32, num_interval: usize, resolution: usize, dark_mode: bool,
     ) -> Result<ChartOutput, JsValue> {
         let func_str: String = add_asterisks(func_str_new);
+        let update_func: bool = !self.function.str_compare(func_str.clone());
 
-        let underlying_update = (func_str != self.func_str)
+        let underlying_update = update_func
             | (min_x != self.min_x)
             | (max_x != self.max_x)
             | (min_y != self.min_y)
@@ -214,7 +207,10 @@ impl ChartManager {
             self.front_cache.invalidate();
         }
 
-        self.func_str = func_str;
+        if update_func {
+            self.function = Function::from_string(func_str);
+        }
+
         self.min_x = min_x;
         self.max_x = max_x;
         self.min_y = min_y;
@@ -238,7 +234,7 @@ impl ChartManager {
     // Creates and does the math for creating all the rectangles under the graph
     #[inline]
     fn integral_rectangles(
-        &self, step: f32, func: &dyn Fn(f64) -> f64,
+        &self, step: f32
     ) -> (Vec<(f32, f32, f32)>, f32) {
         let data2: Vec<(f32, f32, f32)> = (0..self.num_interval)
             .map(|e| {
@@ -250,8 +246,8 @@ impl ChartManager {
                     false => x - step,
                 };
 
-                let tmp1: f32 = func(x as f64) as f32;
-                let tmp2: f32 = func(x2 as f64) as f32;
+                let tmp1: f32 = self.function.run(x);
+                let tmp2: f32 = self.function.run(x2);
 
                 // Chooses the y value who's absolute value is the smallest
                 let y: f32 = match tmp2.abs() > tmp1.abs() {
