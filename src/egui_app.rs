@@ -1,14 +1,17 @@
 use core::num;
 
-use eframe::{egui, epi};
-use egui::{plot::{HLine, Line, Plot, Value, Values, Text}, Pos2};
 use crate::chart_manager::ChartManager;
-use meval::Expr;
-use crate::misc::{add_asterisks, Cache, Function, digits_precision, test_func};
+use crate::misc::{add_asterisks, digits_precision, test_func, Cache, Function};
+use eframe::{egui, epi};
+use egui::widgets::plot::{Bar, BarChart};
+use egui::{
+    plot::{HLine, Line, Plot, Text, Value, Values},
+    Pos2,
+};
 use egui::{Color32, ColorImage, Ui};
 use emath::Rect;
-use epaint::{Rounding, RectShape, Stroke};
-use egui::widgets::plot::{Bar, BarChart};
+use epaint::{RectShape, Rounding, Stroke};
+use meval::Expr;
 
 pub struct MathApp {
     func_str: String,
@@ -27,24 +30,19 @@ impl Default for MathApp {
             max_x: 10.0,
             num_interval: 100,
             resolution: 10000,
-            chart_manager: ChartManager::new("x^2".to_string(), -10.0, 10.0, 100, 10000)
+            chart_manager: ChartManager::new("x^2".to_string(), -10.0, 10.0, 100, 10000),
         }
     }
 }
 
 impl epi::App for MathApp {
-    fn name(&self) -> &str {
-        "eframe template"
-    }
+    fn name(&self) -> &str { "eframe template" }
 
     /// Called once before the first frame.
     fn setup(
-        &mut self,
-        _ctx: &egui::Context,
-        _frame: &epi::Frame,
-        _storage: Option<&dyn epi::Storage>,
-    ) { }
-
+        &mut self, _ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>,
+    ) {
+    }
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
@@ -55,7 +53,7 @@ impl epi::App for MathApp {
             max_x,
             num_interval,
             resolution,
-            chart_manager
+            chart_manager,
         } = self;
 
         let mut parse_error: String = "".to_string();
@@ -83,13 +81,25 @@ impl epi::App for MathApp {
                 return;
             }
 
-            let (filtered_data, rect_data, area) = chart_manager.update(self.func_str.clone(), self.min_x, self.max_x, self.num_interval, self.resolution);
+            let (filtered_data, rect_data, area) = chart_manager.update(
+                self.func_str.clone(),
+                self.min_x,
+                self.max_x,
+                self.num_interval,
+                self.resolution,
+            );
 
-            let filtered_data_values = filtered_data.iter().map(|(x, y)| Value::new(*x, *y)).collect();
+            let filtered_data_values = filtered_data
+                .iter()
+                .map(|(x, y)| Value::new(*x, *y))
+                .collect();
 
             let curve = Line::new(Values::from_values(filtered_data_values)).color(Color32::RED);
 
-            let bars = rect_data.iter().map(|(_, x2, y)| Bar::new(*x2, *y)).collect();
+            let bars = rect_data
+                .iter()
+                .map(|(_, x2, y)| Bar::new(*x2, *y))
+                .collect();
             let barchart = BarChart::new(bars).color(Color32::BLUE);
 
             ui.label(format!("Area: {}", digits_precision(area, 8)));
@@ -101,8 +111,7 @@ impl epi::App for MathApp {
                     if self.num_interval > 0 {
                         plot_ui.bar_chart(barchart);
                     }
-            });
+                });
         });
-
     }
 }

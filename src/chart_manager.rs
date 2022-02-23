@@ -13,8 +13,7 @@ pub struct ChartManager {
 
 impl ChartManager {
     pub fn new(
-        func_str: String, min_x: f64, max_x: f64, num_interval: usize,
-        resolution: usize,
+        func_str: String, min_x: f64, max_x: f64, num_interval: usize, resolution: usize,
     ) -> Self {
         Self {
             function: Function::from_string(func_str),
@@ -28,9 +27,7 @@ impl ChartManager {
     }
 
     #[inline]
-    fn draw(
-        &mut self
-    ) -> (Vec<(f64, f64)>, Vec<(f64, f64, f64)>, f64) {
+    fn draw(&mut self) -> (Vec<(f64, f64)>, Vec<(f64, f64, f64)>, f64) {
         let absrange = (self.max_x - self.min_x).abs();
         let data: Vec<(f64, f64)> = match self.back_cache.is_valid() {
             true => self.back_cache.get().clone(),
@@ -44,10 +41,7 @@ impl ChartManager {
             }
         };
 
-        let filtered_data: Vec<(f64, f64)> = data
-            .iter()
-            .map(|(x, y)| (*x, *y))
-            .collect();
+        let filtered_data: Vec<(f64, f64)> = data.iter().map(|(x, y)| (*x, *y)).collect();
 
         let (rect_data, area): (Vec<(f64, f64, f64)>, f64) = match self.front_cache.is_valid() {
             true => self.front_cache.get().clone(),
@@ -64,14 +58,13 @@ impl ChartManager {
 
     #[allow(clippy::too_many_arguments)]
     pub fn update(
-        &mut self, func_str_new: String, min_x: f64, max_x: f64, num_interval: usize, resolution: usize,
+        &mut self, func_str_new: String, min_x: f64, max_x: f64, num_interval: usize,
+        resolution: usize,
     ) -> (Vec<(f64, f64)>, Vec<(f64, f64, f64)>, f64) {
         let func_str: String = add_asterisks(func_str_new);
         let update_func: bool = !self.function.str_compare(func_str.clone());
 
-        let underlying_update = update_func
-            | (min_x != self.min_x)
-            | (max_x != self.max_x);
+        let underlying_update = update_func | (min_x != self.min_x) | (max_x != self.max_x);
 
         if underlying_update | (self.resolution != resolution) {
             self.back_cache.invalidate();

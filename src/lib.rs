@@ -1,13 +1,13 @@
 #![allow(clippy::unused_unit)] // Fixes clippy keep complaining about wasm_bindgen
 #![allow(clippy::type_complexity)] // Clippy, my types are fine.
 
-mod misc;
-mod egui_app;
 mod chart_manager;
+mod egui_app;
+mod misc;
 use std::panic;
 
 #[cfg(target_arch = "wasm32")]
-use eframe::{epi, egui};
+use eframe::{egui, epi};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
