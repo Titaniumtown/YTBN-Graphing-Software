@@ -5,21 +5,20 @@ pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 // EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
 // One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
+// In the future I may want to completely rewrite this or implement this natively into mevel-rs (which would probably be good to do)
 pub fn add_asterisks(function_in: String) -> String {
-    let function = function_in.replace("log10(", "log("); // replace log10 with log
-    let valid_variables: Vec<char> = "xe".chars().collect();
+    let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
+    let valid_variables: Vec<char> = "xeπ".chars().collect();
     let letters: Vec<char> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         .chars()
         .collect();
     let numbers: Vec<char> = "0123456789".chars().collect();
     let function_chars: Vec<char> = function.chars().collect();
-    let func_chars_len = function_chars.len();
     let mut output_string: String = String::new();
     let mut prev_chars: Vec<char> = Vec::new();
-    for c in function_chars.clone() {
+    for c in function_chars {
         let mut add_asterisk: bool = false;
         let prev_chars_len = prev_chars.len();
-        let curr_i: usize = func_chars_len - prev_chars_len;
 
         let prev_prev_char = if prev_chars_len >= 2 {
             match prev_chars.get(prev_chars_len - 2) {
@@ -39,41 +38,32 @@ pub fn add_asterisks(function_in: String) -> String {
             ' '
         };
 
-        let for_char = match function_chars.get(curr_i) {
-            Some(x) => *x,
-            None => ' ',
-        };
-
-        let prev_pi = (prev_prev_char == 'p') && (prev_char == 'i');
-        let for_pi = (for_char == 'i') && (c == 'p');
+        let c_letters_var = letters.contains(&c) | valid_variables.contains(&c);
+        let prev_letters_var = valid_variables.contains(&prev_char) | letters.contains(&prev_char);
 
         if prev_char == ')' {
-            if (c == '(') | numbers.contains(&c) | letters.contains(&c) {
+            if (c == '(') | numbers.contains(&c) | c_letters_var {
                 add_asterisk = true;
             }
         } else if c == '(' {
             if (valid_variables.contains(&prev_char)
-                | (prev_char == ')')
+                | (')' == prev_char)
                 | numbers.contains(&prev_char))
                 && !letters.contains(&prev_prev_char)
             {
                 add_asterisk = true;
-            } else if prev_pi {
-                add_asterisk = true;
             }
         } else if numbers.contains(&prev_char) {
-            if (c == '(') | letters.contains(&c) | for_pi {
+            if (c == '(') | c_letters_var {
                 add_asterisk = true;
             }
         } else if letters.contains(&c) {
             if numbers.contains(&prev_char) {
                 add_asterisk = true;
-            } else if (valid_variables.contains(&prev_char) && valid_variables.contains(&c))
-                | prev_pi
-            {
+            } else if valid_variables.contains(&prev_char) && valid_variables.contains(&c) {
                 add_asterisk = true;
             }
-        } else if numbers.contains(&c) && letters.contains(&prev_char) | prev_pi {
+        } else if (numbers.contains(&c) | c_letters_var) && prev_letters_var {
             add_asterisk = true;
         }
 
@@ -85,7 +75,7 @@ pub fn add_asterisks(function_in: String) -> String {
         output_string += &c.to_string();
     }
 
-    output_string
+    output_string.replace('π', "pi") // π -> pi
 }
 
 pub struct Function {
@@ -202,6 +192,16 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("2log10(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("x!".to_string()), "x!");
+    assert_eq!(
+        &add_asterisks("pipipipipipi".to_string()),
+        "pi*pi*pi*pi*pi*pi"
+    );
+    assert_eq!(&add_asterisks("10pi".to_string()), "10*pi");
+    assert_eq!(&add_asterisks("pi10".to_string()), "pi*10");
+
+    // Need to fix these checks, maybe I need to rewrite the whole asterisk adding system... (or just implement these changes into meval-rs, idk)
+    // assert_eq!(&add_asterisks("emax(x)".to_string()), "e*max(x)");
+    // assert_eq!(&add_asterisks("pisin(x)".to_string()), "pi*sin(x)");
 }
 
 // Tests cache when initialized with value
