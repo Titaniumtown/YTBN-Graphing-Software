@@ -208,11 +208,11 @@ fn asterisk_test() {
 #[test]
 fn cache_test_full() {
     let mut cache = Cache::new("data");
-    assert_eq!(cache.is_valid(), true);
+    assert!(cache.is_valid());
     cache.invalidate();
     assert_eq!(cache.is_valid(), false);
     cache.set("data2");
-    assert_eq!(cache.is_valid(), true);
+    assert!(cache.is_valid());
 }
 
 // Tests cache when initialized without value
@@ -223,5 +223,5 @@ fn cache_test_empty() {
     cache.invalidate();
     assert_eq!(cache.is_valid(), false);
     cache.set("data");
-    assert_eq!(cache.is_valid(), true);
+    assert!(cache.is_valid());
 }
