@@ -3,9 +3,11 @@ use wasm_bindgen::prelude::*;
 
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
-// One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
-// In the future I may want to completely rewrite this or implement this natively into mevel-rs (which would probably be good to do)
+/*
+EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
+One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
+In the future I may want to completely rewrite this or implement this natively into mevel-rs (which would probably be good to do)
+*/
 pub fn add_asterisks(function_in: String) -> String {
     let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
     let valid_variables: Vec<char> = "xeπ".chars().collect();
