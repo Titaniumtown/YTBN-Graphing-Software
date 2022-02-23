@@ -6,7 +6,7 @@ use egui::{
     plot::{Line, Plot, Value, Values},
 };
 use egui::{Color32};
-
+use std::time::Instant;
 
 pub struct MathApp {
     func_str: String,
@@ -50,6 +50,7 @@ impl epi::App for MathApp {
             resolution: _,
             chart_manager,
         } = self;
+        let start = Instant::now();
 
         let min_x_total: f32 = -1000.0;
         let max_x_total: f32 = 1000.0;
@@ -116,17 +117,17 @@ impl epi::App for MathApp {
                 .map(|(x, y)| Bar::new(*x, *y))
                 .collect();
             let barchart = BarChart::new(bars).color(Color32::BLUE);
-
-            ui.label(format!("Area: {}", digits_precision(area, 8)));
             Plot::new("plot")
                 .view_aspect(1.0)
                 .include_y(0)
                 .show(ui, |plot_ui| {
                     plot_ui.line(curve);
-                    if self.num_interval > 0 {
-                        plot_ui.bar_chart(barchart);
-                    }
+                    plot_ui.bar_chart(barchart);
                 });
+
+            let duration = start.elapsed();
+
+            ui.label(format!("Area: {} Took: {:?}", digits_precision(area, 8), duration));
         });
     }
 }
