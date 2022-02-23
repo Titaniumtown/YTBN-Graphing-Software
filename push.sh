@@ -12,7 +12,7 @@ cp www/bootstrap.js www/index.html www/index.js www/style.css tmp/
 sed -i 's/\.\.\/pkg/\.\/pkg/g' tmp/bootstrap.js
 
 # put the commit at the beginning of index.html
-sed -i '1i <!-- Commit: $(git rev-parse HEAD) -->' tmp/index.html
+sed -i "1i <!-- Commit: $(git rev-parse HEAD) -->" tmp/index.html
 
 echo "rsyncing"
 rsync -av --delete --info=progress2 tmp/ rpi-public:/mnt/hdd/http_share/integral-demo/
