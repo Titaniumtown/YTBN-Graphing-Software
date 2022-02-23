@@ -6,10 +6,9 @@ wasm-pack build --target web --release
 rm -fr tmp | true #delete tmp folder if exists
 mkdir tmp tmp/pkg
 cp -r pkg/integral_site_bg.wasm pkg/integral_site_bg.wasm.d.ts pkg/integral_site.d.ts pkg/integral_site.js tmp/pkg/
-cp www/bootstrap.js www/index.html www/index.js www/style.css tmp/
-# mv tmp/www/index.html tmp/
+cp www/index.html www/style.css tmp/
 
-sed -i 's/\.\.\/pkg/\.\/pkg/g' tmp/bootstrap.js
+sed -i 's/\.\.\/pkg/\.\/pkg/g' tmp/index.html
 
 # put the commit at the beginning of index.html
 mv tmp/index.html tmp/index.html.bak
