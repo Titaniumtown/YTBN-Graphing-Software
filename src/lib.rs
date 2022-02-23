@@ -105,6 +105,7 @@ impl ChartManager {
     fn draw(
         &mut self, element: HtmlCanvasElement, dark_mode: bool,
     ) -> DrawResult<(impl Fn((i32, i32)) -> Option<(f32, f32)>, f32)> {
+        log("Drawing...");
         let backend = CanvasBackend::with_canvas_object(element).unwrap();
         let root = backend.into_drawing_area();
         let font: FontDesc = ("sans-serif", 20.0).into();
@@ -196,6 +197,7 @@ impl ChartManager {
         }
 
         root.present()?;
+        log("Finished Drawing!");
         Ok((chart.into_coord_trans(), area))
     }
 
