@@ -1,8 +1,10 @@
+use core::num;
+
 use eframe::{egui, epi};
 use egui::{plot::{HLine, Line, Plot, Value, Values, Text}, Pos2};
 use crate::chart_manager::ChartManager;
 use meval::Expr;
-use crate::misc::{add_asterisks, Cache, Function};
+use crate::misc::{add_asterisks, Cache, Function, digits_precision, test_func};
 use egui::{Color32, ColorImage, Ui};
 use emath::Rect;
 use epaint::{Rounding, RectShape, Stroke};
@@ -56,6 +58,7 @@ impl epi::App for MathApp {
             chart_manager
         } = self;
 
+        let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Side Panel");
 
@@ -63,6 +66,10 @@ impl epi::App for MathApp {
                 ui.label("Function: ");
                 ui.text_edit_singleline(func_str);
             });
+            let func_test_output = test_func(func_str.clone());
+            if func_test_output != "" {
+                parse_error = func_test_output;
+            }
 
             ui.add(egui::Slider::new(min_x, -1000.0..=1000.0).text("Min X"));
             ui.add(egui::Slider::new(max_x, *min_x..=1000.0).text("Max X"));
@@ -71,22 +78,29 @@ impl epi::App for MathApp {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            if parse_error != "" {
+                ui.label(format!("Error: {}", parse_error));
+                return;
+            }
+
             let (filtered_data, rect_data, area) = chart_manager.update(self.func_str.clone(), self.min_x, self.max_x, self.num_interval, self.resolution);
 
             let filtered_data_values = filtered_data.iter().map(|(x, y)| Value::new(*x, *y)).collect();
 
             let curve = Line::new(Values::from_values(filtered_data_values)).color(Color32::RED);
+
             let bars = rect_data.iter().map(|(_, x2, y)| Bar::new(*x2, *y)).collect();
             let barchart = BarChart::new(bars).color(Color32::BLUE);
-            
-            // ui.label("Graph:");
-            ui.label(format!("Area: {:.10}", area));
+
+            ui.label(format!("Area: {}", digits_precision(area, 8)));
             Plot::new("plot")
                 .view_aspect(1.0)
                 .include_y(0)
                 .show(ui, |plot_ui| {
                     plot_ui.line(curve);
-                    plot_ui.bar_chart(barchart);
+                    if self.num_interval > 0 {
+                        plot_ui.bar_chart(barchart);
+                    }
             });
         });
 

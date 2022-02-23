@@ -107,6 +107,12 @@ pub fn test_func(function_string: String) -> String {
     "".to_string()
 }
 
+// Rounds f64 to specific number of digits
+pub fn digits_precision(x: f64, digits: usize) -> f64 {
+    let large_number: f64 = (10.0 as f64).powf(digits as f64);
+    (x * large_number).round() / large_number
+}
+
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
     func_str: String,

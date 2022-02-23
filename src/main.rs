@@ -1,8 +1,10 @@
-use eframe::{epi, egui};
 mod egui_app;
+
+// These 2 are needed for rust-analyzer to work in vscode.
 mod misc;
 mod chart_manager;
 
+// For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let app = egui_app::MathApp::default();
