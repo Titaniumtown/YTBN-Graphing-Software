@@ -1,5 +1,5 @@
-use wasm_bindgen::prelude::*;
 use meval::Expr;
+use wasm_bindgen::prelude::*;
 
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -90,7 +90,7 @@ pub fn add_asterisks(function_in: String) -> String {
 
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
-    func_str: String
+    func_str: String,
 }
 
 impl Function {
@@ -99,24 +99,17 @@ impl Function {
         let func = expr.bind("x").unwrap();
         Self {
             function: Box::new(func),
-            func_str
+            func_str,
         }
     }
 
     #[inline]
-    pub fn run(&self, x: f32) -> f32 {
-        (self.function)(x as f64) as f32
-    }
+    pub fn run(&self, x: f32) -> f32 { (self.function)(x as f64) as f32 }
 
-    pub fn str_compare(&self, other_string: String) -> bool {
-        self.func_str == other_string
-    }
+    pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
 
-    pub fn get_string(&self) -> String {
-        self.func_str.clone()
-    }
+    pub fn get_string(&self) -> String { self.func_str.clone() }
 }
-
 
 /// Result of screen to chart coordinates conversion.
 #[wasm_bindgen]
@@ -210,7 +203,6 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("x!".to_string()), "x!");
 }
-
 
 // Tests cache when initialized with value
 #[test]

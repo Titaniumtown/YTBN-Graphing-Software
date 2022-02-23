@@ -233,9 +233,7 @@ impl ChartManager {
 
     // Creates and does the math for creating all the rectangles under the graph
     #[inline]
-    fn integral_rectangles(
-        &self, step: f32
-    ) -> (Vec<(f32, f32, f32)>, f32) {
+    fn integral_rectangles(&self, step: f32) -> (Vec<(f32, f32, f32)>, f32) {
         let data2: Vec<(f32, f32, f32)> = (0..self.num_interval)
             .map(|e| {
                 let x: f32 = ((e as f32) * step) + self.min_x;
