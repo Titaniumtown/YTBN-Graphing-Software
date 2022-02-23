@@ -1,7 +1,4 @@
 use meval::Expr;
-use wasm_bindgen::prelude::*;
-
-pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 /*
 EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
@@ -80,6 +77,36 @@ pub fn add_asterisks(function_in: String) -> String {
     output_string.replace('π', "pi") // π -> pi
 }
 
+// Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
+pub fn test_func(function_string: String) -> String {
+    // Factorials do not work, and it would be really difficult to make them work
+    if function_string.contains('!') {
+        return "Factorials are unsupported".to_string();
+    }
+
+    let new_func_str: String = add_asterisks(function_string);
+    let expr_result = new_func_str.parse();
+    let expr_error = match &expr_result {
+        Ok(_) => "".to_string(),
+        Err(error) => format!("{}", error),
+    };
+    if !expr_error.is_empty() {
+        return expr_error;
+    }
+
+    let expr: Expr = expr_result.unwrap();
+    let func_result = expr.bind("x");
+    let func_error = match &func_result {
+        Ok(_) => "".to_string(),
+        Err(error) => format!("{}", error),
+    };
+    if !func_error.is_empty() {
+        return func_error;
+    }
+
+    "".to_string()
+}
+
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
     func_str: String,
@@ -96,39 +123,11 @@ impl Function {
     }
 
     #[inline]
-    pub fn run(&self, x: f32) -> f32 { (self.function)(x as f64) as f32 }
+    pub fn run(&self, x: f64) -> f64 { (self.function)(x) }
 
     pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
 
     pub fn get_string(&self) -> String { self.func_str.clone() }
-}
-
-/// Result of screen to chart coordinates conversion.
-#[wasm_bindgen]
-pub struct Point {
-    pub x: f32,
-    pub y: f32,
-}
-
-#[wasm_bindgen]
-impl Point {
-    #[inline]
-    pub fn new(x: f32, y: f32) -> Self { Self { x, y } }
-}
-
-#[wasm_bindgen]
-pub struct ChartOutput {
-    pub(crate) convert: Box<dyn Fn((i32, i32)) -> Option<(f32, f32)>>,
-    pub(crate) area: f32,
-}
-
-#[wasm_bindgen]
-impl ChartOutput {
-    pub fn get_area(&self) -> f32 { self.area }
-
-    pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
-        (self.convert)((x, y)).map(|(x, y)| Point::new(x, y))
-    }
 }
 
 pub struct Cache<T> {

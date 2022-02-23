@@ -11,8 +11,6 @@ then
 	cargo install wasm-pack
 fi
 
-wasm-pack build --release
+wasm-pack build --release --target web
 
-cd www
-npm install
-npm start
+basic-http-server
