@@ -1,17 +1,16 @@
-use core::num;
+
 
 use crate::chart_manager::ChartManager;
-use crate::misc::{add_asterisks, digits_precision, test_func, Cache, Function};
+use crate::misc::{digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::widgets::plot::{Bar, BarChart};
 use egui::{
-    plot::{HLine, Line, Plot, Text, Value, Values},
-    Pos2,
+    plot::{Line, Plot, Value, Values},
 };
-use egui::{Color32, ColorImage, Ui};
-use emath::Rect;
-use epaint::{RectShape, Rounding, Stroke};
-use meval::Expr;
+use egui::{Color32};
+
+
+
 
 pub struct MathApp {
     func_str: String,
@@ -46,13 +45,13 @@ impl epi::App for MathApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
         let Self {
             func_str,
             min_x,
             max_x,
             num_interval,
-            resolution,
+            resolution: _,
             chart_manager,
         } = self;
 
@@ -65,7 +64,7 @@ impl epi::App for MathApp {
                 ui.text_edit_singleline(func_str);
             });
             let func_test_output = test_func(func_str.clone());
-            if func_test_output != "" {
+            if !func_test_output.is_empty() {
                 parse_error = func_test_output;
             }
 
@@ -76,7 +75,7 @@ impl epi::App for MathApp {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            if parse_error != "" {
+            if !parse_error.is_empty() {
                 ui.label(format!("Error: {}", parse_error));
                 return;
             }

@@ -4,7 +4,7 @@
 mod chart_manager;
 mod egui_app;
 mod misc;
-use std::panic;
+
 
 #[cfg(target_arch = "wasm32")]
 use eframe::{egui, epi};
