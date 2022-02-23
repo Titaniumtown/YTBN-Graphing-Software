@@ -21,6 +21,23 @@ extern "C" {
     fn log(s: &str);
 }
 
+#[wasm_bindgen(start)]
+pub fn init() {
+    log("Initializing...");
+
+    // See performance in browser profiler!
+    log("Initializing tracing_wasm...");
+    tracing_wasm::set_as_global_default();
+    log("Initialized tracing_wasm!");
+
+    // Used in order to hook into `panic!()` to log in the browser's console
+    log("Initializing console_error_panic_hook...");
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
+    log("Initialized console_error_panic_hook!");
+
+    log("Finished initializing!");
+}
+
 // Manages Chart generation and caching of values
 #[wasm_bindgen]
 pub struct ChartManager {
@@ -53,9 +70,6 @@ impl ChartManager {
             front_cache: Cache::new_empty(),
         }
     }
-
-    // Used in order to hook into `panic!()` to log in the browser's console
-    pub fn init_panic_hook() { panic::set_hook(Box::new(console_error_panic_hook::hook)); }
 
     // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
     pub fn test_func(function_string: String) -> String {
