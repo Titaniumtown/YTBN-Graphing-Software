@@ -8,7 +8,7 @@ pub struct ChartManager {
     num_interval: usize,
     resolution: usize,
     back_cache: Cache<Vec<(f64, f64)>>,
-    front_cache: Cache<(Vec<(f64, f64, f64)>, f64)>,
+    front_cache: Cache<(Vec<(f64, f64)>, f64)>,
 }
 
 impl ChartManager {
@@ -27,7 +27,7 @@ impl ChartManager {
     }
 
     #[inline]
-    fn draw(&mut self) -> (Vec<(f64, f64)>, Vec<(f64, f64, f64)>, f64) {
+    fn draw(&mut self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>, f64) {
         let absrange = (self.max_x - self.min_x).abs();
         let data: Vec<(f64, f64)> = match self.back_cache.is_valid() {
             true => self.back_cache.get().clone(),
@@ -43,11 +43,11 @@ impl ChartManager {
 
         let filtered_data: Vec<(f64, f64)> = data.iter().map(|(x, y)| (*x, *y)).collect();
 
-        let (rect_data, area): (Vec<(f64, f64, f64)>, f64) = match self.front_cache.is_valid() {
+        let (rect_data, area): (Vec<(f64, f64)>, f64) = match self.front_cache.is_valid() {
             true => self.front_cache.get().clone(),
             false => {
                 let step = absrange / (self.num_interval as f64);
-                let output: (Vec<(f64, f64, f64)>, f64) = self.integral_rectangles(step);
+                let output: (Vec<(f64, f64)>, f64) = self.integral_rectangles(step);
                 self.front_cache.set(output.clone());
                 output
             }
@@ -60,7 +60,7 @@ impl ChartManager {
     pub fn update(
         &mut self, func_str_new: String, min_x: f64, max_x: f64, num_interval: usize,
         resolution: usize,
-    ) -> (Vec<(f64, f64)>, Vec<(f64, f64, f64)>, f64) {
+    ) -> (Vec<(f64, f64)>, Vec<(f64, f64)>, f64) {
         let func_str: String = add_asterisks(func_str_new);
         let update_func: bool = !self.function.str_compare(func_str.clone());
 
@@ -88,8 +88,8 @@ impl ChartManager {
 
     // Creates and does the math for creating all the rectangles under the graph
     #[inline]
-    fn integral_rectangles(&self, step: f64) -> (Vec<(f64, f64, f64)>, f64) {
-        let data2: Vec<(f64, f64, f64)> = (0..self.num_interval)
+    fn integral_rectangles(&self, step: f64) -> (Vec<(f64, f64)>, f64) {
+        let data2: Vec<(f64, f64)> = (0..self.num_interval)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.min_x;
 
@@ -103,16 +103,16 @@ impl ChartManager {
                 let tmp2: f64 = self.function.run(x2);
 
                 // Chooses the y value who's absolute value is the smallest
-                let y: f64 = match tmp2.abs() > tmp1.abs() {
-                    true => tmp1,
-                    false => tmp2,
+                let output = match tmp2.abs() > tmp1.abs() {
+                    true => (x2, tmp1),
+                    false => (x, tmp2),
                 };
 
-                (x, x2, y)
+                output
             })
-            .filter(|(_, _, y)| !y.is_nan())
+            .filter(|(_, y)| !y.is_nan())
             .collect();
-        let area: f64 = data2.iter().map(|(_, _, y)| y * step).sum(); // sum of all rectangles' areas
+        let area: f64 = data2.iter().map(|(_, y)| y * step).sum(); // sum of all rectangles' areas
         (data2, area)
     }
 }

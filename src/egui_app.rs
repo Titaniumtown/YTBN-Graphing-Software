@@ -71,7 +71,7 @@ impl epi::App for MathApp {
             ui.add(egui::Slider::new(min_x, -1000.0..=1000.0).text("Min X"));
             ui.add(egui::Slider::new(max_x, *min_x..=1000.0).text("Max X"));
 
-            ui.add(egui::Slider::new(num_interval, 0..=usize::MAX).text("Interval"));
+            ui.add(egui::Slider::new(num_interval, 1..=usize::MAX).text("Interval"));
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -97,7 +97,7 @@ impl epi::App for MathApp {
 
             let bars = rect_data
                 .iter()
-                .map(|(_, x2, y)| Bar::new(*x2, *y))
+                .map(|(x, y)| Bar::new(*x, *y))
                 .collect();
             let barchart = BarChart::new(bars).color(Color32::BLUE);
 
