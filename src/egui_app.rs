@@ -1,5 +1,3 @@
-
-
 use crate::chart_manager::ChartManager;
 use crate::misc::{digits_precision, test_func};
 use eframe::{egui, epi};
@@ -8,8 +6,6 @@ use egui::{
     plot::{Line, Plot, Value, Values},
 };
 use egui::{Color32};
-
-
 
 
 pub struct MathApp {
@@ -35,7 +31,7 @@ impl Default for MathApp {
 }
 
 impl epi::App for MathApp {
-    fn name(&self) -> &str { "eframe template" }
+    fn name(&self) -> &str { "Integral Demo" }
 
     /// Called once before the first frame.
     fn setup(
@@ -55,6 +51,9 @@ impl epi::App for MathApp {
             chart_manager,
         } = self;
 
+        let min_x_total: f32 = -1000.0;
+        let max_x_total: f32 = 1000.0;
+
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Side Panel");
@@ -68,8 +67,25 @@ impl epi::App for MathApp {
                 parse_error = func_test_output;
             }
 
-            ui.add(egui::Slider::new(min_x, -1000.0..=1000.0).text("Min X"));
-            ui.add(egui::Slider::new(max_x, *min_x..=1000.0).text("Max X"));
+            let x_range = min_x_total as f64..=max_x_total as f64;
+            let min_x_old = min_x.clone();
+            let min_x_response = ui.add(egui::Slider::new(min_x, x_range.clone()).text("Min X"));
+
+            let max_x_old = max_x.clone();
+            let max_x_response =  ui.add(egui::Slider::new(max_x, x_range).text("Max X"));
+
+            if min_x >= max_x {
+                if max_x_response.changed() {
+                    *max_x = max_x_old;
+                } else if min_x_response.changed() {
+                    *min_x = min_x_old;
+                } else {
+                    *min_x = -10.0;
+                    *max_x = 10.0;
+                }
+            }
+
+
 
             ui.add(egui::Slider::new(num_interval, 1..=usize::MAX).text("Interval"));
         });
