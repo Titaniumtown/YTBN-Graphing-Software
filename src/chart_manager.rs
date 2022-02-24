@@ -64,8 +64,6 @@ impl ChartManager {
         let func_str: String = add_asterisks(func_str_new);
         let update_func: bool = !self.function.str_compare(func_str);
 
-        
-
         update_func | (min_x != self.min_x) | (max_x != self.max_x)
     }
 
