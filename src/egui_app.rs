@@ -13,7 +13,7 @@ pub struct MathApp {
     resolution: usize,
     chart_manager: ChartManager,
     back_cache: Cache<Vec<Value>>,
-    front_cache: Cache<(Vec<Bar>, f64)>
+    front_cache: Cache<(Vec<Bar>, f64)>,
 }
 
 impl Default for MathApp {
@@ -54,7 +54,7 @@ impl MathApp {
         } else {
             let (data, area) = self.chart_manager.draw_front();
             let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
-    
+
             let output = (bars, area);
             self.front_cache.set(output.clone());
             output
@@ -67,7 +67,6 @@ impl MathApp {
         (self.get_back(), bars, area)
     }
 }
-
 
 impl epi::App for MathApp {
     fn name(&self) -> &str { "Integral Demonstration" }
@@ -138,19 +137,14 @@ impl epi::App for MathApp {
             );
         });
 
-        let do_update = chart_manager.update(
-            func_str.clone(),
-            *min_x,
-            *max_x,
-            *num_interval,
-            *resolution,
-        );
+        let do_update =
+            chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
 
         match do_update {
             UpdateType::FULL => {
                 back_cache.invalidate();
                 front_cache.invalidate();
-            },
+            }
             UpdateType::BACK => back_cache.invalidate(),
             UpdateType::FRONT => front_cache.invalidate(),
             _ => {}

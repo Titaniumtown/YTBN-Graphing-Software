@@ -1,6 +1,5 @@
 use crate::misc::{add_asterisks, Function};
 
-
 pub enum UpdateType {
     FULL,
     FRONT,
@@ -34,9 +33,9 @@ impl ChartManager {
     pub fn draw_back(&mut self) -> Vec<(f64, f64)> {
         let absrange = (self.max_x - self.min_x).abs();
         let output: Vec<(f64, f64)> = (1..=self.resolution)
-                    .map(|x| ((x as f64 / self.resolution as f64) * absrange) + self.min_x)
-                    .map(|x| (x, self.function.run(x)))
-                    .collect();
+            .map(|x| ((x as f64 / self.resolution as f64) * absrange) + self.min_x)
+            .map(|x| (x, self.function.run(x)))
+            .collect();
         output
     }
 
@@ -57,7 +56,8 @@ impl ChartManager {
         let update_func: bool = !self.function.str_compare(func_str.clone());
 
         let update_back = update_func | (min_x != self.min_x) | (max_x != self.max_x);
-        let update_front = update_back | (self.resolution != resolution) | (num_interval != self.num_interval);
+        let update_front =
+            update_back | (self.resolution != resolution) | (num_interval != self.num_interval);
 
         if update_func {
             self.function = Function::from_string(func_str);
