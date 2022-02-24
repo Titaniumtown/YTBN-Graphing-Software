@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e #kill script if error occurs
 
-wasm-pack build --target web --release --no-typescript
+bash build.sh
 
 rm -fr tmp | true #delete tmp folder if exists
 mkdir tmp tmp/pkg

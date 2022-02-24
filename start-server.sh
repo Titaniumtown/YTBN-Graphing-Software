@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-CONFIG=release
-mkdir -p www/pkg
+bash build.sh
 
 rustup target add wasm32-unknown-unknown
 
