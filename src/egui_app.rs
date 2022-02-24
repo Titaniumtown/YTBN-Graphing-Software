@@ -30,7 +30,7 @@ impl Default for MathApp {
 }
 
 impl epi::App for MathApp {
-    fn name(&self) -> &str { "Integral Demo" }
+    fn name(&self) -> &str { "Integral Demonstration" }
 
     /// Called once before the first frame.
     fn setup(
