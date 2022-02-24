@@ -91,7 +91,7 @@ impl epi::App for MathApp {
 
             ui.add(egui::Slider::new(num_interval, 10..=usize::MAX).text("Interval"));
 
-            ui.hyperlink_to("Supported Expressions", "https://github.com/Titaniumtown/meval-rs#supported-expressions");
+            // ui.hyperlink_to("Supported Expressions", "https://github.com/Titaniumtown/meval-rs#supported-expressions");
             ui.hyperlink_to("I'm Opensource! (and licensed under AGPLv3)", "https://github.com/Titaniumtown/integral_site");
         });
 
@@ -157,6 +157,17 @@ impl epi::App for MathApp {
                 digits_precision(area, 8),
                 duration
             ));
+        });
+
+        // Cute little window that lists supported function!
+        // TODO: add more detail
+        egui::Window::new("Supported Functions").show(ctx, |ui| {
+            ui.label("- sqrt, abs");
+            ui.label("- exp, ln, log10 (log10 can also be called as log)");
+            ui.label("- sin, cos, tan, asin, acos, atan, atan2");
+            ui.label("- sinh, cosh, tanh, asinh, acosh, atanh");
+            ui.label("- floor, ceil, round");
+            ui.label("- signum, min, max");
         });
     }
 }
