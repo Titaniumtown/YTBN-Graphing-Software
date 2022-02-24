@@ -1,4 +1,4 @@
-use crate::chart_manager::ChartManager;
+use crate::chart_manager::{ChartManager, UpdateType};
 use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Value, Values};
@@ -12,7 +12,8 @@ pub struct MathApp {
     num_interval: usize,
     resolution: usize,
     chart_manager: ChartManager,
-    bar_cache: Cache<Vec<Bar>>,
+    back_cache: Cache<Vec<Value>>,
+    front_cache: Cache<(Vec<Bar>, f64)>
 }
 
 impl Default for MathApp {
@@ -24,10 +25,49 @@ impl Default for MathApp {
             num_interval: 100,
             resolution: 10000,
             chart_manager: ChartManager::new("x^2".to_string(), -10.0, 10.0, 100, 10000),
-            bar_cache: Cache::new_empty(),
+            back_cache: Cache::new_empty(),
+            front_cache: Cache::new_empty(),
         }
     }
 }
+
+impl MathApp {
+    #[inline]
+    fn get_back(&mut self) -> Line {
+        let data = if self.back_cache.is_valid() {
+            self.back_cache.get().clone()
+        } else {
+            let data = self.chart_manager.draw_back();
+            let data_values: Vec<Value> = data.iter().map(|(x, y)| Value::new(*x, *y)).collect();
+            self.back_cache.set(data_values.clone());
+            data_values
+        };
+        Line::new(Values::from_values(data)).color(Color32::RED)
+    }
+
+    #[inline]
+    fn get_front(&mut self) -> (Vec<Bar>, f64) {
+        if self.front_cache.is_valid() {
+            let cache = self.front_cache.get();
+            let vec_bars: Vec<Bar> = cache.0.to_vec();
+            (vec_bars, cache.1)
+        } else {
+            let (data, area) = self.chart_manager.draw_front();
+            let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
+    
+            let output = (bars, area);
+            self.front_cache.set(output.clone());
+            output
+        }
+    }
+
+    #[inline]
+    fn get_data(&mut self) -> (Line, Vec<Bar>, f64) {
+        let (bars, area) = self.get_front();
+        (self.get_back(), bars, area)
+    }
+}
+
 
 impl epi::App for MathApp {
     fn name(&self) -> &str { "Integral Demonstration" }
@@ -48,7 +88,8 @@ impl epi::App for MathApp {
             num_interval,
             resolution,
             chart_manager,
-            bar_cache,
+            back_cache,
+            front_cache,
         } = self;
 
         // Note: This Instant implementation does not show microseconds when using wasm.
@@ -97,8 +138,23 @@ impl epi::App for MathApp {
             );
         });
 
-        // let update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
-        let update_front = chart_manager.do_update_front(*num_interval, *resolution);
+        let do_update = chart_manager.update(
+            func_str.clone(),
+            *min_x,
+            *max_x,
+            *num_interval,
+            *resolution,
+        );
+
+        match do_update {
+            UpdateType::FULL => {
+                back_cache.invalidate();
+                front_cache.invalidate();
+            },
+            UpdateType::BACK => back_cache.invalidate(),
+            UpdateType::FRONT => front_cache.invalidate(),
+            _ => {}
+        }
 
         egui::CentralPanel::default().show(ctx, |ui| {
             if !parse_error.is_empty() {
@@ -106,43 +162,11 @@ impl epi::App for MathApp {
                 return;
             }
 
-            let (filtered_data, rect_data, area) = chart_manager.update(
-                self.func_str.clone(),
-                *min_x,
-                *max_x,
-                *num_interval,
-                *resolution,
-            );
+            let (curve, bars, area) = self.get_data();
 
-            let filtered_data_values = filtered_data
-                .iter()
-                .map(|(x, y)| Value::new(*x, *y))
-                .collect();
-
-            let curve = Line::new(Values::from_values(filtered_data_values)).color(Color32::RED);
-
-            let bars: Vec<Bar> = match update_front {
-                true => {
-                    let bars: Vec<Bar> = rect_data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
-
-                    bar_cache.set(bars.clone());
-                    bars
-                }
-                false => {
-                    if bar_cache.is_valid() {
-                        bar_cache.get().clone()
-                    } else {
-                        let bars: Vec<Bar> =
-                            rect_data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
-
-                        bar_cache.set(bars.clone());
-                        bars
-                    }
-                }
-            };
             let bar_chart = BarChart::new(bars)
                 .color(Color32::BLUE)
-                .width(chart_manager.get_step());
+                .width(self.chart_manager.get_step());
 
             Plot::new("plot")
                 .view_aspect(1.0)
