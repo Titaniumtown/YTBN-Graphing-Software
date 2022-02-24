@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e #kill script if error occurs
 
-wasm-pack build --target web --release
+wasm-pack build --target web --release --no-typescript
 
 rm -fr tmp | true #delete tmp folder if exists
 mkdir tmp tmp/pkg
-cp -r pkg/integral_site_bg.wasm pkg/integral_site_bg.wasm.d.ts pkg/integral_site.d.ts pkg/integral_site.js tmp/pkg/
+cp -r pkg/integral_site_bg.wasm pkg/integral_site.js tmp/pkg/
 cp www/index.html www/style.css tmp/
 
 sed -i 's/\.\.\/pkg/\.\/pkg/g' tmp/index.html

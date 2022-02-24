@@ -11,6 +11,6 @@ then
 	cargo install wasm-pack
 fi
 
-wasm-pack build --release --target web
+wasm-pack build --release --target web --no-typescript
 
 basic-http-server
