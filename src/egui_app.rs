@@ -91,11 +91,13 @@ impl epi::App for MathApp {
 
             ui.add(egui::Slider::new(num_interval, 10..=usize::MAX).text("Interval"));
 
-            // ui.hyperlink_to("Supported Expressions", "https://github.com/Titaniumtown/meval-rs#supported-expressions");
-            ui.hyperlink_to("I'm Opensource! (and licensed under AGPLv3)", "https://github.com/Titaniumtown/integral_site");
+            ui.hyperlink_to(
+                "I'm Opensource! (and licensed under AGPLv3)",
+                "https://github.com/Titaniumtown/integral_site",
+            );
         });
 
-        let _update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
+        // let update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
         let update_front = chart_manager.do_update_front(*num_interval, *resolution);
 
         egui::CentralPanel::default().show(ctx, |ui| {
