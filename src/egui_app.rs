@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use crate::chart_manager::{ChartManager, UpdateType};
 use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
@@ -18,13 +20,19 @@ pub struct MathApp {
 
 impl Default for MathApp {
     fn default() -> Self {
+        let def_func = "x^2".to_string();
+        let def_min_x = -10.0;
+        let def_max_x = 10.0;
+        let def_interval: usize = 100;
+        let def_resolution: usize = 10000;
+
         Self {
-            func_str: "x^2".to_string(),
-            min_x: -10.0,
-            max_x: 10.0,
-            num_interval: 100,
-            resolution: 10000,
-            chart_manager: ChartManager::new("x^2".to_string(), -10.0, 10.0, 100, 10000),
+            func_str: def_func.clone(),
+            min_x: def_min_x,
+            max_x: def_max_x,
+            num_interval: def_interval,
+            resolution: def_resolution,
+            chart_manager: ChartManager::new(def_func, def_min_x, def_max_x, def_interval, def_resolution),
             back_cache: Cache::new_empty(),
             front_cache: Cache::new_empty(),
         }
@@ -68,6 +76,12 @@ impl MathApp {
     }
 }
 
+// Sets some hard-coded limits to the application
+const NUM_INTERVAL_RANGE: RangeInclusive<usize> = 10..=10000;
+const MIN_X_TOTAL: f32 = -1000.0;
+const MAX_X_TOTAL: f32 = 1000.0;
+const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL as f64..=MAX_X_TOTAL as f64;
+
 impl epi::App for MathApp {
     fn name(&self) -> &str { "Integral Demonstration" }
 
@@ -93,9 +107,7 @@ impl epi::App for MathApp {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
-        let min_x_total: f32 = -1000.0;
-        let max_x_total: f32 = 1000.0;
-        let x_range = min_x_total as f64..=max_x_total as f64;
+
 
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
@@ -111,10 +123,10 @@ impl epi::App for MathApp {
                 parse_error = func_test_output;
             }
             let min_x_old = *min_x;
-            let min_x_response = ui.add(egui::Slider::new(min_x, x_range.clone()).text("Min X"));
+            let min_x_response = ui.add(egui::Slider::new(min_x, X_RANGE.clone()).text("Min X"));
 
             let max_x_old = *max_x;
-            let max_x_response = ui.add(egui::Slider::new(max_x, x_range).text("Max X"));
+            let max_x_response = ui.add(egui::Slider::new(max_x, X_RANGE).text("Max X"));
 
             if min_x >= max_x {
                 if max_x_response.changed() {
@@ -127,7 +139,7 @@ impl epi::App for MathApp {
                 }
             }
 
-            ui.add(egui::Slider::new(num_interval, 10..=usize::MAX).text("Interval"));
+            ui.add(egui::Slider::new(num_interval, NUM_INTERVAL_RANGE).text("Interval"));
 
             ui.hyperlink_to(
                 "I'm Opensource! (and licensed under AGPLv3)",
