@@ -78,7 +78,6 @@ impl epi::App for MathApp {
     }
 
     /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
         let Self {
             func_str,
@@ -96,6 +95,7 @@ impl epi::App for MathApp {
 
         let min_x_total: f32 = -1000.0;
         let max_x_total: f32 = 1000.0;
+        let x_range = min_x_total as f64..=max_x_total as f64;
 
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
@@ -110,8 +110,6 @@ impl epi::App for MathApp {
             if !func_test_output.is_empty() {
                 parse_error = func_test_output;
             }
-
-            let x_range = min_x_total as f64..=max_x_total as f64;
             let min_x_old = *min_x;
             let min_x_response = ui.add(egui::Slider::new(min_x, x_range.clone()).text("Min X"));
 
@@ -179,7 +177,7 @@ impl epi::App for MathApp {
             ));
         });
 
-        // Cute little window that lists supported function!
+        // Cute little window that lists supported functions!
         // TODO: add more detail
         egui::Window::new("Supported Functions").show(ctx, |ui| {
             ui.label("- sqrt, abs");
