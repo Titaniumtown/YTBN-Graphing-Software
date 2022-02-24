@@ -62,11 +62,11 @@ impl ChartManager {
 
     pub fn do_update_back(&self, func_str_new: String, min_x: f64, max_x: f64) -> bool {
         let func_str: String = add_asterisks(func_str_new);
-        let update_func: bool = !self.function.str_compare(func_str.clone());
+        let update_func: bool = !self.function.str_compare(func_str);
 
-        let underlying_update = update_func | (min_x != self.min_x) | (max_x != self.max_x);
+        
 
-        underlying_update
+        update_func | (min_x != self.min_x) | (max_x != self.max_x)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -116,12 +116,12 @@ impl ChartManager {
                 let tmp2: f64 = self.function.run(x2);
 
                 // Chooses the y value who's absolute value is the smallest
-                let output = match tmp2.abs() > tmp1.abs() {
+                
+
+                match tmp2.abs() > tmp1.abs() {
                     true => (x2, tmp1),
                     false => (x, tmp2),
-                };
-
-                output
+                }
             })
             .filter(|(_, y)| !y.is_nan())
             .collect();

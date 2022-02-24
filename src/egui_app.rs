@@ -3,7 +3,7 @@ use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Value, Values};
 use egui::widgets::plot::{Bar, BarChart};
-use egui::{plot, Color32};
+use egui::{Color32};
 
 pub struct MathApp {
     func_str: String,
@@ -71,10 +71,10 @@ impl epi::App for MathApp {
             }
 
             let x_range = min_x_total as f64..=max_x_total as f64;
-            let min_x_old = min_x.clone();
+            let min_x_old = *min_x;
             let min_x_response = ui.add(egui::Slider::new(min_x, x_range.clone()).text("Min X"));
 
-            let max_x_old = max_x.clone();
+            let max_x_old = *max_x;
             let max_x_response = ui.add(egui::Slider::new(max_x, x_range).text("Max X"));
 
             if min_x >= max_x {
@@ -91,7 +91,7 @@ impl epi::App for MathApp {
             ui.add(egui::Slider::new(num_interval, 1..=usize::MAX).text("Interval"));
         });
 
-        let update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
+        let _update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
         let update_front = chart_manager.do_update_front(*num_interval, *resolution);
 
         egui::CentralPanel::default().show(ctx, |ui| {
