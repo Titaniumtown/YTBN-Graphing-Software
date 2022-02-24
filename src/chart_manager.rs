@@ -124,9 +124,9 @@ impl ChartManager {
 
                 // Applies `half_step` in order to make the bar graph display properly
                 if output.0 > 0.0 {
-                    output.0 = output.0 + half_step;
+                    output.0 += half_step;
                 } else {
-                    output.0 = output.0 - half_step;
+                    output.0 -= half_step;
                 }
 
                 output
