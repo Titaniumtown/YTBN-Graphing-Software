@@ -1,10 +1,10 @@
 use crate::misc::{add_asterisks, Function};
 
 pub enum UpdateType {
-    FULL,
-    FRONT,
-    BACK,
-    NONE,
+    Full,
+    Front,
+    Back,
+    None,
 }
 
 // Manages Chart generation and caching of values
@@ -69,13 +69,13 @@ impl ChartManager {
         self.resolution = resolution;
 
         if update_back && update_front {
-            UpdateType::FULL
+            UpdateType::Full
         } else if update_back {
-            UpdateType::BACK
+            UpdateType::Back
         } else if update_front {
-            UpdateType::FRONT
+            UpdateType::Front
         } else {
-            UpdateType::NONE
+            UpdateType::None
         }
     }
 
