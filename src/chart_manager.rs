@@ -56,6 +56,10 @@ impl ChartManager {
         (filtered_data, rect_data, area)
     }
 
+    pub fn get_step(&self) -> f64 {
+        (self.max_x - self.min_x).abs() / (self.num_interval as f64)
+    }
+
     pub fn do_update_front(&self, resolution: usize, num_interval: usize) -> bool {
         (self.resolution != resolution) | (num_interval != self.num_interval)
     }
@@ -100,6 +104,7 @@ impl ChartManager {
     // Creates and does the math for creating all the rectangles under the graph
     #[inline]
     fn integral_rectangles(&self, step: f64) -> (Vec<(f64, f64)>, f64) {
+        let half_step = step/2.0;
         let data2: Vec<(f64, f64)> = (0..self.num_interval)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.min_x;
@@ -114,12 +119,19 @@ impl ChartManager {
                 let tmp2: f64 = self.function.run(x2);
 
                 // Chooses the y value who's absolute value is the smallest
+                let mut output = match tmp2.abs() > tmp1.abs() {
+                    true => (x, tmp1),
+                    false => (x2, tmp2),
+                };
                 
-
-                match tmp2.abs() > tmp1.abs() {
-                    true => (x2, tmp1),
-                    false => (x, tmp2),
+                // Applies `half_step` in order to make the bar graph display properly
+                if output.0 > 0.0 {
+                    output.0 = output.0+half_step;
+                } else {
+                    output.0 = output.0-half_step;
                 }
+
+                output
             })
             .filter(|(_, y)| !y.is_nan())
             .collect();

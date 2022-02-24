@@ -133,6 +133,7 @@ impl Function {
 
     pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
 
+    #[allow(dead_code)]
     pub fn get_string(&self) -> String { self.func_str.clone() }
 }
 

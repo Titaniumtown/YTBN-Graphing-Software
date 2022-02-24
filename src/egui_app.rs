@@ -88,7 +88,7 @@ impl epi::App for MathApp {
                 }
             }
 
-            ui.add(egui::Slider::new(num_interval, 1..=usize::MAX).text("Interval"));
+            ui.add(egui::Slider::new(num_interval, 10..=usize::MAX).text("Interval"));
         });
 
         let _update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
@@ -134,7 +134,7 @@ impl epi::App for MathApp {
                     }
                 }
             };
-            let bar_chart = BarChart::new(bars).color(Color32::BLUE);
+            let bar_chart = BarChart::new(bars).color(Color32::BLUE).width(chart_manager.get_step());
 
             Plot::new("plot")
                 .view_aspect(1.0)
