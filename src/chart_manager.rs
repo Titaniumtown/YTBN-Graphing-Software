@@ -56,6 +56,19 @@ impl ChartManager {
         (filtered_data, rect_data, area)
     }
 
+    pub fn do_update_front(&self, resolution: usize, num_interval: usize) -> bool {
+        (self.resolution != resolution) | (num_interval != self.num_interval)
+    }
+
+    pub fn do_update_back(&self, func_str_new: String, min_x: f64, max_x: f64) -> bool {
+        let func_str: String = add_asterisks(func_str_new);
+        let update_func: bool = !self.function.str_compare(func_str.clone());
+
+        let underlying_update = update_func | (min_x != self.min_x) | (max_x != self.max_x);
+
+        underlying_update
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self, func_str_new: String, min_x: f64, max_x: f64, num_interval: usize,

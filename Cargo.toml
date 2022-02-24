@@ -18,6 +18,8 @@ egui = "0.17.0"
 eframe = "0.17.0"
 emath = "0.17.0"
 epaint = "0.17.0"
+instant = { version = "0.1.12", features = ["wasm-bindgen"] }
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"
 tracing-wasm = "0.2.1"
