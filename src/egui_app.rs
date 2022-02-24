@@ -135,17 +135,18 @@ impl epi::App for MathApp {
             );
         });
 
-        let do_update =
-            chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
+        if parse_error.is_empty() {
+            let do_update = chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
 
-        match do_update {
-            UpdateType::FULL => {
-                back_cache.invalidate();
-                front_cache.invalidate();
+            match do_update {
+                UpdateType::FULL => {
+                    back_cache.invalidate();
+                    front_cache.invalidate();
+                }
+                UpdateType::BACK => back_cache.invalidate(),
+                UpdateType::FRONT => front_cache.invalidate(),
+                _ => {}
             }
-            UpdateType::BACK => back_cache.invalidate(),
-            UpdateType::FRONT => front_cache.invalidate(),
-            _ => {}
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
