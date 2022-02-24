@@ -5,7 +5,6 @@ mod chart_manager;
 mod egui_app;
 mod misc;
 
-
 #[cfg(target_arch = "wasm32")]
 use eframe::{egui, epi};
 

@@ -1,11 +1,9 @@
 use crate::chart_manager::ChartManager;
 use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
+use egui::plot::{Line, Plot, Value, Values};
 use egui::widgets::plot::{Bar, BarChart};
-use egui::{
-    plot::{Line, Plot, Value, Values},
-};
-use egui::{Color32, plot};
+use egui::{plot, Color32};
 
 pub struct MathApp {
     func_str: String,
@@ -77,7 +75,7 @@ impl epi::App for MathApp {
             let min_x_response = ui.add(egui::Slider::new(min_x, x_range.clone()).text("Min X"));
 
             let max_x_old = max_x.clone();
-            let max_x_response =  ui.add(egui::Slider::new(max_x, x_range).text("Max X"));
+            let max_x_response = ui.add(egui::Slider::new(max_x, x_range).text("Max X"));
 
             if min_x >= max_x {
                 if max_x_response.changed() {
@@ -90,11 +88,8 @@ impl epi::App for MathApp {
                 }
             }
 
-
-
             ui.add(egui::Slider::new(num_interval, 1..=usize::MAX).text("Interval"));
         });
-
 
         let update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
         let update_front = chart_manager.do_update_front(*num_interval, *resolution);
@@ -122,30 +117,24 @@ impl epi::App for MathApp {
 
             let bars: Vec<Bar> = match update_front {
                 true => {
-                    let bars: Vec<Bar> = rect_data
-                    .iter()
-                    .map(|(x, y)| Bar::new(*x, *y))
-                    .collect();
-                    
+                    let bars: Vec<Bar> = rect_data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
+
                     bar_cache.set(bars.clone());
                     bars
-                },
+                }
                 false => {
                     if bar_cache.is_valid() {
                         bar_cache.get().clone()
                     } else {
-                        let bars: Vec<Bar> = rect_data
-                        .iter()
-                        .map(|(x, y)| Bar::new(*x, *y))
-                        .collect();
-                        
+                        let bars: Vec<Bar> =
+                            rect_data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
+
                         bar_cache.set(bars.clone());
                         bars
                     }
-                },
+                }
             };
             let bar_chart = BarChart::new(bars).color(Color32::BLUE);
-            
 
             Plot::new("plot")
                 .view_aspect(1.0)
@@ -157,7 +146,11 @@ impl epi::App for MathApp {
 
             let duration = start.elapsed();
 
-            ui.label(format!("Area: {} Took: {:?}", digits_precision(area, 8), duration));
+            ui.label(format!(
+                "Area: {} Took: {:?}",
+                digits_precision(area, 8),
+                duration
+            ));
         });
     }
 }
