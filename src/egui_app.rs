@@ -3,7 +3,7 @@ use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Value, Values};
 use egui::widgets::plot::{Bar, BarChart};
-use egui::{Color32};
+use egui::Color32;
 
 pub struct MathApp {
     func_str: String,
@@ -134,7 +134,9 @@ impl epi::App for MathApp {
                     }
                 }
             };
-            let bar_chart = BarChart::new(bars).color(Color32::BLUE).width(chart_manager.get_step());
+            let bar_chart = BarChart::new(bars)
+                .color(Color32::BLUE)
+                .width(chart_manager.get_step());
 
             Plot::new("plot")
                 .view_aspect(1.0)
