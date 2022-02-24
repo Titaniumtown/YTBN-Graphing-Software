@@ -65,6 +65,7 @@ impl epi::App for MathApp {
                 ui.label("Function: ");
                 ui.text_edit_singleline(func_str);
             });
+
             let func_test_output = test_func(func_str.clone());
             if !func_test_output.is_empty() {
                 parse_error = func_test_output;
@@ -89,6 +90,9 @@ impl epi::App for MathApp {
             }
 
             ui.add(egui::Slider::new(num_interval, 10..=usize::MAX).text("Interval"));
+
+            ui.hyperlink_to("Supported Expressions", "https://github.com/Titaniumtown/meval-rs#supported-expressions");
+            ui.hyperlink_to("I'm Opensource! (and licensed under AGPLv3)", "https://github.com/Titaniumtown/integral_site");
         });
 
         let _update_back = chart_manager.do_update_back(func_str.clone(), *min_x, *max_x);
