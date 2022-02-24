@@ -7,7 +7,7 @@ edition = "2021"
 crate-type=["cdylib"]
 
 [profile.release]
-debug = 0
+debug = false
 codegen-units = 1
 opt-level = "z" #optimize for size
 lto = true
