@@ -51,6 +51,7 @@ pub struct Function {
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
+    broken_state: bool,
 }
 
 impl Function {
@@ -91,6 +92,7 @@ impl Function {
                 Some(x) => x,
                 None => 0,
             },
+            broken_state: false,
         }
     }
 
@@ -102,7 +104,14 @@ impl Function {
     pub fn update(
         &mut self, func_str: String, min_x: f64, max_x: f64, integral: bool,
         integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>,
+        broken_state: bool,
     ) {
+        if broken_state {
+            self.func_str = func_str.clone();
+            self.broken_state = true;
+            return;
+        }
+
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
             *self = Self::new(
@@ -158,6 +167,9 @@ impl Function {
     pub fn is_integral(&self) -> bool { self.integral }
 
     #[inline]
+    pub fn is_broken(&self) -> bool { self.broken_state }
+
+    #[inline]
     pub fn run(&mut self) -> FunctionOutput {
         let front_values: Vec<Value> = match self.back_cache.is_valid() {
             false => {
@@ -208,6 +220,15 @@ impl Function {
         if !self.integral {
             panic!("integral_rectangles called, but self.integral is false!");
         }
+
+        if self.integral_min_x.is_nan() {
+            panic!("integral_min_x is NaN")
+        }
+
+        if self.integral_max_x.is_nan() {
+            panic!("integral_max_x is NaN")
+        }
+
         let step = self.get_step();
 
         let half_step = step / 2.0;

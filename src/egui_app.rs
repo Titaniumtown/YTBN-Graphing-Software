@@ -105,7 +105,7 @@ impl epi::App for MathApp {
                 ui.label("- signum, min, max");
             });
 
-        let mut new_func_data: Vec<(String, bool)> = Vec::new();
+        let mut new_func_data: Vec<(String, bool, bool)> = Vec::new();
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel")
             .resizable(false)
@@ -132,11 +132,13 @@ impl epi::App for MathApp {
                     });
 
                     let func_test_output = test_func(func_str.clone());
+                    let mut got_error: bool = false;
                     if !func_test_output.is_empty() {
                         parse_error += &func_test_output;
+                        got_error = true;
                     }
 
-                    new_func_data.push((func_str, integral_toggle));
+                    new_func_data.push((func_str, integral_toggle, got_error));
                 }
 
                 let min_x_old = *min_x;
@@ -191,15 +193,16 @@ impl epi::App for MathApp {
 
                 let mut i: usize = 0;
                 for function in functions.iter_mut() {
-                    let (func_str, integral_toggle) = (new_func_data[i].0.clone(), new_func_data[i].1);
+                    let (func_str, integral_toggle, got_error) = (new_func_data[i].0.clone(), new_func_data[i].1, new_func_data[i].2);
+
                     let integral: bool = if integral_toggle {
                         !function.is_integral()
                     } else {
                         function.is_integral()
                     };
 
-                    
-                    function.update(func_str, *min_x, *max_x, integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
+
+                    function.update(func_str, *min_x, *max_x, integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num), got_error);
                     i += 1;
                 }
             });
@@ -218,6 +221,10 @@ impl epi::App for MathApp {
                 .include_y(0)
                 .show(ui, |plot_ui| {
                     for function in self.functions.iter_mut() {
+                        if function.is_broken() {
+                            continue;
+                        }
+
                         let output = function.run();
                         let back = output.get_back();
                         plot_ui.line(Line::new(Values::from_values(back)).color(Color32::RED));
