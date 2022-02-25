@@ -119,14 +119,16 @@ impl epi::App for MathApp {
 
         // Cute little window that lists supported functions!
         // TODO: add more detail
-        egui::Window::new("Supported Functions").default_pos([200.0, 200.0]).show(ctx, |ui| {
-            ui.label("- sqrt, abs");
-            ui.label("- exp, ln, log10 (log10 can also be called as log)");
-            ui.label("- sin, cos, tan, asin, acos, atan, atan2");
-            ui.label("- sinh, cosh, tanh, asinh, acosh, atanh");
-            ui.label("- floor, ceil, round");
-            ui.label("- signum, min, max");
-        });
+        egui::Window::new("Supported Functions")
+            .default_pos([200.0, 200.0])
+            .show(ctx, |ui| {
+                ui.label("- sqrt, abs");
+                ui.label("- exp, ln, log10 (log10 can also be called as log)");
+                ui.label("- sin, cos, tan, asin, acos, atan, atan2");
+                ui.label("- sinh, cosh, tanh, asinh, acosh, atanh");
+                ui.label("- floor, ceil, round");
+                ui.label("- signum, min, max");
+            });
 
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel")
