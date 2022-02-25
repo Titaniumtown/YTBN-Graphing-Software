@@ -23,7 +23,7 @@ extern "C" {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub fn start(canvas_id: &str, commit: &str) -> Result<(), wasm_bindgen::JsValue> {
+pub fn start(canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
     log("Initializing...");
 
     // See performance in browser profiler!
@@ -39,6 +39,6 @@ pub fn start(canvas_id: &str, commit: &str) -> Result<(), wasm_bindgen::JsValue>
     log("Finished initializing!");
 
     log("Starting App...");
-    let app = egui_app::MathApp::new(commit.to_string());
+    let app = egui_app::MathApp::default();
     eframe::start_web(canvas_id, Box::new(app))
 }

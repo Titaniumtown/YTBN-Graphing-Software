@@ -5,7 +5,11 @@ use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Value, Values};
 use egui::widgets::plot::{Bar, BarChart};
-use egui::{Color32, TextStyle, Vec2, Layout};
+use egui::Color32;
+use git_version::git_version;
+
+// Grabs git version on compile time
+const GIT_VERSION: &str = git_version!();
 
 pub struct MathApp {
     func_str: String,
@@ -16,11 +20,10 @@ pub struct MathApp {
     chart_manager: ChartManager,
     back_cache: Cache<Vec<Value>>,
     front_cache: Cache<(Vec<Bar>, f64)>,
-    commit: String
 }
 
-impl MathApp {
-    pub fn new(commit: String) -> Self {
+impl Default for MathApp {
+    fn default() -> Self {
         let def_func = "x^2".to_string();
         let def_min_x = -10.0;
         let def_max_x = 10.0;
@@ -35,11 +38,12 @@ impl MathApp {
             resolution: def_resolution,
             chart_manager: ChartManager::new(def_func, def_min_x, def_max_x, def_interval, def_resolution),
             back_cache: Cache::new_empty(),
-            front_cache: Cache::new_empty(),
-            commit
+            front_cache: Cache::new_empty()
         }
     }
+}
 
+impl MathApp {
     #[inline]
     fn get_back(&mut self) -> Line {
         let data = if self.back_cache.is_valid() {
@@ -101,8 +105,7 @@ impl epi::App for MathApp {
             resolution,
             chart_manager,
             back_cache,
-            front_cache,
-            commit,
+            front_cache
         } = self;
 
         // Note: This Instant implementation does not show microseconds when using wasm.
@@ -155,14 +158,18 @@ impl epi::App for MathApp {
                 "I'm Opensource! (and licensed under AGPLv3)",
                 "https://github.com/Titaniumtown/integral_site",
             );
+
+            // Displays commit info
             ui.horizontal(|ui| {
                 ui.with_layout(egui::Layout::top_down_justified(egui::Align::Min), |ui| {
-                    if commit.is_empty() {
-                        ui.label(format!("Current build is untracked!"));
-                    } else {
                         ui.label("Commit: ");
-                        ui.hyperlink_to(commit.clone(), format!("https://github.com/Titaniumtown/integral_site/commit/{}", commit));
-                    }
+
+                        // Only include hyperlink if the build doesn't have untracked files
+                        if !GIT_VERSION.contains("-modified") {
+                            ui.hyperlink_to(GIT_VERSION, format!("https://github.com/Titaniumtown/integral_site/commit/{}", GIT_VERSION));
+                        } else {
+                            ui.label(GIT_VERSION);
+                        }
                 });
             });
         });
@@ -170,6 +177,7 @@ impl epi::App for MathApp {
         if parse_error.is_empty() {
             let do_update = chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
 
+            // Invalidates caches according to what settings were changed
             match do_update {
                 UpdateType::Full => {
                     back_cache.invalidate();
