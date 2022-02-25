@@ -162,30 +162,32 @@ impl epi::App for MathApp {
                 }
 
                 ui.add(egui::Slider::new(num_interval, NUM_INTERVAL_RANGE).text("Interval"));
-                // ui.add_space(ui.text_style_height(&TextStyle::Body)*10.0);
-                ui.hyperlink_to(
-                    "I'm Opensource! (and licensed under AGPLv3)",
-                    "https://github.com/Titaniumtown/integral_site",
-                );
+
+                // Opensource and Licensing information
+                ui.horizontal(|ui| {
+                    ui.hyperlink_to(
+                        "I'm Opensource!",
+                        "https://github.com/Titaniumtown/integral_site",
+                    );
+                    ui.label("(and licensed under AGPLv3)").on_hover_text("The AGPL license ensures that the end user, even if not hosting the program itself, still is guaranteed access to the source code of the project in question.");
+                });
 
                 // Displays commit info
                 ui.horizontal(|ui| {
-                    ui.with_layout(egui::Layout::top_down_justified(egui::Align::Min), |ui| {
-                        ui.label("Commit: ");
+                    ui.label("Commit: ");
 
-                        // Only include hyperlink if the build doesn't have untracked files
-                        if !GIT_VERSION.contains("-modified") {
-                            ui.hyperlink_to(
-                                GIT_VERSION,
-                                format!(
-                                    "https://github.com/Titaniumtown/integral_site/commit/{}",
-                                    GIT_VERSION
-                                ),
-                            );
-                        } else {
-                            ui.label(GIT_VERSION);
-                        }
-                    });
+                    // Only include hyperlink if the build doesn't have untracked files
+                    if !GIT_VERSION.contains("-modified") {
+                        ui.hyperlink_to(
+                            GIT_VERSION,
+                            format!(
+                                "https://github.com/Titaniumtown/integral_site/commit/{}",
+                                GIT_VERSION
+                            ),
+                        );
+                    } else {
+                        ui.label(GIT_VERSION);
+                    }
                 });
             });
 
