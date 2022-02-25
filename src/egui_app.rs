@@ -150,6 +150,7 @@ impl epi::App for MathApp {
                 let max_x_old = *max_x;
                 let max_x_response = ui.add(egui::Slider::new(max_x, X_RANGE).text("Max X"));
 
+                // Checks bounds, and if they are invalid, fix them
                 if min_x >= max_x {
                     if max_x_response.changed() {
                         *max_x = max_x_old;
