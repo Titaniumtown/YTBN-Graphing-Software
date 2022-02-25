@@ -4,12 +4,13 @@
 3. Fix (very rare) crashes in parsing strings (`TextDecoder.decode: Decoding failed.`)
 4. Multiple functions in one graph.
     - Backend support
-        - Generation of data
+        - Generation of data (Done)
         - Management
             - Handle by IDs
         - Integrals between functions
     - UI
-        - Dynamically create inputs
+        - Dynamically create inputs (Done)
+        - Dynamically delete inputs
         - Different colors
         - Better Handling of area and integrals
 5. Non `y=` functions.
