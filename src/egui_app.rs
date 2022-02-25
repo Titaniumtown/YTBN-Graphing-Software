@@ -6,7 +6,7 @@ use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Values};
 use egui::widgets::plot::BarChart;
 use egui::widgets::Button;
-use egui::Color32;
+use egui::{Color32, Vec2};
 use git_version::git_version;
 
 // Grabs git version on compile time
@@ -18,7 +18,6 @@ const MIN_X_TOTAL: f64 = -1000.0;
 const MAX_X_TOTAL: f64 = 1000.0;
 const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
 const DEFAULT_FUNCION: &str = "x^2";
-const MARGINS: f64 = 0.9;
 
 pub struct MathApp {
     functions: Vec<Function>,
@@ -156,7 +155,7 @@ impl epi::App for MathApp {
                         function.is_integral()
                     };
 
-                    if !func_strs[i].is_empty() {
+                    if func_strs[i] != "" {
                         let func_test_output = test_func(func_strs[i].clone());
                         if !func_test_output.is_empty() {
                             parse_error += &func_test_output;
@@ -203,6 +202,7 @@ impl epi::App for MathApp {
             let step = self.get_step();
             let mut area_list: Vec<f64> = Vec::new();
             Plot::new("plot")
+                .set_margin_fraction(Vec2::ZERO)
                 .view_aspect(1.0)
                 .data_aspect(1.0)
                 .include_y(0)
@@ -213,7 +213,7 @@ impl epi::App for MathApp {
                     // println!("({}, {})", minx_bounds, maxx_bounds);
 
                     for (i, function) in self.functions.iter_mut().enumerate() {
-                        function.update_bounds(minx_bounds * MARGINS, maxx_bounds * MARGINS);
+                        function.update_bounds(minx_bounds, maxx_bounds);
                         if self.func_strs[i].is_empty() {
                             continue;
                         }
