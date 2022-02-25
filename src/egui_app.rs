@@ -207,6 +207,8 @@ impl epi::App for MathApp {
                                 BarChart::new(bars.clone()).color(Color32::BLUE).width(step);
                             plot_ui.bar_chart(bar_chart);
                             area_list.push(digits_precision(area, 8))
+                        } else {
+                            area_list.push(0.0);
                         }
                     }
                 });
