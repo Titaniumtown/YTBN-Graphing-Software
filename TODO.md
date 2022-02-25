@@ -7,6 +7,7 @@
         - Generation of data
         - Management
             - Handle by IDs
+        - Integrals between functions
     - UI
         - Dynamically create inputs
         - Different colors

@@ -3,8 +3,9 @@ use std::ops::RangeInclusive;
 use crate::function::Function;
 use crate::misc::{digits_precision, test_func};
 use eframe::{egui, epi};
-use egui::plot::{Line, Plot, Value, Values};
-use egui::widgets::plot::{Bar, BarChart};
+use egui::plot::{Line, Plot, Values};
+use egui::widgets::plot::BarChart;
+use egui::widgets::Button;
 use egui::Color32;
 use git_version::git_version;
 
@@ -16,6 +17,7 @@ const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 10..=1000000;
 const MIN_X_TOTAL: f64 = -1000.0;
 const MAX_X_TOTAL: f64 = 1000.0;
 const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
+const DEFAULT_FUNCION: &str = "x^2";
 
 pub struct MathApp {
     functions: Vec<Function>,
@@ -32,13 +34,12 @@ pub struct MathApp {
 impl Default for MathApp {
     #[inline]
     fn default() -> Self {
-        let def_func_str = "x^2".to_string();
         let def_min_x = -10.0;
         let def_max_x = 10.0;
         let def_interval: usize = 1000;
 
         let def_funcs: Vec<Function> = vec![Function::new(
-            def_func_str,
+            String::from(DEFAULT_FUNCION),
             def_min_x,
             def_max_x,
             true,
@@ -104,17 +105,29 @@ impl epi::App for MathApp {
                 ui.label("- signum, min, max");
             });
 
-        let mut func_new_strings: Vec<String> = Vec::new();
+        let mut new_func_data: Vec<(String, bool)> = Vec::new();
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
                 ui.heading("Side Panel");
+                if ui.add(egui::Button::new("Add function")).clicked() {
+                    functions.push(Function::new(String::from(DEFAULT_FUNCION), *min_x,
+                        *max_x,
+                        true,
+                        Some(*min_x),
+                        Some(*max_x),
+                        Some(*integral_num)));
+                }
 
                 for function in functions.iter() {
                     let mut func_str = function.get_string();
+                    let mut integral_toggle: bool = false;
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
+                        if ui.add(Button::new("Toggle Integrals")).clicked() {
+                            integral_toggle = true;
+                        }
                         ui.text_edit_singleline(&mut func_str);
                     });
 
@@ -123,7 +136,7 @@ impl epi::App for MathApp {
                         parse_error += &func_test_output;
                     }
 
-                    func_new_strings.push(func_str);
+                    new_func_data.push((func_str, integral_toggle));
                 }
 
                 let min_x_old = *min_x;
@@ -178,7 +191,15 @@ impl epi::App for MathApp {
 
                 let mut i: usize = 0;
                 for function in functions.iter_mut() {
-                    function.update(func_new_strings[i].clone(), *min_x, *max_x, true, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
+                    let (func_str, integral_toggle) = (new_func_data[i].0.clone(), new_func_data[i].1);
+                    let integral: bool = if integral_toggle {
+                        !function.is_integral()
+                    } else {
+                        function.is_integral()
+                    };
+
+                    
+                    function.update(func_str, *min_x, *max_x, integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
                     i += 1;
                 }
             });

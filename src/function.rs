@@ -32,7 +32,7 @@ impl FunctionOutput {
     #[inline]
     pub fn has_integral(&self) -> bool {
         match &self.front {
-            Some(x) => true,
+            Some(_) => true,
             None => false,
         }
     }
@@ -121,6 +121,10 @@ impl Function {
             self.back_cache.invalidate();
             self.min_x = min_x;
             self.max_x = max_x;
+        }
+
+        if integral != self.integral {
+            self.integral = integral;
         }
 
         // Makes sure proper arguments are passed when integral is enabled
