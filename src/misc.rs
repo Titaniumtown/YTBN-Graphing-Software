@@ -218,7 +218,7 @@ fn cache_test_full() {
     let mut cache = Cache::new("data");
     assert!(cache.is_valid());
     cache.invalidate();
-    assert_eq!(cache.is_valid(), false);
+    assert!(!cache.is_valid());
     cache.set("data2");
     assert!(cache.is_valid());
 }
@@ -227,9 +227,9 @@ fn cache_test_full() {
 #[test]
 fn cache_test_empty() {
     let mut cache: Cache<&str> = Cache::new_empty();
-    assert_eq!(cache.is_valid(), false);
+    assert!(!cache.is_valid());
     cache.invalidate();
-    assert_eq!(cache.is_valid(), false);
+    assert!(!cache.is_valid());
     cache.set("data");
     assert!(cache.is_valid());
 }
