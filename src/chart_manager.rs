@@ -104,8 +104,8 @@ impl ChartManager {
                     false => x - step,
                 };
 
-                let tmp1: f64 = self.function.run(x);
-                let tmp2: f64 = self.function.run(x2);
+                let tmp1: f64 = self.function.run_func(x);
+                let tmp2: f64 = self.function.run_func(x2);
 
                 // Chooses the y value who's absolute value is the smallest
                 let mut output = match tmp2.abs() > tmp1.abs() {

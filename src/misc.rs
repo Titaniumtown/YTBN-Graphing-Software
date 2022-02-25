@@ -5,6 +5,7 @@ EXTREMELY Janky function that tries to put asterisks in the proper places to be 
 One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
 In the future I may want to completely rewrite this or implement this natively into mevel-rs (which would probably be good to do)
 */
+#[inline]
 pub fn add_asterisks(function_in: String) -> String {
     let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
     let valid_variables: Vec<char> = "xeπ".chars().collect();
@@ -78,6 +79,7 @@ pub fn add_asterisks(function_in: String) -> String {
 }
 
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
+#[inline]
 pub fn test_func(function_string: String) -> String {
     // Factorials do not work, and it would be really difficult to make them work
     if function_string.contains('!') {
@@ -108,33 +110,10 @@ pub fn test_func(function_string: String) -> String {
 }
 
 // Rounds f64 to specific number of digits
+#[inline]
 pub fn digits_precision(x: f64, digits: usize) -> f64 {
     let large_number: f64 = 10.0_f64.powf(digits as f64);
     (x * large_number).round() / large_number
-}
-
-pub struct Function {
-    function: Box<dyn Fn(f64) -> f64>,
-    func_str: String,
-}
-
-impl Function {
-    pub fn from_string(func_str: String) -> Self {
-        let expr: Expr = func_str.parse().unwrap();
-        let func = expr.bind("x").unwrap();
-        Self {
-            function: Box::new(func),
-            func_str,
-        }
-    }
-
-    #[inline]
-    pub fn run(&self, x: f64) -> f64 { (self.function)(x) }
-
-    pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
-
-    #[allow(dead_code)]
-    pub fn get_string(&self) -> String { self.func_str.clone() }
 }
 
 pub struct Cache<T> {

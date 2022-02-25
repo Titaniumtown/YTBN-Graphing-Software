@@ -4,6 +4,7 @@
 mod chart_manager;
 mod egui_app;
 mod misc;
+mod function;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;

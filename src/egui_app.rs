@@ -34,6 +34,7 @@ pub struct MathApp {
 }
 
 impl Default for MathApp {
+    #[inline]
     fn default() -> Self {
         let def_func = "x^2".to_string();
         let def_min_x = -10.0;
@@ -102,15 +103,19 @@ impl MathApp {
 }
 
 impl epi::App for MathApp {
+    
+    // The name of the program (displayed when running natively as the window title)
     fn name(&self) -> &str { "Integral Demonstration" }
 
-    /// Called once before the first frame.
+    // Called once before the first frame.
+    #[inline]
     fn setup(
         &mut self, _ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>,
     ) {
     }
 
-    /// Called each time the UI needs repainting, which may be many times per second.
+    // Called each time the UI needs repainting, which may be many times per second.
+    #[inline]
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
         let Self {
             func_str,
