@@ -1,10 +1,9 @@
 #![allow(clippy::unused_unit)] // Fixes clippy keep complaining about wasm_bindgen
 #![allow(clippy::type_complexity)] // Clippy, my types are fine.
 
-mod chart_manager;
 mod egui_app;
-mod misc;
 mod function;
+mod misc;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;

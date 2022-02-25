@@ -1,9 +1,9 @@
-use meval::Expr;
+use crate::misc::Cache;
 use egui::plot::Value;
 use egui::widgets::plot::Bar;
+use meval::Expr;
 
-const RESOLUTION: f64 = 1000.0;
-
+pub const RESOLUTION: f64 = 1000.0;
 
 // Struct that stores and manages the output of a function
 pub struct FunctionOutput {
@@ -16,16 +16,22 @@ pub struct FunctionOutput {
 
 impl FunctionOutput {
     #[inline]
-    pub fn new(back: Vec<Value>, front: Option<(Vec<Bar>, f64)>) -> Self {
-        Self {
-            back,
-            front,
+    pub fn new(back: Vec<Value>, front: Option<(Vec<Bar>, f64)>) -> Self { Self { back, front } }
+
+    #[inline]
+    pub fn get_back(&self) -> Vec<Value> { self.back.clone() }
+
+    #[inline]
+    pub fn get_front(&self) -> (Vec<Bar>, f64) {
+        match &self.front {
+            Some(x) => (x.0.clone(), x.1.clone()),
+            None => panic!(""),
         }
     }
 
     #[inline]
-    fn has_integral(&self) -> bool {
-        match self.front {
+    pub fn has_integral(&self) -> bool {
+        match &self.front {
             Some(x) => true,
             None => false,
         }
@@ -37,6 +43,7 @@ pub struct Function {
     func_str: String,
     min_x: f64,
     max_x: f64,
+
     back_cache: Cache<Vec<Value>>,
     front_cache: Cache<(Vec<Bar>, f64)>,
 
@@ -47,8 +54,10 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new(func_str: String, min_x: f64, max_x: f64, integral: bool, integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>) -> Self {
-
+    pub fn new(
+        func_str: String, min_x: f64, max_x: f64, integral: bool, integral_min_x: Option<f64>,
+        integral_max_x: Option<f64>, integral_num: Option<usize>,
+    ) -> Self {
         // Makes sure proper arguments are passed when integral is enabled
         if integral {
             if integral_min_x.is_none() {
@@ -80,7 +89,7 @@ impl Function {
             },
             integral_num: match integral_num {
                 Some(x) => x,
-                None => f64::NAN,
+                None => 0,
             },
         }
     }
@@ -90,14 +99,23 @@ impl Function {
     fn run_func(&self, x: f64) -> f64 { (self.function)(x) }
 
     #[inline]
-    pub fn update(&mut self, func_str: String, min_x: f64, max_x: f64, integral: bool, integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>) {
-
+    pub fn update(
+        &mut self, func_str: String, min_x: f64, max_x: f64, integral: bool,
+        integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>,
+    ) {
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
-            *self = Self::new(func_str, min_x, max_x, integral, integral_min_x, integral_max_x, integral_num);
+            *self = Self::new(
+                func_str,
+                min_x,
+                max_x,
+                integral,
+                integral_min_x,
+                integral_max_x,
+                integral_num,
+            );
             return;
         }
-
 
         if (min_x != self.min_x) | (max_x != self.max_x) {
             self.back_cache.invalidate();
@@ -115,38 +133,81 @@ impl Function {
                 panic!("Invalid arguments: integral_num is None, but integral is enabled.")
             }
 
-            if (integral_min_x != Some(self.integral_min_x)) | (integral_max_x != Some(self.integral_max_x)) | (integral_num != Some(self.integral_num)) {
+            if (integral_min_x != Some(self.integral_min_x))
+                | (integral_max_x != Some(self.integral_max_x))
+                | (integral_num != Some(self.integral_num))
+            {
                 self.front_cache.invalidate();
                 self.integral_min_x = integral_min_x.expect("");
                 self.integral_max_x = integral_max_x.expect("");
                 self.integral_num = integral_num.expect("");
             }
         }
-
     }
 
+    #[inline]
+    pub fn get_step(&self) -> f64 {
+        (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64)
+    }
+
+    #[inline]
+    pub fn is_integral(&self) -> bool { self.integral }
 
     #[inline]
     pub fn run(&mut self) -> FunctionOutput {
-        let absrange = (self.max_x - self.min_x).abs();
-        let output: Vec<(f64, f64)> = (1..=self.resolution)
-            .map(|x| ((x as f64 / RESOLUTION) * absrange) + self.min_x_back)
-            .map(|x| (x, self.function.run(x)))
-            .collect();
-        output
+        let front_values: Vec<Value> = match self.back_cache.is_valid() {
+            false => {
+                let absrange = (self.max_x - self.min_x).abs();
+                let front_data: Vec<(f64, f64)> = (1..=(RESOLUTION as usize))
+                    .map(|x| ((x as f64 / RESOLUTION) * absrange) + self.min_x)
+                    .map(|x| (x, self.run_func(x)))
+                    .collect();
+                let output: Vec<Value> =
+                    front_data.iter().map(|(x, y)| Value::new(*x, *y)).collect();
+                self.back_cache.set(output.clone());
+                output
+            }
+            true => self.back_cache.get().clone(),
+        };
+
+        if self.integral {
+            let back_bars: (Vec<Bar>, f64) = match self.front_cache.is_valid() {
+                false => {
+                    let (data, area) = self.integral_rectangles();
+                    let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
+
+                    let output = (bars, area);
+                    self.front_cache.set(output.clone());
+                    output
+                }
+                true => {
+                    let cache = self.front_cache.get();
+                    let vec_bars: Vec<Bar> = cache.0.to_vec();
+                    (vec_bars, cache.1)
+                }
+            };
+            FunctionOutput::new(front_values, Some(back_bars))
+        } else {
+            FunctionOutput::new(front_values, None)
+        }
     }
+
+    #[inline]
+    pub fn get_string(&self) -> String { self.func_str.clone() }
 
     #[inline]
     pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
 
-    #[inline]
-    pub fn get_step(&self) -> f64 { (self.integral_min_x - self.integral_max_x).abs() / (self.num_interval as f64) }
-
     // Creates and does the math for creating all the rectangles under the graph
     #[inline]
-    fn integral_rectangles(&self, step: f64) -> (Vec<(f64, f64)>, f64) {
+    fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
+        if !self.integral {
+            panic!("integral_rectangles called, but self.integral is false!");
+        }
+        let step = self.get_step();
+
         let half_step = step / 2.0;
-        let data2: Vec<(f64, f64)> = (0..self.num_interval)
+        let data2: Vec<(f64, f64)> = (0..self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
 
