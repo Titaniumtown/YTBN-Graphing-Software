@@ -18,13 +18,15 @@ const MIN_X_TOTAL: f64 = -1000.0;
 const MAX_X_TOTAL: f64 = 1000.0;
 const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
 const DEFAULT_FUNCION: &str = "x^2";
+const MARGINS: f64 = 0.9;
 
 pub struct MathApp {
     functions: Vec<Function>,
-    min_x: f64,
-    max_x: f64,
 
-    // Currently really unused. But once fully implemented it will represent the full graph's min_x and max_x, being seperate from min_x and max_x for the intergral.
+    // No clue why I need this, but I do. Rust being weird I guess.
+    // Ideally this should be information directly accessed from `functions` but it always returns an empty string. I don't know, I've been debuging this for a while now.
+    func_strs: Vec<String>,
+
     integral_min_x: f64,
     integral_max_x: f64,
 
@@ -38,20 +40,17 @@ impl Default for MathApp {
         let def_max_x = 10.0;
         let def_interval: usize = 1000;
 
-        let def_funcs: Vec<Function> = vec![Function::new(
-            String::from(DEFAULT_FUNCION),
-            def_min_x,
-            def_max_x,
-            true,
-            Some(def_min_x),
-            Some(def_max_x),
-            Some(def_interval),
-        )];
-
         Self {
-            functions: def_funcs,
-            min_x: def_min_x,
-            max_x: def_max_x,
+            functions: vec![Function::new(
+                String::from(DEFAULT_FUNCION),
+                def_min_x,
+                def_max_x,
+                true,
+                Some(def_min_x),
+                Some(def_max_x),
+                Some(def_interval),
+            )],
+            func_strs: vec![String::from(DEFAULT_FUNCION)],
             integral_min_x: def_min_x,
             integral_max_x: def_max_x,
             integral_num: def_interval,
@@ -78,12 +77,11 @@ impl epi::App for MathApp {
     }
 
     // Called each time the UI needs repainting, which may be many times per second.
-    #[inline]
+    #[inline(always)]
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
         let Self {
             functions,
-            min_x,
-            max_x,
+            func_strs,
             integral_min_x,
             integral_max_x,
             integral_num,
@@ -105,64 +103,68 @@ impl epi::App for MathApp {
                 ui.label("- signum, min, max");
             });
 
-        let mut new_func_data: Vec<(String, bool, bool)> = Vec::new();
         let mut parse_error: String = "".to_string();
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
                 ui.heading("Side Panel");
                 if ui.add(egui::Button::new("Add function")).clicked() {
-                    functions.push(Function::new(String::from(DEFAULT_FUNCION), *min_x,
-                        *max_x,
-                        true,
-                        Some(*min_x),
-                        Some(*max_x),
-                        Some(*integral_num)));
+                    // min_x and max_x will be updated later, doesn't matter here
+                    functions.push(Function::new(String::from(DEFAULT_FUNCION), -1.0,
+                        1.0,
+                        false,
+                        None,
+                        None,
+                        None));
+                    func_strs.push(String::from(DEFAULT_FUNCION));
                 }
 
-                for function in functions.iter() {
-                    let mut func_str = function.get_string();
+                let min_x_old = *integral_min_x;
+                let min_x_response =
+                    ui.add(egui::Slider::new(integral_min_x, X_RANGE.clone()).text("Min X"));
+
+                let max_x_old = *integral_max_x;
+                let max_x_response = ui.add(egui::Slider::new(integral_max_x, X_RANGE).text("Max X"));
+
+                // Checks bounds, and if they are invalid, fix them
+                if integral_min_x >= integral_max_x {
+                    if max_x_response.changed() {
+                        *integral_max_x = max_x_old;
+                    } else if min_x_response.changed() {
+                        *integral_min_x = min_x_old;
+                    } else {
+                        *integral_min_x = -10.0;
+                        *integral_max_x = 10.0;
+                    }
+                }
+
+                ui.add(egui::Slider::new(integral_num, INTEGRAL_NUM_RANGE).text("Interval"));
+
+                for (i, function) in functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
                         if ui.add(Button::new("Toggle Integrals")).clicked() {
                             integral_toggle = true;
                         }
-                        ui.text_edit_singleline(&mut func_str);
+                        ui.text_edit_singleline(&mut func_strs[i]);
                     });
 
-                    let func_test_output = test_func(func_str.clone());
-                    let mut got_error: bool = false;
-                    if !func_test_output.is_empty() {
-                        parse_error += &func_test_output;
-                        got_error = true;
-                    }
-
-                    new_func_data.push((func_str, integral_toggle, got_error));
-                }
-
-                let min_x_old = *min_x;
-                let min_x_response =
-                    ui.add(egui::Slider::new(min_x, X_RANGE.clone()).text("Min X"));
-
-                let max_x_old = *max_x;
-                let max_x_response = ui.add(egui::Slider::new(max_x, X_RANGE).text("Max X"));
-
-                // Checks bounds, and if they are invalid, fix them
-                if min_x >= max_x {
-                    if max_x_response.changed() {
-                        *max_x = max_x_old;
-                    } else if min_x_response.changed() {
-                        *min_x = min_x_old;
+                    let integral: bool = if integral_toggle {
+                        !function.is_integral()
                     } else {
-                        *min_x = -10.0;
-                        *max_x = 10.0;
-                    }
-                    *integral_min_x = *min_x;
-                    *integral_max_x = *max_x;
-                }
+                        function.is_integral()
+                    };
 
-                ui.add(egui::Slider::new(integral_num, INTEGRAL_NUM_RANGE).text("Interval"));
+                    if !func_strs[i].is_empty() {
+                        let func_test_output = test_func(func_strs[i].clone());
+                        if !func_test_output.is_empty() {
+                            parse_error += &func_test_output;
+                        } else {
+                            function.update(func_strs[i].clone(), integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
+                        }
+                    }
+                }
 
                 // Opensource and Licensing information
                 ui.horizontal(|ui| {
@@ -190,21 +192,6 @@ impl epi::App for MathApp {
                         ui.label(GIT_VERSION);
                     }
                 });
-
-                let mut i: usize = 0;
-                for function in functions.iter_mut() {
-                    let (func_str, integral_toggle, got_error) = (new_func_data[i].0.clone(), new_func_data[i].1, new_func_data[i].2);
-
-                    let integral: bool = if integral_toggle {
-                        !function.is_integral()
-                    } else {
-                        function.is_integral()
-                    };
-
-
-                    function.update(func_str, *min_x, *max_x, integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num), got_error);
-                    i += 1;
-                }
             });
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -220,8 +207,14 @@ impl epi::App for MathApp {
                 .data_aspect(1.0)
                 .include_y(0)
                 .show(ui, |plot_ui| {
-                    for function in self.functions.iter_mut() {
-                        if function.is_broken() {
+                    let bounds = plot_ui.plot_bounds();
+                    let minx_bounds: f64 = bounds.min()[0];
+                    let maxx_bounds: f64 = bounds.max()[0];
+                    // println!("({}, {})", minx_bounds, maxx_bounds);
+
+                    for (i, function) in self.functions.iter_mut().enumerate() {
+                        function.update_bounds(minx_bounds * MARGINS, maxx_bounds * MARGINS);
+                        if self.func_strs[i].is_empty() {
                             continue;
                         }
 

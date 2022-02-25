@@ -24,7 +24,7 @@ impl FunctionOutput {
     #[inline]
     pub fn get_front(&self) -> (Vec<Bar>, f64) {
         match &self.front {
-            Some(x) => (x.0.clone(), x.1.clone()),
+            Some(x) => (x.0.clone(), x.1),
             None => panic!(""),
         }
     }
@@ -40,7 +40,7 @@ impl FunctionOutput {
 
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
-    func_str: String,
+    pub(crate) func_str: String,
     min_x: f64,
     max_x: f64,
 
@@ -51,7 +51,6 @@ pub struct Function {
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
-    broken_state: bool,
 }
 
 impl Function {
@@ -72,7 +71,7 @@ impl Function {
 
         let expr: Expr = func_str.parse().unwrap();
         let func = expr.bind("x").unwrap();
-        Self {
+        let mut output = Self {
             function: Box::new(func),
             func_str,
             min_x,
@@ -88,12 +87,11 @@ impl Function {
                 Some(x) => x,
                 None => f64::NAN,
             },
-            integral_num: match integral_num {
-                Some(x) => x,
-                None => 0,
-            },
-            broken_state: false,
-        }
+            integral_num: integral_num.unwrap_or(0),
+        };
+
+        output.func_str = "".to_string();
+        output
     }
 
     // Runs the internal function to get values
@@ -102,13 +100,11 @@ impl Function {
 
     #[inline]
     pub fn update(
-        &mut self, func_str: String, min_x: f64, max_x: f64, integral: bool,
-        integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>,
-        broken_state: bool,
+        &mut self, func_str: String, integral: bool, integral_min_x: Option<f64>,
+        integral_max_x: Option<f64>, integral_num: Option<usize>,
     ) {
-        if broken_state {
-            self.func_str = func_str.clone();
-            self.broken_state = true;
+        if func_str.is_empty() {
+            self.func_str = func_str;
             return;
         }
 
@@ -116,20 +112,14 @@ impl Function {
         if func_str != self.func_str {
             *self = Self::new(
                 func_str,
-                min_x,
-                max_x,
+                self.min_x,
+                self.max_x,
                 integral,
                 integral_min_x,
                 integral_max_x,
                 integral_num,
             );
             return;
-        }
-
-        if (min_x != self.min_x) | (max_x != self.max_x) {
-            self.back_cache.invalidate();
-            self.min_x = min_x;
-            self.max_x = max_x;
         }
 
         if integral != self.integral {
@@ -159,6 +149,15 @@ impl Function {
     }
 
     #[inline]
+    pub fn update_bounds(&mut self, min_x: f64, max_x: f64) {
+        if (min_x != self.min_x) | (max_x != self.max_x) {
+            self.back_cache.invalidate();
+            self.min_x = min_x;
+            self.max_x = max_x;
+        }
+    }
+
+    #[inline]
     pub fn get_step(&self) -> f64 {
         (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64)
     }
@@ -166,10 +165,7 @@ impl Function {
     #[inline]
     pub fn is_integral(&self) -> bool { self.integral }
 
-    #[inline]
-    pub fn is_broken(&self) -> bool { self.broken_state }
-
-    #[inline]
+    #[inline(always)]
     pub fn run(&mut self) -> FunctionOutput {
         let front_values: Vec<Value> = match self.back_cache.is_valid() {
             false => {
@@ -208,14 +204,11 @@ impl Function {
         }
     }
 
-    #[inline]
     pub fn get_string(&self) -> String { self.func_str.clone() }
 
-    #[inline]
     pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
 
     // Creates and does the math for creating all the rectangles under the graph
-    #[inline]
     fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
         if !self.integral {
             panic!("integral_rectangles called, but self.integral is false!");
