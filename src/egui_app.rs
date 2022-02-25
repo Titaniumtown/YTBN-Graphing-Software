@@ -119,7 +119,7 @@ impl epi::App for MathApp {
 
         // Cute little window that lists supported functions!
         // TODO: add more detail
-        egui::Window::new("Supported Functions").show(ctx, |ui| {
+        egui::Window::new("Supported Functions").default_pos([200.0, 200.0]).show(ctx, |ui| {
             ui.label("- sqrt, abs");
             ui.label("- exp, ln, log10 (log10 can also be called as log)");
             ui.label("- sin, cos, tan, asin, acos, atan, atan2");
