@@ -5,7 +5,7 @@ use crate::misc::{digits_precision, test_func, Cache};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Value, Values};
 use egui::widgets::plot::{Bar, BarChart};
-use egui::Color32;
+use egui::{Color32, TextStyle, Vec2, Layout};
 
 pub struct MathApp {
     func_str: String,
@@ -16,10 +16,11 @@ pub struct MathApp {
     chart_manager: ChartManager,
     back_cache: Cache<Vec<Value>>,
     front_cache: Cache<(Vec<Bar>, f64)>,
+    commit: String
 }
 
-impl Default for MathApp {
-    fn default() -> Self {
+impl MathApp {
+    pub fn new(commit: String) -> Self {
         let def_func = "x^2".to_string();
         let def_min_x = -10.0;
         let def_max_x = 10.0;
@@ -35,11 +36,10 @@ impl Default for MathApp {
             chart_manager: ChartManager::new(def_func, def_min_x, def_max_x, def_interval, def_resolution),
             back_cache: Cache::new_empty(),
             front_cache: Cache::new_empty(),
+            commit
         }
     }
-}
 
-impl MathApp {
     #[inline]
     fn get_back(&mut self) -> Line {
         let data = if self.back_cache.is_valid() {
@@ -102,15 +102,25 @@ impl epi::App for MathApp {
             chart_manager,
             back_cache,
             front_cache,
+            commit,
         } = self;
 
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
-
+        // Cute little window that lists supported functions!
+        // TODO: add more detail
+        egui::Window::new("Supported Functions").show(ctx, |ui| {
+            ui.label("- sqrt, abs");
+            ui.label("- exp, ln, log10 (log10 can also be called as log)");
+            ui.label("- sin, cos, tan, asin, acos, atan, atan2");
+            ui.label("- sinh, cosh, tanh, asinh, acosh, atanh");
+            ui.label("- floor, ceil, round");
+            ui.label("- signum, min, max");
+        });
 
         let mut parse_error: String = "".to_string();
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
+        egui::SidePanel::left("side_panel").resizable(false).show(ctx, |ui| {
             ui.heading("Side Panel");
 
             ui.horizontal(|ui| {
@@ -140,11 +150,21 @@ impl epi::App for MathApp {
             }
 
             ui.add(egui::Slider::new(num_interval, NUM_INTERVAL_RANGE).text("Interval"));
-
+            // ui.add_space(ui.text_style_height(&TextStyle::Body)*10.0);
             ui.hyperlink_to(
                 "I'm Opensource! (and licensed under AGPLv3)",
                 "https://github.com/Titaniumtown/integral_site",
             );
+            ui.horizontal(|ui| {
+                ui.with_layout(egui::Layout::top_down_justified(egui::Align::Min), |ui| {
+                    if commit.is_empty() {
+                        ui.label(format!("Current build is untracked!"));
+                    } else {
+                        ui.label("Commit: ");
+                        ui.hyperlink_to(commit.clone(), format!("https://github.com/Titaniumtown/integral_site/commit/{}", commit));
+                    }
+                });
+            });
         });
 
         if parse_error.is_empty() {
@@ -188,17 +208,6 @@ impl epi::App for MathApp {
                 digits_precision(area, 8),
                 duration
             ));
-        });
-
-        // Cute little window that lists supported functions!
-        // TODO: add more detail
-        egui::Window::new("Supported Functions").show(ctx, |ui| {
-            ui.label("- sqrt, abs");
-            ui.label("- exp, ln, log10 (log10 can also be called as log)");
-            ui.label("- sin, cos, tan, asin, acos, atan, atan2");
-            ui.label("- sinh, cosh, tanh, asinh, acosh, atanh");
-            ui.label("- floor, ceil, round");
-            ui.label("- signum, min, max");
         });
     }
 }

@@ -7,7 +7,7 @@ mod misc;
 // For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
-    let app = egui_app::MathApp::default();
+    let app = egui_app::MathApp::new("".to_string());
     let options = eframe::NativeOptions {
         // Let's show off that we support transparent windows
         transparent: true,
