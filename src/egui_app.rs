@@ -12,7 +12,7 @@ use git_version::git_version;
 const GIT_VERSION: &str = git_version!();
 
 // Sets some hard-coded limits to the application
-const NUM_INTERVAL_RANGE: RangeInclusive<usize> = 10..=10000;
+const NUM_INTERVAL_RANGE: RangeInclusive<usize> = 10..=1000000;
 const MIN_X_TOTAL: f64 = -1000.0;
 const MAX_X_TOTAL: f64 = 1000.0;
 const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
@@ -38,7 +38,7 @@ impl Default for MathApp {
         let def_func = "x^2".to_string();
         let def_min_x = -10.0;
         let def_max_x = 10.0;
-        let def_interval: usize = 100;
+        let def_interval: usize = 1000;
         let def_resolution: usize = 10000;
 
         Self {
