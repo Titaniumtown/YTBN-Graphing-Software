@@ -12,18 +12,23 @@ pub struct ChartManager {
     function: Function,
     min_x: f64,
     max_x: f64,
+    min_x_back: f64,
+    max_x_back: f64,
     num_interval: usize,
     resolution: usize,
 }
 
 impl ChartManager {
     pub fn new(
-        func_str: String, min_x: f64, max_x: f64, num_interval: usize, resolution: usize,
+        func_str: String, min_x: f64, max_x: f64, min_x_back: f64, max_x_back: f64,
+        num_interval: usize, resolution: usize,
     ) -> Self {
         Self {
             function: Function::from_string(func_str),
             min_x,
             max_x,
+            min_x_back,
+            max_x_back,
             num_interval,
             resolution,
         }
@@ -31,9 +36,9 @@ impl ChartManager {
 
     #[inline]
     pub fn draw_back(&mut self) -> Vec<(f64, f64)> {
-        let absrange = (self.max_x - self.min_x).abs();
+        let absrange = (self.max_x_back - self.min_x_back).abs();
         let output: Vec<(f64, f64)> = (1..=self.resolution)
-            .map(|x| ((x as f64 / self.resolution as f64) * absrange) + self.min_x)
+            .map(|x| ((x as f64 / self.resolution as f64) * absrange) + self.min_x_back)
             .map(|x| (x, self.function.run(x)))
             .collect();
         output
@@ -49,15 +54,19 @@ impl ChartManager {
 
     #[allow(clippy::too_many_arguments)]
     pub fn update(
-        &mut self, func_str_new: String, min_x: f64, max_x: f64, num_interval: usize,
-        resolution: usize,
+        &mut self, func_str_new: String, min_x: f64, max_x: f64, min_x_back: f64, max_x_back: f64,
+        num_interval: usize, resolution: usize,
     ) -> UpdateType {
         let func_str: String = add_asterisks(func_str_new);
         let update_func: bool = !self.function.str_compare(func_str.clone());
 
-        let update_back = update_func | (min_x != self.min_x) | (max_x != self.max_x);
-        let update_front =
-            update_back | (self.resolution != resolution) | (num_interval != self.num_interval);
+        let update_back =
+            update_func | (min_x_back != self.min_x_back) | (max_x_back != self.max_x_back);
+        let update_front = update_func
+            | (min_x != self.min_x)
+            | (max_x != self.max_x)
+            | (self.resolution != resolution)
+            | (num_interval != self.num_interval);
 
         if update_func {
             self.function = Function::from_string(func_str);
@@ -65,6 +74,8 @@ impl ChartManager {
 
         self.min_x = min_x;
         self.max_x = max_x;
+        self.min_x_back = min_x_back;
+        self.max_x_back = max_x_back;
         self.num_interval = num_interval;
         self.resolution = resolution;
 

@@ -11,10 +11,21 @@ use git_version::git_version;
 // Grabs git version on compile time
 const GIT_VERSION: &str = git_version!();
 
+// Sets some hard-coded limits to the application
+const NUM_INTERVAL_RANGE: RangeInclusive<usize> = 10..=10000;
+const MIN_X_TOTAL: f64 = -1000.0;
+const MAX_X_TOTAL: f64 = 1000.0;
+const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
+
 pub struct MathApp {
     func_str: String,
     min_x: f64,
     max_x: f64,
+
+    // Currently really unused. But once fully implemented it will represent the full graph's min_x and max_x, being seperate from min_x and max_x for the intergral.
+    min_x_graph: f64,
+    max_x_graph: f64,
+
     num_interval: usize,
     resolution: usize,
     chart_manager: ChartManager,
@@ -34,10 +45,14 @@ impl Default for MathApp {
             func_str: def_func.clone(),
             min_x: def_min_x,
             max_x: def_max_x,
+            min_x_graph: def_min_x,
+            max_x_graph: def_max_x,
             num_interval: def_interval,
             resolution: def_resolution,
             chart_manager: ChartManager::new(
                 def_func,
+                def_min_x,
+                def_max_x,
                 def_min_x,
                 def_max_x,
                 def_interval,
@@ -86,12 +101,6 @@ impl MathApp {
     }
 }
 
-// Sets some hard-coded limits to the application
-const NUM_INTERVAL_RANGE: RangeInclusive<usize> = 10..=10000;
-const MIN_X_TOTAL: f32 = -1000.0;
-const MAX_X_TOTAL: f32 = 1000.0;
-const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL as f64..=MAX_X_TOTAL as f64;
-
 impl epi::App for MathApp {
     fn name(&self) -> &str { "Integral Demonstration" }
 
@@ -107,6 +116,8 @@ impl epi::App for MathApp {
             func_str,
             min_x,
             max_x,
+            min_x_graph,
+            max_x_graph,
             num_interval,
             resolution,
             chart_manager,
@@ -162,6 +173,8 @@ impl epi::App for MathApp {
                         *min_x = -10.0;
                         *max_x = 10.0;
                     }
+                    *min_x_graph = *min_x;
+                    *max_x_graph = *max_x;
                 }
 
                 ui.add(egui::Slider::new(num_interval, NUM_INTERVAL_RANGE).text("Interval"));
@@ -195,8 +208,15 @@ impl epi::App for MathApp {
             });
 
         if parse_error.is_empty() {
-            let do_update =
-                chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
+            let do_update = chart_manager.update(
+                func_str.clone(),
+                *min_x,
+                *max_x,
+                *min_x_graph,
+                *max_x_graph,
+                *num_interval,
+                *resolution,
+            );
 
             // Invalidates caches according to what settings were changed
             match do_update {
@@ -224,6 +244,7 @@ impl epi::App for MathApp {
 
             Plot::new("plot")
                 .view_aspect(1.0)
+                .data_aspect(1.0)
                 .include_y(0)
                 .show(ui, |plot_ui| {
                     plot_ui.line(curve);

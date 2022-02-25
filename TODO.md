@@ -1,6 +1,5 @@
 ## TODO:
-1. Port to [egui](https://github.com/emilk/egui)
-    - Proper support for dynamic chart display size.
-    - Fix (rare) crashes in parsing strings (`TextDecoder.decode: Decoding failed.`)
-2. Multiple functions in one graph.
-3. Non `y=` functions.
+1. Proper support for dynamic chart display size.
+2. Fix (very rare) crashes in parsing strings (`TextDecoder.decode: Decoding failed.`)
+3. Multiple functions in one graph.
+4. Non `y=` functions.
