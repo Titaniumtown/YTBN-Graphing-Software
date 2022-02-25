@@ -57,7 +57,9 @@ pub fn add_asterisks(function_in: String) -> String {
                 add_asterisk = true;
             }
         } else if letters.contains(&c) {
-            if numbers.contains(&prev_char) | (valid_variables.contains(&prev_char) && valid_variables.contains(&c)) {
+            if numbers.contains(&prev_char)
+                | (valid_variables.contains(&prev_char) && valid_variables.contains(&c))
+            {
                 add_asterisk = true;
             }
         } else if (numbers.contains(&c) | c_letters_var) && prev_letters_var {

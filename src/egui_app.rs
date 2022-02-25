@@ -36,9 +36,15 @@ impl Default for MathApp {
             max_x: def_max_x,
             num_interval: def_interval,
             resolution: def_resolution,
-            chart_manager: ChartManager::new(def_func, def_min_x, def_max_x, def_interval, def_resolution),
+            chart_manager: ChartManager::new(
+                def_func,
+                def_min_x,
+                def_max_x,
+                def_interval,
+                def_resolution,
+            ),
             back_cache: Cache::new_empty(),
-            front_cache: Cache::new_empty()
+            front_cache: Cache::new_empty(),
         }
     }
 }
@@ -105,7 +111,7 @@ impl epi::App for MathApp {
             resolution,
             chart_manager,
             back_cache,
-            front_cache
+            front_cache,
         } = self;
 
         // Note: This Instant implementation does not show microseconds when using wasm.
@@ -123,59 +129,69 @@ impl epi::App for MathApp {
         });
 
         let mut parse_error: String = "".to_string();
-        egui::SidePanel::left("side_panel").resizable(false).show(ctx, |ui| {
-            ui.heading("Side Panel");
+        egui::SidePanel::left("side_panel")
+            .resizable(false)
+            .show(ctx, |ui| {
+                ui.heading("Side Panel");
 
-            ui.horizontal(|ui| {
-                ui.label("Function: ");
-                ui.text_edit_singleline(func_str);
-            });
+                ui.horizontal(|ui| {
+                    ui.label("Function: ");
+                    ui.text_edit_singleline(func_str);
+                });
 
-            let func_test_output = test_func(func_str.clone());
-            if !func_test_output.is_empty() {
-                parse_error = func_test_output;
-            }
-            let min_x_old = *min_x;
-            let min_x_response = ui.add(egui::Slider::new(min_x, X_RANGE.clone()).text("Min X"));
-
-            let max_x_old = *max_x;
-            let max_x_response = ui.add(egui::Slider::new(max_x, X_RANGE).text("Max X"));
-
-            if min_x >= max_x {
-                if max_x_response.changed() {
-                    *max_x = max_x_old;
-                } else if min_x_response.changed() {
-                    *min_x = min_x_old;
-                } else {
-                    *min_x = -10.0;
-                    *max_x = 10.0;
+                let func_test_output = test_func(func_str.clone());
+                if !func_test_output.is_empty() {
+                    parse_error = func_test_output;
                 }
-            }
+                let min_x_old = *min_x;
+                let min_x_response =
+                    ui.add(egui::Slider::new(min_x, X_RANGE.clone()).text("Min X"));
 
-            ui.add(egui::Slider::new(num_interval, NUM_INTERVAL_RANGE).text("Interval"));
-            // ui.add_space(ui.text_style_height(&TextStyle::Body)*10.0);
-            ui.hyperlink_to(
-                "I'm Opensource! (and licensed under AGPLv3)",
-                "https://github.com/Titaniumtown/integral_site",
-            );
+                let max_x_old = *max_x;
+                let max_x_response = ui.add(egui::Slider::new(max_x, X_RANGE).text("Max X"));
 
-            // Displays commit info
-            ui.horizontal(|ui| {
-                ui.with_layout(egui::Layout::top_down_justified(egui::Align::Min), |ui| {
+                if min_x >= max_x {
+                    if max_x_response.changed() {
+                        *max_x = max_x_old;
+                    } else if min_x_response.changed() {
+                        *min_x = min_x_old;
+                    } else {
+                        *min_x = -10.0;
+                        *max_x = 10.0;
+                    }
+                }
+
+                ui.add(egui::Slider::new(num_interval, NUM_INTERVAL_RANGE).text("Interval"));
+                // ui.add_space(ui.text_style_height(&TextStyle::Body)*10.0);
+                ui.hyperlink_to(
+                    "I'm Opensource! (and licensed under AGPLv3)",
+                    "https://github.com/Titaniumtown/integral_site",
+                );
+
+                // Displays commit info
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::top_down_justified(egui::Align::Min), |ui| {
                         ui.label("Commit: ");
 
                         // Only include hyperlink if the build doesn't have untracked files
                         if !GIT_VERSION.contains("-modified") {
-                            ui.hyperlink_to(GIT_VERSION, format!("https://github.com/Titaniumtown/integral_site/commit/{}", GIT_VERSION));
+                            ui.hyperlink_to(
+                                GIT_VERSION,
+                                format!(
+                                    "https://github.com/Titaniumtown/integral_site/commit/{}",
+                                    GIT_VERSION
+                                ),
+                            );
                         } else {
                             ui.label(GIT_VERSION);
                         }
+                    });
                 });
             });
-        });
 
         if parse_error.is_empty() {
-            let do_update = chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
+            let do_update =
+                chart_manager.update(func_str.clone(), *min_x, *max_x, *num_interval, *resolution);
 
             // Invalidates caches according to what settings were changed
             match do_update {
