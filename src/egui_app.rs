@@ -30,6 +30,8 @@ pub struct MathApp {
     integral_max_x: f64,
 
     integral_num: usize,
+
+    help_open: bool
 }
 
 impl Default for MathApp {
@@ -54,6 +56,7 @@ impl Default for MathApp {
             integral_min_x: def_min_x,
             integral_max_x: def_max_x,
             integral_num: def_interval,
+            help_open: true,
         }
     }
 }
@@ -85,6 +88,7 @@ impl epi::App for MathApp {
             integral_min_x,
             integral_max_x,
             integral_num,
+            help_open,
         } = self;
 
         // Note: This Instant implementation does not show microseconds when using wasm.
@@ -94,6 +98,7 @@ impl epi::App for MathApp {
         // TODO: add more detail
         egui::Window::new("Supported Functions")
             .default_pos([200.0, 200.0])
+            .open(help_open)
             .show(ctx, |ui| {
                 ui.label("- sqrt, abs");
                 ui.label("- exp, ln, log10 (log10 can also be called as log)");
@@ -118,6 +123,10 @@ impl epi::App for MathApp {
                         None,
                         None));
                     func_strs.push(String::from(DEFAULT_FUNCION));
+                }
+
+                if ui.add(egui::Button::new("Open Help")).clicked() {
+                    *help_open = true;
                 }
 
                 let min_x_old = *integral_min_x;
