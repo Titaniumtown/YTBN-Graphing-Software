@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use crate::function::Function;
-use crate::misc::{digits_precision, test_func, add_asterisks};
+use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Values};
 use egui::widgets::plot::BarChart;
@@ -13,7 +13,7 @@ use git_version::git_version;
 const GIT_VERSION: &str = git_version!();
 
 // Sets some hard-coded limits to the application
-const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 10..=1000000;
+const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 10..=100000;
 const MIN_X_TOTAL: f64 = -1000.0;
 const MAX_X_TOTAL: f64 = 1000.0;
 const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
@@ -155,7 +155,7 @@ impl epi::App for MathApp {
                         function.is_integral()
                     };
 
-                    if func_strs[i] != "" {
+                    if !func_strs[i].is_empty() {
                         let proc_func_str = add_asterisks(func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
                         if !func_test_output.is_empty() {
