@@ -3,8 +3,6 @@ use egui::plot::Value;
 use egui::widgets::plot::Bar;
 use meval::Expr;
 
-pub const RESOLUTION: f64 = 1000.0;
-
 // Struct that stores and manages the output of a function
 pub struct FunctionOutput {
     // The actual line graph
@@ -43,6 +41,7 @@ pub struct Function {
     pub(crate) func_str: String,
     min_x: f64,
     max_x: f64,
+    pixel_width: usize,
 
     back_cache: Cache<Vec<Value>>,
     front_cache: Cache<(Vec<Bar>, f64)>,
@@ -55,7 +54,7 @@ pub struct Function {
 
 impl Function {
     pub fn new(
-        func_str: String, min_x: f64, max_x: f64, integral: bool, integral_min_x: Option<f64>,
+        func_str: String, min_x: f64, max_x: f64, pixel_width: usize, integral: bool, integral_min_x: Option<f64>,
         integral_max_x: Option<f64>, integral_num: Option<usize>,
     ) -> Self {
         // Makes sure proper arguments are passed when integral is enabled
@@ -76,6 +75,7 @@ impl Function {
             func_str,
             min_x,
             max_x,
+            pixel_width,
             back_cache: Cache::new_empty(),
             front_cache: Cache::new_empty(),
             integral,
@@ -114,6 +114,7 @@ impl Function {
                 func_str,
                 self.min_x,
                 self.max_x,
+                self.pixel_width,
                 integral,
                 integral_min_x,
                 integral_max_x,
@@ -148,12 +149,12 @@ impl Function {
         }
     }
 
-    #[inline]
-    pub fn update_bounds(&mut self, min_x: f64, max_x: f64) {
-        if (min_x != self.min_x) | (max_x != self.max_x) {
+    pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
+        if (min_x != self.min_x) | (max_x != self.max_x) | (pixel_width != self.pixel_width) {
             self.back_cache.invalidate();
             self.min_x = min_x;
             self.max_x = max_x;
+            self.pixel_width = pixel_width;
         }
     }
 
@@ -170,10 +171,14 @@ impl Function {
         let front_values: Vec<Value> = match self.back_cache.is_valid() {
             false => {
                 let absrange = (self.max_x - self.min_x).abs();
-                let front_data: Vec<(f64, f64)> = (1..=(RESOLUTION as usize))
-                    .map(|x| ((x as f64 / RESOLUTION) * absrange) + self.min_x)
+                let resolution: f64 = (self.pixel_width as f64/absrange) as f64;
+                let front_data: Vec<(f64, f64)> = (1..=self.pixel_width)
+                    .map(|x| ((x as f64 / resolution as f64)) + self.min_x)
+                    // .step_by()
                     .map(|x| (x, self.run_func(x)))
                     .collect();
+                // println!("{} {}", front_data.len(), front_data.len() as f64/absrange);
+
                 let output: Vec<Value> =
                     front_data.iter().map(|(x, y)| Value::new(*x, *y)).collect();
                 self.back_cache.set(output.clone());

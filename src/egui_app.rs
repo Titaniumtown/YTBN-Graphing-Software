@@ -44,6 +44,7 @@ impl Default for MathApp {
                 String::from(DEFAULT_FUNCION),
                 def_min_x,
                 def_max_x,
+                100,
                 true,
                 Some(def_min_x),
                 Some(def_max_x),
@@ -111,6 +112,7 @@ impl epi::App for MathApp {
                     // min_x and max_x will be updated later, doesn't matter here
                     functions.push(Function::new(String::from(DEFAULT_FUNCION), -1.0,
                         1.0,
+                        100,
                         false,
                         None,
                         None,
@@ -199,6 +201,7 @@ impl epi::App for MathApp {
                 ui.label(format!("Error: {}", parse_error));
                 return;
             }
+            let available_width: usize = ui.available_width() as usize;
 
             let step = self.get_step();
             let mut area_list: Vec<f64> = Vec::new();
@@ -211,10 +214,10 @@ impl epi::App for MathApp {
                     let bounds = plot_ui.plot_bounds();
                     let minx_bounds: f64 = bounds.min()[0];
                     let maxx_bounds: f64 = bounds.max()[0];
-                    // println!("({}, {})", minx_bounds, maxx_bounds);
 
                     for (i, function) in self.functions.iter_mut().enumerate() {
-                        function.update_bounds(minx_bounds, maxx_bounds);
+                        function.update_bounds(minx_bounds, maxx_bounds, available_width);
+
                         if self.func_strs[i].is_empty() {
                             continue;
                         }
