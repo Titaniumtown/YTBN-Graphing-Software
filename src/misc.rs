@@ -147,12 +147,7 @@ impl<T> Cache<T> {
     pub fn invalidate(&mut self) { self.backing_data = None; }
 
     #[inline]
-    pub fn is_valid(&self) -> bool {
-        match &self.backing_data {
-            Some(_) => true,
-            None => false,
-        }
-    }
+    pub fn is_valid(&self) -> bool { self.backing_data.is_some() }
 }
 
 // Tests to make sure my cursed function works as intended

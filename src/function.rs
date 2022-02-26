@@ -28,12 +28,7 @@ impl FunctionOutput {
     }
 
     #[inline]
-    pub fn has_integral(&self) -> bool {
-        match &self.front {
-            Some(_) => true,
-            None => false,
-        }
-    }
+    pub fn has_integral(&self) -> bool { self.front.is_some() }
 }
 
 pub struct Function {
@@ -208,10 +203,6 @@ impl Function {
             FunctionOutput::new(front_values, None)
         }
     }
-
-    pub fn get_string(&self) -> String { self.func_str.clone() }
-
-    pub fn str_compare(&self, other_string: String) -> bool { self.func_str == other_string }
 
     // Creates and does the math for creating all the rectangles under the graph
     fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
