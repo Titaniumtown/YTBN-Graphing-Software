@@ -31,7 +31,7 @@ pub struct MathApp {
 
     integral_num: usize,
 
-    help_open: bool
+    help_open: bool,
 }
 
 impl Default for MathApp {
@@ -108,26 +108,34 @@ impl epi::App for MathApp {
                 ui.label("- signum, min, max");
             });
 
-        let mut parse_error: String = "".to_string();
-        egui::SidePanel::left("side_panel")
-            .resizable(false)
-            .show(ctx, |ui| {
-                ui.heading("Side Panel");
+        egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
                 if ui.add(egui::Button::new("Add function")).clicked() {
                     // min_x and max_x will be updated later, doesn't matter here
-                    functions.push(Function::new(String::from(DEFAULT_FUNCION), -1.0,
+                    functions.push(Function::new(
+                        String::from(DEFAULT_FUNCION),
+                        -1.0,
                         1.0,
                         100,
                         false,
                         None,
                         None,
-                        None));
+                        None,
+                    ));
                     func_strs.push(String::from(DEFAULT_FUNCION));
                 }
 
                 if ui.add(egui::Button::new("Open Help")).clicked() {
                     *help_open = true;
                 }
+            });
+        });
+
+        let mut parse_error: String = "".to_string();
+        egui::SidePanel::left("side_panel")
+            .resizable(false)
+            .show(ctx, |ui| {
+                ui.heading("Side Panel");
 
                 let min_x_old = *integral_min_x;
                 let min_x_response =

@@ -54,8 +54,8 @@ pub struct Function {
 
 impl Function {
     pub fn new(
-        func_str: String, min_x: f64, max_x: f64, pixel_width: usize, integral: bool, integral_min_x: Option<f64>,
-        integral_max_x: Option<f64>, integral_num: Option<usize>,
+        func_str: String, min_x: f64, max_x: f64, pixel_width: usize, integral: bool,
+        integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>,
     ) -> Self {
         // Makes sure proper arguments are passed when integral is enabled
         if integral {
@@ -171,9 +171,9 @@ impl Function {
         let front_values: Vec<Value> = match self.back_cache.is_valid() {
             false => {
                 let absrange = (self.max_x - self.min_x).abs();
-                let resolution: f64 = (self.pixel_width as f64/absrange) as f64;
+                let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
                 let front_data: Vec<(f64, f64)> = (1..=self.pixel_width)
-                    .map(|x| ((x as f64 / resolution as f64)) + self.min_x)
+                    .map(|x| (x as f64 / resolution as f64) + self.min_x)
                     // .step_by()
                     .map(|x| (x, self.run_func(x)))
                     .collect();
