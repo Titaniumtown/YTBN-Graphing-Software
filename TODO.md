@@ -5,8 +5,6 @@
 4. Multiple functions in one graph.
     - Backend support
         - Generation of data (Done)
-        - Management
-            - Handle by IDs
         - Integrals between functions
     - UI
         - Dynamically create inputs (Done)
