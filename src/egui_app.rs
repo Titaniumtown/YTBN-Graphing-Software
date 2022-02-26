@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use crate::function::Function;
-use crate::misc::{digits_precision, test_func};
+use crate::misc::{digits_precision, test_func, add_asterisks};
 use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Values};
 use egui::widgets::plot::BarChart;
@@ -156,11 +156,12 @@ impl epi::App for MathApp {
                     };
 
                     if func_strs[i] != "" {
-                        let func_test_output = test_func(func_strs[i].clone());
+                        let proc_func_str = add_asterisks(func_strs[i].clone());
+                        let func_test_output = test_func(proc_func_str.clone());
                         if !func_test_output.is_empty() {
                             parse_error += &func_test_output;
                         } else {
-                            function.update(func_strs[i].clone(), integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
+                            function.update(proc_func_str, integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
                         }
                     }
                 }
