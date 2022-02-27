@@ -6,4 +6,5 @@
         - Dynamically delete inputs
         - Different colors
         - Better Handling of area and integrals
-2. Non `y=` functions.
+2. Cache data when not zooming.
+3. Non `y=` functions.
