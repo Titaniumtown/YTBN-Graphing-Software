@@ -184,6 +184,8 @@ impl epi::App for MathApp {
                         } else {
                             function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num));
                         }
+                    } else {
+                        function.func_str = "".to_string();
                     }
                 }
 
@@ -238,14 +240,12 @@ impl epi::App for MathApp {
                     let maxx_bounds: f64 = bounds.max()[0];
 
                     let mut i: usize = 0;
-                    let mut functions_2: Vec<Function> = Vec::new(); // Todo: figure out why this is required
-                    for function_1 in self.functions.iter_mut() {
-                        let function = function_1;
-                        function.update_bounds(minx_bounds, maxx_bounds, available_width);
-
+                    for function in self.functions.iter_mut() {
                         if self.func_strs[i].is_empty() {
                             continue;
                         }
+
+                        function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
                         let output = function.run();
                         let back = output.get_back();
@@ -261,9 +261,7 @@ impl epi::App for MathApp {
                             area_list.push(0.0);
                         }
                         i += 1;
-                        functions_2.push(function.clone());
                     }
-                    self.functions = functions_2;
                 });
 
             let duration = start.elapsed();
