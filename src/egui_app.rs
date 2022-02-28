@@ -14,9 +14,9 @@ const GIT_VERSION: &str = git_version!();
 
 // Sets some hard-coded limits to the application
 const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 10..=100000;
-const MIN_X_TOTAL: f64 = -1000.0;
-const MAX_X_TOTAL: f64 = 1000.0;
-const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
+const INTEGRAL_X_MIN: f64 = -1000.0;
+const INTEGRAL_X_MAX: f64 = 1000.0;
+const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
 
 pub struct MathApp {
@@ -105,6 +105,7 @@ impl epi::App for MathApp {
                 ui.label("- signum, min, max");
             });
 
+        // Creates Top bar that contains some general options
         egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui.add(egui::Button::new("Add Function")).clicked() {
@@ -128,7 +129,8 @@ impl epi::App for MathApp {
             });
         });
 
-        let mut parse_error: String = "".to_string();
+        let mut parse_error: String = "".to_string(); // Stores errors found when interpreting input functions
+                                                      // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
@@ -136,10 +138,10 @@ impl epi::App for MathApp {
 
                 let min_x_old = self.integral_min_x;
                 let min_x_response =
-                    ui.add(egui::Slider::new(&mut self.integral_min_x, X_RANGE.clone()).text("Min X"));
+                    ui.add(egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone()).text("Min X"));
 
                 let max_x_old = self.integral_max_x;
-                let max_x_response = ui.add(egui::Slider::new(&mut self.integral_max_x, X_RANGE).text("Max X"));
+                let max_x_response = ui.add(egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"));
 
                 // Checks bounds, and if they are invalid, fix them
                 if self.integral_min_x >= self.integral_max_x {
@@ -158,6 +160,8 @@ impl epi::App for MathApp {
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let old_func_str = self.func_strs[i].clone();
                     let mut integral_toggle: bool = false;
+
+                    // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
                         if ui.add(Button::new("Toggle Integral")).clicked() {
@@ -177,16 +181,18 @@ impl epi::App for MathApp {
                     if !self.func_strs[i].is_empty() && (proc_func_str != old_func_str) {
                         let func_test_output = test_func(proc_func_str.clone());
                         if !func_test_output.is_empty() {
+                            parse_error += &format!("(Function #{}) ", i);
                             parse_error += &func_test_output;
                             do_update = false;
                         }
                     }
+
                     if do_update {
                         function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num));
                     }
                 }
 
-                // Opensource and Licensing information
+                // Open Source and Licensing information
                 ui.horizontal(|ui| {
                     ui.hyperlink_to(
                         "I'm Opensource!",
@@ -200,7 +206,10 @@ impl epi::App for MathApp {
                     ui.label("Commit: ");
 
                     // Only include hyperlink if the build doesn't have untracked files
-                    if !GIT_VERSION.contains("-modified") {
+                    if GIT_VERSION.contains("-modified") {
+                        // If git version is modified, don't display a link to the commit on github (as the commit will not exist)
+                        ui.label(GIT_VERSION);
+                    } else {
                         ui.hyperlink_to(
                             GIT_VERSION,
                             format!(
@@ -208,14 +217,13 @@ impl epi::App for MathApp {
                                 GIT_VERSION
                             ),
                         );
-                    } else {
-                        ui.label(GIT_VERSION);
                     }
                 });
             });
 
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
+        // Stores the final Plot
         egui::CentralPanel::default().show(ctx, |ui| {
             if !parse_error.is_empty() {
                 ui.label(format!("Error: {}", parse_error));
@@ -223,7 +231,7 @@ impl epi::App for MathApp {
             }
             let available_width: usize = ui.available_width() as usize;
 
-            let mut area_list: Vec<f64> = Vec::new();
+            let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
                 .view_aspect(1.0)
@@ -265,6 +273,7 @@ impl epi::App for MathApp {
 
             let duration = start.elapsed();
 
+            // Displays all areas of functions along with how long it took to complete the entire frame
             ui.label(format!(
                 "Area: {:?} Took: {:?}",
                 area_list.clone(),
