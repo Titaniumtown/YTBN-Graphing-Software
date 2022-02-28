@@ -35,7 +35,6 @@ pub struct MathApp {
 }
 
 impl Default for MathApp {
-    #[inline]
     fn default() -> Self {
         let def_min_x = -10.0;
         let def_max_x = 10.0;

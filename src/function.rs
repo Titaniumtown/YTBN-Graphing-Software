@@ -11,13 +11,10 @@ pub struct FunctionOutput {
 }
 
 impl FunctionOutput {
-    #[inline]
     pub fn new(back: Vec<Value>, front: Option<(Vec<Bar>, f64)>) -> Self { Self { back, front } }
 
-    #[inline]
     pub fn get_back(&self) -> Vec<Value> { self.back.clone() }
 
-    #[inline]
     pub fn get_front(&self) -> (Vec<Bar>, f64) {
         match &self.front {
             Some(x) => (x.0.clone(), x.1),
@@ -25,7 +22,6 @@ impl FunctionOutput {
         }
     }
 
-    #[inline]
     pub fn has_integral(&self) -> bool { self.front.is_some() }
 }
 
@@ -105,10 +101,8 @@ impl Function {
     }
 
     // Runs the internal function to get values
-    #[inline]
     fn run_func(&self, x: f64) -> f64 { (self.function)(x) }
 
-    #[inline(always)]
     pub fn update(
         &mut self, func_str: String, integral: bool, integral_min_x: Option<f64>,
         integral_max_x: Option<f64>, integral_num: Option<usize>,
@@ -159,7 +153,6 @@ impl Function {
         }
     }
 
-    #[inline(always)]
     pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
         if pixel_width != self.pixel_width {
             self.back_cache = None;
@@ -170,7 +163,6 @@ impl Function {
             && self.back_cache.is_some()
             && false
         {
-            println!("rebuilding cache");
             let range_new: f64 = max_x.abs() + min_x.abs();
 
             let resolution: f64 = (self.pixel_width as f64 / range_new) as f64;
@@ -207,15 +199,12 @@ impl Function {
         }
     }
 
-    #[inline]
     pub fn get_step(&self) -> f64 {
         (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64)
     }
 
-    #[inline]
     pub fn is_integral(&self) -> bool { self.integral }
 
-    #[inline(always)]
     pub fn run(&mut self) -> FunctionOutput {
         let front_values: Vec<Value> = match self.back_cache.is_some() {
             true => self.back_cache.as_ref().expect("").clone(),
