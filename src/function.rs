@@ -1,4 +1,6 @@
+#[allow(unused_imports)]
 use crate::misc::debug_log;
+
 use eframe::egui::{plot::Value, widgets::plot::Bar};
 use meval::Expr;
 
