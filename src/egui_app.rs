@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use crate::function::Function;
 use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
-use egui::plot::{Line, Plot, Values};
+use egui::plot::Plot;
 use egui::widgets::plot::BarChart;
 use egui::widgets::Button;
 use egui::{Color32, FontData, FontFamily, Vec2};
@@ -246,18 +246,15 @@ impl epi::App for MathApp {
 
                         function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
-                        let output = function.run();
-                        let back = output.get_back();
-                        plot_ui.line(Line::new(Values::from_values(back)).color(Color32::RED));
+                        let (back_values, bars) = function.run();
+                        plot_ui.line(back_values.color(Color32::RED));
 
-                        if output.has_integral() {
-                            let (bars, area) = output.get_front();
-                            let bar_chart =
-                                BarChart::new(bars.clone()).color(Color32::BLUE).width(step);
-                            plot_ui.bar_chart(bar_chart);
+                        if bars.is_some() {
+                            let (bars, area) = bars.unwrap();
+                            plot_ui.bar_chart(BarChart::new(bars).color(Color32::BLUE).width(step));
                             area_list.push(digits_precision(area, 8))
                         } else {
-                            area_list.push(0.0);
+                            area_list.push(f64::NAN);
                         }
                         i += 1;
                     }

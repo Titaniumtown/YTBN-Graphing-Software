@@ -1,32 +1,11 @@
 #[allow(unused_imports)]
 use crate::misc::debug_log;
 
-use eframe::egui::{plot::Value, widgets::plot::Bar};
+use eframe::egui::{
+    plot::{Line, Value, Values},
+    widgets::plot::Bar,
+};
 use meval::Expr;
-
-// Struct that stores and manages the output of a function
-pub struct FunctionOutput {
-    // The actual line graph
-    back: Vec<Value>,
-
-    // Integral information
-    front: Option<(Vec<Bar>, f64)>,
-}
-
-impl FunctionOutput {
-    pub fn new(back: Vec<Value>, front: Option<(Vec<Bar>, f64)>) -> Self { Self { back, front } }
-
-    pub fn get_back(&self) -> Vec<Value> { self.back.clone() }
-
-    pub fn get_front(&self) -> (Vec<Bar>, f64) {
-        match &self.front {
-            Some(x) => (x.0.clone(), x.1),
-            None => panic!(""),
-        }
-    }
-
-    pub fn has_integral(&self) -> bool { self.front.is_some() }
-}
 
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
@@ -199,8 +178,8 @@ impl Function {
 
     pub fn is_integral(&self) -> bool { self.integral }
 
-    pub fn run(&mut self) -> FunctionOutput {
-        let back_values: Vec<Value> = match self.back_cache.is_some() {
+    pub fn run(&mut self) -> (Line, Option<(Vec<Bar>, f64)>) {
+        let back_values: Line = Line::new(Values::from_values(match self.back_cache.is_some() {
             true => {
                 debug_log("back_cache: using");
                 self.back_cache.as_ref().unwrap().clone()
@@ -219,7 +198,7 @@ impl Function {
                 self.back_cache = Some(back_data.clone());
                 back_data
             }
-        };
+        }));
 
         if self.integral {
             let front_bars: (Vec<Bar>, f64) = match self.front_cache.is_some() {
@@ -239,9 +218,9 @@ impl Function {
                     output
                 }
             };
-            FunctionOutput::new(back_values, Some(front_bars))
+            (back_values, Some(front_bars))
         } else {
-            FunctionOutput::new(back_values, None)
+            (back_values, None)
         }
     }
 
