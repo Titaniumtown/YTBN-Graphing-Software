@@ -6,6 +6,8 @@ mod function;
 mod misc;
 
 #[cfg(target_arch = "wasm32")]
+use misc::log_helper;
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
@@ -13,20 +15,11 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-#[cfg(target_arch = "wasm32")]
 #[cfg(debug_assertions)]
 fn init_tracing_wasm() {
-    log("Initializing tracing_wasm...");
+    log_helper("Initializing tracing_wasm...");
     tracing_wasm::set_as_global_default();
-    log("Initialized tracing_wasm!");
+    log_helper("Initialized tracing_wasm!");
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -36,19 +29,19 @@ fn init_tracing_wasm() {}
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn start(canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
-    log("Initializing...");
+    log_helper("Initializing...");
 
     // See performance in browser profiler!
     init_tracing_wasm();
 
     // Used in order to hook into `panic!()` to log in the browser's console
-    log("Initializing console_error_panic_hook...");
+    log_helper("Initializing console_error_panic_hook...");
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    log("Initialized console_error_panic_hook!");
+    log_helper("Initialized console_error_panic_hook!");
 
-    log("Finished initializing!");
+    log_helper("Finished initializing!");
 
-    log("Starting App...");
+    log_helper("Starting App...");
     let app = egui_app::MathApp::default();
     eframe::start_web(canvas_id, Box::new(app))
 }

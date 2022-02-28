@@ -1,5 +1,37 @@
 use meval::Expr;
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
+#[allow(dead_code)]
+pub fn log_helper(s: &str) {
+    #[cfg(target_arch = "wasm32")]
+    log(s);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    println!("{}", s);
+}
+
+#[cfg(debug_assertions)]
+pub fn debug_log(s: &str) {
+    #[cfg(target_arch = "wasm32")]
+    log(s);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    println!("{}", s);
+}
+
+#[cfg(not(debug_assertions))]
+pub fn debug_log(_s: &str) {}
+
 /*
 EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
 One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
