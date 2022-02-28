@@ -178,20 +178,20 @@ impl Function {
                 .map(|ele| ele.x)
                 .collect();
 
-            let back_data: Vec<Value> = (1..=self.pixel_width)
-                .map(|x| (x as f64 / resolution as f64) + min_x)
-                .map(|x| {
-                    let i = x_data.iter().position(|&r| r == x);
+            self.back_cache = Some(
+                (1..=self.pixel_width)
+                    .map(|x| (x as f64 / resolution as f64) + min_x)
+                    .map(|x| {
+                        let i = x_data.iter().position(|&r| r == x);
 
-                    if i.is_some() {
-                        back_cache[i.expect("i is None")]
-                    } else {
-                        Value::new(x, self.run_func(x))
-                    }
-                })
-                .collect();
-
-            self.back_cache = Some(back_data);
+                        if i.is_some() {
+                            back_cache[i.unwrap()]
+                        } else {
+                            Value::new(x, self.run_func(x))
+                        }
+                    })
+                    .collect(),
+            );
         } else {
             self.back_cache = None;
             self.min_x = min_x;
