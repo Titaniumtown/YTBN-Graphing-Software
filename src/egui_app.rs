@@ -55,7 +55,7 @@ impl Default for MathApp {
             integral_min_x: def_min_x,
             integral_max_x: def_max_x,
             integral_num: def_interval,
-            help_open: true,
+            help_open: false,
         }
     }
 }
@@ -220,7 +220,8 @@ impl epi::App for MathApp {
 
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
-        // Stores the final Plot
+        let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
+                                                  // Stores the final Plot
         egui::CentralPanel::default().show(ctx, |ui| {
             if !parse_error.is_empty() {
                 ui.label(format!("Error: {}", parse_error));
@@ -228,7 +229,6 @@ impl epi::App for MathApp {
             }
             let available_width: usize = ui.available_width() as usize;
 
-            let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
                 .view_aspect(1.0)
@@ -263,15 +263,18 @@ impl epi::App for MathApp {
                         i += 1;
                     }
                 });
-
-            let duration = start.elapsed();
-
-            // Displays all areas of functions along with how long it took to complete the entire frame
-            ui.label(format!(
-                "Area: {:?} Took: {:?}",
-                area_list.clone(),
-                duration
-            ));
         });
+
+        let duration = start.elapsed();
+        egui::Window::new("Info")
+            .default_pos([200.0, 200.0])
+            .show(ctx, |ui| {
+                // Displays all areas of functions along with how long it took to complete the entire frame
+                ui.label(format!(
+                    "Area: {:?} Took: {:?}",
+                    area_list.clone(),
+                    duration
+                ));
+            });
     }
 }
