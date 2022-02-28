@@ -182,10 +182,10 @@ impl Function {
                 (1..=self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + min_x)
                     .map(|x| {
-                        let i = x_data.iter().position(|&r| r == x);
+                        let i_option = x_data.iter().position(|&r| r == x);
 
-                        if i.is_some() {
-                            back_cache[i.unwrap()]
+                        if let Some(i) = i_option {
+                            back_cache[i]
                         } else {
                             Value::new(x, self.run_func(x))
                         }
