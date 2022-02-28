@@ -6,7 +6,7 @@ use eframe::{egui, epi};
 use egui::plot::{Line, Plot, Values};
 use egui::widgets::plot::BarChart;
 use egui::widgets::Button;
-use egui::{Color32, Vec2};
+use egui::{Color32, Vec2, FontData, FontFamily};
 use git_version::git_version;
 
 // Grabs git version on compile time
@@ -77,6 +77,26 @@ impl epi::App for MathApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
+
+        let mut fonts = egui::FontDefinitions::default();
+        fonts.font_data.insert(
+            "Ubuntu-Light".to_owned(),
+            FontData::from_static(include_bytes!("Ubuntu-Light.ttf")),
+        );
+        fonts.families.insert(
+            FontFamily::Monospace,
+            vec![
+                "Ubuntu-Light".to_owned(),
+            ],
+        );
+        fonts.families.insert(
+            FontFamily::Proportional,
+            vec![
+                "Ubuntu-Light".to_owned(),
+            ],
+        );
+
+        ctx.set_fonts(fonts);
 
         // Cute little window that lists supported functions!
         // TODO: add more detail

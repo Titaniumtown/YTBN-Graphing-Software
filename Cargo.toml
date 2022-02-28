@@ -15,8 +15,8 @@ strip = true
 
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
-egui = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1" }
-eframe = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1" }
+egui = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false }
+eframe = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false, features = ["egui_glow"] }
 instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 git-version = "0.3.5"
 
