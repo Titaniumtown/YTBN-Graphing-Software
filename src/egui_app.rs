@@ -242,7 +242,7 @@ impl epi::App for MathApp {
                     let maxx_bounds: f64 = bounds.max()[0];
 
                     let mut i: usize = 0;
-                    let mut functions_2: Vec<Function> = Vec::new();
+                    let mut functions_2: Vec<Function> = Vec::new(); // Todo: figure out why this is required
                     for function_1 in self.functions.iter_mut() {
                         let function = function_1;
                         function.update_bounds(minx_bounds, maxx_bounds, available_width);
