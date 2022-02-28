@@ -21,6 +21,7 @@ pub fn log_helper(s: &str) {
 }
 
 #[cfg(debug_assertions)]
+#[allow(dead_code)]
 pub fn debug_log(s: &str) {
     #[cfg(target_arch = "wasm32")]
     log(s);
@@ -30,6 +31,7 @@ pub fn debug_log(s: &str) {
 }
 
 #[cfg(not(debug_assertions))]
+#[allow(dead_code)]
 pub fn debug_log(_s: &str) {}
 
 /*
