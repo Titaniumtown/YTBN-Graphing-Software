@@ -8,6 +8,7 @@ use egui::widgets::plot::BarChart;
 use egui::widgets::Button;
 use egui::{Color32, FontData, FontFamily, Vec2};
 use git_version::git_version;
+use include_flate::flate;
 
 // Grabs git version on compile time
 const GIT_VERSION: &str = git_version!();
@@ -18,6 +19,8 @@ const INTEGRAL_X_MIN: f64 = -1000.0;
 const INTEGRAL_X_MAX: f64 = 1000.0;
 const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
+
+flate!(static FONT_DATA: [u8] from "src/Ubuntu-Light.ttf");
 
 pub struct MathApp {
     functions: Vec<Function>,
@@ -32,6 +35,8 @@ pub struct MathApp {
     integral_num: usize,
 
     help_open: bool,
+
+    font: FontData,
 }
 
 impl Default for MathApp {
@@ -56,7 +61,26 @@ impl Default for MathApp {
             integral_max_x: def_max_x,
             integral_num: def_interval,
             help_open: false,
+            font: FontData::from_static(&FONT_DATA),
         }
+    }
+}
+
+impl MathApp {
+    fn init_font(&self, ctx: &egui::Context) {
+        // Reduce size of final binary by just including one font
+        let mut fonts = egui::FontDefinitions::default();
+        fonts
+            .font_data
+            .insert("Ubuntu-Light".to_owned(), self.font.clone());
+        fonts
+            .families
+            .insert(FontFamily::Monospace, vec!["Ubuntu-Light".to_owned()]);
+        fonts
+            .families
+            .insert(FontFamily::Proportional, vec!["Ubuntu-Light".to_owned()]);
+
+        ctx.set_fonts(fonts);
     }
 }
 
@@ -76,20 +100,7 @@ impl epi::App for MathApp {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
-        // Reduce size of final binary by just including one font
-        let mut fonts = egui::FontDefinitions::default();
-        fonts.font_data.insert(
-            "Ubuntu-Light".to_owned(),
-            FontData::from_static(include_bytes!("Ubuntu-Light.ttf")),
-        );
-        fonts
-            .families
-            .insert(FontFamily::Monospace, vec!["Ubuntu-Light".to_owned()]);
-        fonts
-            .families
-            .insert(FontFamily::Proportional, vec!["Ubuntu-Light".to_owned()]);
-
-        ctx.set_fonts(fonts);
+        self.init_font(ctx);
 
         // Cute little window that lists supported functions!
         // TODO: add more detail

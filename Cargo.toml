@@ -23,6 +23,7 @@ lto = true
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 eframe = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false, features = ["egui_glow"] }
 git-version = "0.3.5"
+include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = { version = "0.1.12" }
