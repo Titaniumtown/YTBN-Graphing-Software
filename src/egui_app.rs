@@ -223,7 +223,7 @@ impl epi::App for MathApp {
                                                   // Stores the final Plot
         egui::CentralPanel::default().show(ctx, |ui| {
             if !parse_error.is_empty() {
-                ui.label(format!("Error: {}", parse_error));
+                ui.label(parse_error);
                 return;
             }
             let available_width: usize = ui.available_width() as usize;
