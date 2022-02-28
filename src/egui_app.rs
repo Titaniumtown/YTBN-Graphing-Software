@@ -178,9 +178,9 @@ impl epi::App for MathApp {
                     if !self.func_strs[i].is_empty() {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
-                        if !func_test_output.is_empty() {
+                        if func_test_output.is_some() {
                             parse_error += &format!("(Function #{}) ", i);
-                            parse_error += &func_test_output;
+                            parse_error += &func_test_output.expect("");
                         } else {
                             function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num));
                         }

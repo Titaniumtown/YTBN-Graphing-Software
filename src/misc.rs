@@ -112,33 +112,33 @@ pub fn add_asterisks(function_in: String) -> String {
 }
 
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
-pub fn test_func(function_string: String) -> String {
+pub fn test_func(function_string: String) -> Option<String> {
     // Factorials do not work, and it would be really difficult to make them work
     if function_string.contains('!') {
-        return "Factorials are unsupported".to_string();
+        return Some("Factorials are unsupported".to_string());
     }
 
     let new_func_str: String = add_asterisks(function_string);
     let expr_result = new_func_str.parse();
     let expr_error = match &expr_result {
-        Ok(_) => "".to_string(),
-        Err(error) => format!("{}", error),
+        Ok(_) => None,
+        Err(error) => Some(format!("{}", error)),
     };
-    if !expr_error.is_empty() {
+    if expr_error.is_some() {
         return expr_error;
     }
 
     let expr: Expr = expr_result.unwrap();
     let func_result = expr.bind("x");
     let func_error = match &func_result {
-        Ok(_) => "".to_string(),
-        Err(error) => format!("{}", error),
+        Ok(_) => None,
+        Err(error) => Some(format!("{}", error)),
     };
-    if !func_error.is_empty() {
+    if func_error.is_some() {
         return func_error;
     }
 
-    "".to_string()
+    None
 }
 
 // Rounds f64 to specific number of digits
