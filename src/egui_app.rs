@@ -17,7 +17,7 @@ const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 10..=100000;
 const MIN_X_TOTAL: f64 = -1000.0;
 const MAX_X_TOTAL: f64 = 1000.0;
 const X_RANGE: RangeInclusive<f64> = MIN_X_TOTAL..=MAX_X_TOTAL;
-const DEFAULT_FUNCION: &str = "x^2";
+const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
 
 pub struct MathApp {
     functions: Vec<Function>,
@@ -61,13 +61,6 @@ impl Default for MathApp {
     }
 }
 
-impl MathApp {
-    #[inline]
-    pub fn get_step(&self) -> f64 {
-        (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64)
-    }
-}
-
 impl epi::App for MathApp {
     // The name of the program (displayed when running natively as the window title)
     fn name(&self) -> &str { "Integral Demonstration" }
@@ -82,15 +75,6 @@ impl epi::App for MathApp {
     // Called each time the UI needs repainting, which may be many times per second.
     #[inline(always)]
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
-        let Self {
-            functions,
-            func_strs,
-            integral_min_x,
-            integral_max_x,
-            integral_num,
-            help_open,
-        } = self;
-
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
@@ -98,7 +82,7 @@ impl epi::App for MathApp {
         // TODO: add more detail
         egui::Window::new("Supported Functions")
             .default_pos([200.0, 200.0])
-            .open(help_open)
+            .open(&mut self.help_open)
             .show(ctx, |ui| {
                 ui.label("- sqrt, abs");
                 ui.label("- exp, ln, log10 (log10 can also be called as log)");
@@ -112,7 +96,7 @@ impl epi::App for MathApp {
             ui.horizontal(|ui| {
                 if ui.add(egui::Button::new("Add function")).clicked() {
                     // min_x and max_x will be updated later, doesn't matter here
-                    functions.push(Function::new(
+                    self.functions.push(Function::new(
                         String::from(DEFAULT_FUNCION),
                         -1.0,
                         1.0,
@@ -122,11 +106,11 @@ impl epi::App for MathApp {
                         None,
                         None,
                     ));
-                    func_strs.push(String::from(DEFAULT_FUNCION));
+                    self.func_strs.push(String::from(DEFAULT_FUNCION));
                 }
 
                 if ui.add(egui::Button::new("Open Help")).clicked() {
-                    *help_open = true;
+                    self.help_open = true;
                 }
             });
         });
@@ -137,35 +121,35 @@ impl epi::App for MathApp {
             .show(ctx, |ui| {
                 ui.heading("Side Panel");
 
-                let min_x_old = *integral_min_x;
+                let min_x_old = self.integral_min_x;
                 let min_x_response =
-                    ui.add(egui::Slider::new(integral_min_x, X_RANGE.clone()).text("Min X"));
+                    ui.add(egui::Slider::new(&mut self.integral_min_x, X_RANGE.clone()).text("Min X"));
 
-                let max_x_old = *integral_max_x;
-                let max_x_response = ui.add(egui::Slider::new(integral_max_x, X_RANGE).text("Max X"));
+                let max_x_old = self.integral_max_x;
+                let max_x_response = ui.add(egui::Slider::new(&mut self.integral_max_x, X_RANGE).text("Max X"));
 
                 // Checks bounds, and if they are invalid, fix them
-                if integral_min_x >= integral_max_x {
+                if self.integral_min_x >= self.integral_max_x {
                     if max_x_response.changed() {
-                        *integral_max_x = max_x_old;
+                        self.integral_max_x = max_x_old;
                     } else if min_x_response.changed() {
-                        *integral_min_x = min_x_old;
+                        self.integral_min_x = min_x_old;
                     } else {
-                        *integral_min_x = -10.0;
-                        *integral_max_x = 10.0;
+                        self.integral_min_x = -10.0;
+                        self.integral_max_x = 10.0;
                     }
                 }
 
-                ui.add(egui::Slider::new(integral_num, INTEGRAL_NUM_RANGE).text("Interval"));
+                ui.add(egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"));
 
-                for (i, function) in functions.iter_mut().enumerate() {
+                for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
                         if ui.add(Button::new("Toggle Integrals")).clicked() {
                             integral_toggle = true;
                         }
-                        ui.text_edit_singleline(&mut func_strs[i]);
+                        ui.text_edit_singleline(&mut self.func_strs[i]);
                     });
 
                     let integral: bool = if integral_toggle {
@@ -174,13 +158,13 @@ impl epi::App for MathApp {
                         function.is_integral()
                     };
 
-                    if !func_strs[i].is_empty() {
-                        let proc_func_str = add_asterisks(func_strs[i].clone());
+                    if !self.func_strs[i].is_empty() {
+                        let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
                         if !func_test_output.is_empty() {
                             parse_error += &func_test_output;
                         } else {
-                            function.update(proc_func_str, integral, Some(*integral_min_x), Some(*integral_max_x), Some(*integral_num));
+                            function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num));
                         }
                     }
                 }
@@ -213,6 +197,8 @@ impl epi::App for MathApp {
                 });
             });
 
+        let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
+
         egui::CentralPanel::default().show(ctx, |ui| {
             if !parse_error.is_empty() {
                 ui.label(format!("Error: {}", parse_error));
@@ -220,7 +206,6 @@ impl epi::App for MathApp {
             }
             let available_width: usize = ui.available_width() as usize;
 
-            let step = self.get_step();
             let mut area_list: Vec<f64> = Vec::new();
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
@@ -232,7 +217,10 @@ impl epi::App for MathApp {
                     let minx_bounds: f64 = bounds.min()[0];
                     let maxx_bounds: f64 = bounds.max()[0];
 
-                    for (i, function) in self.functions.iter_mut().enumerate() {
+                    let mut i: usize = 0;
+                    let mut functions_2: Vec<Function> = Vec::new();
+                    for function_1 in self.functions.iter_mut() {
+                        let function = function_1;
                         function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
                         if self.func_strs[i].is_empty() {
@@ -252,7 +240,10 @@ impl epi::App for MathApp {
                         } else {
                             area_list.push(0.0);
                         }
+                        i += 1;
+                        functions_2.push(function.clone());
                     }
+                    self.functions = functions_2;
                 });
 
             let duration = start.elapsed();

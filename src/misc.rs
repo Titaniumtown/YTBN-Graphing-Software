@@ -116,40 +116,6 @@ pub fn digits_precision(x: f64, digits: usize) -> f64 {
     (x * large_number).round() / large_number
 }
 
-pub struct Cache<T> {
-    backing_data: Option<T>,
-}
-
-impl<T> Cache<T> {
-    #[allow(dead_code)]
-    #[inline]
-    pub fn new(backing_data: T) -> Self {
-        Self {
-            backing_data: Some(backing_data),
-        }
-    }
-
-    #[inline]
-    pub fn new_empty() -> Self { Self { backing_data: None } }
-
-    #[inline]
-    pub fn get(&self) -> &T {
-        match &self.backing_data {
-            Some(x) => x,
-            None => panic!("self.backing_data is None"),
-        }
-    }
-
-    #[inline]
-    pub fn set(&mut self, data: T) { self.backing_data = Some(data); }
-
-    #[inline]
-    pub fn invalidate(&mut self) { self.backing_data = None; }
-
-    #[inline]
-    pub fn is_valid(&self) -> bool { self.backing_data.is_some() }
-}
-
 // Tests to make sure my cursed function works as intended
 #[test]
 fn asterisk_test() {
@@ -184,26 +150,4 @@ fn asterisk_test() {
     // Need to fix these checks, maybe I need to rewrite the whole asterisk adding system... (or just implement these changes into meval-rs, idk)
     // assert_eq!(&add_asterisks("emax(x)".to_string()), "e*max(x)");
     // assert_eq!(&add_asterisks("pisin(x)".to_string()), "pi*sin(x)");
-}
-
-// Tests cache when initialized with value
-#[test]
-fn cache_test_full() {
-    let mut cache = Cache::new("data");
-    assert!(cache.is_valid());
-    cache.invalidate();
-    assert!(!cache.is_valid());
-    cache.set("data2");
-    assert!(cache.is_valid());
-}
-
-// Tests cache when initialized without value
-#[test]
-fn cache_test_empty() {
-    let mut cache: Cache<&str> = Cache::new_empty();
-    assert!(!cache.is_valid());
-    cache.invalidate();
-    assert!(!cache.is_valid());
-    cache.set("data");
-    assert!(cache.is_valid());
 }

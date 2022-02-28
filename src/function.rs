@@ -1,4 +1,3 @@
-use crate::misc::Cache;
 use egui::plot::Value;
 use egui::widgets::plot::Bar;
 use meval::Expr;
@@ -38,13 +37,33 @@ pub struct Function {
     max_x: f64,
     pixel_width: usize,
 
-    back_cache: Cache<Vec<Value>>,
-    front_cache: Cache<(Vec<Bar>, f64)>,
+    back_cache: Option<Vec<Value>>,
+    front_cache: Option<(Vec<Bar>, f64)>,
 
     integral: bool,
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
+}
+
+impl Clone for Function {
+    fn clone(&self) -> Self {
+        let expr: Expr = self.func_str.parse().unwrap();
+        let func = expr.bind("x").unwrap();
+        Self {
+            function: Box::new(func),
+            func_str: self.func_str.clone(),
+            min_x: self.min_x.clone(),
+            max_x: self.max_x.clone(),
+            pixel_width: self.pixel_width.clone(),
+            back_cache: self.back_cache.clone(),
+            front_cache: self.front_cache.clone(),
+            integral: self.integral.clone(),
+            integral_min_x: self.integral_min_x.clone(),
+            integral_max_x: self.integral_max_x.clone(),
+            integral_num: self.integral_num.clone(),
+        }
+    }
 }
 
 impl Function {
@@ -65,14 +84,14 @@ impl Function {
 
         let expr: Expr = func_str.parse().unwrap();
         let func = expr.bind("x").unwrap();
-        let mut output = Self {
+        Self {
             function: Box::new(func),
             func_str,
             min_x,
             max_x,
             pixel_width,
-            back_cache: Cache::new_empty(),
-            front_cache: Cache::new_empty(),
+            back_cache: None,
+            front_cache: None,
             integral,
             integral_min_x: match integral_min_x {
                 Some(x) => x,
@@ -83,10 +102,7 @@ impl Function {
                 None => f64::NAN,
             },
             integral_num: integral_num.unwrap_or(0),
-        };
-
-        output.func_str = "".to_string();
-        output
+        }
     }
 
     // Runs the internal function to get values
@@ -136,7 +152,7 @@ impl Function {
                 | (integral_max_x != Some(self.integral_max_x))
                 | (integral_num != Some(self.integral_num))
             {
-                self.front_cache.invalidate();
+                self.front_cache = None;
                 self.integral_min_x = integral_min_x.expect("");
                 self.integral_max_x = integral_max_x.expect("");
                 self.integral_num = integral_num.expect("");
@@ -145,8 +161,46 @@ impl Function {
     }
 
     pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
-        if (min_x != self.min_x) | (max_x != self.max_x) | (pixel_width != self.pixel_width) {
-            self.back_cache.invalidate();
+        if pixel_width != self.pixel_width {
+            self.back_cache = None;
+            self.min_x = min_x;
+            self.max_x = max_x;
+            self.pixel_width = pixel_width;
+        } else if ((min_x != self.min_x) | (max_x != self.max_x))
+            && self.back_cache.is_some()
+            && false
+        {
+            println!("rebuilding cache");
+            let range_new: f64 = max_x.abs() + min_x.abs();
+
+            let resolution: f64 = (self.pixel_width as f64 / range_new) as f64;
+            let movement_right = min_x > self.min_x;
+            let mut new_back: Vec<Value> = self
+                .back_cache
+                .as_ref()
+                .expect("")
+                .clone()
+                .iter()
+                .filter(|ele| (ele.x >= min_x) && (min_x >= ele.x))
+                .map(|ele| *ele)
+                .collect();
+
+            let x_to_go = match movement_right {
+                true => ((self.max_x - max_x) * resolution) as usize,
+                false => ((self.min_x - min_x) * resolution) as usize,
+            };
+
+            new_back.append(
+                &mut (1..x_to_go)
+                    .map(|x| (x as f64 / resolution as f64) + min_x)
+                    .map(|x| (x, self.run_func(x)))
+                    .map(|(x, y)| Value::new(x, y))
+                    .collect(),
+            );
+
+            self.back_cache = Some(new_back);
+        } else {
+            self.back_cache = None;
             self.min_x = min_x;
             self.max_x = max_x;
             self.pixel_width = pixel_width;
@@ -163,39 +217,37 @@ impl Function {
 
     #[inline(always)]
     pub fn run(&mut self) -> FunctionOutput {
-        let front_values: Vec<Value> = match self.back_cache.is_valid() {
+        let front_values: Vec<Value> = match self.back_cache.is_some() {
+            true => self.back_cache.as_ref().expect("").clone(),
             false => {
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
-                let front_data: Vec<(f64, f64)> = (1..=self.pixel_width)
+                let front_data: Vec<Value> = (1..=self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                    // .step_by()
                     .map(|x| (x, self.run_func(x)))
+                    .map(|(x, y)| Value::new(x, y))
                     .collect();
                 // println!("{} {}", front_data.len(), front_data.len() as f64/absrange);
 
-                let output: Vec<Value> =
-                    front_data.iter().map(|(x, y)| Value::new(*x, *y)).collect();
-                self.back_cache.set(output.clone());
-                output
+                self.back_cache = Some(front_data.clone());
+                front_data
             }
-            true => self.back_cache.get().clone(),
         };
 
         if self.integral {
-            let back_bars: (Vec<Bar>, f64) = match self.front_cache.is_valid() {
+            let back_bars: (Vec<Bar>, f64) = match self.front_cache.is_some() {
+                true => {
+                    let cache = self.front_cache.as_ref().expect("");
+                    let vec_bars: Vec<Bar> = cache.0.to_vec();
+                    (vec_bars, cache.1)
+                }
                 false => {
                     let (data, area) = self.integral_rectangles();
                     let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
 
                     let output = (bars, area);
-                    self.front_cache.set(output.clone());
+                    self.front_cache = Some(output.clone());
                     output
-                }
-                true => {
-                    let cache = self.front_cache.get();
-                    let vec_bars: Vec<Bar> = cache.0.to_vec();
-                    (vec_bars, cache.1)
                 }
             };
             FunctionOutput::new(front_values, Some(back_bars))
