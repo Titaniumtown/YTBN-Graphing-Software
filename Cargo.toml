@@ -13,15 +13,20 @@ opt-level = "z" #optimize for size
 lto = true
 strip = true
 
+[profile.dev]
+debug = true
+codegen-units = 1
+opt-level = "z" #optimize for size
+lto = true
+
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
-egui = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false }
 eframe = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false, features = ["egui_glow"] }
 instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 git-version = "0.3.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"
-tracing-wasm = "0.2.1"
 wee_alloc = "0.4.5"
-wasm-bindgen = "0.2.79"
+wasm-bindgen = { version = "0.2.79", default-features = false, features = ["std"] }
+tracing-wasm = "0.2.1"

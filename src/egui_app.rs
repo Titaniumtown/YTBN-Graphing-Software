@@ -66,7 +66,6 @@ impl epi::App for MathApp {
     fn name(&self) -> &str { "Integral Demonstration" }
 
     // Called once before the first frame.
-    #[inline]
     fn setup(
         &mut self, _ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>,
     ) {
@@ -78,6 +77,7 @@ impl epi::App for MathApp {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
+        // Reduce size of final binary by just including one font
         let mut fonts = egui::FontDefinitions::default();
         fonts.font_data.insert(
             "Ubuntu-Light".to_owned(),
@@ -114,7 +114,7 @@ impl epi::App for MathApp {
 
         egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui.add(egui::Button::new("Add function")).clicked() {
+                if ui.add(egui::Button::new("Add Function")).clicked() {
                     // min_x and max_x will be updated later, doesn't matter here
                     self.functions.push(Function::new(
                         String::from(DEFAULT_FUNCION),
@@ -139,7 +139,7 @@ impl epi::App for MathApp {
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
-                ui.heading("Side Panel");
+                // ui.heading("Side Panel");
 
                 let min_x_old = self.integral_min_x;
                 let min_x_response =
@@ -166,7 +166,7 @@ impl epi::App for MathApp {
                     let mut integral_toggle: bool = false;
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
-                        if ui.add(Button::new("Toggle Integrals")).clicked() {
+                        if ui.add(Button::new("Toggle Integral")).clicked() {
                             integral_toggle = true;
                         }
                         ui.text_edit_singleline(&mut self.func_strs[i]);

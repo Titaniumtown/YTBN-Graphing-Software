@@ -1,5 +1,4 @@
-use egui::plot::Value;
-use egui::widgets::plot::Bar;
+use eframe::egui::{plot::Value, widgets::plot::Bar};
 use meval::Expr;
 
 // Struct that stores and manages the output of a function
@@ -109,7 +108,7 @@ impl Function {
     #[inline]
     fn run_func(&self, x: f64) -> f64 { (self.function)(x) }
 
-    #[inline]
+    #[inline(always)]
     pub fn update(
         &mut self, func_str: String, integral: bool, integral_min_x: Option<f64>,
         integral_max_x: Option<f64>, integral_num: Option<usize>,
@@ -160,6 +159,7 @@ impl Function {
         }
     }
 
+    #[inline(always)]
     pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
         if pixel_width != self.pixel_width {
             self.back_cache = None;

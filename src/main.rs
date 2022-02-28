@@ -1,5 +1,4 @@
 mod egui_app;
-
 mod function;
 mod misc;
 

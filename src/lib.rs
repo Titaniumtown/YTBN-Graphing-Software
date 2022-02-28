@@ -22,14 +22,24 @@ extern "C" {
 }
 
 #[cfg(target_arch = "wasm32")]
+#[cfg(debug_assertions)]
+fn init_tracing_wasm() {
+    log("Initializing tracing_wasm...");
+    tracing_wasm::set_as_global_default();
+    log("Initialized tracing_wasm!");
+}
+
+#[cfg(target_arch = "wasm32")]
+#[cfg(not(debug_assertions))]
+fn init_tracing_wasm() { }
+
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn start(canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
     log("Initializing...");
 
     // See performance in browser profiler!
-    log("Initializing tracing_wasm...");
-    tracing_wasm::set_as_global_default();
-    log("Initialized tracing_wasm!");
+    init_tracing_wasm();
 
     // Used in order to hook into `panic!()` to log in the browser's console
     log("Initializing console_error_panic_hook...");
