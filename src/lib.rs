@@ -31,7 +31,7 @@ fn init_tracing_wasm() {
 
 #[cfg(target_arch = "wasm32")]
 #[cfg(not(debug_assertions))]
-fn init_tracing_wasm() { }
+fn init_tracing_wasm() {}
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]

@@ -22,10 +22,13 @@ lto = true
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 eframe = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false, features = ["egui_glow"] }
-instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 git-version = "0.3.5"
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+instant = { version = "0.1.12" }
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 console_error_panic_hook = "0.1.7"
 wee_alloc = "0.4.5"
 wasm-bindgen = { version = "0.2.79", default-features = false, features = ["std"] }

@@ -52,15 +52,15 @@ impl Clone for Function {
         Self {
             function: Box::new(func),
             func_str: self.func_str.clone(),
-            min_x: self.min_x.clone(),
-            max_x: self.max_x.clone(),
-            pixel_width: self.pixel_width.clone(),
+            min_x: self.min_x,
+            max_x: self.max_x,
+            pixel_width: self.pixel_width,
             back_cache: self.back_cache.clone(),
             front_cache: self.front_cache.clone(),
-            integral: self.integral.clone(),
-            integral_min_x: self.integral_min_x.clone(),
-            integral_max_x: self.integral_max_x.clone(),
-            integral_num: self.integral_num.clone(),
+            integral: self.integral,
+            integral_min_x: self.integral_min_x,
+            integral_max_x: self.integral_max_x,
+            integral_num: self.integral_num,
         }
     }
 }
@@ -182,7 +182,7 @@ impl Function {
                 .clone()
                 .iter()
                 .filter(|ele| (ele.x >= min_x) && (min_x >= ele.x))
-                .map(|ele| *ele)
+                .copied()
                 .collect();
 
             let x_to_go = match movement_right {
