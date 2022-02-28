@@ -149,9 +149,9 @@ impl Function {
                 | (integral_num != Some(self.integral_num))
             {
                 self.front_cache = None;
-                self.integral_min_x = integral_min_x.expect("");
-                self.integral_max_x = integral_max_x.expect("");
-                self.integral_num = integral_num.expect("");
+                self.integral_min_x = integral_min_x.expect("integral_min_x is None");
+                self.integral_max_x = integral_max_x.expect("integral_max_x is None");
+                self.integral_num = integral_num.expect("integral_num is None");
             }
         }
     }
@@ -167,16 +167,9 @@ impl Function {
             let range_new: f64 = max_x.abs() + min_x.abs();
 
             let resolution: f64 = (self.pixel_width as f64 / range_new) as f64;
-            let back_cache = self.back_cache.as_ref().expect("");
+            let back_cache = self.back_cache.as_ref().unwrap();
 
-            let x_data: Vec<f64> = self
-                .back_cache
-                .as_ref()
-                .expect("")
-                .clone()
-                .iter()
-                .map(|ele| ele.x)
-                .collect();
+            let x_data: Vec<f64> = back_cache.iter().map(|ele| ele.x).collect();
 
             self.back_cache = Some(
                 (1..=self.pixel_width)
@@ -210,7 +203,7 @@ impl Function {
         let back_values: Vec<Value> = match self.back_cache.is_some() {
             true => {
                 debug_log("back_cache: using");
-                self.back_cache.as_ref().expect("").clone()
+                self.back_cache.as_ref().unwrap().clone()
             }
             false => {
                 debug_log("back_cache: regen");
@@ -232,7 +225,7 @@ impl Function {
             let front_bars: (Vec<Bar>, f64) = match self.front_cache.is_some() {
                 true => {
                     debug_log("front_cache: using");
-                    let cache = self.front_cache.as_ref().expect("");
+                    let cache = self.front_cache.as_ref().unwrap();
                     let vec_bars: Vec<Bar> = cache.0.to_vec();
                     (vec_bars, cache.1)
                 }

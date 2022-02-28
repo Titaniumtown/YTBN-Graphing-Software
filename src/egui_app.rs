@@ -180,7 +180,7 @@ impl epi::App for MathApp {
                         let func_test_output = test_func(proc_func_str.clone());
                         if func_test_output.is_some() {
                             parse_error += &format!("(Function #{}) ", i);
-                            parse_error += &func_test_output.expect("");
+                            parse_error += &func_test_output.unwrap();
                         } else {
                             function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num));
                         }
