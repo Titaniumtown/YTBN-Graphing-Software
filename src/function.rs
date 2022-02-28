@@ -167,31 +167,31 @@ impl Function {
             let range_new: f64 = max_x.abs() + min_x.abs();
 
             let resolution: f64 = (self.pixel_width as f64 / range_new) as f64;
-            let movement_right = min_x > self.min_x;
-            let mut new_back: Vec<Value> = self
+            let back_cache = self.back_cache.as_ref().expect("");
+
+            let x_data: Vec<f64> = self
                 .back_cache
                 .as_ref()
                 .expect("")
                 .clone()
                 .iter()
-                .filter(|ele| (ele.x >= min_x) && (min_x >= ele.x))
-                .copied()
+                .map(|ele| ele.x)
                 .collect();
 
-            let x_to_go = match movement_right {
-                true => ((self.max_x - max_x) * resolution) as usize,
-                false => ((self.min_x - min_x) * resolution) as usize,
-            };
+            let back_data: Vec<Value> = (1..=self.pixel_width)
+                .map(|x| (x as f64 / resolution as f64) + min_x)
+                .map(|x| {
+                    let i = x_data.iter().position(|&r| r == x);
 
-            new_back.append(
-                &mut (1..x_to_go)
-                    .map(|x| (x as f64 / resolution as f64) + min_x)
-                    .map(|x| (x, self.run_func(x)))
-                    .map(|(x, y)| Value::new(x, y))
-                    .collect(),
-            );
+                    if i.is_some() {
+                        back_cache[i.expect("i is None")]
+                    } else {
+                        Value::new(x, self.run_func(x))
+                    }
+                })
+                .collect();
 
-            self.back_cache = Some(new_back);
+            self.back_cache = Some(back_data);
         } else {
             self.back_cache = None;
             self.min_x = min_x;
@@ -207,7 +207,7 @@ impl Function {
     pub fn is_integral(&self) -> bool { self.integral }
 
     pub fn run(&mut self) -> FunctionOutput {
-        let front_values: Vec<Value> = match self.back_cache.is_some() {
+        let back_values: Vec<Value> = match self.back_cache.is_some() {
             true => {
                 // debug_log("back_cache: using");
                 self.back_cache.as_ref().expect("").clone()
@@ -216,20 +216,20 @@ impl Function {
                 // debug_log("back_cache: regen");
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
-                let front_data: Vec<Value> = (1..=self.pixel_width)
+                let back_data: Vec<Value> = (1..=self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + self.min_x)
                     .map(|x| (x, self.run_func(x)))
                     .map(|(x, y)| Value::new(x, y))
                     .collect();
-                // println!("{} {}", front_data.len(), front_data.len() as f64/absrange);
+                // println!("{} {}", back_data.len(), back_data.len() as f64/absrange);
 
-                self.back_cache = Some(front_data.clone());
-                front_data
+                self.back_cache = Some(back_data.clone());
+                back_data
             }
         };
 
         if self.integral {
-            let back_bars: (Vec<Bar>, f64) = match self.front_cache.is_some() {
+            let front_bars: (Vec<Bar>, f64) = match self.front_cache.is_some() {
                 true => {
                     // debug_log("front_cache: using");
                     let cache = self.front_cache.as_ref().expect("");
@@ -246,9 +246,9 @@ impl Function {
                     output
                 }
             };
-            FunctionOutput::new(front_values, Some(back_bars))
+            FunctionOutput::new(back_values, Some(front_bars))
         } else {
-            FunctionOutput::new(front_values, None)
+            FunctionOutput::new(back_values, None)
         }
     }
 
