@@ -260,8 +260,8 @@ impl epi::App for MathApp {
                         let (back_values, bars) = function.run();
                         plot_ui.line(back_values.color(Color32::RED));
 
-                        if bars.is_some() {
-                            let (bars, area) = bars.unwrap();
+                        if let Some(bars_data) = bars {
+                            let (bars, area) = bars_data;
                             plot_ui.bar_chart(BarChart::new(bars).color(Color32::BLUE).width(step));
                             area_list.push(digits_precision(area, 8))
                         } else {
