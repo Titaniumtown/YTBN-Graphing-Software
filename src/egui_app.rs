@@ -210,6 +210,7 @@ impl epi::App for MathApp {
                     } else if min_x_response.changed() {
                         self.integral_min_x = min_x_old;
                     } else {
+                        // No clue how this would happen, but just in case
                         self.integral_min_x = -10.0;
                         self.integral_max_x = 10.0;
                     }
