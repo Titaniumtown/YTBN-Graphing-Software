@@ -24,7 +24,6 @@ meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 eframe = { git = "https://github.com/Titaniumtown/egui", default-features = false, features = ["egui_glow"] }
 git-version = "0.3.5"
 include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
-web-sys = "0.3.56"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = { version = "0.1.12" }

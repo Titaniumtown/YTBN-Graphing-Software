@@ -79,36 +79,3 @@ canvas {
         transform: rotate(360deg);
     }
 }
-
-body[data-panicked = true] {
-    background-color: #ce2828;
-
-    #panic {
-        display: block;
-    }
-}
-
-#panic {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    background-color: #ce2828;
-    color: #000;
-
-    font-weight: bold;
-    text-align: center;
-
-    padding: 1em 2em;
-    border-radius: 2em;
-
-    pointer-events: none;
-
-    h1 {
-        margin: 0;
-    }
-
-    z-index: 1000000;
-}
