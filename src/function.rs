@@ -121,7 +121,7 @@ impl Function {
                 (1..=self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + min_x)
                     .map(|x| {
-                        let i_option = x_data.iter().position(|&r| r == x); // Optimize this later, this could be done much much better
+                        let i_option = x_data.iter().position(|&r| r == x); // Optimize this later, this could be done much much better, but tbh it doesn't matter that much as the program is already super fast
 
                         if let Some(i) = i_option {
                             back_cache[i]
