@@ -5,7 +5,7 @@ use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::widgets::Button;
-use egui::{Color32, FontData, FontFamily, RichText, Vec2};
+use egui::{Color32, FontData, FontFamily, Frame, RichText, Vec2};
 use git_version::git_version;
 use include_flate::flate;
 
@@ -147,7 +147,11 @@ impl epi::App for MathApp {
         // Creates Top bar that contains some general options
         egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui.add(egui::Button::new("Add Function")).clicked() {
+                if ui
+                    .add(egui::Button::new("Add Function"))
+                    .on_hover_text("Create and graph new function")
+                    .clicked()
+                {
                     self.functions.push(Function::new(
                         String::from(DEFAULT_FUNCION),
                         -1.0, // Doesn't matter, updated later
@@ -162,11 +166,19 @@ impl epi::App for MathApp {
                     self.func_strs.push(String::from(DEFAULT_FUNCION));
                 }
 
-                if ui.add(egui::Button::new("Help")).clicked() {
+                if ui
+                    .add(egui::Button::new("Help"))
+                    .on_hover_text("Open Help Window")
+                    .clicked()
+                {
                     self.help_open = !self.help_open;
                 }
 
-                if ui.add(egui::Button::new("Info")).clicked() {
+                if ui
+                    .add(egui::Button::new("Info"))
+                    .on_hover_text("Open Info Window")
+                    .clicked()
+                {
                     self.info_open = !self.info_open;
                 }
             });
@@ -206,21 +218,25 @@ impl epi::App for MathApp {
                     });
 
                 let min_x_old = self.integral_min_x;
-                let min_x_response = ui.add(
-                    egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
-                        .text("Min X"),
-                );
+                let min_x_changed = ui
+                    .add(
+                        egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
+                            .text("Min X"),
+                    )
+                    .changed();
 
                 let max_x_old = self.integral_max_x;
-                let max_x_response = ui.add(
-                    egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"),
-                );
+                let max_x_changed = ui
+                    .add(
+                        egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"),
+                    )
+                    .changed();
 
                 // Checks bounds, and if they are invalid, fix them
                 if self.integral_min_x >= self.integral_max_x {
-                    if max_x_response.changed() {
+                    if max_x_changed {
                         self.integral_max_x = max_x_old;
-                    } else if min_x_response.changed() {
+                    } else if min_x_changed {
                         self.integral_min_x = min_x_old;
                     } else {
                         // No clue how this would happen, but just in case
@@ -239,7 +255,15 @@ impl epi::App for MathApp {
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
-                        if ui.add(Button::new("∫")).clicked() {
+                        let mut integral_opt_text = "Integrate";
+                        if function.integral {
+                            integral_opt_text = "Don't integrate";
+                        }
+                        if ui
+                            .add(Button::new("∫"))
+                            .on_hover_text(integral_opt_text)
+                            .clicked()
+                        {
                             integral_toggle = true;
                         }
                         ui.text_edit_singleline(&mut self.func_strs[i]);
@@ -272,16 +296,12 @@ impl epi::App for MathApp {
                 }
 
                 // Open Source and Licensing information
-                ui.horizontal(|ui| {
-                    ui.hyperlink_to(
-                        "I'm Opensource!",
-                        "https://github.com/Titaniumtown/integral_site",
-                    );
-                    ui.label(
-                        RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
-                    )
+                ui.hyperlink_to(
+                    "I'm Opensource!",
+                    "https://github.com/Titaniumtown/integral_site",
+                );
+                ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
                     .on_hover_text(LICENSE_INFO);
-                });
 
                 // Displays commit info
                 ui.horizontal(|ui| {
@@ -290,7 +310,9 @@ impl epi::App for MathApp {
                     // Only include hyperlink if the build doesn't have untracked files
                     if GIT_VERSION.contains("-modified") {
                         // If git version is modified, don't display a link to the commit on github (as the commit will not exist)
-                        ui.label(GIT_VERSION);
+                        ui.label(GIT_VERSION).on_hover_text(
+                            "This build has been modified from the latest git commit.",
+                        );
                     } else {
                         ui.hyperlink_to(
                             GIT_VERSION,
@@ -308,45 +330,54 @@ impl epi::App for MathApp {
         let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
 
         // Stores the final Plot
-        egui::CentralPanel::default().show(ctx, |ui| {
-            if !parse_error.is_empty() {
-                ui.label(parse_error);
-                return;
-            }
-            let available_width: usize = ui.available_width() as usize;
+        egui::CentralPanel::default()
+            .frame(Frame::none())
+            .show(ctx, |ui| {
+                if !parse_error.is_empty() {
+                    ui.centered_and_justified(|ui| {
+                        ui.heading(parse_error);
+                    });
+                    return;
+                }
+                let available_width: usize = ui.available_width() as usize;
+                let plot_size = ui.available_size();
+                let plot_size = Vec2::new(plot_size.x, plot_size.y);
 
-            Plot::new("plot")
-                .set_margin_fraction(Vec2::ZERO)
-                // .view_aspect(1.0)
-                .data_aspect(1.0)
-                .include_y(0)
-                .show(ui, |plot_ui| {
-                    let bounds = plot_ui.plot_bounds();
-                    let minx_bounds: f64 = bounds.min()[0];
-                    let maxx_bounds: f64 = bounds.max()[0];
+                ui.allocate_ui(plot_size, |ui| {
+                    Plot::new("plot")
+                        .set_margin_fraction(Vec2::ZERO)
+                        // .view_aspect(1.0)
+                        // .view_aspect()
+                        .data_aspect(1.0)
+                        .include_y(0)
+                        .show(ui, |plot_ui| {
+                            let bounds = plot_ui.plot_bounds();
+                            let minx_bounds: f64 = bounds.min()[0];
+                            let maxx_bounds: f64 = bounds.max()[0];
 
-                    let mut i: usize = 0;
-                    for function in self.functions.iter_mut() {
-                        if self.func_strs[i].is_empty() {
-                            continue;
-                        }
+                            let mut i: usize = 0;
+                            for function in self.functions.iter_mut() {
+                                if self.func_strs[i].is_empty() {
+                                    continue;
+                                }
 
-                        function.update_bounds(minx_bounds, maxx_bounds, available_width);
+                                function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
-                        let (back_values, bars) = function.run();
-                        plot_ui.line(back_values.color(Color32::RED));
+                                let (back_values, bars) = function.run();
+                                plot_ui.line(back_values.color(Color32::RED));
 
-                        if let Some(bars_data) = bars {
-                            let (bar_chart, area) = bars_data;
-                            plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
-                            area_list.push(digits_precision(area, 8))
-                        } else {
-                            area_list.push(f64::NAN);
-                        }
-                        i += 1;
-                    }
+                                if let Some(bars_data) = bars {
+                                    let (bar_chart, area) = bars_data;
+                                    plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
+                                    area_list.push(digits_precision(area, 8))
+                                } else {
+                                    area_list.push(f64::NAN);
+                                }
+                                i += 1;
+                            }
+                        });
                 });
-        });
+            });
 
         let duration = start.elapsed();
 
@@ -364,4 +395,6 @@ impl epi::App for MathApp {
                 ));
             });
     }
+
+    fn max_size_points(&self) -> egui::Vec2 { egui::Vec2::new(f32::MAX, f32::MAX) } // Allow proper scaling
 }
