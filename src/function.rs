@@ -187,6 +187,7 @@ impl Function {
     }
 
     // Creates and does the math for creating all the rectangles under the graph
+    // TODO: fix this stuff, it's half broken
     fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
         if self.integral_min_x.is_nan() {
             panic!("integral_min_x is NaN")

@@ -22,19 +22,23 @@ const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when addin
 flate!(static FONT_DATA: [u8] from "assets/Ubuntu-Light.ttf");
 
 pub struct MathApp {
+    // Stores vector of functions
     functions: Vec<Function>,
 
-    // No clue why I need this, but I do. Rust being weird I guess.
-    // Ideally this should be information directly accessed from `functions` but it always returns an empty string. I don't know, I've been debuging this for a while now.
+    // Stores vector containing the string representation of the functions. This is used because of hacky reasons
     func_strs: Vec<String>,
 
+    // Min and Max range for calculating an integral
     integral_min_x: f64,
     integral_max_x: f64,
 
+    // Number of rectangles used to calculate integral
     integral_num: usize,
 
+    // Stores whether or not the help window is open
     help_open: bool,
 
+    // Stores font data that's used when displaying text
     font: FontData,
 }
 
