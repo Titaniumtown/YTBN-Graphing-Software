@@ -259,7 +259,7 @@ impl epi::App for MathApp {
 
                 // Displays commit info
                 ui.horizontal(|ui| {
-                    ui.label("Commit: ");
+                    ui.label("Commit:");
 
                     // Only include hyperlink if the build doesn't have untracked files
                     if GIT_VERSION.contains("-modified") {
