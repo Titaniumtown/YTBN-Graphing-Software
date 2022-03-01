@@ -4,7 +4,6 @@ use crate::function::Function;
 use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::plot::Plot;
-use egui::widgets::plot::BarChart;
 use egui::widgets::Button;
 use egui::{Color32, FontData, FontFamily, Vec2};
 use git_version::git_version;
@@ -183,9 +182,9 @@ impl epi::App for MathApp {
                     });
 
                     let integral: bool = if integral_toggle {
-                        !function.is_integral()
+                        !function.integral
                     } else {
-                        function.is_integral()
+                        function.integral
                     };
 
                     if !self.func_strs[i].is_empty() {
@@ -264,8 +263,8 @@ impl epi::App for MathApp {
                         plot_ui.line(back_values.color(Color32::RED));
 
                         if let Some(bars_data) = bars {
-                            let (bars, area) = bars_data;
-                            plot_ui.bar_chart(BarChart::new(bars).color(Color32::BLUE).width(step));
+                            let (bar_chart, area) = bars_data;
+                            plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
                             area_list.push(digits_precision(area, 8))
                         } else {
                             area_list.push(f64::NAN);

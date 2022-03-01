@@ -2,7 +2,7 @@
 use crate::misc::debug_log;
 
 use eframe::egui::{
-    plot::{Line, Value, Values},
+    plot::{BarChart, Line, Value, Values},
     widgets::plot::Bar,
 };
 use meval::Expr;
@@ -17,7 +17,7 @@ pub struct Function {
     back_cache: Option<Vec<Value>>,
     front_cache: Option<(Vec<Bar>, f64)>,
 
-    integral: bool,
+    pub(crate) integral: bool,
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
@@ -30,13 +30,12 @@ impl Function {
     ) -> Self {
         // Makes sure proper arguments are passed when integral is enabled
         if integral {
-            if integral_min_x.is_none() {
-                panic!("Invalid arguments: integral_min_x is None, but integral is enabled.")
-            } else if integral_max_x.is_none() {
-                panic!("Invalid arguments: integral_max_x is None, but integral is enabled.")
-            } else if integral_num.is_none() {
-                panic!("Invalid arguments: integral_num is None, but integral is enabled.")
-            }
+            integral_min_x
+                .expect("Invalid arguments: integral_min_x is None, but integral is enabled.");
+            integral_max_x
+                .expect("Invalid arguments: integral_max_x is None, but integral is enabled.");
+            integral_num
+                .expect("Invalid arguments: integral_num is None, but integral is enabled.");
         }
 
         let expr: Expr = func_str.parse().unwrap();
@@ -95,14 +94,6 @@ impl Function {
 
         // Makes sure proper arguments are passed when integral is enabled
         if integral {
-            if integral_min_x.is_none() {
-                panic!("Invalid arguments: integral_min_x is None, but integral is enabled.")
-            } else if integral_max_x.is_none() {
-                panic!("Invalid arguments: integral_max_x is None, but integral is enabled.")
-            } else if integral_num.is_none() {
-                panic!("Invalid arguments: integral_num is None, but integral is enabled.")
-            }
-
             if (integral_min_x != Some(self.integral_min_x))
                 | (integral_max_x != Some(self.integral_max_x))
                 | (integral_num != Some(self.integral_num))
@@ -152,13 +143,7 @@ impl Function {
         }
     }
 
-    pub fn get_step(&self) -> f64 {
-        (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64)
-    }
-
-    pub fn is_integral(&self) -> bool { self.integral }
-
-    pub fn run(&mut self) -> (Line, Option<(Vec<Bar>, f64)>) {
+    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
         let back_values: Line = Line::new(Values::from_values(match self.back_cache.is_some() {
             true => {
                 debug_log("back_cache: using");
@@ -168,25 +153,23 @@ impl Function {
                 debug_log("back_cache: regen");
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
-                let back_data: Vec<Value> = (1..=self.pixel_width)
-                    .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                    .map(|x| (x, self.run_func(x)))
-                    .map(|(x, y)| Value::new(x, y))
-                    .collect();
-                // println!("{} {}", back_data.len(), back_data.len() as f64/absrange);
-
-                self.back_cache = Some(back_data.clone());
-                back_data
+                self.back_cache = Some(
+                    (1..=self.pixel_width)
+                        .map(|x| (x as f64 / resolution as f64) + self.min_x)
+                        .map(|x| (x, self.run_func(x)))
+                        .map(|(x, y)| Value::new(x, y))
+                        .collect(),
+                );
+                self.back_cache.as_ref().unwrap().clone()
             }
         }));
 
         if self.integral {
-            let front_bars: (Vec<Bar>, f64) = match self.front_cache.is_some() {
+            let front_bars: (BarChart, f64) = match self.front_cache.is_some() {
                 true => {
                     debug_log("front_cache: using");
                     let cache = self.front_cache.as_ref().unwrap();
-                    let vec_bars: Vec<Bar> = cache.0.to_vec();
-                    (vec_bars, cache.1)
+                    (BarChart::new(cache.0.clone()), cache.1)
                 }
                 false => {
                     debug_log("front_cache: regen");
@@ -195,7 +178,7 @@ impl Function {
 
                     let output = (bars, area);
                     self.front_cache = Some(output.clone());
-                    output
+                    (BarChart::new(output.0), output.1)
                 }
             };
             (back_values, Some(front_bars))
@@ -206,19 +189,13 @@ impl Function {
 
     // Creates and does the math for creating all the rectangles under the graph
     fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
-        if !self.integral {
-            panic!("integral_rectangles called, but self.integral is false!");
-        }
-
         if self.integral_min_x.is_nan() {
             panic!("integral_min_x is NaN")
-        }
-
-        if self.integral_max_x.is_nan() {
+        } else if self.integral_max_x.is_nan() {
             panic!("integral_max_x is NaN")
         }
 
-        let step = self.get_step();
+        let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
         let half_step = step / 2.0;
         let data2: Vec<(f64, f64)> = (0..self.integral_num)

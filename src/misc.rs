@@ -54,19 +54,13 @@ pub fn add_asterisks(function_in: String) -> String {
         let prev_chars_len = prev_chars.len();
 
         let prev_prev_char = if prev_chars_len >= 2 {
-            match prev_chars.get(prev_chars_len - 2) {
-                Some(x) => *x,
-                None => panic!(),
-            }
+            *prev_chars.get(prev_chars_len - 2).unwrap()
         } else {
             ' '
         };
 
         let prev_char = if prev_chars_len >= 1 {
-            match prev_chars.get(prev_chars_len - 1) {
-                Some(x) => *x,
-                None => panic!(),
-            }
+            *prev_chars.get(prev_chars_len - 1).unwrap()
         } else {
             ' '
         };
