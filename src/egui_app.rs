@@ -5,7 +5,7 @@ use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::widgets::Button;
-use egui::{Color32, FontData, FontFamily, Vec2};
+use egui::{Color32, FontData, FontFamily, RichText, Vec2};
 use git_version::git_version;
 use include_flate::flate;
 
@@ -27,7 +27,7 @@ const DEFAULT_INTEGRAL_NUM: usize = 100;
 flate!(static FONT_DATA: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
 
 // Used when displaying supported expressions in the Help window
-const HELP1_TEXT: &str = "- sqrt(x): square root of x
+const HELP_EXPR: &str = "- sqrt(x): square root of x
 - abs(x): absolute value of x
 - exp(x): e^x
 - ln(x): log with base e
@@ -44,10 +44,15 @@ const HELP1_TEXT: &str = "- sqrt(x): square root of x
 - signum, min, max";
 
 // Used in the "Buttons" section of the Help window
-const HELP2_TEXT: &str = "- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
+const HELP_BUTTONS: &str = "- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Open Help' Button on the top bar opens and closes this window!
 - The 'Open Info' Button on the top bar opens and closes a window which contains info such as the estimated area for each function, and the time it took to render the last frame.";
+
+const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk";
+
+// Used to provide info on the Licensing of the project
+const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, still is guaranteed access to the source code of the project in question.";
 
 pub struct MathApp {
     // Stores vector of functions
@@ -174,11 +179,15 @@ impl epi::App for MathApp {
             .resizable(false)
             .show(ctx, |ui| {
                 ui.collapsing("Supported Expressions", |ui| {
-                    ui.label(HELP1_TEXT);
+                    ui.label(HELP_EXPR);
                 });
 
                 ui.collapsing("Buttons", |ui| {
-                    ui.label(HELP2_TEXT);
+                    ui.label(HELP_BUTTONS);
+                });
+
+                ui.collapsing("Misc", |ui| {
+                    ui.label(HELP_MISC);
                 });
             });
 
@@ -197,11 +206,15 @@ impl epi::App for MathApp {
                     });
 
                 let min_x_old = self.integral_min_x;
-                let min_x_response =
-                    ui.add(egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone()).text("Min X"));
+                let min_x_response = ui.add(
+                    egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
+                        .text("Min X"),
+                );
 
                 let max_x_old = self.integral_max_x;
-                let max_x_response = ui.add(egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"));
+                let max_x_response = ui.add(
+                    egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"),
+                );
 
                 // Checks bounds, and if they are invalid, fix them
                 if self.integral_min_x >= self.integral_max_x {
@@ -216,7 +229,9 @@ impl epi::App for MathApp {
                     }
                 }
 
-                ui.add(egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"));
+                ui.add(
+                    egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"),
+                );
 
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
@@ -242,7 +257,14 @@ impl epi::App for MathApp {
                         if let Some(test_output_value) = func_test_output {
                             parse_error += &format!("(Function #{}) {}", i, test_output_value);
                         } else {
-                            function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num), Some(self.sum));
+                            function.update(
+                                proc_func_str,
+                                integral,
+                                Some(self.integral_min_x),
+                                Some(self.integral_max_x),
+                                Some(self.integral_num),
+                                Some(self.sum),
+                            );
                         }
                     } else {
                         function.func_str = "".to_string();
@@ -255,7 +277,10 @@ impl epi::App for MathApp {
                         "I'm Opensource!",
                         "https://github.com/Titaniumtown/integral_site",
                     );
-                    ui.label("(and licensed under AGPLv3)").on_hover_text("The AGPL license ensures that the end user, even if not hosting the program itself, still is guaranteed access to the source code of the project in question.");
+                    ui.label(
+                        RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
+                    )
+                    .on_hover_text(LICENSE_INFO);
                 });
 
                 // Displays commit info
