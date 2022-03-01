@@ -173,11 +173,13 @@ impl epi::App for MathApp {
             .open(&mut self.help_open)
             .resizable(false)
             .show(ctx, |ui| {
-                ui.heading("Supported Expressions");
-                ui.label(HELP1_TEXT);
+                ui.collapsing("Supported Expressions", |ui| {
+                    ui.label(HELP1_TEXT);
+                });
 
-                ui.heading("Buttons");
-                ui.label(HELP2_TEXT);
+                ui.collapsing("Buttons", |ui| {
+                    ui.label(HELP2_TEXT);
+                });
             });
 
         let mut parse_error: String = String::new(); // Stores errors found when interpreting input functions
