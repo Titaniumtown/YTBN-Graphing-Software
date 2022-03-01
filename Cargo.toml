@@ -17,7 +17,7 @@ strip = true
 debug = true
 codegen-units = 1
 opt-level = "s" #optimize for size
-lto = true
+lto = false
 
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }

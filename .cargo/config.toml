@@ -1,2 +1,2 @@
 [target.wasm32-unknown-unknown]
-rustflags = ["-C", "linker-plugin-lto=yes", "-C", "linker=/usr/bin/lld", "-C", "inline-threshold=275"]
+rustflags = ["-C", "linker-plugin-lto=yes", "-C", "inline-threshold=275"]

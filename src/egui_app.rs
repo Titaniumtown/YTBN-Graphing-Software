@@ -17,9 +17,37 @@ const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=100000;
 const INTEGRAL_X_MIN: f64 = -1000.0;
 const INTEGRAL_X_MAX: f64 = 1000.0;
 const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
-const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
 
-flate!(static FONT_DATA: [u8] from "assets/Ubuntu-Light.ttf");
+const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
+const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
+const DEFAULT_MIN_X: f64 = -10.0;
+const DEFAULT_MAX_X: f64 = 10.0;
+const DEFAULT_INTEGRAL_NUM: usize = 100;
+
+flate!(static FONT_DATA: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
+
+// Used when displaying supported expressions in the Help window
+const HELP1_TEXT: &str = "- sqrt(x): square root of x
+- abs(x): absolute value of x
+- exp(x): e^x
+- ln(x): log with base e
+- log10(x): base 10 logarithm of x
+- log(x): same as log10(x)
+- sin(x): Sine of x
+- cos(x): Cosine of x
+- tan(x): Tangent of x
+- asin(x): arcsine of x
+- acos(x): arccosine of x
+- atan(x): arctangent of x
+- atan2, sinh, cosh, tanh, asinh, acosh, atanh
+- floor, ceil, round
+- signum, min, max";
+
+// Used in the "Buttons" section of the Help window
+const HELP2_TEXT: &str = "- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
+- The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
+- The 'Open Help' Button on the top bar opens and closes this window!
+- The 'Open Info' Button on the top bar opens and closes a window which contains info such as the estimated area for each function, and the time it took to render the last frame.";
 
 pub struct MathApp {
     // Stores vector of functions
@@ -38,37 +66,38 @@ pub struct MathApp {
     // Stores whether or not the help window is open
     help_open: bool,
 
+    // Stores whether or not the info window is open
+    info_open: bool,
+
     // Stores font data that's used when displaying text
     font: FontData,
 
+    // Stores the type of Rienmann sum that should be calculated
     sum: RiemannSum,
 }
 
 impl Default for MathApp {
     fn default() -> Self {
-        let def_min_x = -10.0;
-        let def_max_x = 10.0;
-        let def_interval: usize = 1000;
-
         Self {
             functions: vec![Function::new(
                 String::from(DEFAULT_FUNCION),
-                def_min_x,
-                def_max_x,
-                100,
-                true,
-                Some(def_min_x),
-                Some(def_max_x),
-                Some(def_interval),
-                Some(RiemannSum::Left),
+                DEFAULT_MIN_X,
+                DEFAULT_MAX_X,
+                100,  // Doesn't matter as it will be overwritten
+                true, // Enables integral
+                Some(DEFAULT_MIN_X),
+                Some(DEFAULT_MAX_X),
+                Some(DEFAULT_INTEGRAL_NUM),
+                Some(DEFAULT_RIEMANN),
             )],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
-            integral_min_x: def_min_x,
-            integral_max_x: def_max_x,
-            integral_num: def_interval,
-            help_open: false,
+            integral_min_x: DEFAULT_MIN_X,
+            integral_max_x: DEFAULT_MAX_X,
+            integral_num: DEFAULT_INTEGRAL_NUM,
+            help_open: true,
+            info_open: false,
             font: FontData::from_static(&FONT_DATA),
-            sum: RiemannSum::Left,
+            sum: DEFAULT_RIEMANN,
         }
     }
 }
@@ -110,34 +139,19 @@ impl epi::App for MathApp {
 
         self.init_font(ctx); // Setup fonts
 
-        // Cute little window that lists supported functions!
-        // TODO: add more detail
-        egui::Window::new("Supported Functions")
-            .default_pos([200.0, 200.0])
-            .open(&mut self.help_open)
-            .show(ctx, |ui| {
-                ui.label("- sqrt, abs");
-                ui.label("- exp, ln, log10 (log10 can also be called as log)");
-                ui.label("- sin, cos, tan, asin, acos, atan, atan2");
-                ui.label("- sinh, cosh, tanh, asinh, acosh, atanh");
-                ui.label("- floor, ceil, round");
-                ui.label("- signum, min, max");
-            });
-
         // Creates Top bar that contains some general options
         egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui.add(egui::Button::new("Add Function")).clicked() {
-                    // min_x and max_x will be updated later, doesn't matter here
                     self.functions.push(Function::new(
                         String::from(DEFAULT_FUNCION),
-                        -1.0,
-                        1.0,
-                        100,
+                        -1.0, // Doesn't matter, updated later
+                        1.0,  // Doesn't matter, updated later
+                        100,  // Doesn't matter, updated later
                         false,
-                        None,
-                        None,
-                        None,
+                        None, // Doesn't matter, updated later
+                        None, // Doesn't matter, updated later
+                        None, // Doesn't matter, updated later
                         Some(self.sum),
                     ));
                     self.func_strs.push(String::from(DEFAULT_FUNCION));
@@ -146,10 +160,27 @@ impl epi::App for MathApp {
                 if ui.add(egui::Button::new("Open Help")).clicked() {
                     self.help_open = !self.help_open;
                 }
+
+                if ui.add(egui::Button::new("Open Info")).clicked() {
+                    self.info_open = !self.info_open;
+                }
             });
         });
 
-        let mut parse_error: String = "".to_string(); // Stores errors found when interpreting input functions
+        // Cute little window that lists supported functions!
+        egui::Window::new("Help")
+            .default_pos([200.0, 200.0])
+            .open(&mut self.help_open)
+            .resizable(false)
+            .show(ctx, |ui| {
+                ui.heading("Supported Expressions");
+                ui.label(HELP1_TEXT);
+
+                ui.heading("Buttons");
+                ui.label(HELP2_TEXT);
+            });
+
+        let mut parse_error: String = String::new(); // Stores errors found when interpreting input functions
 
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
         egui::SidePanel::left("side_panel")
@@ -190,7 +221,7 @@ impl epi::App for MathApp {
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
-                        if ui.add(Button::new("Toggle Integral")).clicked() {
+                        if ui.add(Button::new("∫")).clicked() {
                             integral_toggle = true;
                         }
                         ui.text_edit_singleline(&mut self.func_strs[i]);
@@ -259,7 +290,7 @@ impl epi::App for MathApp {
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
                 // .view_aspect(1.0)
-                // .data_aspect(1.0)
+                .data_aspect(1.0)
                 .include_y(0)
                 .show(ui, |plot_ui| {
                     let bounds = plot_ui.plot_bounds();
@@ -290,8 +321,12 @@ impl epi::App for MathApp {
         });
 
         let duration = start.elapsed();
+
         egui::Window::new("Info")
             .default_pos([200.0, 200.0])
+            .resizable(false)
+            .collapsible(false)
+            .open(&mut self.info_open)
             .show(ctx, |ui| {
                 // Displays all areas of functions along with how long it took to complete the entire frame
                 ui.label(format!(
