@@ -135,7 +135,7 @@ impl epi::App for MathApp {
                 }
 
                 if ui.add(egui::Button::new("Open Help")).clicked() {
-                    self.help_open = true;
+                    self.help_open = !self.help_open;
                 }
             });
         });
