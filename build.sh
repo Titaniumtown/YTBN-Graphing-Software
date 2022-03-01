@@ -1,10 +1,18 @@
 #!/bin/bash
 set -e
 
-if test "$1" == "" || test "$1" == "release"; then
-    wasm-pack build --target web --release --no-typescript
+rm -fr tmp pkg | true #delete tmp folder if exists
+
+#apply optimizations via wasm-opt
+wasm_opt() {
     wasm-opt -Os -o pkg/integral_site_bg_2.wasm pkg/integral_site_bg.wasm
     mv pkg/integral_site_bg_2.wasm pkg/integral_site_bg.wasm
+}
+
+if test "$1" == "" || test "$1" == "release"; then
+    wasm-pack build --target web --release --no-typescript
+    wasm_opt #apply wasm optimizations
+
     llvm-strip --strip-all pkg/integral_site_bg.wasm
 elif test "$1" == "debug"; then
     wasm-pack build --target web --debug --no-typescript
@@ -13,7 +21,6 @@ else
     exit 1
 fi
 
-rm -fr tmp | true #delete tmp folder if exists
 mkdir tmp tmp/pkg
 cp -r pkg/integral_site_bg.wasm pkg/integral_site.js tmp/
 cp www/index.html www/style.css tmp/
