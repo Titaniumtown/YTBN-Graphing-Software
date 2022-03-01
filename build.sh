@@ -7,7 +7,8 @@ llvm-strip --strip-all pkg/integral_site_bg.wasm
 
 rm -fr tmp | true #delete tmp folder if exists
 mkdir tmp tmp/pkg
-cp -r pkg/integral_site_bg.wasm pkg/integral_site.js tmp/pkg/
+cp -r pkg/integral_site_bg.wasm pkg/integral_site.js tmp/
 cp www/index.html www/style.css tmp/
 
-sed -i 's/\.\.\/pkg/\.\/pkg/g' tmp/index.html
+echo "Total size: $(du -sb tmp)"
+echo "Binary size: $(du -sb tmp/integral_site_bg.wasm)"
