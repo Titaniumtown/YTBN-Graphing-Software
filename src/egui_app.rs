@@ -14,13 +14,13 @@ use include_flate::flate;
 const GIT_VERSION: &str = git_version!();
 
 // Sets some hard-coded limits to the application
-const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 10..=100000;
+const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=100000;
 const INTEGRAL_X_MIN: f64 = -1000.0;
 const INTEGRAL_X_MAX: f64 = 1000.0;
 const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
 
-flate!(static FONT_DATA: [u8] from "src/Ubuntu-Light.ttf");
+flate!(static FONT_DATA: [u8] from "assets/Ubuntu-Light.ttf");
 
 pub struct MathApp {
     functions: Vec<Function>,
@@ -67,6 +67,7 @@ impl Default for MathApp {
 }
 
 impl MathApp {
+    // Sets up fonts to use Ubuntu-Light
     fn init_font(&self, ctx: &egui::Context) {
         // Reduce size of final binary by just including one font
         let mut fonts = egui::FontDefinitions::default();
@@ -100,7 +101,7 @@ impl epi::App for MathApp {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
-        self.init_font(ctx);
+        self.init_font(ctx); // Setup fonts
 
         // Cute little window that lists supported functions!
         // TODO: add more detail
@@ -141,7 +142,8 @@ impl epi::App for MathApp {
         });
 
         let mut parse_error: String = "".to_string(); // Stores errors found when interpreting input functions
-                                                      // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
+
+        // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
@@ -231,7 +233,8 @@ impl epi::App for MathApp {
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
         let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
-                                                  // Stores the final Plot
+
+        // Stores the final Plot
         egui::CentralPanel::default().show(ctx, |ui| {
             if !parse_error.is_empty() {
                 ui.label(parse_error);
