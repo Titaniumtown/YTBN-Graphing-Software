@@ -23,26 +23,6 @@ pub struct Function {
     integral_num: usize,
 }
 
-impl Clone for Function {
-    fn clone(&self) -> Self {
-        let expr: Expr = self.func_str.parse().unwrap();
-        let func = expr.bind("x").unwrap();
-        Self {
-            function: Box::new(func),
-            func_str: self.func_str.clone(),
-            min_x: self.min_x,
-            max_x: self.max_x,
-            pixel_width: self.pixel_width,
-            back_cache: self.back_cache.clone(),
-            front_cache: self.front_cache.clone(),
-            integral: self.integral,
-            integral_min_x: self.integral_min_x,
-            integral_max_x: self.integral_max_x,
-            integral_num: self.integral_num,
-        }
-    }
-}
-
 impl Function {
     pub fn new(
         func_str: String, min_x: f64, max_x: f64, pixel_width: usize, integral: bool,

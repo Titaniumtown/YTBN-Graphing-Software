@@ -7,17 +7,29 @@
 	<meta charset="utf-8">
 	<title>Integral Demonstration</title>
 	<link rel="stylesheet" href="style.css">
-    </head>
+</head>
     <body>
         <noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
 
 		<canvas id="canvas"></canvas>
+		<div id="panic">
+            <h1>application encountered a panic!</h1>
+            <div>the application will no longer respond to user inputs</div>
+            <div>check the console for more information</div>
+        </div>
+		<div class="centered" id="loading">
+			<p style="font-size:16px">
+				Loading…
+			</p>
+			<div class="lds-dual-ring"></div>
+		</div>
 
 		<script type="module">
 			import init, { start } from '../pkg/integral_site.js';
 	  
 			async function run() {
 				await init();
+				document.getElementById("loading").remove();
 				start("canvas");
 			}
 			run();

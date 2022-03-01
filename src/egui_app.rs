@@ -241,8 +241,8 @@ impl epi::App for MathApp {
 
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
-                .view_aspect(1.0)
-                .data_aspect(1.0)
+                // .view_aspect(1.0)
+                // .data_aspect(1.0)
                 .include_y(0)
                 .show(ui, |plot_ui| {
                     let bounds = plot_ui.plot_bounds();
