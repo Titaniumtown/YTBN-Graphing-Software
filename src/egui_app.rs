@@ -46,8 +46,8 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 // Used in the "Buttons" section of the Help window
 const HELP_BUTTONS: &str = "- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
-- The 'Open Help' Button on the top bar opens and closes this window!
-- The 'Open Info' Button on the top bar opens and closes a window which contains info such as the estimated area for each function, and the time it took to render the last frame.";
+- The 'Help' Button on the top bar opens and closes this window!
+- The 'Info' Button on the top bar opens and closes a window which contains info such as the estimated area for each function, and the time it took to render the last frame.";
 
 const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk";
 
@@ -162,11 +162,11 @@ impl epi::App for MathApp {
                     self.func_strs.push(String::from(DEFAULT_FUNCION));
                 }
 
-                if ui.add(egui::Button::new("Open Help")).clicked() {
+                if ui.add(egui::Button::new("Help")).clicked() {
                     self.help_open = !self.help_open;
                 }
 
-                if ui.add(egui::Button::new("Open Info")).clicked() {
+                if ui.add(egui::Button::new("Info")).clicked() {
                     self.info_open = !self.info_open;
                 }
             });
