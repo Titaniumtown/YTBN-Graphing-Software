@@ -9,14 +9,14 @@ crate-type=["cdylib"]
 [profile.release]
 debug = false
 codegen-units = 1
-opt-level = "z" #optimize for size
+opt-level = "s" #optimize for size
 lto = true
 strip = true
 
 [profile.dev]
 debug = true
 codegen-units = 1
-opt-level = "z" #optimize for size
+opt-level = "s" #optimize for size
 lto = true
 
 [dependencies]
