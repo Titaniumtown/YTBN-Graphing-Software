@@ -1,5 +1,4 @@
 #![allow(clippy::unused_unit)] // Fixes clippy keep complaining about wasm_bindgen
-#![allow(clippy::type_complexity)] // Clippy, my types are fine.
 
 mod egui_app;
 mod function;

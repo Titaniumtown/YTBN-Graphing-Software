@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use crate::function::Function;
+use crate::function::{Function, RiemannSum};
 use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::plot::Plot;
@@ -40,6 +40,8 @@ pub struct MathApp {
 
     // Stores font data that's used when displaying text
     font: FontData,
+
+    sum: RiemannSum,
 }
 
 impl Default for MathApp {
@@ -58,6 +60,7 @@ impl Default for MathApp {
                 Some(def_min_x),
                 Some(def_max_x),
                 Some(def_interval),
+                Some(RiemannSum::Left),
             )],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             integral_min_x: def_min_x,
@@ -65,6 +68,7 @@ impl Default for MathApp {
             integral_num: def_interval,
             help_open: false,
             font: FontData::from_static(&FONT_DATA),
+            sum: RiemannSum::Left,
         }
     }
 }
@@ -134,6 +138,7 @@ impl epi::App for MathApp {
                         None,
                         None,
                         None,
+                        Some(self.sum),
                     ));
                     self.func_strs.push(String::from(DEFAULT_FUNCION));
                 }
@@ -150,7 +155,13 @@ impl epi::App for MathApp {
         egui::SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
-                // ui.heading("Side Panel");
+                egui::ComboBox::from_label("Riemann Sum Type")
+                    .selected_text(self.sum.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut self.sum, RiemannSum::Left, "Left");
+                        ui.selectable_value(&mut self.sum, RiemannSum::Middle, "Middle");
+                        ui.selectable_value(&mut self.sum, RiemannSum::Right, "Right");
+                    });
 
                 let min_x_old = self.integral_min_x;
                 let min_x_response =
@@ -197,7 +208,7 @@ impl epi::App for MathApp {
                         if let Some(test_output_value) = func_test_output {
                             parse_error += &format!("(Function #{}) {}", i, test_output_value);
                         } else {
-                            function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num));
+                            function.update(proc_func_str, integral, Some(self.integral_min_x), Some(self.integral_max_x), Some(self.integral_num), Some(self.sum));
                         }
                     } else {
                         function.func_str = "".to_string();

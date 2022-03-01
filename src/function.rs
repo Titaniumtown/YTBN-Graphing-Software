@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)] // Clippy, shut
+
 #[allow(unused_imports)]
 use crate::misc::debug_log;
 
@@ -6,6 +8,18 @@ use eframe::egui::{
     widgets::plot::Bar,
 };
 use meval::Expr;
+use std::fmt::{self, Debug};
+
+#[derive(PartialEq, Debug, Copy, Clone)]
+pub enum RiemannSum {
+    Left,
+    Middle,
+    Right,
+}
+
+impl fmt::Display for RiemannSum {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
+}
 
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
@@ -21,12 +35,14 @@ pub struct Function {
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
+    sum: RiemannSum,
 }
 
 impl Function {
     pub fn new(
         func_str: String, min_x: f64, max_x: f64, pixel_width: usize, integral: bool,
         integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>,
+        sum: Option<RiemannSum>,
     ) -> Self {
         // Makes sure proper arguments are passed when integral is enabled
         if integral {
@@ -36,6 +52,7 @@ impl Function {
                 .expect("Invalid arguments: integral_max_x is None, but integral is enabled.");
             integral_num
                 .expect("Invalid arguments: integral_num is None, but integral is enabled.");
+            sum.expect("Invalid arguments: sum is None, but integral is enabled");
         }
 
         let expr: Expr = func_str.parse().unwrap();
@@ -58,6 +75,7 @@ impl Function {
                 None => f64::NAN,
             },
             integral_num: integral_num.unwrap_or(0),
+            sum: sum.unwrap_or(RiemannSum::Left),
         }
     }
 
@@ -66,7 +84,7 @@ impl Function {
 
     pub fn update(
         &mut self, func_str: String, integral: bool, integral_min_x: Option<f64>,
-        integral_max_x: Option<f64>, integral_num: Option<usize>,
+        integral_max_x: Option<f64>, integral_num: Option<usize>, sum: Option<RiemannSum>,
     ) {
         if func_str.is_empty() {
             self.func_str = func_str;
@@ -84,6 +102,7 @@ impl Function {
                 integral_min_x,
                 integral_max_x,
                 integral_num,
+                sum,
             );
             return;
         }
@@ -97,11 +116,13 @@ impl Function {
             && (integral_min_x != Some(self.integral_min_x))
                 | (integral_max_x != Some(self.integral_max_x))
                 | (integral_num != Some(self.integral_num))
+                | (sum != Some(self.sum))
         {
             self.front_cache = None;
             self.integral_min_x = integral_min_x.expect("integral_min_x is None");
             self.integral_max_x = integral_max_x.expect("integral_max_x is None");
             self.integral_num = integral_num.expect("integral_num is None");
+            self.sum = sum.expect("sum is None");
         }
     }
 
@@ -172,7 +193,7 @@ impl Function {
                 }
                 false => {
                     debug_log("front_cache: regen");
-                    let (data, area) = self.integral_rectangles();
+                    let (data, area) = self.integral_rectangles(self.sum);
                     let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
 
                     let output = (bars, area);
@@ -187,8 +208,7 @@ impl Function {
     }
 
     // Creates and does the math for creating all the rectangles under the graph
-    // TODO: fix this stuff, it's half broken
-    fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
+    fn integral_rectangles(&self, riemann: RiemannSum) -> (Vec<(f64, f64)>, f64) {
         if self.integral_min_x.is_nan() {
             panic!("integral_min_x is NaN")
         } else if self.integral_max_x.is_nan() {
@@ -201,21 +221,26 @@ impl Function {
         let data2: Vec<(f64, f64)> = (0..self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
-
-                // Makes sure rectangles are properly handled on x values below 0
                 let x2: f64 = match x > 0.0 {
                     true => x + step,
                     false => x - step,
                 };
 
-                let tmp1: f64 = self.run_func(x);
-                let tmp2: f64 = self.run_func(x2);
-
-                // Chooses the y value who's absolute value is the smallest
-                let mut output = match tmp2.abs() > tmp1.abs() {
-                    true => (x, tmp1),
-                    false => (x2, tmp2),
+                let left_x: f64 = match x > 0.0 {
+                    true => x,
+                    false => x2,
                 };
+                let right_x: f64 = match x > 0.0 {
+                    true => x2,
+                    false => x,
+                };
+
+                let y: f64 = match riemann {
+                    RiemannSum::Left => self.run_func(left_x),
+                    RiemannSum::Right => self.run_func(right_x),
+                    RiemannSum::Middle => (self.run_func(left_x) + self.run_func(right_x)) / 2.0,
+                };
+                let mut output = (x, y);
 
                 // Applies `half_step` in order to make the bar graph display properly
                 if output.0 > 0.0 {
@@ -223,7 +248,6 @@ impl Function {
                 } else {
                     output.0 -= half_step;
                 }
-
                 output
             })
             .filter(|(_, y)| !y.is_nan())
