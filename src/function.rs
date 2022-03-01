@@ -93,16 +93,12 @@ impl Function {
         }
 
         // Makes sure proper arguments are passed when integral is enabled
-        if integral {
-            if (integral_min_x != Some(self.integral_min_x))
-                | (integral_max_x != Some(self.integral_max_x))
-                | (integral_num != Some(self.integral_num))
-            {
-                self.front_cache = None;
-                self.integral_min_x = integral_min_x.expect("integral_min_x is None");
-                self.integral_max_x = integral_max_x.expect("integral_max_x is None");
-                self.integral_num = integral_num.expect("integral_num is None");
-            }
+        if integral && (integral_min_x != Some(self.integral_min_x))
+                | (integral_max_x != Some(self.integral_max_x)) | (integral_num != Some(self.integral_num)) {
+            self.front_cache = None;
+            self.integral_min_x = integral_min_x.expect("integral_min_x is None");
+            self.integral_max_x = integral_max_x.expect("integral_max_x is None");
+            self.integral_num = integral_num.expect("integral_num is None");
         }
     }
 
