@@ -142,9 +142,14 @@ impl Function {
             let x_data: Vec<f64> = back_cache.iter().map(|ele| ele.x).collect();
 
             self.back_cache = Some(
-                (1..=self.pixel_width)
+                (0..=self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + min_x)
                     .map(|x| {
+                        // If x is outside of previous bounds, just go ahead and just skip searching for the index
+                        if (x < self.min_x) | (self.max_x < x) {
+                            return Value::new(x, self.run_func(x));
+                        }
+
                         let i_option = x_data.iter().position(|&r| r == x); // Optimize this later, this could be done much much better, but tbh it doesn't matter that much as the program is already super fast
 
                         if let Some(i) = i_option {
@@ -174,7 +179,7 @@ impl Function {
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
                 self.back_cache = Some(
-                    (1..=self.pixel_width)
+                    (0..=self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
                         .map(|x| (x, self.run_func(x)))
                         .map(|(x, y)| Value::new(x, y))
