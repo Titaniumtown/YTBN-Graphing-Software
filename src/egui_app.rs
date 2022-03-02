@@ -15,7 +15,7 @@ use std::ops::RangeInclusive;
 
 shadow!(build);
 
-// Constant function that has a string containing information about the build.
+// Constant string that has a string containing information about the build.
 const BUILD_INFO: &str = formatc!(
     "Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
     &build::SHORT_COMMIT,
