@@ -16,16 +16,14 @@ use std::ops::RangeInclusive;
 shadow!(build);
 
 // Constant function that has a string containing information about the build.
-const fn build_info() -> &'static str {
-    formatc!(
-        "Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
-        &build::SHORT_COMMIT,
-        &build::BRANCH,
-        &build::BUILD_TIME,
-        &build::RUST_CHANNEL,
-        &build::RUST_VERSION,
-    )
-}
+const BUILD_INFO: &str = formatc!(
+    "Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
+    &build::SHORT_COMMIT,
+    &build::BRANCH,
+    &build::BUILD_TIME,
+    &build::RUST_CHANNEL,
+    &build::RUST_VERSION,
+);
 
 // Sets some hard-coded limits to the application
 const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=100000;
@@ -252,7 +250,7 @@ impl epi::App for MathApp {
             .resizable(false)
             .collapsible(false)
             .show(ctx, |ui| {
-                ui.label(build_info());
+                ui.label(&*BUILD_INFO);
             });
 
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)

@@ -18,15 +18,14 @@ strip = true
 
 [profile.dev]
 debug = true
-codegen-units = 1
-opt-level = "s" #optimize for size
+opt-level = 2
 lto = false
 
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 eframe = { git = "https://github.com/Titaniumtown/egui", default-features = false, features = ["egui_glow"] }
 include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
-shadow-rs = { version = "0.9.0", default-features = false }
+shadow-rs = { version = "0.9", default-features = false }
 const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
 
 [build-dependencies]
