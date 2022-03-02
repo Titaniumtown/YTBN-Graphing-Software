@@ -2,6 +2,8 @@
 name = "integral_site"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
+license = "AGPL-3.0"
 
 [lib]
 crate-type=["cdylib"]
@@ -22,8 +24,12 @@ lto = false
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 eframe = { git = "https://github.com/Titaniumtown/egui", default-features = false, features = ["egui_glow"] }
-git-version = "0.3.5"
 include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
+shadow-rs = "0.9.0"
+const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
+
+[build-dependencies]
+shadow-rs = "0.9"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = { version = "0.1.12" }

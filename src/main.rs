@@ -1,3 +1,4 @@
+#![feature(const_mut_refs)]
 mod egui_app;
 mod function;
 mod misc;

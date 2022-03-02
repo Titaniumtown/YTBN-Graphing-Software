@@ -2,6 +2,7 @@ use std::ops::RangeInclusive;
 
 use crate::function::{Function, RiemannSum};
 use crate::misc::{add_asterisks, digits_precision, test_func};
+use const_format::formatc;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
@@ -9,12 +10,22 @@ use egui::{
     RichText, SidePanel, Slider, TopBottomPanel, Vec2, Window,
 };
 use epi::{Frame, Storage};
-use git_version::git_version;
 use include_flate::flate;
 use instant::Duration;
+use shadow_rs::shadow;
 
-// Grabs current git commit information on compile time
-const GIT_VERSION: &str = git_version!();
+shadow!(build);
+
+const fn build_info() -> &'static str {
+    formatc!(
+        "Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
+        &build::SHORT_COMMIT,
+        &build::BRANCH,
+        &build::COMMIT_DATE,
+        &build::RUST_CHANNEL,
+        &build::RUST_VERSION,
+    )
+}
 
 // Sets some hard-coded limits to the application
 const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=100000;
@@ -51,7 +62,8 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 const HELP_BUTTONS: &str = "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
 - The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
-- The 'Help' bbutton on the top bar opens and closes this window!";
+- The 'Help' button on the top bar opens and closes this window!
+- The 'Info' button provides information on the build currently running.";
 
 const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk";
 
@@ -74,6 +86,8 @@ pub struct MathApp {
 
     // Stores whether or not the help window is open
     help_open: bool,
+
+    info_open: bool,
 
     // Stores whether or not the side panel is shown or not
     show_side_panel: bool,
@@ -108,6 +122,7 @@ impl Default for MathApp {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             help_open: true,
+            info_open: false,
             show_side_panel: true,
             last_error: String::new(),
             font: FontData::from_static(&FONT_DATA),
@@ -192,6 +207,14 @@ impl epi::App for MathApp {
                     self.help_open = !self.help_open;
                 }
 
+                if ui
+                    .add(Button::new("Info"))
+                    .on_hover_text("Show Info")
+                    .clicked()
+                {
+                    self.info_open = !self.info_open;
+                }
+
                 ui.label(format!(
                     "Area: {:?} Took: {:?}",
                     self.last_info.0, self.last_info.1
@@ -217,6 +240,15 @@ impl epi::App for MathApp {
                 ui.collapsing("Misc", |ui| {
                     ui.label(HELP_MISC);
                 });
+            });
+
+        Window::new("Info")
+            .default_pos([200.0, 200.0])
+            .open(&mut self.info_open)
+            .resizable(false)
+            .collapsible(false)
+            .show(ctx, |ui| {
+                ui.label(build_info());
             });
 
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
@@ -335,6 +367,7 @@ impl epi::App for MathApp {
                     )
                     .on_hover_text(LICENSE_INFO);
 
+                    /*
                     // Displays commit info
                     ui.horizontal(|ui| {
                         ui.label("Commit:");
@@ -355,6 +388,7 @@ impl epi::App for MathApp {
                             );
                         }
                     });
+                    */
                 });
         }
 
