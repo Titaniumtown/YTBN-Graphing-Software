@@ -69,6 +69,42 @@ const HELP_MISC: &str = "- In some edge cases, math functions may not parse corr
 // Used to provide info on the Licensing of the project
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, still is guaranteed access to the source code of the project in question.";
 
+// Stores settings
+struct AppSettings {
+    // Stores whether or not the Help window is open
+    pub help_open: bool,
+
+    // Stores whether or not the Info window is open
+    pub info_open: bool,
+
+    // Stores whether or not the side panel is shown or not
+    pub show_side_panel: bool,
+
+    // Stores the type of Rienmann sum that should be calculated
+    pub sum: RiemannSum,
+
+    // Min and Max range for calculating an integral
+    pub integral_min_x: f64,
+    pub integral_max_x: f64,
+
+    // Number of rectangles used to calculate integral
+    pub integral_num: usize,
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            help_open: true,
+            info_open: false,
+            show_side_panel: true,
+            sum: DEFAULT_RIEMANN,
+            integral_min_x: DEFAULT_MIN_X,
+            integral_max_x: DEFAULT_MAX_X,
+            integral_num: DEFAULT_INTEGRAL_NUM,
+        }
+    }
+}
+
 pub struct MathApp {
     // Stores vector of functions
     functions: Vec<Function>,
@@ -76,33 +112,16 @@ pub struct MathApp {
     // Stores vector containing the string representation of the functions. This is used because of hacky reasons
     func_strs: Vec<String>,
 
-    // Min and Max range for calculating an integral
-    integral_min_x: f64,
-    integral_max_x: f64,
-
-    // Number of rectangles used to calculate integral
-    integral_num: usize,
-
-    // Stores whether or not the Help window is open
-    help_open: bool,
-
-    // Stores whether or not the Info window is open
-    info_open: bool,
-
-    // Stores whether or not the side panel is shown or not
-    show_side_panel: bool,
-
     // Stores last error from parsing functions (used to display the same error when side panel is minimized)
     last_error: String,
 
     // Stores font data that's used when displaying text
     font: FontData,
 
-    // Stores the type of Rienmann sum that should be calculated
-    sum: RiemannSum,
-
     // Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
     last_info: (Vec<f64>, Duration),
+
+    settings: AppSettings,
 }
 
 impl Default for MathApp {
@@ -120,16 +139,10 @@ impl Default for MathApp {
                 Some(DEFAULT_RIEMANN),
             )],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
-            integral_min_x: DEFAULT_MIN_X,
-            integral_max_x: DEFAULT_MAX_X,
-            integral_num: DEFAULT_INTEGRAL_NUM,
-            help_open: true,
-            info_open: false,
-            show_side_panel: true,
             last_error: String::new(),
             font: FontData::from_static(&FONT_DATA),
-            sum: DEFAULT_RIEMANN,
             last_info: (vec![0.0], Duration::ZERO),
+            settings: AppSettings::default(),
         }
     }
 }
@@ -173,14 +186,14 @@ impl epi::App for MathApp {
             ui.horizontal(|ui| {
                 if ui
                     .add(Button::new("Panel"))
-                    .on_hover_text(if self.show_side_panel {
+                    .on_hover_text(if self.settings.show_side_panel {
                         "Hides Side Panel"
                     } else {
                         "Shows Side Panel"
                     })
                     .clicked()
                 {
-                    self.show_side_panel = !self.show_side_panel;
+                    self.settings.show_side_panel = !self.settings.show_side_panel;
                 }
                 if ui
                     .add(Button::new("Add Function"))
@@ -196,7 +209,7 @@ impl epi::App for MathApp {
                         None, // Doesn't matter, updated later
                         None, // Doesn't matter, updated later
                         None, // Doesn't matter, updated later
-                        Some(self.sum),
+                        Some(self.settings.sum),
                     ));
                     self.func_strs.push(String::from(DEFAULT_FUNCION));
                 }
@@ -206,7 +219,7 @@ impl epi::App for MathApp {
                     .on_hover_text("Open Help Window")
                     .clicked()
                 {
-                    self.help_open = !self.help_open;
+                    self.settings.help_open = !self.settings.help_open;
                 }
 
                 if ui
@@ -214,7 +227,7 @@ impl epi::App for MathApp {
                     .on_hover_text("Show Info")
                     .clicked()
                 {
-                    self.info_open = !self.info_open;
+                    self.settings.info_open = !self.settings.info_open;
                 }
 
                 ui.label(format!(
@@ -227,7 +240,7 @@ impl epi::App for MathApp {
         // Cute little window that lists supported functions!
         Window::new("Help")
             .default_pos([200.0, 200.0])
-            .open(&mut self.help_open)
+            .open(&mut self.settings.help_open)
             .resizable(false)
             .collapsible(false)
             .show(ctx, |ui| {
@@ -246,7 +259,7 @@ impl epi::App for MathApp {
 
         Window::new("Info")
             .default_pos([200.0, 200.0])
-            .open(&mut self.info_open)
+            .open(&mut self.settings.info_open)
             .resizable(false)
             .collapsible(false)
             .show(ctx, |ui| {
@@ -254,46 +267,57 @@ impl epi::App for MathApp {
             });
 
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
-        if self.show_side_panel {
+        if self.settings.show_side_panel {
             SidePanel::left("side_panel")
                 .resizable(false)
                 .show(ctx, |ui| {
                     ComboBox::from_label("Riemann Sum Type")
-                        .selected_text(self.sum.to_string())
+                        .selected_text(self.settings.sum.to_string())
                         .show_ui(ui, |ui| {
-                            ui.selectable_value(&mut self.sum, RiemannSum::Left, "Left");
-                            ui.selectable_value(&mut self.sum, RiemannSum::Middle, "Middle");
-                            ui.selectable_value(&mut self.sum, RiemannSum::Right, "Right");
+                            ui.selectable_value(&mut self.settings.sum, RiemannSum::Left, "Left");
+                            ui.selectable_value(
+                                &mut self.settings.sum,
+                                RiemannSum::Middle,
+                                "Middle",
+                            );
+                            ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
                         });
 
-                    let min_x_old = self.integral_min_x;
+                    let min_x_old = self.settings.integral_min_x;
                     let min_x_changed = ui
                         .add(
-                            Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
-                                .text("Min X"),
+                            Slider::new(
+                                &mut self.settings.integral_min_x,
+                                INTEGRAL_X_RANGE.clone(),
+                            )
+                            .text("Min X"),
                         )
                         .changed();
 
-                    let max_x_old = self.integral_max_x;
+                    let max_x_old = self.settings.integral_max_x;
                     let max_x_changed = ui
-                        .add(Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"))
+                        .add(
+                            Slider::new(&mut self.settings.integral_max_x, INTEGRAL_X_RANGE)
+                                .text("Max X"),
+                        )
                         .changed();
 
                     // Checks bounds, and if they are invalid, fix them
-                    if self.integral_min_x >= self.integral_max_x {
+                    if self.settings.integral_min_x >= self.settings.integral_max_x {
                         if max_x_changed {
-                            self.integral_max_x = max_x_old;
+                            self.settings.integral_max_x = max_x_old;
                         } else if min_x_changed {
-                            self.integral_min_x = min_x_old;
+                            self.settings.integral_min_x = min_x_old;
                         } else {
                             // No clue how this would happen, but just in case
-                            self.integral_min_x = -10.0;
-                            self.integral_max_x = 10.0;
+                            self.settings.integral_min_x = -10.0;
+                            self.settings.integral_max_x = 10.0;
                         }
                     }
 
                     ui.add(
-                        Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"),
+                        Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
+                            .text("Interval"),
                     );
 
                     let mut remove_i: Option<usize> = None;
@@ -341,10 +365,10 @@ impl epi::App for MathApp {
                                 function.update(
                                     proc_func_str,
                                     integral,
-                                    Some(self.integral_min_x),
-                                    Some(self.integral_max_x),
-                                    Some(self.integral_num),
-                                    Some(self.sum),
+                                    Some(self.settings.integral_min_x),
+                                    Some(self.settings.integral_max_x),
+                                    Some(self.settings.integral_num),
+                                    Some(self.settings.sum),
                                 );
                             }
                         } else {
@@ -394,7 +418,8 @@ impl epi::App for MathApp {
                 });
         }
 
-        let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
+        let step = (self.settings.integral_min_x - self.settings.integral_max_x).abs()
+            / (self.settings.integral_num as f64);
 
         let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
 
