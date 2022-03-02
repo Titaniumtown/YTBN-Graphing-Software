@@ -389,7 +389,7 @@ impl epi::App for MathApp {
                 });
             });
 
-        self.last_info = (area_list.clone(), start.elapsed());
+        self.last_info = (area_list, start.elapsed());
     }
 
     fn max_size_points(&self) -> egui::Vec2 { egui::Vec2::new(f32::MAX, f32::MAX) } // Allow proper scaling
