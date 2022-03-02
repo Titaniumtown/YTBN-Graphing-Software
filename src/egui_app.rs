@@ -251,17 +251,17 @@ impl epi::App for MathApp {
 
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
-
+                    let integral_enabled = function.integral;
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
-                        let mut integral_opt_text = "Integrate";
-                        if function.integral {
-                            integral_opt_text = "Don't integrate";
-                        }
                         if ui
                             .add(Button::new("∫"))
-                            .on_hover_text(integral_opt_text)
+                            .on_hover_text(if integral_enabled {
+                                "Don't integrate"
+                            } else {
+                                "Integrate"
+                            })
                             .clicked()
                         {
                             integral_toggle = true;
@@ -270,9 +270,9 @@ impl epi::App for MathApp {
                     });
 
                     let integral: bool = if integral_toggle {
-                        !function.integral
+                        !integral_enabled
                     } else {
-                        function.integral
+                        integral_enabled
                     };
 
                     if !self.func_strs[i].is_empty() {

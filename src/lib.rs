@@ -35,9 +35,7 @@ pub fn start(canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
 
     // Used in order to hook into `panic!()` to log in the browser's console
     log_helper("Initializing panic hooks...");
-    std::panic::set_hook(Box::new(|panic_info| {
-        console_error_panic_hook::hook(panic_info);
-    }));
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     log_helper("Initialized panic hooks!");
 
     log_helper("Finished initializing!");
