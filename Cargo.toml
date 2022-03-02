@@ -26,7 +26,7 @@ lto = false
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
 eframe = { git = "https://github.com/Titaniumtown/egui", default-features = false, features = ["egui_glow"] }
 include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
-shadow-rs = "0.9.0"
+shadow-rs = { version = "0.9.0", default-features = false }
 const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
 
 [build-dependencies]
