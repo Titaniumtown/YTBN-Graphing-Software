@@ -375,13 +375,16 @@ impl epi::App for MathApp {
                                 let (back_values, bars) = function.run();
                                 plot_ui.line(back_values.color(Color32::RED));
 
-                                if let Some(bars_data) = bars {
-                                    let (bar_chart, area) = bars_data;
-                                    plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
-                                    area_list.push(digits_precision(area, 8))
-                                } else {
-                                    area_list.push(f64::NAN);
-                                }
+                                area_list.push({
+                                    if let Some(bars_data) = bars {
+                                        let (bar_chart, area) = bars_data;
+                                        plot_ui
+                                            .bar_chart(bar_chart.color(Color32::BLUE).width(step));
+                                        digits_precision(area, 8)
+                                    } else {
+                                        f64::NAN
+                                    }
+                                });
                             }
                         });
                 });
