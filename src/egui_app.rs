@@ -4,13 +4,16 @@ use crate::function::{Function, RiemannSum};
 use crate::misc::{add_asterisks, digits_precision, test_func};
 use eframe::{egui, epi};
 use egui::plot::Plot;
-use egui::widgets::Button;
-use egui::{Color32, FontData, FontFamily, Frame, RichText, Vec2};
+use egui::{
+    Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily,
+    RichText, SidePanel, Slider, TopBottomPanel, Vec2, Window,
+};
+use epi::{Frame, Storage};
 use git_version::git_version;
 use include_flate::flate;
 use instant::Duration;
 
-// Grabs git version on compile time
+// Grabs current git commit information on compile time
 const GIT_VERSION: &str = git_version!();
 
 // Sets some hard-coded limits to the application
@@ -116,9 +119,9 @@ impl Default for MathApp {
 
 impl MathApp {
     // Sets up fonts to use Ubuntu-Light
-    fn init_font(&self, ctx: &egui::Context) {
+    fn init_font(&self, ctx: &Context) {
         // Reduce size of final binary by just including one font
-        let mut fonts = egui::FontDefinitions::default();
+        let mut fonts = FontDefinitions::default();
         fonts
             .font_data
             .insert("Ubuntu-Light".to_owned(), self.font.clone());
@@ -138,24 +141,21 @@ impl epi::App for MathApp {
     fn name(&self) -> &str { "Integral Demonstration" }
 
     // Called once before the first frame.
-    fn setup(
-        &mut self, _ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>,
-    ) {
-    }
+    fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {}
 
     // Called each time the UI needs repainting, which may be many times per second.
     #[inline(always)]
-    fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
+    fn update(&mut self, ctx: &Context, _frame: &Frame) {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
         self.init_font(ctx); // Setup fonts
 
         // Creates Top bar that contains some general options
-        egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
+        TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui
-                    .add(egui::Button::new("Panel"))
+                    .add(Button::new("Panel"))
                     .on_hover_text(if self.show_side_panel {
                         "Hides Side Panel"
                     } else {
@@ -166,7 +166,7 @@ impl epi::App for MathApp {
                     self.show_side_panel = !self.show_side_panel;
                 }
                 if ui
-                    .add(egui::Button::new("Add Function"))
+                    .add(Button::new("Add Function"))
                     .on_hover_text("Create and graph new function")
                     .clicked()
                 {
@@ -185,7 +185,7 @@ impl epi::App for MathApp {
                 }
 
                 if ui
-                    .add(egui::Button::new("Help"))
+                    .add(Button::new("Help"))
                     .on_hover_text("Open Help Window")
                     .clicked()
                 {
@@ -200,7 +200,7 @@ impl epi::App for MathApp {
         });
 
         // Cute little window that lists supported functions!
-        egui::Window::new("Help")
+        Window::new("Help")
             .default_pos([200.0, 200.0])
             .open(&mut self.help_open)
             .resizable(false)
@@ -221,10 +221,10 @@ impl epi::App for MathApp {
 
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
         if self.show_side_panel {
-            egui::SidePanel::left("side_panel")
+            SidePanel::left("side_panel")
                 .resizable(false)
                 .show(ctx, |ui| {
-                    egui::ComboBox::from_label("Riemann Sum Type")
+                    ComboBox::from_label("Riemann Sum Type")
                         .selected_text(self.sum.to_string())
                         .show_ui(ui, |ui| {
                             ui.selectable_value(&mut self.sum, RiemannSum::Left, "Left");
@@ -235,17 +235,14 @@ impl epi::App for MathApp {
                     let min_x_old = self.integral_min_x;
                     let min_x_changed = ui
                         .add(
-                            egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
+                            Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
                                 .text("Min X"),
                         )
                         .changed();
 
                     let max_x_old = self.integral_max_x;
                     let max_x_changed = ui
-                        .add(
-                            egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE)
-                                .text("Max X"),
-                        )
+                        .add(Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"))
                         .changed();
 
                     // Checks bounds, and if they are invalid, fix them
@@ -262,8 +259,7 @@ impl epi::App for MathApp {
                     }
 
                     ui.add(
-                        egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE)
-                            .text("Interval"),
+                        Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"),
                     );
 
                     let mut remove_i: Option<usize> = None;
@@ -367,56 +363,53 @@ impl epi::App for MathApp {
         let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
 
         // Stores the final Plot
-        egui::CentralPanel::default()
-            .frame(Frame::none())
-            .show(ctx, |ui| {
-                if !self.last_error.is_empty() {
-                    ui.centered_and_justified(|ui| {
-                        ui.heading(self.last_error.clone());
-                    });
-                    return;
-                }
-                let available_width: usize = ui.available_width() as usize;
-                let plot_size = ui.available_size();
-                let plot_size = Vec2::new(plot_size.x, plot_size.y);
-
-                ui.allocate_ui(plot_size, |ui| {
-                    Plot::new("plot")
-                        .set_margin_fraction(Vec2::ZERO)
-                        .data_aspect(1.0)
-                        .include_y(0)
-                        .show(ui, |plot_ui| {
-                            let bounds = plot_ui.plot_bounds();
-                            let minx_bounds: f64 = bounds.min()[0];
-                            let maxx_bounds: f64 = bounds.max()[0];
-
-                            for (i, function) in self.functions.iter_mut().enumerate() {
-                                if self.func_strs[i].is_empty() {
-                                    continue;
-                                }
-
-                                function.update_bounds(minx_bounds, maxx_bounds, available_width);
-
-                                let (back_values, bars) = function.run();
-                                plot_ui.line(back_values.color(Color32::RED));
-
-                                area_list.push({
-                                    if let Some(bars_data) = bars {
-                                        let (bar_chart, area) = bars_data;
-                                        plot_ui
-                                            .bar_chart(bar_chart.color(Color32::BLUE).width(step));
-                                        digits_precision(area, 8)
-                                    } else {
-                                        f64::NAN
-                                    }
-                                });
-                            }
-                        });
+        CentralPanel::default().show(ctx, |ui| {
+            if !self.last_error.is_empty() {
+                ui.centered_and_justified(|ui| {
+                    ui.heading(self.last_error.clone());
                 });
+                return;
+            }
+            let available_width: usize = ui.available_width() as usize;
+            let plot_size = ui.available_size();
+            let plot_size = Vec2::new(plot_size.x, plot_size.y);
+
+            ui.allocate_ui(plot_size, |ui| {
+                Plot::new("plot")
+                    .set_margin_fraction(Vec2::ZERO)
+                    .data_aspect(1.0)
+                    .include_y(0)
+                    .show(ui, |plot_ui| {
+                        let bounds = plot_ui.plot_bounds();
+                        let minx_bounds: f64 = bounds.min()[0];
+                        let maxx_bounds: f64 = bounds.max()[0];
+
+                        for (i, function) in self.functions.iter_mut().enumerate() {
+                            if self.func_strs[i].is_empty() {
+                                continue;
+                            }
+
+                            function.update_bounds(minx_bounds, maxx_bounds, available_width);
+
+                            let (back_values, bars) = function.run();
+                            plot_ui.line(back_values.color(Color32::RED));
+
+                            area_list.push({
+                                if let Some(bars_data) = bars {
+                                    let (bar_chart, area) = bars_data;
+                                    plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
+                                    digits_precision(area, 8)
+                                } else {
+                                    f64::NAN
+                                }
+                            });
+                        }
+                    });
             });
+        });
 
         self.last_info = (area_list, start.elapsed());
     }
 
-    fn max_size_points(&self) -> egui::Vec2 { egui::Vec2::new(f32::MAX, f32::MAX) } // Allow proper scaling
+    fn max_size_points(&self) -> Vec2 { Vec2::new(f32::MAX, f32::MAX) } // Allow proper scaling
 }
