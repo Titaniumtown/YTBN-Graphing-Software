@@ -21,7 +21,7 @@ lto = false
 
 [dependencies]
 meval = { git = "https://github.com/Titaniumtown/meval-rs.git" }
-eframe = { git = "https://github.com/Titaniumtown/egui", branch = "patch-1", default-features = false, features = ["egui_glow"] }
+eframe = { git = "https://github.com/Titaniumtown/egui", default-features = false, features = ["egui_glow"] }
 git-version = "0.3.5"
 include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
 
