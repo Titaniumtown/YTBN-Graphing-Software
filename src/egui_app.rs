@@ -21,7 +21,7 @@ const fn build_info() -> &'static str {
         "Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
         &build::SHORT_COMMIT,
         &build::BRANCH,
-        &build::COMMIT_DATE,
+        &build::BUILD_TIME,
         &build::RUST_CHANNEL,
         &build::RUST_VERSION,
     )
