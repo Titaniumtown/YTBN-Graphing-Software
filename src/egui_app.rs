@@ -347,8 +347,6 @@ impl epi::App for MathApp {
                 ui.allocate_ui(plot_size, |ui| {
                     Plot::new("plot")
                         .set_margin_fraction(Vec2::ZERO)
-                        // .view_aspect(1.0)
-                        // .view_aspect()
                         .data_aspect(1.0)
                         .include_y(0)
                         .show(ui, |plot_ui| {
