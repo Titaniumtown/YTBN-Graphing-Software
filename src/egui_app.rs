@@ -8,6 +8,7 @@ use egui::widgets::Button;
 use egui::{Color32, FontData, FontFamily, Frame, RichText, Vec2};
 use git_version::git_version;
 use include_flate::flate;
+use instant::Duration;
 
 // Grabs git version on compile time
 const GIT_VERSION: &str = git_version!();
@@ -46,8 +47,7 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 // Used in the "Buttons" section of the Help window
 const HELP_BUTTONS: &str = "- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
-- The 'Help' Button on the top bar opens and closes this window!
-- The 'Info' Button on the top bar opens and closes a window which contains info such as the estimated area for each function, and the time it took to render the last frame.";
+- The 'Help' Button on the top bar opens and closes this window!";
 
 const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk";
 
@@ -71,14 +71,13 @@ pub struct MathApp {
     // Stores whether or not the help window is open
     help_open: bool,
 
-    // Stores whether or not the info window is open
-    info_open: bool,
-
     // Stores font data that's used when displaying text
     font: FontData,
 
     // Stores the type of Rienmann sum that should be calculated
     sum: RiemannSum,
+
+    last_info: (Vec<f64>, Duration),
 }
 
 impl Default for MathApp {
@@ -100,9 +99,9 @@ impl Default for MathApp {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             help_open: true,
-            info_open: false,
             font: FontData::from_static(&FONT_DATA),
             sum: DEFAULT_RIEMANN,
+            last_info: (vec![0.0], Duration::ZERO),
         }
     }
 }
@@ -174,13 +173,10 @@ impl epi::App for MathApp {
                     self.help_open = !self.help_open;
                 }
 
-                if ui
-                    .add(egui::Button::new("Info"))
-                    .on_hover_text("Open Info Window")
-                    .clicked()
-                {
-                    self.info_open = !self.info_open;
-                }
+                ui.label(format!(
+                    "Area: {:?} Took: {:?}",
+                    self.last_info.0, self.last_info.1
+                ));
             });
         });
 
@@ -378,21 +374,7 @@ impl epi::App for MathApp {
                 });
             });
 
-        let duration = start.elapsed();
-
-        egui::Window::new("Info")
-            .default_pos([200.0, 200.0])
-            .resizable(false)
-            .collapsible(false)
-            .open(&mut self.info_open)
-            .show(ctx, |ui| {
-                // Displays all areas of functions along with how long it took to complete the entire frame
-                ui.label(format!(
-                    "Area: {:?} Took: {:?}",
-                    area_list.clone(),
-                    duration
-                ));
-            });
+        self.last_info = (area_list.clone(), start.elapsed());
     }
 
     fn max_size_points(&self) -> egui::Vec2 { egui::Vec2::new(f32::MAX, f32::MAX) } // Allow proper scaling
