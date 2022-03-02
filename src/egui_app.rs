@@ -252,7 +252,7 @@ impl epi::App for MathApp {
                     let integral_enabled = function.integral;
                     // Entry for a function
                     ui.horizontal(|ui| {
-                        ui.label("Function: ");
+                        ui.label("Function:");
                         if ui
                             .add(Button::new("X"))
                             .on_hover_text("Delete Function")
