@@ -65,7 +65,8 @@ const HELP_BUTTONS: &str = "- The 'Panel' button on the top bar toggles if the s
 - The 'Help' button on the top bar opens and closes this window!
 - The 'Info' button provides information on the build currently running.";
 
-const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk";
+const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk
+- A (very minor) note in regards to the timing functionality (the 'took' number in the top panel): this value is not accurate when running in the browser in comparison to when running natively. Implementations of this timing functionality vary from browser-to-browser.";
 
 // Used to provide info on the Licensing of the project
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, still is guaranteed access to the source code of the project in question.";
