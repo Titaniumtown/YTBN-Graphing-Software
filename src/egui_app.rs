@@ -246,12 +246,20 @@ impl epi::App for MathApp {
                     egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"),
                 );
 
+                let mut remove_i: Option<usize> = None;
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
                     let integral_enabled = function.integral;
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function: ");
+                        if ui
+                            .add(Button::new("X"))
+                            .on_hover_text("Delete Function")
+                            .clicked()
+                        {
+                            remove_i = Some(i);
+                        }
                         if ui
                             .add(Button::new("∫"))
                             .on_hover_text(if integral_enabled {
@@ -289,6 +297,13 @@ impl epi::App for MathApp {
                         }
                     } else {
                         function.func_str = "".to_string();
+                    }
+                }
+
+                if self.functions.len() > 1 {
+                    if let Some(remove_i_unwrap) = remove_i {
+                        self.functions.remove(remove_i_unwrap);
+                        self.func_strs.remove(remove_i_unwrap);
                     }
                 }
 
