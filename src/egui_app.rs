@@ -365,8 +365,7 @@ impl epi::App for MathApp {
                             let minx_bounds: f64 = bounds.min()[0];
                             let maxx_bounds: f64 = bounds.max()[0];
 
-                            let mut i: usize = 0;
-                            for function in self.functions.iter_mut() {
+                            for (i, function) in self.functions.iter_mut().enumerate() {
                                 if self.func_strs[i].is_empty() {
                                     continue;
                                 }
@@ -383,7 +382,6 @@ impl epi::App for MathApp {
                                 } else {
                                     area_list.push(f64::NAN);
                                 }
-                                i += 1;
                             }
                         });
                 });
