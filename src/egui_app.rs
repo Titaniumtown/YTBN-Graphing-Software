@@ -189,6 +189,7 @@ impl epi::App for MathApp {
             .default_pos([200.0, 200.0])
             .open(&mut self.help_open)
             .resizable(false)
+            .collapsible(false)
             .show(ctx, |ui| {
                 ui.collapsing("Supported Expressions", |ui| {
                     ui.label(HELP_EXPR);
