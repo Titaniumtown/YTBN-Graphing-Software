@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 build = "build.rs"
 license = "AGPL-3.0"
+repository = "https://github.com/Titaniumtown/integral_site"
 
 [lib]
 crate-type=["cdylib"]
