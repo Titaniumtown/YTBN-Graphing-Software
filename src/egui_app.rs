@@ -1,5 +1,3 @@
-use std::ops::RangeInclusive;
-
 use crate::function::{Function, RiemannSum};
 use crate::misc::{add_asterisks, digits_precision, test_func};
 use const_format::formatc;
@@ -13,9 +11,11 @@ use epi::{Frame, Storage};
 use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
+use std::ops::RangeInclusive;
 
 shadow!(build);
 
+// Constant function that has a string containing information about the build.
 const fn build_info() -> &'static str {
     formatc!(
         "Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
@@ -85,14 +85,16 @@ pub struct MathApp {
     // Number of rectangles used to calculate integral
     integral_num: usize,
 
-    // Stores whether or not the help window is open
+    // Stores whether or not the Help window is open
     help_open: bool,
 
+    // Stores whether or not the Info window is open
     info_open: bool,
 
     // Stores whether or not the side panel is shown or not
     show_side_panel: bool,
 
+    // Stores last error from parsing functions (used to display the same error when side panel is minimized)
     last_error: String,
 
     // Stores font data that's used when displaying text
@@ -101,6 +103,7 @@ pub struct MathApp {
     // Stores the type of Rienmann sum that should be calculated
     sum: RiemannSum,
 
+    // Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
     last_info: (Vec<f64>, Duration),
 }
 
@@ -446,5 +449,6 @@ impl epi::App for MathApp {
         self.last_info = (area_list, start.elapsed());
     }
 
-    fn max_size_points(&self) -> Vec2 { Vec2::new(f32::MAX, f32::MAX) } // Allow proper scaling
+    // Uncaps max canvas size. This was capped in egui due to a bug in Firefox. But it's fixed now.
+    fn max_size_points(&self) -> Vec2 { Vec2::new(f32::MAX, f32::MAX) }
 }
