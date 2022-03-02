@@ -45,9 +45,10 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 - signum, min, max";
 
 // Used in the "Buttons" section of the Help window
-const HELP_BUTTONS: &str = "- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
+const HELP_BUTTONS: &str = "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
+- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
-- The 'Help' Button on the top bar opens and closes this window!";
+- The 'Help' bbutton on the top bar opens and closes this window!";
 
 const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk";
 
@@ -70,6 +71,11 @@ pub struct MathApp {
 
     // Stores whether or not the help window is open
     help_open: bool,
+
+    // Stores whether or not the side panel is shown or not
+    show_side_panel: bool,
+
+    last_error: String,
 
     // Stores font data that's used when displaying text
     font: FontData,
@@ -99,6 +105,8 @@ impl Default for MathApp {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             help_open: true,
+            show_side_panel: true,
+            last_error: String::new(),
             font: FontData::from_static(&FONT_DATA),
             sum: DEFAULT_RIEMANN,
             last_info: (vec![0.0], Duration::ZERO),
@@ -146,6 +154,17 @@ impl epi::App for MathApp {
         // Creates Top bar that contains some general options
         egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
+                if ui
+                    .add(egui::Button::new("Panel"))
+                    .on_hover_text(if self.show_side_panel {
+                        "Hides Side Panel"
+                    } else {
+                        "Shows Side Panel"
+                    })
+                    .clicked()
+                {
+                    self.show_side_panel = !self.show_side_panel;
+                }
                 if ui
                     .add(egui::Button::new("Add Function"))
                     .on_hover_text("Create and graph new function")
@@ -200,142 +219,148 @@ impl epi::App for MathApp {
                 });
             });
 
-        let mut parse_error: String = String::new(); // Stores errors found when interpreting input functions
-
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
-        egui::SidePanel::left("side_panel")
-            .resizable(false)
-            .show(ctx, |ui| {
-                egui::ComboBox::from_label("Riemann Sum Type")
-                    .selected_text(self.sum.to_string())
-                    .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut self.sum, RiemannSum::Left, "Left");
-                        ui.selectable_value(&mut self.sum, RiemannSum::Middle, "Middle");
-                        ui.selectable_value(&mut self.sum, RiemannSum::Right, "Right");
-                    });
+        if self.show_side_panel {
+            egui::SidePanel::left("side_panel")
+                .resizable(false)
+                .show(ctx, |ui| {
+                    egui::ComboBox::from_label("Riemann Sum Type")
+                        .selected_text(self.sum.to_string())
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(&mut self.sum, RiemannSum::Left, "Left");
+                            ui.selectable_value(&mut self.sum, RiemannSum::Middle, "Middle");
+                            ui.selectable_value(&mut self.sum, RiemannSum::Right, "Right");
+                        });
 
-                let min_x_old = self.integral_min_x;
-                let min_x_changed = ui
-                    .add(
-                        egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
-                            .text("Min X"),
-                    )
-                    .changed();
+                    let min_x_old = self.integral_min_x;
+                    let min_x_changed = ui
+                        .add(
+                            egui::Slider::new(&mut self.integral_min_x, INTEGRAL_X_RANGE.clone())
+                                .text("Min X"),
+                        )
+                        .changed();
 
-                let max_x_old = self.integral_max_x;
-                let max_x_changed = ui
-                    .add(
-                        egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE).text("Max X"),
-                    )
-                    .changed();
+                    let max_x_old = self.integral_max_x;
+                    let max_x_changed = ui
+                        .add(
+                            egui::Slider::new(&mut self.integral_max_x, INTEGRAL_X_RANGE)
+                                .text("Max X"),
+                        )
+                        .changed();
 
-                // Checks bounds, and if they are invalid, fix them
-                if self.integral_min_x >= self.integral_max_x {
-                    if max_x_changed {
-                        self.integral_max_x = max_x_old;
-                    } else if min_x_changed {
-                        self.integral_min_x = min_x_old;
-                    } else {
-                        // No clue how this would happen, but just in case
-                        self.integral_min_x = -10.0;
-                        self.integral_max_x = 10.0;
-                    }
-                }
-
-                ui.add(
-                    egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE).text("Interval"),
-                );
-
-                let mut remove_i: Option<usize> = None;
-                for (i, function) in self.functions.iter_mut().enumerate() {
-                    let mut integral_toggle: bool = false;
-                    let integral_enabled = function.integral;
-                    // Entry for a function
-                    ui.horizontal(|ui| {
-                        ui.label("Function:");
-                        if ui
-                            .add(Button::new("X"))
-                            .on_hover_text("Delete Function")
-                            .clicked()
-                        {
-                            remove_i = Some(i);
-                        }
-                        if ui
-                            .add(Button::new("∫"))
-                            .on_hover_text(if integral_enabled {
-                                "Don't integrate"
-                            } else {
-                                "Integrate"
-                            })
-                            .clicked()
-                        {
-                            integral_toggle = true;
-                        }
-                        ui.text_edit_singleline(&mut self.func_strs[i]);
-                    });
-
-                    let integral: bool = if integral_toggle {
-                        !integral_enabled
-                    } else {
-                        integral_enabled
-                    };
-
-                    if !self.func_strs[i].is_empty() {
-                        let proc_func_str = add_asterisks(self.func_strs[i].clone());
-                        let func_test_output = test_func(proc_func_str.clone());
-                        if let Some(test_output_value) = func_test_output {
-                            parse_error += &format!("(Function #{}) {}", i, test_output_value);
+                    // Checks bounds, and if they are invalid, fix them
+                    if self.integral_min_x >= self.integral_max_x {
+                        if max_x_changed {
+                            self.integral_max_x = max_x_old;
+                        } else if min_x_changed {
+                            self.integral_min_x = min_x_old;
                         } else {
-                            function.update(
-                                proc_func_str,
-                                integral,
-                                Some(self.integral_min_x),
-                                Some(self.integral_max_x),
-                                Some(self.integral_num),
-                                Some(self.sum),
-                            );
+                            // No clue how this would happen, but just in case
+                            self.integral_min_x = -10.0;
+                            self.integral_max_x = 10.0;
                         }
-                    } else {
-                        function.func_str = "".to_string();
                     }
-                }
 
-                if self.functions.len() > 1 {
-                    if let Some(remove_i_unwrap) = remove_i {
-                        self.functions.remove(remove_i_unwrap);
-                        self.func_strs.remove(remove_i_unwrap);
+                    ui.add(
+                        egui::Slider::new(&mut self.integral_num, INTEGRAL_NUM_RANGE)
+                            .text("Interval"),
+                    );
+
+                    let mut remove_i: Option<usize> = None;
+                    self.last_error = String::new();
+                    for (i, function) in self.functions.iter_mut().enumerate() {
+                        let mut integral_toggle: bool = false;
+                        let integral_enabled = function.integral;
+                        // Entry for a function
+                        ui.horizontal(|ui| {
+                            ui.label("Function:");
+                            if ui
+                                .add(Button::new("X"))
+                                .on_hover_text("Delete Function")
+                                .clicked()
+                            {
+                                remove_i = Some(i);
+                            }
+                            if ui
+                                .add(Button::new("∫"))
+                                .on_hover_text(if integral_enabled {
+                                    "Don't integrate"
+                                } else {
+                                    "Integrate"
+                                })
+                                .clicked()
+                            {
+                                integral_toggle = true;
+                            }
+                            ui.text_edit_singleline(&mut self.func_strs[i]);
+                        });
+
+                        let integral: bool = if integral_toggle {
+                            !integral_enabled
+                        } else {
+                            integral_enabled
+                        };
+
+                        if !self.func_strs[i].is_empty() {
+                            let proc_func_str = add_asterisks(self.func_strs[i].clone());
+                            let func_test_output = test_func(proc_func_str.clone());
+                            if let Some(test_output_value) = func_test_output {
+                                self.last_error +=
+                                    &format!("(Function #{}) {}", i, test_output_value);
+                            } else {
+                                function.update(
+                                    proc_func_str,
+                                    integral,
+                                    Some(self.integral_min_x),
+                                    Some(self.integral_max_x),
+                                    Some(self.integral_num),
+                                    Some(self.sum),
+                                );
+                            }
+                        } else {
+                            function.func_str = "".to_string();
+                        }
                     }
-                }
 
-                // Open Source and Licensing information
-                ui.hyperlink_to(
-                    "I'm Opensource!",
-                    "https://github.com/Titaniumtown/integral_site",
-                );
-                ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
+                    if self.functions.len() > 1 {
+                        if let Some(remove_i_unwrap) = remove_i {
+                            self.functions.remove(remove_i_unwrap);
+                            self.func_strs.remove(remove_i_unwrap);
+                        }
+                    }
+
+                    // Open Source and Licensing information
+                    ui.hyperlink_to(
+                        "I'm Opensource!",
+                        "https://github.com/Titaniumtown/integral_site",
+                    );
+                    ui.label(
+                        RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
+                    )
                     .on_hover_text(LICENSE_INFO);
 
-                // Displays commit info
-                ui.horizontal(|ui| {
-                    ui.label("Commit:");
+                    // Displays commit info
+                    ui.horizontal(|ui| {
+                        ui.label("Commit:");
 
-                    // Only include hyperlink if the build doesn't have untracked files
-                    if GIT_VERSION.contains("-modified") {
-                        // If git version is modified, don't display a link to the commit on github (as the commit will not exist)
-                        ui.label(GIT_VERSION).on_hover_text(
-                            "This build has been modified from the latest git commit.",
-                        );
-                    } else {
-                        ui.hyperlink_to(
-                            GIT_VERSION,
-                            format!(
-                                "https://github.com/Titaniumtown/integral_site/commit/{}",
-                                GIT_VERSION
-                            ),
-                        );
-                    }
+                        // Only include hyperlink if the build doesn't have untracked files
+                        if GIT_VERSION.contains("-modified") {
+                            // If git version is modified, don't display a link to the commit on github (as the commit will not exist)
+                            ui.label(GIT_VERSION).on_hover_text(
+                                "This build has been modified from the latest git commit.",
+                            );
+                        } else {
+                            ui.hyperlink_to(
+                                GIT_VERSION,
+                                format!(
+                                    "https://github.com/Titaniumtown/integral_site/commit/{}",
+                                    GIT_VERSION
+                                ),
+                            );
+                        }
+                    });
                 });
-            });
+        }
 
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
@@ -345,9 +370,9 @@ impl epi::App for MathApp {
         egui::CentralPanel::default()
             .frame(Frame::none())
             .show(ctx, |ui| {
-                if !parse_error.is_empty() {
+                if !self.last_error.is_empty() {
                     ui.centered_and_justified(|ui| {
-                        ui.heading(parse_error);
+                        ui.heading(self.last_error.clone());
                     });
                     return;
                 }
