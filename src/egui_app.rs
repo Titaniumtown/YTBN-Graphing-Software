@@ -70,7 +70,7 @@ const HELP_MISC: &str = "- In some edge cases, math functions may not parse corr
 - A (very minor) note in regards to the timing functionality (the 'took' number in the top panel): this value is not accurate when running in the browser in comparison to when running natively. Implementations of this timing functionality vary from browser-to-browser.";
 
 // Used to provide info on the Licensing of the project
-const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, still is guaranteed access to the source code of the project in question.";
+const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
 
 // Stores settings
 struct AppSettings {
