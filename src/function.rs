@@ -66,14 +66,8 @@ impl Function {
             back_cache: None,
             front_cache: None,
             integral,
-            integral_min_x: match integral_min_x {
-                Some(x) => x,
-                None => f64::NAN,
-            },
-            integral_max_x: match integral_max_x {
-                Some(x) => x,
-                None => f64::NAN,
-            },
+            integral_min_x: integral_min_x.unwrap_or(f64::NAN),
+            integral_max_x: integral_max_x.unwrap_or(f64::NAN),
             integral_num: integral_num.unwrap_or(0),
             sum: sum.unwrap_or(RiemannSum::Left),
         }
@@ -107,9 +101,7 @@ impl Function {
             return;
         }
 
-        if integral != self.integral {
-            self.integral = integral;
-        }
+        self.integral = integral;
 
         // Makes sure proper arguments are passed when integral is enabled
         if integral
@@ -133,9 +125,7 @@ impl Function {
             self.max_x = max_x;
             self.pixel_width = pixel_width;
         } else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.back_cache.is_some() {
-            let range_new: f64 = max_x.abs() + min_x.abs();
-
-            let resolution: f64 = (self.pixel_width as f64 / range_new) as f64;
+            let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
             let back_cache = self.back_cache.as_ref().unwrap();
 
             let x_data: Vec<f64> = back_cache.iter().map(|ele| ele.x).collect();
@@ -152,9 +142,9 @@ impl Function {
                         let i_option = x_data.iter().position(|&r| r == x); // Optimize this later, this could be done much much better, but tbh it doesn't matter that much as the program is already super fast
 
                         if let Some(i) = i_option {
-                            back_cache[i]
+                            return back_cache[i];
                         } else {
-                            Value::new(x, self.run_func(x))
+                            return Value::new(x, self.run_func(x));
                         }
                     })
                     .collect(),
@@ -170,13 +160,12 @@ impl Function {
     pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
         let back_values: Line = Line::new(Values::from_values({
             if self.back_cache.is_none() {
-                let absrange = (self.max_x - self.min_x).abs();
-                let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
+                let resolution: f64 =
+                    (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
                 self.back_cache = Some(
                     (0..=self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                        .map(|x| (x, self.run_func(x)))
-                        .map(|(x, y)| Value::new(x, y))
+                        .map(|x| Value::new(x, self.run_func(x)))
                         .collect(),
                 );
             }
@@ -225,18 +214,18 @@ impl Function {
                     false => (x2, x),
                 };
 
-                let y: f64 = match self.sum {
-                    RiemannSum::Left => self.run_func(left_x),
-                    RiemannSum::Right => self.run_func(right_x),
-                    RiemannSum::Middle => (self.run_func(left_x) + self.run_func(right_x)) / 2.0,
-                };
-
                 (
                     match x.is_sign_positive() {
                         true => x + half_step,
                         false => x - half_step,
                     },
-                    y,
+                    match self.sum {
+                        RiemannSum::Left => self.run_func(left_x),
+                        RiemannSum::Right => self.run_func(right_x),
+                        RiemannSum::Middle => {
+                            (self.run_func(left_x) + self.run_func(right_x)) / 2.0
+                        }
+                    },
                 )
             })
             .filter(|(_, y)| !y.is_nan())

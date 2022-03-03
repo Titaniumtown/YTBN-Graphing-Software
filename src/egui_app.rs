@@ -58,11 +58,13 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 
 // Used in the "Buttons" section of the Help window
 const HELP_BUTTONS: &str = "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
-- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Help' button on the top bar opens and closes this window!
-- The 'Info' button provides information on the build currently running.";
+- The 'Info' button provides information on the build currently running.
+- The X button before the ∫ symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
+- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.";
 
+// Misc help info
 const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk
 - A (very minor) note in regards to the timing functionality (the 'took' number in the top panel): this value is not accurate when running in the browser in comparison to when running natively. Implementations of this timing functionality vary from browser-to-browser.";
 
@@ -357,7 +359,10 @@ impl epi::App for MathApp {
 
                 if ui
                     .add(Button::new("Help"))
-                    .on_hover_text("Open Help Window")
+                    .on_hover_text(match self.settings.help_open {
+                        true => "Close Help Window",
+                        false => "Open Help Window",
+                    })
                     .clicked()
                 {
                     self.settings.help_open = !self.settings.help_open;
@@ -365,7 +370,10 @@ impl epi::App for MathApp {
 
                 if ui
                     .add(Button::new("Info"))
-                    .on_hover_text("Show Info")
+                    .on_hover_text(match self.settings.info_open {
+                        true => "Close Info Window",
+                        false => "Open Info Window",
+                    })
                     .clicked()
                 {
                     self.settings.info_open = !self.settings.info_open;
