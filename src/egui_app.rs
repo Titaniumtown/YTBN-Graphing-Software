@@ -58,7 +58,8 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 - signum, min, max";
 
 // Used in the "Buttons" section of the Help window
-const HELP_BUTTONS: &str = "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
+const HELP_BUTTONS: &str =
+"- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Help' button on the top bar opens and closes this window!
 - The 'Info' button provides information on the build currently running.
@@ -66,7 +67,8 @@ const HELP_BUTTONS: &str = "- The 'Panel' button on the top bar toggles if the s
 - The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.";
 
 // Misc help info
-const HELP_MISC: &str = "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk.
+const HELP_MISC: &str =
+"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk.
 - A (very minor) note in regards to the timing functionality (the 'took' number in the top panel): this value is not accurate when running in the browser in comparison to when running natively. Implementations of this timing functionality vary from browser-to-browser.";
 
 // Used to provide info on the Licensing of the project
