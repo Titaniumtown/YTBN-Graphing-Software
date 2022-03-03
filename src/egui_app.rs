@@ -194,7 +194,7 @@ impl MathApp {
                 let min_x_old = self.settings.integral_min_x;
                 let min_x_changed = ui
                     .add(
-                        Slider::new(&mut self.settings.integral_min_x, INTEGRAL_X_RANGE.clone())
+                        Slider::new(&mut self.settings.integral_min_x, INTEGRAL_X_RANGE)
                             .text("Min X"),
                     )
                     .changed();
