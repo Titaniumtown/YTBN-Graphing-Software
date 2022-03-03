@@ -27,6 +27,7 @@ eframe = { git = "https://github.com/Titaniumtown/egui", default-features = fals
 include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
 shadow-rs = { version = "0.9", default-features = false }
 const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
+cfg-if = "1.0.0"
 
 [build-dependencies]
 shadow-rs = "0.9"
