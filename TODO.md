@@ -4,4 +4,5 @@
         - Integrals between functions
     - UI
         - Different colors
-2. Non `y=` functions.
+2. Rerwite of function parsing code
+    - Non `y=` functions.
