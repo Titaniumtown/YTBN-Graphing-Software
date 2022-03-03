@@ -68,8 +68,7 @@ const HELP_BUTTONS: &str =
 
 // Misc help info
 const HELP_MISC: &str =
-"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk.
-- A (very minor) note in regards to the timing functionality (the 'took' number in the top panel): this value is not accurate when running in the browser in comparison to when running natively. Implementations of this timing functionality vary from browser-to-browser.";
+"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk.";
 
 // Used to provide info on the Licensing of the project
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
@@ -291,7 +290,6 @@ impl epi::App for MathApp {
     // Called each time the UI needs repainting, which may be many times per second.
     #[inline(always)]
     fn update(&mut self, ctx: &Context, _frame: &Frame) {
-        // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
         // Reduce size of final binary by just including one font
