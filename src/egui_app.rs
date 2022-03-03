@@ -413,11 +413,6 @@ impl epi::App for MathApp {
             self.side_panel(ctx);
         }
 
-        let step = (self.settings.integral_min_x - self.settings.integral_max_x).abs()
-            / (self.settings.integral_num as f64);
-
-        let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
-
         // Central panel which contains the central plot along or an error when parsing
         CentralPanel::default().show(ctx, |ui| {
             if !self.last_error.is_empty() {
@@ -437,6 +432,11 @@ impl epi::App for MathApp {
                     let bounds = plot_ui.plot_bounds();
                     let minx_bounds: f64 = bounds.min()[0];
                     let maxx_bounds: f64 = bounds.max()[0];
+
+                    let step = (self.settings.integral_min_x - self.settings.integral_max_x).abs()
+                        / (self.settings.integral_num as f64);
+
+                    let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
 
                     for (i, function) in self.functions.iter_mut().enumerate() {
                         if self.func_strs[i].is_empty() {
@@ -458,10 +458,9 @@ impl epi::App for MathApp {
                             }
                         });
                     }
+                    self.last_info = (area_list, start.elapsed());
                 });
         });
-
-        self.last_info = (area_list, start.elapsed());
     }
 
     // Uncaps max canvas size. This was capped in egui due to a bug in Firefox. But it's fixed now.
