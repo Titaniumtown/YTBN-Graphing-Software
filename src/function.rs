@@ -133,7 +133,6 @@ impl Function {
             self.max_x = max_x;
             self.pixel_width = pixel_width;
         } else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.back_cache.is_some() {
-            debug_log("back_cache: partial regen");
             let range_new: f64 = max_x.abs() + min_x.abs();
 
             let resolution: f64 = (self.pixel_width as f64 / range_new) as f64;
@@ -171,11 +170,9 @@ impl Function {
     pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
         let back_values: Line = Line::new(Values::from_values(match self.back_cache.is_some() {
             true => {
-                debug_log("back_cache: using");
                 self.back_cache.as_ref().unwrap().clone()
             }
             false => {
-                debug_log("back_cache: regen");
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
                 self.back_cache = Some(
@@ -192,12 +189,10 @@ impl Function {
         if self.integral {
             let front_bars: (BarChart, f64) = match self.front_cache.is_some() {
                 true => {
-                    debug_log("front_cache: using");
                     let cache = self.front_cache.as_ref().unwrap();
                     (BarChart::new(cache.0.clone()), cache.1)
                 }
                 false => {
-                    debug_log("front_cache: regen");
                     let (data, area) = self.integral_rectangles();
                     let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
 
