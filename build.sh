@@ -21,7 +21,7 @@ else
     exit 1
 fi
 
-mkdir tmp tmp/pkg
+mkdir tmp
 cp -r pkg/integral_site_bg.wasm pkg/integral_site.js tmp/
 cp www/index.html www/style.css tmp/
 
