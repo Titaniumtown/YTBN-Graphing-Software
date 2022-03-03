@@ -155,23 +155,6 @@ impl Default for MathApp {
 }
 
 impl MathApp {
-    // Sets up fonts to use Ubuntu-Light
-    fn init_font(&self, ctx: &Context) {
-        // Reduce size of final binary by just including one font
-        let mut fonts = FontDefinitions::default();
-        fonts
-            .font_data
-            .insert("Ubuntu-Light".to_owned(), self.font.clone());
-        fonts
-            .families
-            .insert(FontFamily::Monospace, vec!["Ubuntu-Light".to_owned()]);
-        fonts
-            .families
-            .insert(FontFamily::Proportional, vec!["Ubuntu-Light".to_owned()]);
-
-        ctx.set_fonts(fonts);
-    }
-
     fn side_panel(&mut self, ctx: &Context) {
         // Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
         SidePanel::left("side_panel")
@@ -318,7 +301,19 @@ impl epi::App for MathApp {
         // Note: This Instant implementation does not show microseconds when using wasm.
         let start = instant::Instant::now();
 
-        self.init_font(ctx); // Setup fonts
+        // Reduce size of final binary by just including one font
+        let mut fonts = FontDefinitions::default();
+        fonts
+            .font_data
+            .insert("Ubuntu-Light".to_owned(), self.font.clone());
+        fonts
+            .families
+            .insert(FontFamily::Monospace, vec!["Ubuntu-Light".to_owned()]);
+        fonts
+            .families
+            .insert(FontFamily::Proportional, vec!["Ubuntu-Light".to_owned()]);
+
+        ctx.set_fonts(fonts);
 
         // Creates Top bar that contains some general options
         TopBottomPanel::top("top_bar").show(ctx, |ui| {
