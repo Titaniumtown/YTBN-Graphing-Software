@@ -198,7 +198,7 @@ impl Function {
                 }
                 false => {
                     debug_log("front_cache: regen");
-                    let (data, area) = self.integral_rectangles(self.sum);
+                    let (data, area) = self.integral_rectangles();
                     let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
 
                     let output = (bars, area);
@@ -213,7 +213,7 @@ impl Function {
     }
 
     // Creates and does the math for creating all the rectangles under the graph
-    fn integral_rectangles(&self, riemann: RiemannSum) -> (Vec<(f64, f64)>, f64) {
+    fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
         if self.integral_min_x.is_nan() {
             panic!("integral_min_x is NaN")
         } else if self.integral_max_x.is_nan() {
@@ -226,34 +226,29 @@ impl Function {
         let data2: Vec<(f64, f64)> = (0..self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
-                let x2: f64 = match x > 0.0 {
+                let x2: f64 = match x.is_sign_positive() {
                     true => x + step,
                     false => x - step,
                 };
 
-                let left_x: f64 = match x > 0.0 {
-                    true => x,
-                    false => x2,
-                };
-                let right_x: f64 = match x > 0.0 {
-                    true => x2,
-                    false => x,
+                let (left_x, right_x) = match x.is_sign_positive() {
+                    true => (x, x2),
+                    false => (x2, x),
                 };
 
-                let y: f64 = match riemann {
+                let y: f64 = match self.sum {
                     RiemannSum::Left => self.run_func(left_x),
                     RiemannSum::Right => self.run_func(right_x),
                     RiemannSum::Middle => (self.run_func(left_x) + self.run_func(right_x)) / 2.0,
                 };
-                let mut output = (x, y);
 
-                // Applies `half_step` in order to make the bar graph display properly
-                if output.0 > 0.0 {
-                    output.0 += half_step;
-                } else {
-                    output.0 -= half_step;
-                }
-                output
+                (
+                    match x.is_sign_positive() {
+                        true => x + half_step,
+                        false => x - half_step,
+                    },
+                    y,
+                )
             })
             .filter(|(_, y)| !y.is_nan())
             .collect();
