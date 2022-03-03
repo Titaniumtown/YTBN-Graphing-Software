@@ -239,7 +239,7 @@ impl Function {
 }
 
 #[test]
-fn function_test() {
+fn left_function_test() {
     let mut function = Function {
         function: Box::new(default_function),
         func_str: String::from("x^2"),
@@ -252,7 +252,7 @@ fn function_test() {
         integral_min_x: -1.0,
         integral_max_x: 1.0,
         integral_num: 10,
-        sum: crate::egui_app::DEFAULT_RIEMANN,
+        sum: RiemannSum::Left,
     };
 
     {
@@ -284,6 +284,108 @@ fn function_test() {
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
         assert_eq!(bars.clone().unwrap().1, 0.8720000000000001);
+        let vec_bars = bars.unwrap().0;
+        assert_eq!(vec_bars.len(), 10);
+    }
+}
+
+#[test]
+fn middle_function_test() {
+    let mut function = Function {
+        function: Box::new(default_function),
+        func_str: String::from("x^2"),
+        min_x: -1.0,
+        max_x: 1.0,
+        pixel_width: 10,
+        back_cache: None,
+        front_cache: None,
+        integral: false,
+        integral_min_x: -1.0,
+        integral_max_x: 1.0,
+        integral_num: 10,
+        sum: RiemannSum::Middle,
+    };
+
+    {
+        let (back_values, bars) = function.run_back();
+        assert!(bars.is_none());
+        assert_eq!(back_values.len(), 10);
+        let back_values_tuple: Vec<(f64, f64)> =
+            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
+        assert_eq!(
+            back_values_tuple,
+            vec![
+                (-1.0, 1.0),
+                (-0.8, 0.6400000000000001),
+                (-0.6, 0.36),
+                (-0.4, 0.16000000000000003),
+                (-0.19999999999999996, 0.03999999999999998),
+                (0.0, 0.0),
+                (0.19999999999999996, 0.03999999999999998),
+                (0.3999999999999999, 0.15999999999999992),
+                (0.6000000000000001, 0.3600000000000001),
+                (0.8, 0.6400000000000001)
+            ]
+        );
+    }
+
+    {
+        function = function.integral(true);
+        let (back_values, bars) = function.run_back();
+        assert!(bars.is_some());
+        assert_eq!(back_values.len(), 10);
+        assert_eq!(bars.clone().unwrap().1, 0.9200000000000002);
+        let vec_bars = bars.unwrap().0;
+        assert_eq!(vec_bars.len(), 10);
+    }
+}
+
+#[test]
+fn right_function_test() {
+    let mut function = Function {
+        function: Box::new(default_function),
+        func_str: String::from("x^2"),
+        min_x: -1.0,
+        max_x: 1.0,
+        pixel_width: 10,
+        back_cache: None,
+        front_cache: None,
+        integral: false,
+        integral_min_x: -1.0,
+        integral_max_x: 1.0,
+        integral_num: 10,
+        sum: RiemannSum::Right,
+    };
+
+    {
+        let (back_values, bars) = function.run_back();
+        assert!(bars.is_none());
+        assert_eq!(back_values.len(), 10);
+        let back_values_tuple: Vec<(f64, f64)> =
+            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
+        assert_eq!(
+            back_values_tuple,
+            vec![
+                (-1.0, 1.0),
+                (-0.8, 0.6400000000000001),
+                (-0.6, 0.36),
+                (-0.4, 0.16000000000000003),
+                (-0.19999999999999996, 0.03999999999999998),
+                (0.0, 0.0),
+                (0.19999999999999996, 0.03999999999999998),
+                (0.3999999999999999, 0.15999999999999992),
+                (0.6000000000000001, 0.3600000000000001),
+                (0.8, 0.6400000000000001)
+            ]
+        );
+    }
+
+    {
+        function = function.integral(true);
+        let (back_values, bars) = function.run_back();
+        assert!(bars.is_some());
+        assert_eq!(back_values.len(), 10);
+        assert_eq!(bars.clone().unwrap().1, 0.9680000000000002);
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), 10);
     }
