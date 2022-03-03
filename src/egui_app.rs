@@ -37,7 +37,7 @@ const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
-flate!(static FONT_DATA: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
+flate!(static FONT_FILE: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
 
 // Used when displaying supported expressions in the Help window
 const HELP_EXPR: &str = "- sqrt(x): square root of x
@@ -145,7 +145,7 @@ impl Default for MathApp {
             )],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             last_error: String::new(),
-            font: FontData::from_static(&FONT_DATA),
+            font: FontData::from_static(&FONT_FILE),
             last_info: (vec![0.0], Duration::ZERO),
             settings: AppSettings::default(),
         }
