@@ -23,7 +23,7 @@ impl fmt::Display for RiemannSum {
 
 pub struct Function {
     function: Box<dyn Fn(f64) -> f64>,
-    pub(crate) func_str: String,
+    func_str: String,
     min_x: f64,
     max_x: f64,
     pixel_width: usize,
@@ -248,4 +248,6 @@ impl Function {
         let area: f64 = data2.iter().map(|(_, y)| y * step).sum(); // sum of all rectangles' areas
         (data2, area)
     }
+
+    pub fn empty_func_str(&mut self) { self.func_str = String::new(); }
 }

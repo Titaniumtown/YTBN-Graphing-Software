@@ -279,7 +279,7 @@ impl MathApp {
                             );
                         }
                     } else {
-                        function.func_str = String::new();
+                        function.empty_func_str();
                     }
                 }
 
@@ -349,7 +349,7 @@ impl epi::App for MathApp {
                             None, // Doesn't matter, updated later
                             Some(self.settings.sum),
                         );
-                        function.func_str = String::new();
+                        function.empty_func_str();
                         function
                     });
                     self.func_strs.push(String::new());
