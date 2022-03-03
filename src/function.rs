@@ -38,38 +38,24 @@ pub struct Function {
     sum: RiemannSum,
 }
 
-impl Function {
-    pub fn new(
-        func_str: String, min_x: f64, max_x: f64, pixel_width: usize, integral: bool,
-        integral_min_x: Option<f64>, integral_max_x: Option<f64>, integral_num: Option<usize>,
-        sum: Option<RiemannSum>,
-    ) -> Self {
-        // Makes sure proper arguments are passed when integral is enabled
-        if integral {
-            integral_min_x
-                .expect("Invalid arguments: integral_min_x is None, but integral is enabled.");
-            integral_max_x
-                .expect("Invalid arguments: integral_max_x is None, but integral is enabled.");
-            integral_num
-                .expect("Invalid arguments: integral_num is None, but integral is enabled.");
-            sum.expect("Invalid arguments: sum is None, but integral is enabled");
-        }
+fn default_function(x: f64) -> f64 { x.powi(2) }
 
-        let expr: Expr = func_str.parse().unwrap();
-        let func = expr.bind("x").unwrap();
+impl Function {
+    // Creates Empty Function instance
+    pub fn empty() -> Self {
         Self {
-            function: Box::new(func),
-            func_str,
-            min_x,
-            max_x,
-            pixel_width,
+            function: Box::new(default_function),
+            func_str: String::new(),
+            min_x: -1.0,
+            max_x: 1.0,
+            pixel_width: 100,
             back_cache: None,
             front_cache: None,
-            integral,
-            integral_min_x: integral_min_x.unwrap_or(f64::NAN),
-            integral_max_x: integral_max_x.unwrap_or(f64::NAN),
-            integral_num: integral_num.unwrap_or(0),
-            sum: sum.unwrap_or(RiemannSum::Left),
+            integral: false,
+            integral_min_x: f64::NAN,
+            integral_max_x: f64::NAN,
+            integral_num: 0,
+            sum: crate::egui_app::DEFAULT_RIEMANN,
         }
     }
 
@@ -80,25 +66,15 @@ impl Function {
         &mut self, func_str: String, integral: bool, integral_min_x: Option<f64>,
         integral_max_x: Option<f64>, integral_num: Option<usize>, sum: Option<RiemannSum>,
     ) {
-        if func_str.is_empty() {
-            self.func_str = func_str;
-            return;
-        }
-
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
-            *self = Self::new(
-                func_str,
-                self.min_x,
-                self.max_x,
-                self.pixel_width,
-                integral,
-                integral_min_x,
-                integral_max_x,
-                integral_num,
-                sum,
-            );
-            return;
+            self.func_str = func_str.clone();
+            self.function = Box::new({
+                let expr: Expr = func_str.parse().unwrap();
+                expr.bind("x").unwrap()
+            });
+            self.back_cache = None;
+            self.front_cache = None;
         }
 
         self.integral = integral;
@@ -173,20 +149,21 @@ impl Function {
             self.back_cache.as_ref().unwrap().clone()
         }));
 
-        if self.integral {
-            let front_bars: (BarChart, f64) = {
-                if self.front_cache.is_none() {
-                    let (data, area) = self.integral_rectangles();
-                    self.front_cache =
-                        Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
-                }
-                let cache = self.front_cache.as_ref().unwrap();
-                (BarChart::new(cache.0.clone()), cache.1)
-            };
+        match self.integral {
+            true => {
+                let front_bars: (BarChart, f64) = {
+                    if self.front_cache.is_none() {
+                        let (data, area) = self.integral_rectangles();
+                        self.front_cache =
+                            Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
+                    }
+                    let cache = self.front_cache.as_ref().unwrap();
+                    (BarChart::new(cache.0.clone()), cache.1)
+                };
 
-            (back_values, Some(front_bars))
-        } else {
-            (back_values, None)
+                (back_values, Some(front_bars))
+            }
+            false => (back_values, None),
         }
     }
 
@@ -234,5 +211,21 @@ impl Function {
         (data2, area)
     }
 
+    // Set func_str to an empty string
     pub fn empty_func_str(&mut self) { self.func_str = String::new(); }
+
+    // Updates riemann value and invalidates front_cache if needed
+    pub fn update_riemann(mut self, riemann: RiemannSum) -> Self {
+        if self.sum != riemann {
+            self.sum = riemann;
+            self.front_cache = None;
+        }
+        self
+    }
+
+    // Toggles integral
+    pub fn integral(mut self, integral: bool) -> Self {
+        self.integral = integral;
+        self
+    }
 }

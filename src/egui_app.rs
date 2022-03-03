@@ -33,7 +33,7 @@ const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 
 // Default values
 const DEFAULT_FUNCION: &str = "x^2";
-const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
+pub const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
 const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
@@ -135,17 +135,7 @@ pub struct MathApp {
 impl Default for MathApp {
     fn default() -> Self {
         Self {
-            functions: vec![Function::new(
-                String::from(DEFAULT_FUNCION),
-                DEFAULT_MIN_X,
-                DEFAULT_MAX_X,
-                100,  // Doesn't matter as it will be overwritten
-                true, // Enables integral
-                Some(DEFAULT_MIN_X),
-                Some(DEFAULT_MAX_X),
-                Some(DEFAULT_INTEGRAL_NUM),
-                Some(DEFAULT_RIEMANN),
-            )],
+            functions: vec![Function::empty().integral(true)],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             last_error: String::new(),
             font: FontData::from_static(&FONT_FILE),
@@ -245,10 +235,6 @@ impl MathApp {
                         integral_enabled
                     };
 
-                    if integral {
-                        using_integral = true;
-                    }
-
                     if !self.func_strs[i].is_empty() {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
@@ -263,6 +249,9 @@ impl MathApp {
                                 Some(self.settings.integral_num),
                                 Some(self.settings.sum),
                             );
+                        }
+                        if integral {
+                            using_integral = true;
                         }
                     } else {
                         function.empty_func_str();
@@ -336,21 +325,8 @@ impl epi::App for MathApp {
                     .on_hover_text("Create and graph new function")
                     .clicked()
                 {
-                    self.functions.push({
-                        let mut function = Function::new(
-                            String::from(DEFAULT_FUNCION),
-                            -1.0, // Doesn't matter, updated later
-                            1.0,  // Doesn't matter, updated later
-                            100,  // Doesn't matter, updated later
-                            false,
-                            None, // Doesn't matter, updated later
-                            None, // Doesn't matter, updated later
-                            None, // Doesn't matter, updated later
-                            Some(self.settings.sum),
-                        );
-                        function.empty_func_str();
-                        function
-                    });
+                    self.functions
+                        .push(Function::empty().update_riemann(self.settings.sum));
                     self.func_strs.push(String::new());
                 }
 
