@@ -331,6 +331,7 @@ impl epi::App for MathApp {
                 {
                     self.settings.show_side_panel = !self.settings.show_side_panel;
                 }
+
                 if ui
                     .add(Button::new("Add Function"))
                     .on_hover_text("Create and graph new function")
