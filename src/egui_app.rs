@@ -31,7 +31,8 @@ const INTEGRAL_X_MIN: f64 = -1000.0;
 const INTEGRAL_X_MAX: f64 = 1000.0;
 const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 
-const DEFAULT_FUNCION: &str = "x^2"; // Default function that appears when adding a new function
+// Default values
+const DEFAULT_FUNCION: &str = "x^2";
 const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
 const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;
@@ -282,6 +283,7 @@ impl MathApp {
                     "I'm Opensource!",
                     "https://github.com/Titaniumtown/integral_site",
                 );
+
                 ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
                     .on_hover_text(LICENSE_INFO);
             });
