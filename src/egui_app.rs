@@ -125,6 +125,7 @@ pub struct MathApp {
     // Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
     last_info: (Vec<f64>, Duration),
 
+    // Stores Settings (pretty self explanatory)
     settings: AppSettings,
 }
 
