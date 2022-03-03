@@ -4,6 +4,8 @@ set -e
 rm -fr tmp | true
 rm -fr pkg | true
 
+cargo test
+
 #apply optimizations via wasm-opt
 wasm_opt() {
     wasm-opt -Oz -o pkg/integral_site_bg_2.wasm pkg/integral_site_bg.wasm
