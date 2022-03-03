@@ -130,13 +130,13 @@ impl Function {
         }
     }
 
-    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
-        let back_values: Line = Line::new(Values::from_values({
+    pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>) {
+        let back_values: Vec<Value> = {
             if self.back_cache.is_none() {
                 let resolution: f64 =
                     (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
                 self.back_cache = Some(
-                    (0..=self.pixel_width)
+                    (0..self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
                         .map(|x| Value::new(x, self.run_func(x)))
                         .collect(),
@@ -144,7 +144,7 @@ impl Function {
             }
 
             self.back_cache.as_ref().unwrap().clone()
-        }));
+        };
 
         let front_bars = match self.integral {
             true => {
@@ -154,11 +154,25 @@ impl Function {
                         Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
                 }
                 let cache = self.front_cache.as_ref().unwrap();
-                Some((BarChart::new(cache.0.clone()), cache.1))
+                Some((cache.0.clone(), cache.1))
             }
             false => None,
         };
+
         (back_values, front_bars)
+    }
+
+    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
+        let (back_values, front_data_option) = self.run_back();
+
+        (
+            Line::new(Values::from_values(back_values)),
+            if let Some(front_data1) = front_data_option {
+                Some((BarChart::new(front_data1.0), front_data1.1))
+            } else {
+                None
+            },
+        )
     }
 
     // Creates and does the math for creating all the rectangles under the graph
@@ -172,7 +186,7 @@ impl Function {
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
         let half_step = step / 2.0;
-        let data2: Vec<(f64, f64)> = (0..self.integral_num)
+        let data2: Vec<(f64, f64)> = (1..=self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
                 let x2: f64 = match x.is_sign_positive() {
@@ -221,5 +235,56 @@ impl Function {
     pub fn integral(mut self, integral: bool) -> Self {
         self.integral = integral;
         self
+    }
+}
+
+#[test]
+fn function_test() {
+    let mut function = Function {
+        function: Box::new(default_function),
+        func_str: String::from("x^2"),
+        min_x: -1.0,
+        max_x: 1.0,
+        pixel_width: 10,
+        back_cache: None,
+        front_cache: None,
+        integral: false,
+        integral_min_x: -1.0,
+        integral_max_x: 1.0,
+        integral_num: 10,
+        sum: crate::egui_app::DEFAULT_RIEMANN,
+    };
+
+    {
+        let (back_values, bars) = function.run_back();
+        assert!(bars.is_none());
+        assert_eq!(back_values.len(), 10);
+        let back_values_tuple: Vec<(f64, f64)> =
+            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
+        assert_eq!(
+            back_values_tuple,
+            vec![
+                (-1.0, 1.0),
+                (-0.8, 0.6400000000000001),
+                (-0.6, 0.36),
+                (-0.4, 0.16000000000000003),
+                (-0.19999999999999996, 0.03999999999999998),
+                (0.0, 0.0),
+                (0.19999999999999996, 0.03999999999999998),
+                (0.3999999999999999, 0.15999999999999992),
+                (0.6000000000000001, 0.3600000000000001),
+                (0.8, 0.6400000000000001)
+            ]
+        );
+    }
+
+    {
+        function = function.integral(true);
+        let (back_values, bars) = function.run_back();
+        assert!(bars.is_some());
+        assert_eq!(back_values.len(), 10);
+        assert_eq!(bars.clone().unwrap().1, 0.8720000000000001);
+        let vec_bars = bars.unwrap().0;
+        assert_eq!(vec_bars.len(), 10);
     }
 }
