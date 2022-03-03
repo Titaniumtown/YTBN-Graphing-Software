@@ -136,7 +136,7 @@ pub fn test_func(function_string: String) -> Option<String> {
 }
 
 pub struct SteppedVector {
-    data: Vec<f64>, // Assumes data is sorted from min to maximum
+    data: Vec<f64>,
     min: f64,
     max: f64,
     step: f64,
