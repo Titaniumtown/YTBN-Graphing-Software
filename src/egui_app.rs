@@ -457,9 +457,9 @@ impl epi::App for MathApp {
                             if let Some(bars_data) = bars {
                                 let (bar_chart, area) = bars_data;
                                 plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
-                                return digits_precision(area, 8);
+                                digits_precision(area, 8)
                             } else {
-                                return f64::NAN;
+                                f64::NAN
                             }
                         })
                         .collect();

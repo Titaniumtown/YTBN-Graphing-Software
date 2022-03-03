@@ -142,9 +142,9 @@ impl Function {
                         let i_option = x_data.iter().position(|&r| r == x); // Optimize this later, this could be done much much better, but tbh it doesn't matter that much as the program is already super fast
 
                         if let Some(i) = i_option {
-                            return back_cache[i];
+                            back_cache[i]
                         } else {
-                            return Value::new(x, self.run_func(x));
+                            Value::new(x, self.run_func(x))
                         }
                     })
                     .collect(),
