@@ -168,9 +168,8 @@ impl Function {
     }
 
     pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
-        let back_values: Line = Line::new(Values::from_values(match self.back_cache.is_some() {
-            true => self.back_cache.as_ref().unwrap().clone(),
-            false => {
+        let back_values: Line = Line::new(Values::from_values({
+            if self.back_cache.is_none() {
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
                 self.back_cache = Some(
@@ -180,25 +179,22 @@ impl Function {
                         .map(|(x, y)| Value::new(x, y))
                         .collect(),
                 );
-                self.back_cache.as_ref().unwrap().clone()
             }
+
+            self.back_cache.as_ref().unwrap().clone()
         }));
 
         if self.integral {
-            let front_bars: (BarChart, f64) = match self.front_cache.is_some() {
-                true => {
-                    let cache = self.front_cache.as_ref().unwrap();
-                    (BarChart::new(cache.0.clone()), cache.1)
-                }
-                false => {
+            let front_bars: (BarChart, f64) = {
+                if self.front_cache.is_none() {
                     let (data, area) = self.integral_rectangles();
-                    let bars: Vec<Bar> = data.iter().map(|(x, y)| Bar::new(*x, *y)).collect();
-
-                    let output = (bars, area);
-                    self.front_cache = Some(output.clone());
-                    (BarChart::new(output.0), output.1)
+                    self.front_cache =
+                        Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
                 }
+                let cache = self.front_cache.as_ref().unwrap();
+                (BarChart::new(cache.0.clone()), cache.1)
             };
+
             (back_values, Some(front_bars))
         } else {
             (back_values, None)
