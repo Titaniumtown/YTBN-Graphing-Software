@@ -421,42 +421,39 @@ impl epi::App for MathApp {
                 });
                 return;
             }
+
             let available_width: usize = ui.available_width() as usize;
-            let plot_size = ui.available_size();
-            let plot_size = Vec2::new(plot_size.x, plot_size.y);
 
-            ui.allocate_ui(plot_size, |ui| {
-                Plot::new("plot")
-                    .set_margin_fraction(Vec2::ZERO)
-                    .data_aspect(1.0)
-                    .include_y(0)
-                    .show(ui, |plot_ui| {
-                        let bounds = plot_ui.plot_bounds();
-                        let minx_bounds: f64 = bounds.min()[0];
-                        let maxx_bounds: f64 = bounds.max()[0];
+            Plot::new("plot")
+                .set_margin_fraction(Vec2::ZERO)
+                .data_aspect(1.0)
+                .include_y(0)
+                .show(ui, |plot_ui| {
+                    let bounds = plot_ui.plot_bounds();
+                    let minx_bounds: f64 = bounds.min()[0];
+                    let maxx_bounds: f64 = bounds.max()[0];
 
-                        for (i, function) in self.functions.iter_mut().enumerate() {
-                            if self.func_strs[i].is_empty() {
-                                continue;
-                            }
-
-                            function.update_bounds(minx_bounds, maxx_bounds, available_width);
-
-                            let (back_values, bars) = function.run();
-                            plot_ui.line(back_values.color(Color32::RED));
-
-                            area_list.push({
-                                if let Some(bars_data) = bars {
-                                    let (bar_chart, area) = bars_data;
-                                    plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
-                                    digits_precision(area, 8)
-                                } else {
-                                    f64::NAN
-                                }
-                            });
+                    for (i, function) in self.functions.iter_mut().enumerate() {
+                        if self.func_strs[i].is_empty() {
+                            continue;
                         }
-                    });
-            });
+
+                        function.update_bounds(minx_bounds, maxx_bounds, available_width);
+
+                        let (back_values, bars) = function.run();
+                        plot_ui.line(back_values.color(Color32::RED));
+
+                        area_list.push({
+                            if let Some(bars_data) = bars {
+                                let (bar_chart, area) = bars_data;
+                                plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
+                                digits_precision(area, 8)
+                            } else {
+                                f64::NAN
+                            }
+                        });
+                    }
+                });
         });
 
         self.last_info = (area_list, start.elapsed());
