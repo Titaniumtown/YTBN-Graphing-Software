@@ -337,18 +337,22 @@ impl epi::App for MathApp {
                     .on_hover_text("Create and graph new function")
                     .clicked()
                 {
-                    self.functions.push(Function::new(
-                        String::from(DEFAULT_FUNCION),
-                        -1.0, // Doesn't matter, updated later
-                        1.0,  // Doesn't matter, updated later
-                        100,  // Doesn't matter, updated later
-                        false,
-                        None, // Doesn't matter, updated later
-                        None, // Doesn't matter, updated later
-                        None, // Doesn't matter, updated later
-                        Some(self.settings.sum),
-                    ));
-                    self.func_strs.push(String::from(DEFAULT_FUNCION));
+                    self.functions.push({
+                        let mut function = Function::new(
+                            String::from(DEFAULT_FUNCION),
+                            -1.0, // Doesn't matter, updated later
+                            1.0,  // Doesn't matter, updated later
+                            100,  // Doesn't matter, updated later
+                            false,
+                            None, // Doesn't matter, updated later
+                            None, // Doesn't matter, updated later
+                            None, // Doesn't matter, updated later
+                            Some(self.settings.sum),
+                        );
+                        function.func_str = String::new();
+                        function
+                    });
+                    self.func_strs.push(String::new());
                 }
 
                 if ui

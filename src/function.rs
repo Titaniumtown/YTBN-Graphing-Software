@@ -169,9 +169,7 @@ impl Function {
 
     pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
         let back_values: Line = Line::new(Values::from_values(match self.back_cache.is_some() {
-            true => {
-                self.back_cache.as_ref().unwrap().clone()
-            }
+            true => self.back_cache.as_ref().unwrap().clone(),
             false => {
                 let absrange = (self.max_x - self.min_x).abs();
                 let resolution: f64 = (self.pixel_width as f64 / absrange) as f64;
