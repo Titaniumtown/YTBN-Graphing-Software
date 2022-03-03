@@ -426,6 +426,8 @@ impl epi::App for MathApp {
             }
 
             let available_width: usize = ui.available_width() as usize;
+            let step = (self.settings.integral_min_x - self.settings.integral_max_x).abs()
+                / (self.settings.integral_num as f64);
 
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
@@ -436,31 +438,29 @@ impl epi::App for MathApp {
                     let minx_bounds: f64 = bounds.min()[0];
                     let maxx_bounds: f64 = bounds.max()[0];
 
-                    let step = (self.settings.integral_min_x - self.settings.integral_max_x).abs()
-                        / (self.settings.integral_num as f64);
+                    let area_list: Vec<f64> = self
+                        .functions
+                        .iter_mut()
+                        .enumerate()
+                        .map(|(i, function)| {
+                            if self.func_strs[i].is_empty() {
+                                return f64::NAN;
+                            }
 
-                    let mut area_list: Vec<f64> = Vec::new(); // Stores list of areas resulting from calculating the integral of functions
+                            function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
-                    for (i, function) in self.functions.iter_mut().enumerate() {
-                        if self.func_strs[i].is_empty() {
-                            continue;
-                        }
+                            let (back_values, bars) = function.run();
+                            plot_ui.line(back_values.color(Color32::RED));
 
-                        function.update_bounds(minx_bounds, maxx_bounds, available_width);
-
-                        let (back_values, bars) = function.run();
-                        plot_ui.line(back_values.color(Color32::RED));
-
-                        area_list.push({
                             if let Some(bars_data) = bars {
                                 let (bar_chart, area) = bars_data;
                                 plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
-                                digits_precision(area, 8)
+                                return digits_precision(area, 8);
                             } else {
-                                f64::NAN
+                                return f64::NAN;
                             }
-                        });
-                    }
+                        })
+                        .collect();
                     self.last_info = (area_list, start.elapsed());
                 });
         });
