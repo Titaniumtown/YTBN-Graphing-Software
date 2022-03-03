@@ -16,24 +16,9 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[cfg(target_arch = "wasm32")]
-#[cfg(debug_assertions)]
-fn init_tracing_wasm() {
-    log_helper("Initializing tracing_wasm...");
-    tracing_wasm::set_as_global_default();
-    log_helper("Initialized tracing_wasm!");
-}
-
-#[cfg(target_arch = "wasm32")]
-#[cfg(not(debug_assertions))]
-fn init_tracing_wasm() {}
-
-#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn start(canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
     log_helper("Initializing...");
-
-    // See performance in browser profiler!
-    init_tracing_wasm();
 
     // Used in order to hook into `panic!()` to log in the browser's console
     log_helper("Initializing panic hooks...");
