@@ -38,6 +38,7 @@ pub struct Function {
     sum: RiemannSum,
 }
 
+// x^2 function, set here so we don't have to regenerate it every time a new function is made
 fn default_function(x: f64) -> f64 { x.powi(2) }
 
 impl Function {

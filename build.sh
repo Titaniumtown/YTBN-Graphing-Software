@@ -1,18 +1,20 @@
 #!/bin/bash
 set -e
 
-rm -fr tmp pkg | true #delete tmp folder if exists
+rm -fr tmp | true
+rm -fr pkg | true
 
 #apply optimizations via wasm-opt
 wasm_opt() {
-    wasm-opt -Os -o pkg/integral_site_bg_2.wasm pkg/integral_site_bg.wasm
+    wasm-opt -Oz -o pkg/integral_site_bg_2.wasm pkg/integral_site_bg.wasm
     mv pkg/integral_site_bg_2.wasm pkg/integral_site_bg.wasm
 }
 
 if test "$1" == "" || test "$1" == "release"; then
     wasm-pack build --target web --release --no-typescript
+    echo "Binary size (pre-wasm_opt): $(du -sb pkg/integral_site_bg.wasm)"
     wasm_opt #apply wasm optimizations
-
+    echo "Binary size (pre-strip): $(du -sb pkg/integral_site_bg.wasm)"
     llvm-strip --strip-all pkg/integral_site_bg.wasm
 elif test "$1" == "debug"; then
     wasm-pack build --target web --debug --no-typescript
