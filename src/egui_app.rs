@@ -323,10 +323,9 @@ impl epi::App for MathApp {
             ui.horizontal(|ui| {
                 if ui
                     .add(Button::new("Panel"))
-                    .on_hover_text(if self.settings.show_side_panel {
-                        "Hide Side Panel"
-                    } else {
-                        "Show Side Panel"
+                    .on_hover_text(match self.settings.show_side_panel {
+                        true => "Hide Side Panel",
+                        false => "Show Side Panel",
                     })
                     .clicked()
                 {
