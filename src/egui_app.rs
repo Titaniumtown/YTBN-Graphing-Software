@@ -279,7 +279,7 @@ impl MathApp {
                             );
                         }
                     } else {
-                        function.func_str = "".to_string();
+                        function.func_str = String::new();
                     }
                 }
 
