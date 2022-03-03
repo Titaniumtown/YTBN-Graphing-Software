@@ -1,5 +1,6 @@
 #![allow(clippy::unused_unit)] // Fixes clippy keep complaining about wasm_bindgen
 #![feature(const_mut_refs)]
+#![feature(total_cmp)]
 
 mod egui_app;
 mod function;

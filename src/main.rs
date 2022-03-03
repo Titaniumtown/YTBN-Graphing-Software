@@ -1,4 +1,6 @@
 #![feature(const_mut_refs)]
+#![feature(total_cmp)]
+
 mod egui_app;
 mod function;
 mod misc;

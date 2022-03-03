@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
 #[allow(unused_imports)]
-use crate::misc::debug_log;
+use crate::misc::{debug_log, SteppedVector};
 
 use eframe::egui::{
     plot::{BarChart, Line, Value, Values},
@@ -104,20 +104,17 @@ impl Function {
             let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
             let back_cache = self.back_cache.as_ref().unwrap();
 
-            let x_data: Vec<f64> = back_cache.iter().map(|ele| ele.x).collect();
+            let x_data: SteppedVector = back_cache
+                .iter()
+                .map(|ele| ele.x)
+                .collect::<Vec<f64>>()
+                .into();
 
             self.back_cache = Some(
                 (0..=self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + min_x)
                     .map(|x| {
-                        // If x is outside of previous bounds, just go ahead and just skip searching for the index
-                        if (x < self.min_x) | (self.max_x < x) {
-                            return Value::new(x, self.run_func(x));
-                        }
-
-                        let i_option = x_data.iter().position(|&r| r == x); // Optimize this later, this could be done much much better, but tbh it doesn't matter that much as the program is already super fast
-
-                        if let Some(i) = i_option {
+                        if let Some(i) = x_data.get_index(x) {
                             back_cache[i]
                         } else {
                             Value::new(x, self.run_func(x))
@@ -149,22 +146,19 @@ impl Function {
             self.back_cache.as_ref().unwrap().clone()
         }));
 
-        match self.integral {
+        let front_bars = match self.integral {
             true => {
-                let front_bars: (BarChart, f64) = {
-                    if self.front_cache.is_none() {
-                        let (data, area) = self.integral_rectangles();
-                        self.front_cache =
-                            Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
-                    }
-                    let cache = self.front_cache.as_ref().unwrap();
-                    (BarChart::new(cache.0.clone()), cache.1)
-                };
-
-                (back_values, Some(front_bars))
+                if self.front_cache.is_none() {
+                    let (data, area) = self.integral_rectangles();
+                    self.front_cache =
+                        Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
+                }
+                let cache = self.front_cache.as_ref().unwrap();
+                Some((BarChart::new(cache.0.clone()), cache.1))
             }
-            false => (back_values, None),
-        }
+            false => None,
+        };
+        (back_values, front_bars)
     }
 
     // Creates and does the math for creating all the rectangles under the graph
