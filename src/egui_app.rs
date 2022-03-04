@@ -286,8 +286,8 @@ impl MathApp {
                         if ui
                             .add(Button::new("d/dx"))
                             .on_hover_text(match derivative_enabled {
-                                true => "Calculate Derivative",
-                                false => "Don't Calculate Derivative",
+                                true => "Don't Calculate Derivative",
+                                false => "Calculate Derivative",
                             })
                             .clicked()
                         {
