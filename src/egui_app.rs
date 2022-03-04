@@ -74,7 +74,6 @@ const HELP_PANEL: &str =
 "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Help' button on the top bar opens and closes this window!
-- The 'Settings' button opens a window where you can configure various options.
 - The 'Info' button provides information on the build currently running.";
 
 // Used in the "Functions" section of the Help window
@@ -110,9 +109,6 @@ struct AppSettings {
     // Number of rectangles used to calculate integral
     pub integral_num: usize,
 
-    // Stores whether or not the settings window is open
-    pub settings_open: bool,
-
     // Stores how integrals should be displayed
     pub integral_display_type: DisplayIntegral,
 }
@@ -127,7 +123,6 @@ impl Default for AppSettings {
             integral_min_x: DEFAULT_MIN_X,
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
-            settings_open: false,
             integral_display_type: DisplayIntegral::Rectangles,
         }
     }
@@ -178,6 +173,21 @@ impl MathApp {
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Left, "Left");
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Middle, "Middle");
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
+                    });
+
+                ComboBox::from_label("Integral Display")
+                    .selected_text(self.settings.integral_display_type.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut self.settings.integral_display_type,
+                            DisplayIntegral::Rectangles,
+                            "Rectangles",
+                        );
+                        ui.selectable_value(
+                            &mut self.settings.integral_display_type,
+                            DisplayIntegral::Plot,
+                            "Line",
+                        );
                     });
 
                 let min_x_old = self.settings.integral_min_x;
@@ -369,17 +379,6 @@ impl epi::App for MathApp {
                 }
 
                 if ui
-                    .add(Button::new("Settings"))
-                    .on_hover_text(match self.settings.settings_open {
-                        true => "Close Settings Window",
-                        false => "Open Settings Window",
-                    })
-                    .clicked()
-                {
-                    self.settings.settings_open = !self.settings.settings_open;
-                }
-
-                if ui
                     .add(Button::new("Info"))
                     .on_hover_text(match self.settings.info_open {
                         true => "Close Info Window",
@@ -396,29 +395,6 @@ impl epi::App for MathApp {
                 ));
             });
         });
-
-        // Help window with information for users
-        Window::new("Settings")
-            .default_pos([200.0, 200.0])
-            .open(&mut self.settings.settings_open)
-            .resizable(false)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                ComboBox::from_label("Integral Display")
-                    .selected_text(self.settings.integral_display_type.to_string())
-                    .show_ui(ui, |ui| {
-                        ui.selectable_value(
-                            &mut self.settings.integral_display_type,
-                            DisplayIntegral::Rectangles,
-                            "Rectangles",
-                        );
-                        ui.selectable_value(
-                            &mut self.settings.integral_display_type,
-                            DisplayIntegral::Plot,
-                            "Line",
-                        );
-                    });
-            });
 
         // Help window with information for users
         Window::new("Help")
