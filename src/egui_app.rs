@@ -93,9 +93,6 @@ struct AppSettings {
 
     // Number of rectangles used to calculate integral
     pub integral_num: usize,
-
-    // Stores whether or not the integral functionality is being used
-    pub integral_used: bool,
 }
 
 impl Default for AppSettings {
@@ -108,7 +105,6 @@ impl Default for AppSettings {
             integral_min_x: DEFAULT_MIN_X,
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
-            integral_used: true,
         }
     }
 }
@@ -152,19 +148,13 @@ impl MathApp {
         SidePanel::left("side_panel")
             .resizable(false)
             .show(ctx, |ui| {
-                if self.settings.integral_used {
-                    ComboBox::from_label("Riemann Sum Type")
-                        .selected_text(self.settings.sum.to_string())
-                        .show_ui(ui, |ui| {
-                            ui.selectable_value(&mut self.settings.sum, RiemannSum::Left, "Left");
-                            ui.selectable_value(
-                                &mut self.settings.sum,
-                                RiemannSum::Middle,
-                                "Middle",
-                            );
-                            ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
-                        });
-                }
+                ComboBox::from_label("Riemann Sum Type")
+                    .selected_text(self.settings.sum.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut self.settings.sum, RiemannSum::Left, "Left");
+                        ui.selectable_value(&mut self.settings.sum, RiemannSum::Middle, "Middle");
+                        ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
+                    });
 
                 let min_x_old = self.settings.integral_min_x;
                 let min_x_changed = ui
@@ -281,8 +271,6 @@ impl MathApp {
                         function.empty_func_str();
                     }
                 }
-
-                self.settings.integral_used = using_integral;
 
                 if self.functions.len() > 1 {
                     if let Some(remove_i_unwrap) = remove_i {
