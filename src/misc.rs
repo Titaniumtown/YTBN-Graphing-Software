@@ -1,67 +1,32 @@
-use meval::Expr;
-
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-#[allow(dead_code)]
-pub fn log_helper(s: &str) {
-    #[cfg(target_arch = "wasm32")]
-    log(s);
-
-    #[cfg(not(target_arch = "wasm32"))]
-    println!("{}", s);
-}
-
-#[cfg(debug_assertions)]
-#[allow(dead_code)]
-pub fn debug_log(s: &str) {
-    #[cfg(target_arch = "wasm32")]
-    log(s);
-
-    #[cfg(not(target_arch = "wasm32"))]
-    println!("{}", s);
-}
-
-#[cfg(not(debug_assertions))]
-#[allow(dead_code)]
-pub fn debug_log(_s: &str) {}
-
-pub const EPSILON: f64 = 5.0e-7;
-
-pub type BoxFunction = Box<dyn Fn(f64) -> f64>;
-
-pub struct BackingFunction {
-    function: BoxFunction,
-}
-
-impl BackingFunction {
-    pub fn new(function: BoxFunction) -> BackingFunction { BackingFunction { function } }
-
-    pub fn get(&self, x: f64) -> f64 { (self.function)(x) }
-
-    pub fn derivative(&self, x: f64, n: u64) -> f64 {
-        if n == 0 {
-            return self.get(x);
+cfg_if::cfg_if! {
+    if #[cfg(target_arch = "wasm32")] {
+        use wasm_bindgen::prelude::*;
+        #[wasm_bindgen]
+        extern "C" {
+            // Use `js_namespace` here to bind `console.log(..)` instead of just
+            // `log(..)`
+            #[wasm_bindgen(js_namespace = console)]
+            fn log(s: &str);
         }
 
-        let (x1, x2) = (x - EPSILON, x + EPSILON);
-        let (y1, y2) = (self.derivative(x1, n - 1), (self.derivative(x2, n - 1)));
-        (y2 - y1) / (EPSILON * 2.0)
-    }
-}
+        #[allow(dead_code)]
+        pub fn log_helper(s: &str) {
+            log(s);
+        }
 
-impl From<BoxFunction> for BackingFunction {
-    fn from(boxfunction: BoxFunction) -> BackingFunction {
-        BackingFunction {
-            function: boxfunction,
+        #[allow(dead_code)]
+        pub fn debug_log(s: &str) {
+            log(s);
+        }
+    } else {
+        #[allow(dead_code)]
+        pub fn log_helper(s: &str) {
+            println!("{}", s);
+        }
+
+        #[allow(dead_code)]
+        pub fn debug_log(s: &str) {
+            println!("{}", s);
         }
     }
 }
@@ -137,6 +102,7 @@ pub fn add_asterisks(function_in: String) -> String {
     output_string.replace('π', "pi") // π -> pi
 }
 
+/*
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: String) -> Option<String> {
     // Factorials do not work, and it would be really difficult to make them work
@@ -166,6 +132,7 @@ pub fn test_func(function_string: String) -> Option<String> {
 
     None
 }
+*/
 
 pub struct SteppedVector {
     data: Vec<f64>,

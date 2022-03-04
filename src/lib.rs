@@ -4,6 +4,7 @@
 mod egui_app;
 mod function;
 mod misc;
+mod parsing;
 
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {

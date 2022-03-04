@@ -3,6 +3,7 @@
 mod egui_app;
 mod function;
 mod misc;
+mod parsing;
 
 // For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]

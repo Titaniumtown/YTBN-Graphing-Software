@@ -1,5 +1,7 @@
 use crate::function::{FunctionEntry, RiemannSum};
-use crate::misc::{add_asterisks, digits_precision, test_func};
+use crate::misc::{add_asterisks, digits_precision};
+use crate::parsing::test_func;
+
 use const_format::formatc;
 use eframe::{egui, epi};
 use egui::plot::Plot;
@@ -141,7 +143,7 @@ pub struct MathApp {
     func_strs: Vec<String>,
 
     // Stores last error from parsing functions (used to display the same error when side panel is minimized)
-    last_error: String,
+    last_error: Vec<(usize, String)>,
 
     // Stores font data that's used when displaying text
     font: FontData,
@@ -158,7 +160,7 @@ impl Default for MathApp {
         Self {
             functions: vec![FunctionEntry::empty().integral(true)],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
-            last_error: String::new(),
+            last_error: Vec::new(),
             font: FontData::from_static(&FONT_FILE),
             last_info: (vec![0.0], Duration::ZERO),
             settings: AppSettings::default(),
@@ -230,7 +232,6 @@ impl MathApp {
                 );
 
                 let mut remove_i: Option<usize> = None;
-                self.last_error = String::new();
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
                     let mut derivative_toggle: bool = false;
@@ -286,8 +287,8 @@ impl MathApp {
                         if ui
                             .add(Button::new("d/dx"))
                             .on_hover_text(match derivative_enabled {
-                                true => "Don't Calculate Derivative",
-                                false => "Calculate Derivative",
+                                true => "Don't Differentiate",
+                                false => "Differentiate",
                             })
                             .clicked()
                         {
@@ -297,12 +298,14 @@ impl MathApp {
                         ui.text_edit_singleline(&mut self.func_strs[i]);
                     });
 
-                    if !self.func_strs[i].is_empty() {
+                    if (self.func_strs[i].clone() != function.get_func_str())
+                        | self.last_error.iter().any(|ele| ele.0 == i)
+                    {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
-                        let func_test_output = test_func(proc_func_str.clone());
+                        // let proc_func_str = self.func_strs[i].clone();
+                        let func_test_output = test_func(&proc_func_str);
                         if let Some(test_output_value) = func_test_output {
-                            self.last_error +=
-                                &format!("(Function #{}) {}\n", i, test_output_value);
+                            self.last_error.push((i, test_output_value));
                         } else {
                             function.update(
                                 proc_func_str,
@@ -321,6 +324,12 @@ impl MathApp {
                                 Some(self.settings.integral_num),
                                 Some(self.settings.sum),
                             );
+                            self.last_error = self
+                                .last_error
+                                .iter()
+                                .filter(|(i_ele, _)| i_ele != &i)
+                                .map(|(a, b)| (*a, b.clone()))
+                                .collect();
                         }
                     } else {
                         function.empty_func_str();
@@ -470,7 +479,9 @@ impl epi::App for MathApp {
         CentralPanel::default().show(ctx, |ui| {
             if !self.last_error.is_empty() {
                 ui.centered_and_justified(|ui| {
-                    ui.heading(self.last_error.clone());
+                    self.last_error.iter().for_each(|ele| {
+                        ui.heading(&(&format!("(Function #{}) {}\n", ele.0, ele.1)).to_string());
+                    })
                 });
                 return;
             }

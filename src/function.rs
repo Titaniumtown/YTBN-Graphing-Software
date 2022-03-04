@@ -1,13 +1,14 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
 #[allow(unused_imports)]
-use crate::misc::{debug_log, BackingFunction, BoxFunction, SteppedVector, EPSILON};
+use crate::misc::{debug_log, SteppedVector};
+
+use crate::parsing::BackingFunction;
 
 use eframe::egui::{
     plot::{BarChart, Line, Value, Values},
     widgets::plot::Bar,
 };
-use meval::Expr;
 use std::fmt::{self, Debug};
 
 #[derive(PartialEq, Debug, Copy, Clone)]
@@ -41,14 +42,11 @@ pub struct FunctionEntry {
     sum: RiemannSum,
 }
 
-// x^2 function, set here so we don't have to regenerate it every time a new function is made
-fn default_function(x: f64) -> f64 { x.powi(2) }
-
 impl FunctionEntry {
     // Creates Empty Function instance
     pub fn empty() -> Self {
         Self {
-            function: BackingFunction::new(Box::new(default_function)),
+            function: BackingFunction::new("x^2").unwrap(),
             func_str: String::new(),
             min_x: -1.0,
             max_x: 1.0,
@@ -76,10 +74,7 @@ impl FunctionEntry {
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
             self.func_str = func_str.clone();
-            self.function = BackingFunction::new(Box::new({
-                let expr: Expr = func_str.parse().unwrap();
-                expr.bind("x").unwrap()
-            }));
+            self.function = BackingFunction::new(&func_str).unwrap();
             self.back_cache = None;
             self.front_cache = None;
             self.derivative_cache = None;
@@ -245,7 +240,7 @@ impl FunctionEntry {
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
         let mut area: f64 = 0.0;
-        let data2: Vec<(f64, f64, f64)> = (1..=self.integral_num)
+        let data2: Vec<(f64, f64, f64)> = (0..self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
                 let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
@@ -293,16 +288,19 @@ impl FunctionEntry {
         self
     }
 
+    #[allow(dead_code)]
     pub fn integral_num(mut self, integral_num: usize) -> Self {
         self.integral_num = integral_num;
         self
     }
 
+    #[allow(dead_code)]
     pub fn pixel_width(mut self, pixel_width: usize) -> Self {
         self.pixel_width = pixel_width;
         self
     }
 
+    #[allow(dead_code)]
     pub fn integral_bounds(mut self, min_x: f64, max_x: f64) -> Self {
         if min_x >= max_x {
             panic!("integral_bounds: min_x is larger than max_x");
@@ -353,9 +351,10 @@ fn left_function_test() {
         (0.8, 1.5999999999349868),
     ];
 
-    let area_target = 0.8720000000000001;
+    let area_target = 0.9600000000000001;
 
     let vec_bars_target = vec![
+        1.44,
         1.0,
         0.6400000000000001,
         0.3599999999999998,
@@ -365,20 +364,19 @@ fn left_function_test() {
         0.16000000000000011,
         0.3600000000000001,
         0.6400000000000001,
-        1.0,
     ];
 
     let vec_integral_target = vec![
-        (-0.9, 0.2),
-        (-0.7, 0.32800000000000007),
-        (-0.4999999999999999, 0.4),
-        (-0.29999999999999993, 0.432),
-        (0.1, 0.432),
-        (0.30000000000000016, 0.44),
-        (0.5000000000000001, 0.47200000000000003),
-        (0.7000000000000001, 0.544),
-        (0.9, 0.672),
-        (1.1, 0.8720000000000001),
+        (-1.1, 0.288),
+        (-0.9, 0.488),
+        (-0.7, 0.616),
+        (-0.4999999999999999, 0.688),
+        (-0.29999999999999993, 0.72),
+        (0.1, 0.72),
+        (0.30000000000000016, 0.728),
+        (0.5000000000000001, 0.76),
+        (0.7000000000000001, 0.8320000000000001),
+        (0.9, 0.9600000000000001),
     ];
 
     {
@@ -476,9 +474,10 @@ fn middle_function_test() {
         (0.8, 1.5999999999349868),
     ];
 
-    let area_target = 0.9200000000000002;
+    let area_target = 0.92;
 
     let vec_bars_target = vec![
+        1.22,
         0.8200000000000001,
         0.5,
         0.2599999999999999,
@@ -488,20 +487,19 @@ fn middle_function_test() {
         0.2600000000000001,
         0.5000000000000001,
         0.8200000000000001,
-        1.22,
     ];
 
     let vec_integral_target = vec![
-        (-0.9, 0.16400000000000003),
-        (-0.7, 0.264),
-        (-0.4999999999999999, 0.316),
-        (-0.29999999999999993, 0.336),
-        (0.1, 0.34),
-        (0.30000000000000016, 0.36000000000000004),
-        (0.5000000000000001, 0.4120000000000001),
-        (0.7000000000000001, 0.5120000000000001),
-        (0.9, 0.6760000000000002),
-        (1.1, 0.9200000000000002),
+        (-1.1, 0.244),
+        (-0.9, 0.40800000000000003),
+        (-0.7, 0.508),
+        (-0.4999999999999999, 0.5599999999999999),
+        (-0.29999999999999993, 0.58),
+        (0.1, 0.584),
+        (0.30000000000000016, 0.604),
+        (0.5000000000000001, 0.656),
+        (0.7000000000000001, 0.756),
+        (0.9, 0.92),
     ];
 
     {
@@ -599,9 +597,10 @@ fn right_function_test() {
         (0.8, 1.5999999999349868),
     ];
 
-    let area_target = 0.9680000000000002;
+    let area_target = 0.8800000000000001;
 
     let vec_bars_target = vec![
+        1.0,
         0.6400000000000001,
         0.36,
         0.15999999999999992,
@@ -611,20 +610,19 @@ fn right_function_test() {
         0.3600000000000001,
         0.6400000000000001,
         1.0,
-        1.44,
     ];
 
     let vec_integral_target = vec![
-        (-0.9, 0.12800000000000003),
-        (-0.7, 0.2),
-        (-0.4999999999999999, 0.23199999999999998),
-        (-0.29999999999999993, 0.24),
-        (0.1, 0.248),
-        (0.30000000000000016, 0.28),
-        (0.5000000000000001, 0.35200000000000004),
-        (0.7000000000000001, 0.4800000000000001),
-        (0.9, 0.6800000000000002),
-        (1.1, 0.9680000000000002),
+        (-1.1, 0.2),
+        (-0.9, 0.32800000000000007),
+        (-0.7, 0.4000000000000001),
+        (-0.4999999999999999, 0.43200000000000005),
+        (-0.29999999999999993, 0.44000000000000006),
+        (0.1, 0.44800000000000006),
+        (0.30000000000000016, 0.4800000000000001),
+        (0.5000000000000001, 0.5520000000000002),
+        (0.7000000000000001, 0.6800000000000002),
+        (0.9, 0.8800000000000001),
     ];
 
     {
