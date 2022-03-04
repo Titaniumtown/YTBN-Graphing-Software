@@ -16,6 +16,7 @@ use std::ops::RangeInclusive;
 
 shadow!(build);
 
+// Represents the method in which an integral should be displayed
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum DisplayIntegral {
     Rectangles,
@@ -83,7 +84,7 @@ const HELP_FUNCTION: &str = "- The 'X' button before the ∫ symbol allows you t
 
 // Misc help info
 const HELP_OTHER: &str =
-"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk.";
+"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a current workaround would be explicitly stating a multiplication operation through the use of an asterisk.";
 
 // Used to provide info on the Licensing of the project
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
@@ -112,6 +113,7 @@ struct AppSettings {
     // Stores whether or not the settings window is open
     pub settings_open: bool,
 
+    // Stores how integrals should be displayed
     pub integral_display_type: DisplayIntegral,
 }
 
