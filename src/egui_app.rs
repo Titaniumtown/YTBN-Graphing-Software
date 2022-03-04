@@ -205,7 +205,10 @@ impl MathApp {
                 self.last_error = String::new();
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
+                    let mut derivative_toggle: bool = false;
                     let integral_enabled = function.integral;
+                    let derivative_enabled = function.derivative;
+
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function:");
@@ -216,6 +219,7 @@ impl MathApp {
                         {
                             remove_i = Some(i);
                         }
+
                         if ui
                             .add(Button::new("∫"))
                             .on_hover_text(match integral_enabled {
@@ -226,6 +230,18 @@ impl MathApp {
                         {
                             integral_toggle = true;
                         }
+
+                        if ui
+                            .add(Button::new("d/dx"))
+                            .on_hover_text(match derivative_enabled {
+                                true => "Calculate Derivative",
+                                false => "Don't Calculate Derivative",
+                            })
+                            .clicked()
+                        {
+                            derivative_toggle = true;
+                        }
+
                         ui.text_edit_singleline(&mut self.func_strs[i]);
                     });
 
@@ -235,15 +251,23 @@ impl MathApp {
                         integral_enabled
                     };
 
+                    let derivative: bool = if derivative_toggle {
+                        !derivative_enabled
+                    } else {
+                        derivative_enabled
+                    };
+
                     if !self.func_strs[i].is_empty() {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
                         if let Some(test_output_value) = func_test_output {
-                            self.last_error += &format!("(Function #{}) {}\n", i, test_output_value);
+                            self.last_error +=
+                                &format!("(Function #{}) {}\n", i, test_output_value);
                         } else {
                             function.update(
                                 proc_func_str,
                                 integral,
+                                derivative,
                                 Some(self.settings.integral_min_x),
                                 Some(self.settings.integral_max_x),
                                 Some(self.settings.integral_num),
@@ -426,8 +450,12 @@ impl epi::App for MathApp {
 
                             function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
-                            let (back_values, bars) = function.run();
+                            let (back_values, bars, derivative) = function.run();
                             plot_ui.line(back_values.color(Color32::RED));
+
+                            if let Some(derivative_data) = derivative {
+                                plot_ui.line(derivative_data.color(Color32::GREEN));
+                            }
 
                             if let Some(bars_data) = bars {
                                 let (bar_chart, area) = bars_data;

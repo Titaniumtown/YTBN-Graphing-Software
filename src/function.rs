@@ -30,8 +30,10 @@ pub struct Function {
 
     back_cache: Option<Vec<Value>>,
     front_cache: Option<(Vec<Bar>, f64)>,
+    derivative_cache: Option<Vec<Value>>,
 
     pub(crate) integral: bool,
+    pub(crate) derivative: bool,
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
@@ -40,6 +42,8 @@ pub struct Function {
 
 // x^2 function, set here so we don't have to regenerate it every time a new function is made
 fn default_function(x: f64) -> f64 { x.powi(2) }
+
+const EPSILON: f64 = 5.0e-7;
 
 impl Function {
     // Creates Empty Function instance
@@ -52,7 +56,9 @@ impl Function {
             pixel_width: 100,
             back_cache: None,
             front_cache: None,
+            derivative_cache: None,
             integral: false,
+            derivative: false,
             integral_min_x: f64::NAN,
             integral_max_x: f64::NAN,
             integral_num: 0,
@@ -64,7 +70,7 @@ impl Function {
     fn run_func(&self, x: f64) -> f64 { (self.function)(x) }
 
     pub fn update(
-        &mut self, func_str: String, integral: bool, integral_min_x: Option<f64>,
+        &mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: Option<f64>,
         integral_max_x: Option<f64>, integral_num: Option<usize>, sum: Option<RiemannSum>,
     ) {
         // If the function string changes, just wipe and restart from scratch
@@ -76,8 +82,10 @@ impl Function {
             });
             self.back_cache = None;
             self.front_cache = None;
+            self.derivative_cache = None;
         }
 
+        self.derivative = derivative;
         self.integral = integral;
 
         // Makes sure proper arguments are passed when integral is enabled
@@ -98,6 +106,7 @@ impl Function {
     pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
         if pixel_width != self.pixel_width {
             self.back_cache = None;
+            self.derivative_cache = None;
             self.min_x = min_x;
             self.max_x = max_x;
             self.pixel_width = pixel_width;
@@ -123,15 +132,17 @@ impl Function {
                     })
                     .collect(),
             );
+            self.derivative_cache = None; // TODO: setup this caching system for derivatives
         } else {
             self.back_cache = None;
+            self.derivative_cache = None;
             self.min_x = min_x;
             self.max_x = max_x;
             self.pixel_width = pixel_width;
         }
     }
 
-    pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>) {
+    pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
         let back_values: Vec<Value> = {
             if self.back_cache.is_none() {
                 let resolution: f64 =
@@ -147,6 +158,28 @@ impl Function {
             self.back_cache.as_ref().unwrap().clone()
         };
 
+        let derivative_values: Option<Vec<Value>> = match self.derivative {
+            true => {
+                if self.derivative_cache.is_none() {
+                    let back_cache = self.back_cache.as_ref().unwrap().clone();
+                    self.derivative_cache = Some(
+                        back_cache
+                            .iter()
+                            .map(|ele| {
+                                let x = ele.x;
+                                let (x1, x2) = (x - EPSILON, x + EPSILON);
+                                let (y1, y2) = (self.run_func(x1), self.run_func(x2));
+                                let slope = (y2 - y1) / (EPSILON * 2.0);
+                                Value::new(x, slope)
+                            })
+                            .collect(),
+                    );
+                }
+                Some(self.derivative_cache.as_ref().unwrap().clone())
+            }
+            false => None,
+        };
+
         let front_bars = match self.integral {
             true => {
                 if self.front_cache.is_none() {
@@ -160,16 +193,21 @@ impl Function {
             false => None,
         };
 
-        (back_values, front_bars)
+        (back_values, front_bars, derivative_values)
     }
 
-    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>) {
-        let (back_values, front_data_option) = self.run_back();
+    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>, Option<Line>) {
+        let (back_values, front_data_option, derivative_option) = self.run_back();
 
         (
             Line::new(Values::from_values(back_values)),
             if let Some(front_data1) = front_data_option {
                 Some((BarChart::new(front_data1.0), front_data1.1))
+            } else {
+                None
+            },
+            if let Some(derivative_data) = derivative_option {
+                Some(Line::new(Values::from_values(derivative_data)))
             } else {
                 None
             },
@@ -243,7 +281,9 @@ fn left_function_test() {
         pixel_width: 10,
         back_cache: None,
         front_cache: None,
+        derivative_cache: None,
         integral: false,
+        derivative: false,
         integral_min_x: -1.0,
         integral_max_x: 1.0,
         integral_num: 10,
@@ -251,7 +291,7 @@ fn left_function_test() {
     };
 
     {
-        let (back_values, bars) = function.run_back();
+        let (back_values, bars, _) = function.run_back();
         assert!(bars.is_none());
         assert_eq!(back_values.len(), 10);
         let back_values_tuple: Vec<(f64, f64)> =
@@ -275,7 +315,7 @@ fn left_function_test() {
 
     {
         function = function.integral(true);
-        let (back_values, bars) = function.run_back();
+        let (back_values, bars, _) = function.run_back();
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
         assert_eq!(bars.clone().unwrap().1, 0.8720000000000001);
@@ -294,7 +334,9 @@ fn middle_function_test() {
         pixel_width: 10,
         back_cache: None,
         front_cache: None,
+        derivative_cache: None,
         integral: false,
+        derivative: false,
         integral_min_x: -1.0,
         integral_max_x: 1.0,
         integral_num: 10,
@@ -302,7 +344,7 @@ fn middle_function_test() {
     };
 
     {
-        let (back_values, bars) = function.run_back();
+        let (back_values, bars, _) = function.run_back();
         assert!(bars.is_none());
         assert_eq!(back_values.len(), 10);
         let back_values_tuple: Vec<(f64, f64)> =
@@ -326,7 +368,7 @@ fn middle_function_test() {
 
     {
         function = function.integral(true);
-        let (back_values, bars) = function.run_back();
+        let (back_values, bars, _) = function.run_back();
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
         assert_eq!(bars.clone().unwrap().1, 0.9200000000000002);
@@ -345,7 +387,9 @@ fn right_function_test() {
         pixel_width: 10,
         back_cache: None,
         front_cache: None,
+        derivative_cache: None,
         integral: false,
+        derivative: false,
         integral_min_x: -1.0,
         integral_max_x: 1.0,
         integral_num: 10,
@@ -377,7 +421,7 @@ fn right_function_test() {
 
     {
         function = function.integral(true);
-        let (back_values, bars) = function.run_back();
+        let (back_values, bars, _) = function.run_back();
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
         assert_eq!(bars.clone().unwrap().1, 0.9680000000000002);
