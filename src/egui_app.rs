@@ -68,18 +68,21 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 - floor, ceil, round
 - signum, min, max";
 
-// Used in the "Buttons" section of the Help window
-const HELP_BUTTONS: &str =
+// Used in the "Panel" section of the Help window
+const HELP_PANEL: &str =
 "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Help' button on the top bar opens and closes this window!
-- The 'Info' button provides information on the build currently running.
-- The 'X' button before the ∫ symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
+- The 'Settings' button opens a window where you can configure various options.
+- The 'Info' button provides information on the build currently running.";
+
+// Used in the "Functions" section of the Help window
+const HELP_FUNCTION: &str = "- The 'X' button before the ∫ symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
 - The ∫ button (between the 'd/dx' and 'X' buttons) indicates whether estimating an integral for that function is enabled or not.
 - The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not.";
 
 // Misc help info
-const HELP_MISC: &str =
+const HELP_OTHER: &str =
 "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a bypass would be explicitly stating a multiplication operation through the use of an asterisk.";
 
 // Used to provide info on the Licensing of the project
@@ -422,16 +425,22 @@ impl epi::App for MathApp {
             .resizable(false)
             .collapsible(false)
             .show(ctx, |ui| {
+                ui.heading("Help With...");
+
                 ui.collapsing("Supported Expressions", |ui| {
                     ui.label(HELP_EXPR);
                 });
 
-                ui.collapsing("Buttons", |ui| {
-                    ui.label(HELP_BUTTONS);
+                ui.collapsing("Panel", |ui| {
+                    ui.label(HELP_PANEL);
                 });
 
-                ui.collapsing("Misc", |ui| {
-                    ui.label(HELP_MISC);
+                ui.collapsing("Functions", |ui| {
+                    ui.label(HELP_FUNCTION);
+                });
+
+                ui.collapsing("Other", |ui| {
+                    ui.label(HELP_OTHER);
                 });
             });
 
