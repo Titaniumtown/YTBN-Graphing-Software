@@ -1,4 +1,4 @@
-use crate::function::{Function, RiemannSum};
+use crate::function::{FunctionEntry, RiemannSum};
 use crate::misc::{add_asterisks, digits_precision, test_func};
 use const_format::formatc;
 use eframe::{egui, epi};
@@ -130,7 +130,7 @@ impl Default for AppSettings {
 
 pub struct MathApp {
     // Stores vector of functions
-    functions: Vec<Function>,
+    functions: Vec<FunctionEntry>,
 
     // Stores vector containing the string representation of the functions. This is used because of hacky reasons
     func_strs: Vec<String>,
@@ -151,7 +151,7 @@ pub struct MathApp {
 impl Default for MathApp {
     fn default() -> Self {
         Self {
-            functions: vec![Function::empty().integral(true)],
+            functions: vec![FunctionEntry::empty().integral(true)],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             last_error: String::new(),
             font: FontData::from_static(&FONT_FILE),
@@ -363,7 +363,7 @@ impl epi::App for MathApp {
                     .clicked()
                 {
                     self.functions
-                        .push(Function::empty().update_riemann(self.settings.sum));
+                        .push(FunctionEntry::empty().update_riemann(self.settings.sum));
                     self.func_strs.push(String::new());
                 }
 

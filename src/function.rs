@@ -21,7 +21,7 @@ impl fmt::Display for RiemannSum {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
-pub struct Function {
+pub struct FunctionEntry {
     function: BackingFunction,
     func_str: String,
     min_x: f64,
@@ -44,7 +44,7 @@ pub struct Function {
 // x^2 function, set here so we don't have to regenerate it every time a new function is made
 fn default_function(x: f64) -> f64 { x.powi(2) }
 
-impl Function {
+impl FunctionEntry {
     // Creates Empty Function instance
     pub fn empty() -> Self {
         Self {
@@ -324,7 +324,7 @@ fn left_function_test() {
     let integral_num = 10;
     let pixel_width = 10;
 
-    let mut function = Function::empty()
+    let mut function = FunctionEntry::empty()
         .update_riemann(RiemannSum::Left)
         .pixel_width(pixel_width)
         .integral_num(integral_num)
@@ -447,7 +447,7 @@ fn middle_function_test() {
     let integral_num = 10;
     let pixel_width = 10;
 
-    let mut function = Function::empty()
+    let mut function = FunctionEntry::empty()
         .update_riemann(RiemannSum::Middle)
         .pixel_width(pixel_width)
         .integral_num(integral_num)
@@ -570,7 +570,7 @@ fn right_function_test() {
     let integral_num = 10;
     let pixel_width = 10;
 
-    let mut function = Function::empty()
+    let mut function = FunctionEntry::empty()
         .update_riemann(RiemannSum::Right)
         .pixel_width(pixel_width)
         .integral_num(integral_num)
