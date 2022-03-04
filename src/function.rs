@@ -397,7 +397,7 @@ fn right_function_test() {
     };
 
     {
-        let (back_values, bars) = function.run_back();
+        let (back_values, bars, _) = function.run_back();
         assert!(bars.is_none());
         assert_eq!(back_values.len(), 10);
         let back_values_tuple: Vec<(f64, f64)> =
