@@ -18,12 +18,12 @@ shadow!(build);
 
 // Represents the method in which an integral should be displayed
 #[derive(PartialEq, Debug, Copy, Clone)]
-enum DisplayIntegral {
+enum IntegralDisplay {
     Rectangles,
-    Plot,
+    Line,
 }
 
-impl fmt::Display for DisplayIntegral {
+impl fmt::Display for IntegralDisplay {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
@@ -110,7 +110,7 @@ struct AppSettings {
     pub integral_num: usize,
 
     // Stores how integrals should be displayed
-    pub integral_display_type: DisplayIntegral,
+    pub integral_display_type: IntegralDisplay,
 }
 
 impl Default for AppSettings {
@@ -123,7 +123,7 @@ impl Default for AppSettings {
             integral_min_x: DEFAULT_MIN_X,
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
-            integral_display_type: DisplayIntegral::Rectangles,
+            integral_display_type: IntegralDisplay::Rectangles,
         }
     }
 }
@@ -180,12 +180,12 @@ impl MathApp {
                     .show_ui(ui, |ui| {
                         ui.selectable_value(
                             &mut self.settings.integral_display_type,
-                            DisplayIntegral::Rectangles,
+                            IntegralDisplay::Rectangles,
                             "Rectangles",
                         );
                         ui.selectable_value(
                             &mut self.settings.integral_display_type,
-                            DisplayIntegral::Plot,
+                            IntegralDisplay::Line,
                             "Line",
                         );
                     });
@@ -480,9 +480,9 @@ impl epi::App for MathApp {
                             if let Some(bars_data) = bars {
                                 let (integral_bar, integral_line, area) = bars_data;
                                 match self.settings.integral_display_type {
-                                    DisplayIntegral::Rectangles => plot_ui
+                                    IntegralDisplay::Rectangles => plot_ui
                                         .bar_chart(integral_bar.color(Color32::BLUE).width(step)),
-                                    DisplayIntegral::Plot => {
+                                    IntegralDisplay::Line => {
                                         plot_ui.line(integral_line.color(Color32::BLUE))
                                     }
                                 }
