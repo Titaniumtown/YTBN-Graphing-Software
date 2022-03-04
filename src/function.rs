@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
 #[allow(unused_imports)]
-use crate::misc::{debug_log, SteppedVector};
+use crate::misc::{debug_log, BackingFunction, BoxFunction, SteppedVector, EPSILON};
 
 use eframe::egui::{
     plot::{BarChart, Line, Value, Values},
@@ -22,7 +22,7 @@ impl fmt::Display for RiemannSum {
 }
 
 pub struct Function {
-    function: Box<dyn Fn(f64) -> f64>,
+    function: BackingFunction,
     func_str: String,
     min_x: f64,
     max_x: f64,
@@ -34,6 +34,7 @@ pub struct Function {
 
     pub(crate) integral: bool,
     pub(crate) derivative: bool,
+    pub(crate) nth_derivative: u64,
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
@@ -43,13 +44,11 @@ pub struct Function {
 // x^2 function, set here so we don't have to regenerate it every time a new function is made
 fn default_function(x: f64) -> f64 { x.powi(2) }
 
-const EPSILON: f64 = 5.0e-7;
-
 impl Function {
     // Creates Empty Function instance
     pub fn empty() -> Self {
         Self {
-            function: Box::new(default_function),
+            function: BackingFunction::new(Box::new(default_function)),
             func_str: String::new(),
             min_x: -1.0,
             max_x: 1.0,
@@ -59,6 +58,7 @@ impl Function {
             derivative_cache: None,
             integral: false,
             derivative: false,
+            nth_derivative: 1,
             integral_min_x: f64::NAN,
             integral_max_x: f64::NAN,
             integral_num: 0,
@@ -67,7 +67,7 @@ impl Function {
     }
 
     // Runs the internal function to get values
-    fn run_func(&self, x: f64) -> f64 { (self.function)(x) }
+    fn run_func(&self, x: f64) -> f64 { self.function.get(x) }
 
     pub fn update(
         &mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: Option<f64>,
@@ -76,10 +76,10 @@ impl Function {
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
             self.func_str = func_str.clone();
-            self.function = Box::new({
+            self.function = BackingFunction::new(Box::new({
                 let expr: Expr = func_str.parse().unwrap();
                 expr.bind("x").unwrap()
-            });
+            }));
             self.back_cache = None;
             self.front_cache = None;
             self.derivative_cache = None;
@@ -143,10 +143,7 @@ impl Function {
                             if let Some(i) = x_data.get_index(x) {
                                 derivative_cache[i]
                             } else {
-                                let (x1, x2) = (x - EPSILON, x + EPSILON);
-                                let (y1, y2) = (self.run_func(x1), self.run_func(x2));
-                                let slope = (y2 - y1) / (EPSILON * 2.0);
-                                Value::new(x, slope)
+                                Value::new(x, self.function.derivative(x, self.nth_derivative))
                             }
                         })
                         .collect(),
@@ -299,29 +296,39 @@ impl Function {
         self.integral = integral;
         self
     }
+
+    // Toggles integral
+    pub fn integral_num(mut self, integral_num: usize) -> Self {
+        self.integral_num = integral_num;
+        self
+    }
+
+    pub fn pixel_width(mut self, pixel_width: usize) -> Self {
+        self.pixel_width = pixel_width;
+        self
+    }
+
+    pub fn integral_bounds(mut self, min_x: f64, max_x: f64) -> Self {
+        if min_x >= max_x {
+            panic!("integral_bounds: min_x is larger than max_x");
+        }
+
+        self.integral_min_x = min_x;
+        self.integral_max_x = max_x;
+        self
+    }
 }
 
 #[test]
 fn left_function_test() {
-    let pixel_width = 10;
     let integral_num = 10;
+    let pixel_width = 10;
 
-    let mut function = Function {
-        function: Box::new(default_function),
-        func_str: String::from("x^2"),
-        min_x: -1.0,
-        max_x: 1.0,
-        pixel_width,
-        back_cache: None,
-        front_cache: None,
-        derivative_cache: None,
-        integral: false,
-        derivative: false,
-        integral_min_x: -1.0,
-        integral_max_x: 1.0,
-        integral_num,
-        sum: RiemannSum::Left,
-    };
+    let mut function = Function::empty()
+        .update_riemann(RiemannSum::Left)
+        .pixel_width(pixel_width)
+        .integral_num(integral_num)
+        .integral_bounds(-1.0, 1.0);
 
     let back_values_target = vec![
         (-1.0, 1.0),
@@ -431,31 +438,20 @@ fn left_function_test() {
         assert_eq!(vec_integral.len(), integral_num);
 
         assert_eq!(vec_integral, vec_integral_target);
-        assert_eq!(vec_integral[vec_integral.len()-1].1, area_target);
+        assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
 
 #[test]
 fn middle_function_test() {
-    let pixel_width = 10;
     let integral_num = 10;
+    let pixel_width = 10;
 
-    let mut function = Function {
-        function: Box::new(default_function),
-        func_str: String::from("x^2"),
-        min_x: -1.0,
-        max_x: 1.0,
-        pixel_width,
-        back_cache: None,
-        front_cache: None,
-        derivative_cache: None,
-        integral: false,
-        derivative: false,
-        integral_min_x: -1.0,
-        integral_max_x: 1.0,
-        integral_num,
-        sum: RiemannSum::Middle,
-    };
+    let mut function = Function::empty()
+        .update_riemann(RiemannSum::Middle)
+        .pixel_width(pixel_width)
+        .integral_num(integral_num)
+        .integral_bounds(-1.0, 1.0);
 
     let back_values_target = vec![
         (-1.0, 1.0),
@@ -565,31 +561,20 @@ fn middle_function_test() {
         assert_eq!(vec_integral.len(), integral_num);
 
         assert_eq!(vec_integral, vec_integral_target);
-        assert_eq!(vec_integral[vec_integral.len()-1].1, area_target);
+        assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
 
 #[test]
 fn right_function_test() {
-    let pixel_width = 10;
     let integral_num = 10;
+    let pixel_width = 10;
 
-    let mut function = Function {
-        function: Box::new(default_function),
-        func_str: String::from("x^2"),
-        min_x: -1.0,
-        max_x: 1.0,
-        pixel_width,
-        back_cache: None,
-        front_cache: None,
-        derivative_cache: None,
-        integral: false,
-        derivative: false,
-        integral_min_x: -1.0,
-        integral_max_x: 1.0,
-        integral_num,
-        sum: RiemannSum::Right,
-    };
+    let mut function = Function::empty()
+        .update_riemann(RiemannSum::Right)
+        .pixel_width(pixel_width)
+        .integral_num(integral_num)
+        .integral_bounds(-1.0, 1.0);
 
     let back_values_target = vec![
         (-1.0, 1.0),
@@ -699,6 +684,6 @@ fn right_function_test() {
         assert_eq!(vec_integral.len(), integral_num);
 
         assert_eq!(vec_integral, vec_integral_target);
-        assert_eq!(vec_integral[vec_integral.len()-1].1, area_target);
+        assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }

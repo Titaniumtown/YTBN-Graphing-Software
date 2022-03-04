@@ -34,6 +34,38 @@ pub fn debug_log(s: &str) {
 #[allow(dead_code)]
 pub fn debug_log(_s: &str) {}
 
+pub const EPSILON: f64 = 5.0e-7;
+
+pub type BoxFunction = Box<dyn Fn(f64) -> f64>;
+
+pub struct BackingFunction {
+    function: BoxFunction,
+}
+
+impl BackingFunction {
+    pub fn new(function: BoxFunction) -> BackingFunction { BackingFunction { function } }
+
+    pub fn get(&self, x: f64) -> f64 { (self.function)(x) }
+
+    pub fn derivative(&self, x: f64, n: u64) -> f64 {
+        if n == 0 {
+            return self.get(x);
+        }
+
+        let (x1, x2) = (x - EPSILON, x + EPSILON);
+        let (y1, y2) = (self.derivative(x1, n - 1), (self.derivative(x2, n - 1)));
+        (y2 - y1) / (EPSILON * 2.0)
+    }
+}
+
+impl From<BoxFunction> for BackingFunction {
+    fn from(boxfunction: BoxFunction) -> BackingFunction {
+        BackingFunction {
+            function: boxfunction,
+        }
+    }
+}
+
 /*
 EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
 One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
