@@ -239,7 +239,7 @@ impl MathApp {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
                         if let Some(test_output_value) = func_test_output {
-                            self.last_error += &format!("(Function #{}) {}", i, test_output_value);
+                            self.last_error += &format!("(Function #{}) {}\n", i, test_output_value);
                         } else {
                             function.update(
                                 proc_func_str,
