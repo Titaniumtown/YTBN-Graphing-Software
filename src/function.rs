@@ -29,7 +29,7 @@ pub struct Function {
     pixel_width: usize,
 
     back_cache: Option<Vec<Value>>,
-    front_cache: Option<(Vec<Bar>, f64)>,
+    front_cache: Option<(Vec<Bar>, Vec<Value>, f64)>,
     derivative_cache: Option<Vec<Value>>,
 
     pub(crate) integral: bool,
@@ -161,7 +161,13 @@ impl Function {
         }
     }
 
-    pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
+    pub fn run_back(
+        &mut self,
+    ) -> (
+        Vec<Value>,
+        Option<(Vec<Bar>, Vec<Value>, f64)>,
+        Option<Vec<Value>>,
+    ) {
         let back_values: Vec<Value> = {
             if self.back_cache.is_none() {
                 let resolution: f64 =
@@ -203,11 +209,14 @@ impl Function {
             true => {
                 if self.front_cache.is_none() {
                     let (data, area) = self.integral_rectangles();
-                    self.front_cache =
-                        Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
+                    self.front_cache = Some((
+                        data.iter().map(|(x, y, _)| Bar::new(*x, *y)).collect(),
+                        data.iter().map(|(x, _, y)| Value::new(*x, *y)).collect(),
+                        area,
+                    ));
                 }
                 let cache = self.front_cache.as_ref().unwrap();
-                Some((cache.0.clone(), cache.1))
+                Some((cache.0.clone(), cache.1.clone(), cache.2))
             }
             false => None,
         };
@@ -215,13 +224,17 @@ impl Function {
         (back_values, front_bars, derivative_values)
     }
 
-    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>, Option<Line>) {
+    pub fn run(&mut self) -> (Line, Option<(BarChart, Line, f64)>, Option<Line>) {
         let (back_values, front_data_option, derivative_option) = self.run_back();
 
         (
             Line::new(Values::from_values(back_values)),
             if let Some(front_data1) = front_data_option {
-                Some((BarChart::new(front_data1.0), front_data1.1))
+                Some((
+                    BarChart::new(front_data1.0),
+                    Line::new(Values::from_values(front_data1.1)),
+                    front_data1.2,
+                ))
             } else {
                 None
             },
@@ -234,7 +247,7 @@ impl Function {
     }
 
     // Creates and does the math for creating all the rectangles under the graph
-    fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
+    fn integral_rectangles(&self) -> (Vec<(f64, f64, f64)>, f64) {
         if self.integral_min_x.is_nan() {
             panic!("integral_min_x is NaN")
         } else if self.integral_max_x.is_nan() {
@@ -243,7 +256,8 @@ impl Function {
 
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
-        let data2: Vec<(f64, f64)> = (1..=self.integral_num)
+        let mut area: f64 = 0.0;
+        let data2: Vec<(f64, f64, f64)> = (1..=self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
                 let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
@@ -254,20 +268,20 @@ impl Function {
                     false => (x2, x),
                 };
 
-                (
-                    x + (step_offset / 2.0),
-                    match self.sum {
-                        RiemannSum::Left => self.run_func(left_x),
-                        RiemannSum::Right => self.run_func(right_x),
-                        RiemannSum::Middle => {
-                            (self.run_func(left_x) + self.run_func(right_x)) / 2.0
-                        }
-                    },
-                )
+                let y = match self.sum {
+                    RiemannSum::Left => self.run_func(left_x),
+                    RiemannSum::Right => self.run_func(right_x),
+                    RiemannSum::Middle => (self.run_func(left_x) + self.run_func(right_x)) / 2.0,
+                };
+
+                if !y.is_nan() {
+                    area += y * step;
+                }
+
+                (x + (step_offset / 2.0), y, area)
             })
-            .filter(|(_, y)| !y.is_nan())
+            .filter(|(_, y, _)| !y.is_nan())
             .collect();
-        let area: f64 = data2.iter().map(|(_, y)| y * step).sum(); // sum of all rectangles' areas
         (data2, area)
     }
 
@@ -337,7 +351,7 @@ fn left_function_test() {
         let (back_values, bars, _) = function.run_back();
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
-        assert_eq!(bars.clone().unwrap().1, 0.8720000000000001);
+        assert_eq!(bars.clone().unwrap().2, 0.8720000000000001);
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), 10);
     }
@@ -390,7 +404,7 @@ fn middle_function_test() {
         let (back_values, bars, _) = function.run_back();
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
-        assert_eq!(bars.clone().unwrap().1, 0.9200000000000002);
+        assert_eq!(bars.clone().unwrap().2, 0.9200000000000002);
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), 10);
     }
@@ -443,7 +457,7 @@ fn right_function_test() {
         let (back_values, bars, _) = function.run_back();
         assert!(bars.is_some());
         assert_eq!(back_values.len(), 10);
-        assert_eq!(bars.clone().unwrap().1, 0.9680000000000002);
+        assert_eq!(bars.clone().unwrap().2, 0.9680000000000002);
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), 10);
     }

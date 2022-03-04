@@ -11,9 +11,20 @@ use epi::{Frame, Storage};
 use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
+use std::fmt::{self, Debug};
 use std::ops::RangeInclusive;
 
 shadow!(build);
+
+#[derive(PartialEq, Debug, Copy, Clone)]
+enum DisplayIntegral {
+    Rectangles,
+    Plot,
+}
+
+impl fmt::Display for DisplayIntegral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
+}
 
 // Constant string that has a string containing information about the build.
 const BUILD_INFO: &str = formatc!(
@@ -94,6 +105,11 @@ struct AppSettings {
 
     // Number of rectangles used to calculate integral
     pub integral_num: usize,
+
+    // Stores whether or not the settings window is open
+    pub settings_open: bool,
+
+    pub integral_display_type: DisplayIntegral,
 }
 
 impl Default for AppSettings {
@@ -106,6 +122,8 @@ impl Default for AppSettings {
             integral_min_x: DEFAULT_MIN_X,
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
+            settings_open: false,
+            integral_display_type: DisplayIntegral::Rectangles,
         }
     }
 }
@@ -346,6 +364,17 @@ impl epi::App for MathApp {
                 }
 
                 if ui
+                    .add(Button::new("Settings"))
+                    .on_hover_text(match self.settings.settings_open {
+                        true => "Close Settings Window",
+                        false => "Open Settings Window",
+                    })
+                    .clicked()
+                {
+                    self.settings.settings_open = !self.settings.settings_open;
+                }
+
+                if ui
                     .add(Button::new("Info"))
                     .on_hover_text(match self.settings.info_open {
                         true => "Close Info Window",
@@ -362,6 +391,29 @@ impl epi::App for MathApp {
                 ));
             });
         });
+
+        // Help window with information for users
+        Window::new("Settings")
+            .default_pos([200.0, 200.0])
+            .open(&mut self.settings.settings_open)
+            .resizable(false)
+            .collapsible(false)
+            .show(ctx, |ui| {
+                ComboBox::from_label("Integral Display")
+                    .selected_text(self.settings.integral_display_type.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut self.settings.integral_display_type,
+                            DisplayIntegral::Rectangles,
+                            "Rectangles",
+                        );
+                        ui.selectable_value(
+                            &mut self.settings.integral_display_type,
+                            DisplayIntegral::Plot,
+                            "Line",
+                        );
+                    });
+            });
 
         // Help window with information for users
         Window::new("Help")
@@ -439,8 +491,14 @@ impl epi::App for MathApp {
                             }
 
                             if let Some(bars_data) = bars {
-                                let (bar_chart, area) = bars_data;
-                                plot_ui.bar_chart(bar_chart.color(Color32::BLUE).width(step));
+                                let (integral_bar, integral_line, area) = bars_data;
+                                match self.settings.integral_display_type {
+                                    DisplayIntegral::Rectangles => plot_ui
+                                        .bar_chart(integral_bar.color(Color32::BLUE).width(step)),
+                                    DisplayIntegral::Plot => {
+                                        plot_ui.line(integral_line.color(Color32::BLUE))
+                                    }
+                                }
                                 digits_precision(area, 8)
                             } else {
                                 f64::NAN
