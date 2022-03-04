@@ -77,8 +77,9 @@ const HELP_PANEL: &str =
 - The 'Info' button provides information on the build currently running.";
 
 // Used in the "Functions" section of the Help window
-const HELP_FUNCTION: &str = "- The 'X' button before the ∫ symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
-- The ∫ button (between the 'd/dx' and 'X' buttons) indicates whether estimating an integral for that function is enabled or not.
+const HELP_FUNCTION: &str = "- The 'X' button before the 'O' symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
+- The 'O' button after the 'X' button opens a window where you can configure some settings in relation to the function in question.
+- The ∫ button (between the 'O' and 'd/dx' buttons) indicates whether estimating an integral for that function is enabled or not.
 - The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not.";
 
 // Misc help info
@@ -111,6 +112,9 @@ struct AppSettings {
 
     // Stores how integrals should be displayed
     pub integral_display_type: IntegralDisplay,
+
+    // List of functions whose windows are open
+    pub opened_functions: Vec<usize>,
 }
 
 impl Default for AppSettings {
@@ -124,6 +128,7 @@ impl Default for AppSettings {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             integral_display_type: IntegralDisplay::Rectangles,
+            opened_functions: Vec::new(),
         }
     }
 }
@@ -235,6 +240,30 @@ impl MathApp {
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function:");
+                        if ui
+                            .add(Button::new("O"))
+                            .on_hover_text("Open Function Settings")
+                            .clicked()
+                            | self.settings.opened_functions.contains(&i)
+                        {
+                            self.settings.opened_functions.push(i);
+                            Window::new(function.get_func_str())
+                                .default_pos([200.0, 200.0])
+                                .resizable(false)
+                                .collapsible(false)
+                                .show(ctx, |ui| {
+                                    if ui
+                                        .add(
+                                            Slider::new(&mut function.nth_derivative, 0..=2) // Derivatives go insane after the value 3, probably inaccuracies in the handling of floating point numbers. more investigation needed.
+                                                .text("Derivative"),
+                                        )
+                                        .changed()
+                                    {
+                                        function.invalidate_derivative_cache();
+                                    }
+                                });
+                        }
+
                         if ui
                             .add(Button::new("X"))
                             .on_hover_text("Delete Function")

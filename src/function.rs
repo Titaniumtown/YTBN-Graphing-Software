@@ -165,10 +165,9 @@ impl FunctionEntry {
         Option<(Vec<Bar>, Vec<Value>, f64)>,
         Option<Vec<Value>>,
     ) {
+        let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
         let back_values: Vec<Value> = {
             if self.back_cache.is_none() {
-                let resolution: f64 =
-                    (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
                 self.back_cache = Some(
                     (0..self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
@@ -183,16 +182,11 @@ impl FunctionEntry {
         let derivative_values: Option<Vec<Value>> = match self.derivative {
             true => {
                 if self.derivative_cache.is_none() {
-                    let back_cache = self.back_cache.as_ref().unwrap().clone();
                     self.derivative_cache = Some(
-                        back_cache
-                            .iter()
-                            .map(|ele| {
-                                let x = ele.x;
-                                let (x1, x2) = (x - EPSILON, x + EPSILON);
-                                let (y1, y2) = (self.run_func(x1), self.run_func(x2));
-                                let slope = (y2 - y1) / (EPSILON * 2.0);
-                                Value::new(x, slope)
+                        (0..self.pixel_width)
+                            .map(|x| (x as f64 / resolution as f64) + self.min_x)
+                            .map(|x| {
+                                Value::new(x, self.function.derivative(x, self.nth_derivative))
                             })
                             .collect(),
                     );
@@ -282,6 +276,8 @@ impl FunctionEntry {
     // Set func_str to an empty string
     pub fn empty_func_str(&mut self) { self.func_str = String::new(); }
 
+    pub fn get_func_str(&self) -> String { self.func_str.clone() }
+
     // Updates riemann value and invalidates front_cache if needed
     pub fn update_riemann(mut self, riemann: RiemannSum) -> Self {
         if self.sum != riemann {
@@ -297,7 +293,6 @@ impl FunctionEntry {
         self
     }
 
-    // Toggles integral
     pub fn integral_num(mut self, integral_num: usize) -> Self {
         self.integral_num = integral_num;
         self
@@ -317,6 +312,8 @@ impl FunctionEntry {
         self.integral_max_x = max_x;
         self
     }
+
+    pub fn invalidate_derivative_cache(&mut self) { self.derivative_cache = None; }
 }
 
 #[test]
