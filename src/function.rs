@@ -238,7 +238,8 @@ impl Function {
             } else {
                 None
             },
-            derivative_option.map(|derivative_data| Line::new(Values::from_values(derivative_data))),
+            derivative_option
+                .map(|derivative_data| Line::new(Values::from_values(derivative_data))),
         )
     }
 
