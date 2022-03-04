@@ -431,6 +431,7 @@ fn left_function_test() {
         assert_eq!(vec_integral.len(), integral_num);
 
         assert_eq!(vec_integral, vec_integral_target);
+        assert_eq!(vec_integral[vec_integral.len()-1].1, area_target);
     }
 }
 
@@ -564,6 +565,7 @@ fn middle_function_test() {
         assert_eq!(vec_integral.len(), integral_num);
 
         assert_eq!(vec_integral, vec_integral_target);
+        assert_eq!(vec_integral[vec_integral.len()-1].1, area_target);
     }
 }
 
@@ -697,5 +699,6 @@ fn right_function_test() {
         assert_eq!(vec_integral.len(), integral_num);
 
         assert_eq!(vec_integral, vec_integral_target);
+        assert_eq!(vec_integral[vec_integral.len()-1].1, area_target);
     }
 }
