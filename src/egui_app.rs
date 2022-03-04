@@ -218,10 +218,9 @@ impl MathApp {
                         }
                         if ui
                             .add(Button::new("∫"))
-                            .on_hover_text(if integral_enabled {
-                                "Don't integrate"
-                            } else {
-                                "Integrate"
+                            .on_hover_text(match integral_enabled {
+                                true => "Don't integrate",
+                                false => "Integrate",
                             })
                             .clicked()
                         {
