@@ -132,7 +132,26 @@ impl Function {
                     })
                     .collect(),
             );
-            self.derivative_cache = None; // TODO: setup this caching system for derivatives
+
+            if self.derivative_cache.is_some() {
+                let derivative_cache = self.derivative_cache.as_ref().unwrap();
+
+                self.derivative_cache = Some(
+                    (0..=self.pixel_width)
+                        .map(|x| (x as f64 / resolution as f64) + min_x)
+                        .map(|x| {
+                            if let Some(i) = x_data.get_index(x) {
+                                derivative_cache[i]
+                            } else {
+                                let (x1, x2) = (x - EPSILON, x + EPSILON);
+                                let (y1, y2) = (self.run_func(x1), self.run_func(x2));
+                                let slope = (y2 - y1) / (EPSILON * 2.0);
+                                Value::new(x, slope)
+                            }
+                        })
+                        .collect(),
+                );
+            }
         } else {
             self.back_cache = None;
             self.derivative_cache = None;
