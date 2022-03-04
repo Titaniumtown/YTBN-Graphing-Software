@@ -238,11 +238,7 @@ impl Function {
             } else {
                 None
             },
-            if let Some(derivative_data) = derivative_option {
-                Some(Line::new(Values::from_values(derivative_data)))
-            } else {
-                None
-            },
+            derivative_option.map(|derivative_data| Line::new(Values::from_values(derivative_data))),
         )
     }
 
