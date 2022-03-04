@@ -191,7 +191,6 @@ impl MathApp {
                 );
 
                 let mut remove_i: Option<usize> = None;
-                let mut using_integral: bool = false;
                 self.last_error = String::new();
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let mut integral_toggle: bool = false;
@@ -235,18 +234,6 @@ impl MathApp {
                         ui.text_edit_singleline(&mut self.func_strs[i]);
                     });
 
-                    let integral: bool = if integral_toggle {
-                        !integral_enabled
-                    } else {
-                        integral_enabled
-                    };
-
-                    let derivative: bool = if derivative_toggle {
-                        !derivative_enabled
-                    } else {
-                        derivative_enabled
-                    };
-
                     if !self.func_strs[i].is_empty() {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         let func_test_output = test_func(proc_func_str.clone());
@@ -256,16 +243,21 @@ impl MathApp {
                         } else {
                             function.update(
                                 proc_func_str,
-                                integral,
-                                derivative,
+                                if integral_toggle {
+                                    !integral_enabled
+                                } else {
+                                    integral_enabled
+                                },
+                                if derivative_toggle {
+                                    !derivative_enabled
+                                } else {
+                                    derivative_enabled
+                                },
                                 Some(self.settings.integral_min_x),
                                 Some(self.settings.integral_max_x),
                                 Some(self.settings.integral_num),
                                 Some(self.settings.sum),
                             );
-                        }
-                        if integral {
-                            using_integral = true;
                         }
                     } else {
                         function.empty_func_str();
