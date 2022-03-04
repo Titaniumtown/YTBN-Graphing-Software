@@ -186,14 +186,11 @@ impl Function {
 
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
-        let half_step = step / 2.0;
         let data2: Vec<(f64, f64)> = (1..=self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
-                let x2: f64 = match x.is_sign_positive() {
-                    true => x + step,
-                    false => x - step,
-                };
+                let step_offset = step * x.signum();
+                let x2: f64 = x + step_offset;
 
                 let (left_x, right_x) = match x.is_sign_positive() {
                     true => (x, x2),
@@ -201,10 +198,7 @@ impl Function {
                 };
 
                 (
-                    match x.is_sign_positive() {
-                        true => x + half_step,
-                        false => x - half_step,
-                    },
+                    x + (step_offset / 2.0),
                     match self.sum {
                         RiemannSum::Left => self.run_func(left_x),
                         RiemannSum::Right => self.run_func(right_x),
