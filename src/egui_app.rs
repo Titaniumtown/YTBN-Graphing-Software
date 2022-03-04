@@ -63,8 +63,9 @@ const HELP_BUTTONS: &str =
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Help' button on the top bar opens and closes this window!
 - The 'Info' button provides information on the build currently running.
-- The X button before the ∫ symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
-- The ∫ button next to the function input indicates whether estimating an integral for that function is enabled or not.";
+- The 'X' button before the ∫ symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
+- The ∫ button (between the 'd/dx' and 'X' buttons) indicates whether estimating an integral for that function is enabled or not.
+- The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not.";
 
 // Misc help info
 const HELP_MISC: &str =
