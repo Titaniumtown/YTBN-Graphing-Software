@@ -189,7 +189,7 @@ impl Function {
         let data2: Vec<(f64, f64)> = (1..=self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
-                let step_offset = step * x.signum();
+                let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
                 let x2: f64 = x + step_offset;
 
                 let (left_x, right_x) = match x.is_sign_positive() {

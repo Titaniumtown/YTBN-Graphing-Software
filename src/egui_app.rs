@@ -393,7 +393,7 @@ impl epi::App for MathApp {
             self.side_panel(ctx);
         }
 
-        // Central panel which contains the central plot along or an error when parsing
+        // Central panel which contains the central plot (or an error created when parsing)
         CentralPanel::default().show(ctx, |ui| {
             if !self.last_error.is_empty() {
                 ui.centered_and_justified(|ui| {
