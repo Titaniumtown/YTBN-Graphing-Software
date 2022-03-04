@@ -46,7 +46,7 @@ impl FunctionEntry {
     // Creates Empty Function instance
     pub fn empty() -> Self {
         Self {
-            function: BackingFunction::new("x^2").unwrap(),
+            function: BackingFunction::new("x^2"),
             func_str: String::new(),
             min_x: -1.0,
             max_x: 1.0,
@@ -74,7 +74,7 @@ impl FunctionEntry {
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
             self.func_str = func_str.clone();
-            self.function = BackingFunction::new(&func_str).unwrap();
+            self.function = BackingFunction::new(&func_str);
             self.back_cache = None;
             self.front_cache = None;
             self.derivative_cache = None;

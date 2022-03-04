@@ -1,6 +1,6 @@
 use crate::function::{FunctionEntry, RiemannSum};
-use crate::misc::{add_asterisks, digits_precision};
-use crate::parsing::test_func;
+use crate::misc::digits_precision;
+use crate::parsing::{add_asterisks, test_func};
 
 use const_format::formatc;
 use eframe::{egui, epi};
@@ -303,7 +303,7 @@ impl MathApp {
                     {
                         let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         // let proc_func_str = self.func_strs[i].clone();
-                        let func_test_output = test_func(&proc_func_str);
+                        let func_test_output = test_func(proc_func_str.clone());
                         if let Some(test_output_value) = func_test_output {
                             self.last_error.push((i, test_output_value));
                         } else {
