@@ -298,10 +298,10 @@ impl MathApp {
                         ui.text_edit_singleline(&mut self.func_strs[i]);
                     });
 
-                    if (self.func_strs[i].clone() != function.get_func_str())
+                    let proc_func_str = add_asterisks(self.func_strs[i].clone());
+                    if (proc_func_str != function.get_func_str())
                         | self.last_error.iter().any(|ele| ele.0 == i)
                     {
-                        let proc_func_str = add_asterisks(self.func_strs[i].clone());
                         // let proc_func_str = self.func_strs[i].clone();
                         let func_test_output = test_func(proc_func_str.clone());
                         if let Some(test_output_value) = func_test_output {
