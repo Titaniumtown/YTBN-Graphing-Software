@@ -353,32 +353,6 @@ fn left_function_test() {
 
     let area_target = 0.9600000000000001;
 
-    let vec_bars_target = vec![
-        1.44,
-        1.0,
-        0.6400000000000001,
-        0.3599999999999998,
-        0.15999999999999998,
-        0.0,
-        0.04000000000000007,
-        0.16000000000000011,
-        0.3600000000000001,
-        0.6400000000000001,
-    ];
-
-    let vec_integral_target = vec![
-        (-1.1, 0.288),
-        (-0.9, 0.488),
-        (-0.7, 0.616),
-        (-0.4999999999999999, 0.688),
-        (-0.29999999999999993, 0.72),
-        (0.1, 0.72),
-        (0.30000000000000016, 0.728),
-        (0.5000000000000001, 0.76),
-        (0.7000000000000001, 0.8320000000000001),
-        (0.9, 0.9600000000000001),
-    ];
-
     {
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_none());
@@ -425,14 +399,12 @@ fn left_function_test() {
         let vec_bars: Vec<f64> = bars_unwrapped.0.iter().map(|bar| bar.value).collect();
 
         assert_eq!(vec_bars.len(), integral_num);
-        assert_eq!(vec_bars, vec_bars_target);
 
         let integral_line = bars_unwrapped.1;
         let vec_integral: Vec<(f64, f64)> =
             integral_line.iter().map(|ele| (ele.x, ele.y)).collect();
         assert_eq!(vec_integral.len(), integral_num);
 
-        assert_eq!(vec_integral, vec_integral_target);
         assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
@@ -476,32 +448,6 @@ fn middle_function_test() {
 
     let area_target = 0.92;
 
-    let vec_bars_target = vec![
-        1.22,
-        0.8200000000000001,
-        0.5,
-        0.2599999999999999,
-        0.09999999999999998,
-        0.020000000000000004,
-        0.1000000000000001,
-        0.2600000000000001,
-        0.5000000000000001,
-        0.8200000000000001,
-    ];
-
-    let vec_integral_target = vec![
-        (-1.1, 0.244),
-        (-0.9, 0.40800000000000003),
-        (-0.7, 0.508),
-        (-0.4999999999999999, 0.5599999999999999),
-        (-0.29999999999999993, 0.58),
-        (0.1, 0.584),
-        (0.30000000000000016, 0.604),
-        (0.5000000000000001, 0.656),
-        (0.7000000000000001, 0.756),
-        (0.9, 0.92),
-    ];
-
     {
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_none());
@@ -548,14 +494,12 @@ fn middle_function_test() {
         let vec_bars: Vec<f64> = bars_unwrapped.0.iter().map(|bar| bar.value).collect();
 
         assert_eq!(vec_bars.len(), integral_num);
-        assert_eq!(vec_bars, vec_bars_target);
 
         let integral_line = bars_unwrapped.1;
         let vec_integral: Vec<(f64, f64)> =
             integral_line.iter().map(|ele| (ele.x, ele.y)).collect();
         assert_eq!(vec_integral.len(), integral_num);
 
-        assert_eq!(vec_integral, vec_integral_target);
         assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
@@ -599,32 +543,6 @@ fn right_function_test() {
 
     let area_target = 0.8800000000000001;
 
-    let vec_bars_target = vec![
-        1.0,
-        0.6400000000000001,
-        0.36,
-        0.15999999999999992,
-        0.03999999999999998,
-        0.04000000000000001,
-        0.16000000000000014,
-        0.3600000000000001,
-        0.6400000000000001,
-        1.0,
-    ];
-
-    let vec_integral_target = vec![
-        (-1.1, 0.2),
-        (-0.9, 0.32800000000000007),
-        (-0.7, 0.4000000000000001),
-        (-0.4999999999999999, 0.43200000000000005),
-        (-0.29999999999999993, 0.44000000000000006),
-        (0.1, 0.44800000000000006),
-        (0.30000000000000016, 0.4800000000000001),
-        (0.5000000000000001, 0.5520000000000002),
-        (0.7000000000000001, 0.6800000000000002),
-        (0.9, 0.8800000000000001),
-    ];
-
     {
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_none());
@@ -671,14 +589,12 @@ fn right_function_test() {
         let vec_bars: Vec<f64> = bars_unwrapped.0.iter().map(|bar| bar.value).collect();
 
         assert_eq!(vec_bars.len(), integral_num);
-        assert_eq!(vec_bars, vec_bars_target);
 
         let integral_line = bars_unwrapped.1;
         let vec_integral: Vec<(f64, f64)> =
             integral_line.iter().map(|ele| (ele.x, ele.y)).collect();
         assert_eq!(vec_integral.len(), integral_num);
 
-        assert_eq!(vec_integral, vec_integral_target);
         assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
