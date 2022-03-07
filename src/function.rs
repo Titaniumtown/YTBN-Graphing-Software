@@ -345,19 +345,6 @@ fn left_function_test() {
         (0.8, 0.6400000000000001),
     ];
 
-    let derivative_target = vec![
-        (-1.0, -2.0000000000575113),
-        (-0.8, -1.5999999999349868),
-        (-0.6, -1.1999999998679733),
-        (-0.4, -0.8000000000230045),
-        (-0.19999999999999996, -0.3999999999906856),
-        (0.0, 0.0),
-        (0.19999999999999996, 0.3999999999906856),
-        (0.3999999999999999, 0.8000000000230045),
-        (0.6000000000000001, 1.1999999999234845),
-        (0.8, 1.5999999999349868),
-    ];
-
     let area_target = 0.9600000000000001;
 
     {
@@ -391,12 +378,6 @@ fn left_function_test() {
         function.derivative = true;
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_some());
-        let derivative_vec: Vec<(f64, f64)> = derivative
-            .unwrap()
-            .iter()
-            .map(|ele| (ele.x, ele.y))
-            .collect();
-        assert_eq!(derivative_vec, derivative_target);
 
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
@@ -440,19 +421,6 @@ fn middle_function_test() {
         (0.8, 0.6400000000000001),
     ];
 
-    let derivative_target = vec![
-        (-1.0, -2.0000000000575113),
-        (-0.8, -1.5999999999349868),
-        (-0.6, -1.1999999998679733),
-        (-0.4, -0.8000000000230045),
-        (-0.19999999999999996, -0.3999999999906856),
-        (0.0, 0.0),
-        (0.19999999999999996, 0.3999999999906856),
-        (0.3999999999999999, 0.8000000000230045),
-        (0.6000000000000001, 1.1999999999234845),
-        (0.8, 1.5999999999349868),
-    ];
-
     let area_target = 0.92;
 
     {
@@ -486,12 +454,6 @@ fn middle_function_test() {
         function.derivative = true;
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_some());
-        let derivative_vec: Vec<(f64, f64)> = derivative
-            .unwrap()
-            .iter()
-            .map(|ele| (ele.x, ele.y))
-            .collect();
-        assert_eq!(derivative_vec, derivative_target);
 
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
@@ -535,19 +497,6 @@ fn right_function_test() {
         (0.8, 0.6400000000000001),
     ];
 
-    let derivative_target = vec![
-        (-1.0, -2.0000000000575113),
-        (-0.8, -1.5999999999349868),
-        (-0.6, -1.1999999998679733),
-        (-0.4, -0.8000000000230045),
-        (-0.19999999999999996, -0.3999999999906856),
-        (0.0, 0.0),
-        (0.19999999999999996, 0.3999999999906856),
-        (0.3999999999999999, 0.8000000000230045),
-        (0.6000000000000001, 1.1999999999234845),
-        (0.8, 1.5999999999349868),
-    ];
-
     let area_target = 0.8800000000000001;
 
     {
@@ -581,12 +530,6 @@ fn right_function_test() {
         function.derivative = true;
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_some());
-        let derivative_vec: Vec<(f64, f64)> = derivative
-            .unwrap()
-            .iter()
-            .map(|ele| (ele.x, ele.y))
-            .collect();
-        assert_eq!(derivative_vec, derivative_target);
 
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
