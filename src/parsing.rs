@@ -8,23 +8,18 @@ pub struct BackingFunction {
 impl BackingFunction {
     pub fn new(func_str: &str) -> Self {
         let function = exmex::parse::<f64>(func_str).unwrap();
+        let derivative = function.partial(0).unwrap_or(function.clone());
+        println!("{}\n{}", function.unparse(), derivative.unparse());
+
         Self {
-            function: function.clone(),
-            derivative: function.partial(0).unwrap(),
+            function,
+            derivative,
         }
     }
 
     pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
-    pub fn derivative(&self, x: f64, n: u64) -> f64 {
-        if n == 0 {
-            self.get(x)
-        } else if n == 1 {
-            self.derivative.eval(&[x]).unwrap_or(f64::NAN)
-        } else {
-            panic!("n > 1");
-        }
-    }
+    pub fn derivative(&self, x: f64) -> f64 { self.derivative.eval(&[x]).unwrap_or(f64::NAN) }
 }
 
 /*
@@ -95,7 +90,7 @@ pub fn add_asterisks(function_in: String) -> String {
         output_string += &c.to_string();
     }
 
-    output_string.replace('π', "pi") // π -> pi
+    output_string
 }
 
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.

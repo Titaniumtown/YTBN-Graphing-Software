@@ -269,6 +269,10 @@ impl MathApp {
                     let proc_func_str = add_asterisks(self.func_strs[i].clone());
                     if (proc_func_str != function.get_func_str())
                         | self.last_error.iter().any(|ele| ele.0 == i)
+                        | integral_toggle
+                        | derivative_toggle
+                        | max_x_changed
+                        | min_x_changed
                     {
                         // let proc_func_str = self.func_strs[i].clone();
                         let func_test_output = test_func(&proc_func_str);
@@ -299,8 +303,6 @@ impl MathApp {
                                 .map(|(a, b)| (*a, b.clone()))
                                 .collect();
                         }
-                    } else {
-                        function.empty_func_str();
                     }
                 }
 

@@ -35,7 +35,6 @@ pub struct FunctionEntry {
 
     pub(crate) integral: bool,
     pub(crate) derivative: bool,
-    pub(crate) nth_derivative: u64,
     integral_min_x: f64,
     integral_max_x: f64,
     integral_num: usize,
@@ -56,16 +55,12 @@ impl FunctionEntry {
             derivative_cache: None,
             integral: false,
             derivative: false,
-            nth_derivative: 1,
             integral_min_x: f64::NAN,
             integral_max_x: f64::NAN,
             integral_num: 0,
             sum: crate::egui_app::DEFAULT_RIEMANN,
         }
     }
-
-    // Runs the internal function to get values
-    fn run_func(&self, x: f64) -> f64 { self.function.get(x) }
 
     pub fn update(
         &mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: Option<f64>,
@@ -122,7 +117,7 @@ impl FunctionEntry {
                         if let Some(i) = x_data.get_index(x) {
                             back_cache[i]
                         } else {
-                            Value::new(x, self.run_func(x))
+                            Value::new(x, self.function.get(x))
                         }
                     })
                     .collect(),
@@ -138,7 +133,7 @@ impl FunctionEntry {
                             if let Some(i) = x_data.get_index(x) {
                                 derivative_cache[i]
                             } else {
-                                Value::new(x, self.function.derivative(x, self.nth_derivative))
+                                Value::new(x, self.function.derivative(x))
                             }
                         })
                         .collect(),
@@ -166,7 +161,7 @@ impl FunctionEntry {
                 self.back_cache = Some(
                     (0..self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                        .map(|x| Value::new(x, self.run_func(x)))
+                        .map(|x| Value::new(x, self.function.get(x)))
                         .collect(),
                 );
             }
@@ -180,9 +175,7 @@ impl FunctionEntry {
                     self.derivative_cache = Some(
                         (0..self.pixel_width)
                             .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                            .map(|x| {
-                                Value::new(x, self.function.derivative(x, self.nth_derivative))
-                            })
+                            .map(|x| Value::new(x, self.function.derivative(x)))
                             .collect(),
                     );
                 }
@@ -253,9 +246,11 @@ impl FunctionEntry {
                 };
 
                 let y = match self.sum {
-                    RiemannSum::Left => self.run_func(left_x),
-                    RiemannSum::Right => self.run_func(right_x),
-                    RiemannSum::Middle => (self.run_func(left_x) + self.run_func(right_x)) / 2.0,
+                    RiemannSum::Left => self.function.get(left_x),
+                    RiemannSum::Right => self.function.get(right_x),
+                    RiemannSum::Middle => {
+                        (self.function.get(left_x) + self.function.get(right_x)) / 2.0
+                    }
                 };
 
                 if last_positive.is_none() {
@@ -276,7 +271,7 @@ impl FunctionEntry {
     // Set func_str to an empty string
     pub fn empty_func_str(&mut self) { self.func_str = String::new(); }
 
-    pub fn get_func_str(&self) -> String { self.func_str.clone() }
+    pub fn get_func_str(&self) -> &str { &self.func_str }
 
     // Updates riemann value and invalidates front_cache if needed
     pub fn update_riemann(mut self, riemann: RiemannSum) -> Self {
@@ -315,10 +310,6 @@ impl FunctionEntry {
         self.integral_max_x = max_x;
         self
     }
-
-    // Invalidates the derivative cache. This would be used in the case of a change in the nth_derivative
-    #[allow(dead_code)]
-    pub fn invalidate_derivative_cache(&mut self) { self.derivative_cache = None; }
 }
 
 #[test]
