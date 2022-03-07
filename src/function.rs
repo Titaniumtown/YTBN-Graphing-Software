@@ -239,6 +239,7 @@ impl FunctionEntry {
 
         let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
+        let mut last_positive: Option<bool> = None;
         let mut area: f64 = 0.0;
         let data2: Vec<(f64, f64, f64)> = (0..self.integral_num)
             .map(|e| {
@@ -256,6 +257,10 @@ impl FunctionEntry {
                     RiemannSum::Right => self.run_func(right_x),
                     RiemannSum::Middle => (self.run_func(left_x) + self.run_func(right_x)) / 2.0,
                 };
+
+                if last_positive.is_none() {
+                    last_positive = Some(x.is_sign_positive());
+                }
 
                 if !y.is_nan() {
                     area += y * step;
@@ -311,6 +316,8 @@ impl FunctionEntry {
         self
     }
 
+    // Invalidates the derivative cache. This would be used in the case of a change in the nth_derivative
+    #[allow(dead_code)]
     pub fn invalidate_derivative_cache(&mut self) { self.derivative_cache = None; }
 }
 

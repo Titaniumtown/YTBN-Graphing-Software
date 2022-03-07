@@ -79,9 +79,8 @@ const HELP_PANEL: &str =
 - The 'Info' button provides information on the build currently running.";
 
 // Used in the "Functions" section of the Help window
-const HELP_FUNCTION: &str = "- The 'X' button before the 'O' symbol allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
-- The 'O' button after the 'X' button opens a window where you can configure some settings in relation to the function in question.
-- The ∫ button (between the 'O' and 'd/dx' buttons) indicates whether estimating an integral for that function is enabled or not.
+const HELP_FUNCTION: &str = "- The 'X' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
+- The ∫ button (between the 'X' and 'd/dx' buttons) indicates whether to integrate the function in question.
 - The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not.";
 
 // Misc help info
@@ -114,9 +113,6 @@ struct AppSettings {
 
     // Stores how integrals should be displayed
     pub integral_display_type: IntegralDisplay,
-
-    // List of functions whose windows are open
-    pub opened_functions: Vec<usize>,
 }
 
 impl Default for AppSettings {
@@ -130,7 +126,6 @@ impl Default for AppSettings {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             integral_display_type: IntegralDisplay::Rectangles,
-            opened_functions: Vec::new(),
         }
     }
 }
@@ -182,6 +177,7 @@ impl MathApp {
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
                     });
 
+                /*
                 ComboBox::from_label("Integral Display")
                     .selected_text(self.settings.integral_display_type.to_string())
                     .show_ui(ui, |ui| {
@@ -196,6 +192,7 @@ impl MathApp {
                             "Line",
                         );
                     });
+                */
 
                 let min_x_old = self.settings.integral_min_x;
                 let min_x_changed = ui
@@ -233,37 +230,14 @@ impl MathApp {
 
                 let mut remove_i: Option<usize> = None;
                 for (i, function) in self.functions.iter_mut().enumerate() {
-                    let mut integral_toggle: bool = false;
-                    let mut derivative_toggle: bool = false;
                     let integral_enabled = function.integral;
                     let derivative_enabled = function.derivative;
+                    let mut derivative_toggle: bool = false;
+                    let mut integral_toggle: bool = false;
 
                     // Entry for a function
                     ui.horizontal(|ui| {
                         ui.label("Function:");
-                        if ui
-                            .add(Button::new("O"))
-                            .on_hover_text("Open Function Settings")
-                            .clicked()
-                            | self.settings.opened_functions.contains(&i)
-                        {
-                            self.settings.opened_functions.push(i);
-                            Window::new(function.get_func_str())
-                                .default_pos([200.0, 200.0])
-                                .resizable(false)
-                                .collapsible(false)
-                                .show(ctx, |ui| {
-                                    if ui
-                                        .add(
-                                            Slider::new(&mut function.nth_derivative, 0..=2) // Derivatives go insane after the value 3, probably inaccuracies in the handling of floating point numbers. more investigation needed.
-                                                .text("Derivative"),
-                                        )
-                                        .changed()
-                                    {
-                                        function.invalidate_derivative_cache();
-                                    }
-                                });
-                        }
 
                         if ui
                             .add(Button::new("X"))
@@ -273,27 +247,21 @@ impl MathApp {
                             remove_i = Some(i);
                         }
 
-                        if ui
+                        integral_toggle = ui
                             .add(Button::new("∫"))
                             .on_hover_text(match integral_enabled {
                                 true => "Don't integrate",
                                 false => "Integrate",
                             })
-                            .clicked()
-                        {
-                            integral_toggle = true;
-                        }
+                            .clicked();
 
-                        if ui
+                        derivative_toggle = ui
                             .add(Button::new("d/dx"))
                             .on_hover_text(match derivative_enabled {
                                 true => "Don't Differentiate",
                                 false => "Differentiate",
                             })
-                            .clicked()
-                        {
-                            derivative_toggle = true;
-                        }
+                            .clicked();
 
                         ui.text_edit_singleline(&mut self.func_strs[i]);
                     });

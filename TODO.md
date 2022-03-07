@@ -7,3 +7,4 @@
 2. Rerwite of function parsing code
     - Non `y=` functions.
 3. Display of intersections between functions
+4. Fix integral line

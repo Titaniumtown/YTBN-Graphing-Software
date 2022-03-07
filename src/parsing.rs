@@ -26,9 +26,15 @@ impl BackingFunction {
             return self.get(x);
         }
 
-        let (x1, x2) = (x - EPSILON, x + EPSILON);
-        let (y1, y2) = (self.derivative(x1, n - 1), (self.derivative(x2, n - 1)));
-        (y2 - y1) / DOUBLE_EPSILON
+        let (y1, y2) = (
+            self.derivative(x - EPSILON, n - 1),
+            (self.derivative(x + EPSILON, n - 1)),
+        );
+
+        match y1 == y2 {
+            true => 0.0,
+            false => (y2 - y1) / DOUBLE_EPSILON,
+        }
     }
 }
 
