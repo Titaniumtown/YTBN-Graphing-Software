@@ -8,3 +8,4 @@
     - Non `y=` functions.
 3. Display of intersections between functions
 4. Fix integral line
+5. re-add euler's number

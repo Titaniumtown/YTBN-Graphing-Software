@@ -2,24 +2,26 @@ use exmex::prelude::*;
 
 pub struct BackingFunction {
     function: FlatEx<f64>,
-    derivative: FlatEx<f64>,
+    derivative_1: FlatEx<f64>,
+    // derivative_2: FlatEx<f64>,
 }
 
 impl BackingFunction {
     pub fn new(func_str: &str) -> Self {
         let function = exmex::parse::<f64>(func_str).unwrap();
-        let derivative = function.partial(0).unwrap_or(function.clone());
-        println!("{}\n{}", function.unparse(), derivative.unparse());
+        let derivative_1 = function.partial(0).unwrap_or(function.clone());
+        // let derivative_2 = function.partial(0).unwrap_or(derivative_1.clone());
 
         Self {
             function,
-            derivative,
+            derivative_1,
+            // derivative_2,
         }
     }
 
     pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
-    pub fn derivative(&self, x: f64) -> f64 { self.derivative.eval(&[x]).unwrap_or(f64::NAN) }
+    pub fn derivative(&self, x: f64) -> f64 { self.derivative_1.eval(&[x]).unwrap_or(f64::NAN) }
 }
 
 /*
@@ -119,18 +121,18 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("(x+2)(1+3)".to_string()), "(x+2)*(1+3)");
     assert_eq!(&add_asterisks("xxx".to_string()), "x*x*x");
     assert_eq!(&add_asterisks("eee".to_string()), "e*e*e");
-    assert_eq!(&add_asterisks("pi(x+2)".to_string()), "pi*(x+2)");
-    assert_eq!(&add_asterisks("(x)pi".to_string()), "(x)*pi");
+    assert_eq!(&add_asterisks("pi(x+2)".to_string()), "π*(x+2)");
+    assert_eq!(&add_asterisks("(x)pi".to_string()), "(x)*π");
     assert_eq!(&add_asterisks("2e".to_string()), "2*e");
     assert_eq!(&add_asterisks("2log10(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("x!".to_string()), "x!");
     assert_eq!(
         &add_asterisks("pipipipipipi".to_string()),
-        "pi*pi*pi*pi*pi*pi"
+        "π*π*π*π*π*π"
     );
-    assert_eq!(&add_asterisks("10pi".to_string()), "10*pi");
-    assert_eq!(&add_asterisks("pi10".to_string()), "pi*10");
+    assert_eq!(&add_asterisks("10pi".to_string()), "10*π");
+    assert_eq!(&add_asterisks("pi10".to_string()), "π*10");
 
     // Need to fix these checks, maybe I need to rewrite the whole asterisk adding system... (or just implement these changes into meval-rs, idk)
     // assert_eq!(&add_asterisks("emax(x)".to_string()), "e*max(x)");
