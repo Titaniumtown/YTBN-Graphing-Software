@@ -271,7 +271,7 @@ impl MathApp {
                         | self.last_error.iter().any(|ele| ele.0 == i)
                     {
                         // let proc_func_str = self.func_strs[i].clone();
-                        let func_test_output = test_func(proc_func_str.clone());
+                        let func_test_output = test_func(&proc_func_str);
                         if let Some(test_output_value) = func_test_output {
                             self.last_error.push((i, test_output_value));
                         } else {

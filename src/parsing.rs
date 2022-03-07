@@ -1,39 +1,28 @@
-use meval::Expr;
-
-pub const EPSILON: f64 = 5.0e-7;
-pub const DOUBLE_EPSILON: f64 = 10.0e-7;
-
-type BoxFunction = Box<dyn Fn(f64) -> f64>;
+use exmex::prelude::*;
 
 pub struct BackingFunction {
-    function: BoxFunction,
+    function: FlatEx<f64>,
+    derivative: FlatEx<f64>,
 }
 
 impl BackingFunction {
     pub fn new(func_str: &str) -> Self {
+        let function = exmex::parse::<f64>(func_str).unwrap();
         Self {
-            function: Box::new({
-                let expr: Expr = func_str.parse().unwrap();
-                expr.bind("x").unwrap()
-            }),
+            function: function.clone(),
+            derivative: function.partial(0).unwrap(),
         }
     }
 
-    pub fn get(&self, x: f64) -> f64 { (self.function)(x) }
+    pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
     pub fn derivative(&self, x: f64, n: u64) -> f64 {
         if n == 0 {
-            return self.get(x);
-        }
-
-        let (y1, y2) = (
-            self.derivative(x - EPSILON, n - 1),
-            (self.derivative(x + EPSILON, n - 1)),
-        );
-
-        match y1 == y2 {
-            true => 0.0,
-            false => (y2 - y1) / DOUBLE_EPSILON,
+            self.get(x)
+        } else if n == 1 {
+            self.derivative.eval(&[x]).unwrap_or(f64::NAN)
+        } else {
+            panic!("n > 1");
         }
     }
 }
@@ -110,33 +99,11 @@ pub fn add_asterisks(function_in: String) -> String {
 }
 
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
-pub fn test_func(function_string: String) -> Option<String> {
-    // Factorials do not work, and it would be really difficult to make them work
-    if function_string.contains('!') {
-        return Some("Factorials are unsupported".to_string());
-    }
-
-    let new_func_str: String = add_asterisks(function_string);
-    let expr_result = new_func_str.parse();
-    let expr_error = match &expr_result {
+pub fn test_func(function_string: &str) -> Option<String> {
+    match exmex::parse::<f64>(function_string) {
+        Err(e) => Some(e.to_string()),
         Ok(_) => None,
-        Err(error) => Some(format!("{}", error)),
-    };
-    if expr_error.is_some() {
-        return expr_error;
     }
-
-    let expr: Expr = expr_result.unwrap();
-    let func_result = expr.bind("x");
-    let func_error = match &func_result {
-        Ok(_) => None,
-        Err(error) => Some(format!("{}", error)),
-    };
-    if func_error.is_some() {
-        return func_error;
-    }
-
-    None
 }
 
 // Tests to make sure my cursed function works as intended
