@@ -127,10 +127,7 @@ fn asterisk_test() {
     assert_eq!(&add_asterisks("2log10(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
     assert_eq!(&add_asterisks("x!".to_string()), "x!");
-    assert_eq!(
-        &add_asterisks("pipipipipipi".to_string()),
-        "π*π*π*π*π*π"
-    );
+    assert_eq!(&add_asterisks("pipipipipipi".to_string()), "π*π*π*π*π*π");
     assert_eq!(&add_asterisks("10pi".to_string()), "10*π");
     assert_eq!(&add_asterisks("pi10".to_string()), "π*10");
 
