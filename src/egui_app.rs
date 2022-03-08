@@ -14,6 +14,7 @@ use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
 use std::collections::BTreeMap;
+use std::io::Read;
 use std::ops::{BitXorAssign, RangeInclusive};
 
 shadow!(build);
@@ -42,21 +43,47 @@ const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 // Font Data
-flate!(static UBUNTU_LIGHT_FILE: [u8] from "assets/fonts/Ubuntu-Light.ttf");
-flate!(static NOTOEMOJI_FILE: [u8] from "assets/fonts/NotoEmoji-Regular.ttf");
-flate!(static HACK_FILE: [u8] from "assets/fonts/Hack-Regular.ttf");
+flate!(static FONTS_FILE: [u8] from "assets/fonts.tar");
 
 lazy_static::lazy_static! {
     static ref FONT_DEFINITIONS: FontDefinitions = {
+        let mut tar_archive = tar::Archive::new(&**FONTS_FILE);
+
+        let mut ubuntu_light: Result<FontData, _> = Err("");
+        let mut notoemoji: Result<FontData, _> = Err("");
+        let mut hack: Result<FontData, _> = Err("");
+
+        for file in tar_archive.entries().unwrap() {
+            let mut file = file.unwrap();
+            let mut data: Vec<u8> = Vec::new();
+            file.read_to_end(&mut data).unwrap();
+            let path = &file.header().path().unwrap();
+
+            match (path).to_string_lossy().as_ref() {
+                "Hack-Regular.ttf" => {
+                    hack = Ok(FontData::from_owned(data))
+                },
+                "NotoEmoji-Regular.ttf" => {
+                    notoemoji = Ok(FontData::from_owned(data))
+                },
+                "Ubuntu-Light.ttf" => {
+                    ubuntu_light = Ok(FontData::from_owned(data))
+                },
+                _ => {
+                    panic!("Other files in this archive!!");
+                }
+            }
+        }
+
         let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
         let mut families = BTreeMap::new();
 
         font_data.insert(
             "Hack".to_owned(),
-            FontData::from_static(&HACK_FILE),
+            hack.unwrap(),
         );
-        font_data.insert("Ubuntu-Light".to_owned(), FontData::from_static(&UBUNTU_LIGHT_FILE));
-        font_data.insert("NotoEmoji-Regular".to_owned(), FontData::from_static(&NOTOEMOJI_FILE));
+        font_data.insert("Ubuntu-Light".to_owned(), ubuntu_light.unwrap());
+        font_data.insert("NotoEmoji-Regular".to_owned(), notoemoji.unwrap());
 
         families.insert(
             FontFamily::Monospace,
