@@ -74,8 +74,7 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 - acos(x): arccosine of x
 - atan(x): arctangent of x
 - atan2, sinh, cosh, tanh, asinh, acosh, atanh
-- floor, ceil, round
-- signum, min, max";
+- floor, ceil, round, signum";
 
 // Used in the "Panel" section of the Help window
 const HELP_PANEL: &str =
