@@ -237,6 +237,7 @@ impl MathApp {
                         .text("Interval"),
                 );
 
+                let functions_len = self.functions.len();
                 let mut remove_i: Option<usize> = None;
                 for (i, function) in self.functions.iter_mut().enumerate() {
                     let integral_enabled = function.integral;
@@ -248,12 +249,16 @@ impl MathApp {
                     ui.horizontal(|ui| {
                         ui.label("Function:");
 
-                        if ui
-                            .add(Button::new("X"))
-                            .on_hover_text("Delete Function")
-                            .clicked()
-                        {
-                            remove_i = Some(i);
+                        if functions_len > 1 {
+                            if ui
+                                .add(Button::new("X"))
+                                .on_hover_text("Delete Function")
+                                .clicked()
+                            {
+                                remove_i = Some(i);
+                            }
+                        } else {
+                            ui.add_enabled(false, Button::new("X"));
                         }
 
                         integral_toggle = ui
