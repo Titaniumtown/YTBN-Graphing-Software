@@ -63,6 +63,9 @@ const HELP_EXPR: &str = "- sqrt(x): square root of x
 - atan2, sinh, cosh, tanh, asinh, acosh, atanh
 - floor, ceil, round, signum";
 
+const HELP_VARS: &str = "- Euler's number is supported via 'E' (noted it being uppercase)
+- PI is available through 'pi' or 'π'";
+
 // Used in the "Panel" section of the Help window
 const HELP_PANEL: &str =
 "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
@@ -412,6 +415,10 @@ impl epi::App for MathApp {
 
                 ui.collapsing("Supported Expressions", |ui| {
                     ui.label(HELP_EXPR);
+                });
+
+                ui.collapsing("Supported Constants", |ui| {
+                    ui.label(HELP_VARS);
                 });
 
                 ui.collapsing("Panel", |ui| {
