@@ -41,20 +41,26 @@ const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
-flate!(static FONT_FILE: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
-flate!(static EMOJI_FILE: [u8] from "assets/NotoEmoji-Regular.ttf"); // Font used when displaying emojis
+// Font Data
+flate!(static UBUNTU_LIGHT_FILE: [u8] from "assets/fonts/Ubuntu-Light.ttf");
+flate!(static NOTOEMOJI_FILE: [u8] from "assets/fonts/NotoEmoji-Regular.ttf");
+flate!(static HACK_FILE: [u8] from "assets/fonts/Hack-Regular.ttf");
 
 lazy_static::lazy_static! {
     static ref FONT_DEFINITIONS: FontDefinitions = {
         let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
         let mut families = BTreeMap::new();
-        
-        font_data.insert("Ubuntu-Light".to_owned(), FontData::from_static(&FONT_FILE));
-        font_data.insert("NotoEmoji-Regular".to_owned(), FontData::from_static(&EMOJI_FILE));
+
+        font_data.insert(
+            "Hack".to_owned(),
+            FontData::from_static(&HACK_FILE),
+        );
+        font_data.insert("Ubuntu-Light".to_owned(), FontData::from_static(&UBUNTU_LIGHT_FILE));
+        font_data.insert("NotoEmoji-Regular".to_owned(), FontData::from_static(&NOTOEMOJI_FILE));
 
         families.insert(
             FontFamily::Monospace,
-            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+            vec!["Hack".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
         );
 
         families.insert(
