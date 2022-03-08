@@ -41,7 +41,7 @@ const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 flate!(static FONT_FILE: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
-flate!(static EMOJI_FILE: [u8] from "assets/NotoEmoji-Regular.ttf"); // Font used when displaying text
+flate!(static EMOJI_FILE: [u8] from "assets/NotoEmoji-Regular.ttf"); // Font used when displaying emojis
 
 lazy_static::lazy_static! {
     static ref FONT_DATA: FontData = FontData::from_static(&FONT_FILE);
