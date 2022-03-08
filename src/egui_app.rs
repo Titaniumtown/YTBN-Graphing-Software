@@ -57,9 +57,8 @@ lazy_static::lazy_static! {
             let mut file = file.unwrap();
             let mut data: Vec<u8> = Vec::new();
             file.read_to_end(&mut data).unwrap();
-            let path = &file.header().path().unwrap();
 
-            match (path).to_string_lossy().as_ref() {
+            match file.header().path().unwrap().to_string_lossy().as_ref() {
                 "Hack-Regular.ttf" => {
                     hack = Ok(FontData::from_owned(data))
                 },
