@@ -3,6 +3,7 @@ use crate::misc::digits_precision;
 use crate::parsing::{add_asterisks, test_func};
 
 use const_format::formatc;
+use eframe::egui::FontTweak;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
@@ -53,6 +54,12 @@ const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 flate!(static FONT_FILE: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when displaying text
+flate!(static EMOJI_FILE: [u8] from "assets/NotoEmoji-Regular.ttf"); // Font used when displaying text
+
+lazy_static::lazy_static! {
+    static ref FONT_DATA: FontData = FontData::from_static(&FONT_FILE);
+    static ref EMOJI_DATA: FontData = FontData::from_static(&EMOJI_FILE);
+}
 
 // Used when displaying supported expressions in the Help window
 const HELP_EXPR: &str = "- sqrt(x): square root of x
@@ -113,6 +120,9 @@ struct AppSettings {
 
     // Stores how integrals should be displayed
     pub integral_display_type: IntegralDisplay,
+
+    // Stores whether or not dark mode is enabled
+    pub dark_mode: bool,
 }
 
 impl Default for AppSettings {
@@ -126,6 +136,7 @@ impl Default for AppSettings {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             integral_display_type: IntegralDisplay::Rectangles,
+            dark_mode: true,
         }
     }
 }
@@ -140,9 +151,6 @@ pub struct MathApp {
     // Stores last error from parsing functions (used to display the same error when side panel is minimized)
     last_error: Vec<(usize, String)>,
 
-    // Stores font data that's used when displaying text
-    font: FontData,
-
     // Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
     last_info: (Vec<f64>, Duration),
 
@@ -156,7 +164,6 @@ impl Default for MathApp {
             functions: vec![FunctionEntry::empty().integral(true)],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             last_error: Vec::new(),
-            font: FontData::from_static(&FONT_FILE),
             last_info: (vec![0.0], Duration::ZERO),
             settings: AppSettings::default(),
         }
@@ -336,18 +343,30 @@ impl epi::App for MathApp {
     #[inline(always)]
     fn update(&mut self, ctx: &Context, _frame: &Frame) {
         let start = instant::Instant::now();
+        if self.settings.dark_mode {
+            ctx.set_visuals(egui::Visuals::dark());
+        } else {
+            ctx.set_visuals(egui::Visuals::light());
+        }
 
         // Reduce size of final binary by just including one font
         let mut fonts = FontDefinitions::default();
         fonts
             .font_data
-            .insert("Ubuntu-Light".to_owned(), self.font.clone());
+            .insert("Ubuntu-Light".to_owned(), FONT_DATA.clone());
+
         fonts
-            .families
-            .insert(FontFamily::Monospace, vec!["Ubuntu-Light".to_owned()]);
-        fonts
-            .families
-            .insert(FontFamily::Proportional, vec!["Ubuntu-Light".to_owned()]);
+            .font_data
+            .insert("NotoEmoji-Regular".to_owned(), EMOJI_DATA.clone());
+
+        fonts.families.insert(
+            FontFamily::Monospace,
+            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+        );
+        fonts.families.insert(
+            FontFamily::Proportional,
+            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+        );
 
         ctx.set_fonts(fonts);
 
@@ -395,6 +414,24 @@ impl epi::App for MathApp {
                     .clicked()
                 {
                     self.settings.info_open = !self.settings.info_open;
+                }
+
+                if self.settings.dark_mode {
+                    if ui
+                        .add(Button::new("🌞"))
+                        .on_hover_text("Turn the Lights on!")
+                        .clicked()
+                    {
+                        self.settings.dark_mode = false;
+                    }
+                } else {
+                    if ui
+                        .add(Button::new("🌙"))
+                        .on_hover_text("Turn the Lights off.")
+                        .clicked()
+                    {
+                        self.settings.dark_mode = true;
+                    }
                 }
 
                 ui.label(format!(
