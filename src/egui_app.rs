@@ -44,8 +44,27 @@ flate!(static FONT_FILE: [u8] from "assets/Ubuntu-Light.ttf"); // Font used when
 flate!(static EMOJI_FILE: [u8] from "assets/NotoEmoji-Regular.ttf"); // Font used when displaying emojis
 
 lazy_static::lazy_static! {
-    static ref FONT_DATA: FontData = FontData::from_static(&FONT_FILE);
-    static ref EMOJI_DATA: FontData = FontData::from_static(&EMOJI_FILE);
+    static ref FONT_DEFINITIONS: FontDefinitions = {
+        let mut fonts = FontDefinitions::default();
+        fonts
+            .font_data
+            .insert("Ubuntu-Light".to_owned(), FontData::from_static(&FONT_FILE));
+
+        fonts
+            .font_data
+            .insert("NotoEmoji-Regular".to_owned(), FontData::from_static(&EMOJI_FILE));
+
+        fonts.families.insert(
+            FontFamily::Monospace,
+            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+        );
+
+        fonts.families.insert(
+            FontFamily::Proportional,
+            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+        );
+        fonts
+    };
 }
 
 // Used when displaying supported expressions in the Help window
@@ -219,6 +238,7 @@ impl MathApp {
                         ui.label("Function:");
 
                         if functions_len > 1 {
+                            // There's more than 1 function! Functions can now be deleted
                             if ui
                                 .add(Button::new("X"))
                                 .on_hover_text("Delete Function")
@@ -227,6 +247,7 @@ impl MathApp {
                                 remove_i = Some(i);
                             }
                         } else {
+                            // Display greyed out "X" button if there's only one function added
                             ui.add_enabled(false, Button::new("X"));
                         }
 
@@ -321,26 +342,7 @@ impl epi::App for MathApp {
             false => Visuals::light(),
         });
 
-        // Reduce size of final binary by just including one font
-        let mut fonts = FontDefinitions::default();
-        fonts
-            .font_data
-            .insert("Ubuntu-Light".to_owned(), FONT_DATA.clone());
-
-        fonts
-            .font_data
-            .insert("NotoEmoji-Regular".to_owned(), EMOJI_DATA.clone());
-
-        fonts.families.insert(
-            FontFamily::Monospace,
-            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
-        );
-        fonts.families.insert(
-            FontFamily::Proportional,
-            vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
-        );
-
-        ctx.set_fonts(fonts);
+        ctx.set_fonts(FONT_DEFINITIONS.clone()); // Initialize fonts
 
         // Creates Top bar that contains some general options
         TopBottomPanel::top("top_bar").show(ctx, |ui| {
