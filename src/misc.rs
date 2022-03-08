@@ -47,10 +47,9 @@ impl SteppedVector {
         // Should work....
         let possible_i = ((x + self.min) / self.step) as usize;
         if self.data[possible_i] == x {
-            return Some(possible_i);
-        } else if (x >= self.min) && (self.max >= x) {
-            panic!("possible_i did not result in a possible value, but x is in range");
-            // Panic in case (no clue how this would happen). I may remove this check later.
+            Some(possible_i)
+        } else {
+            None
         }
 
         // Not really needed as the above code should handle everything
@@ -62,8 +61,8 @@ impl SteppedVector {
                 return Some(i);
             }
         }
-        */
         None
+        */
     }
 }
 
