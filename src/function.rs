@@ -36,7 +36,7 @@ pub struct FunctionEntry {
     pixel_width: usize,
 
     back_cache: Option<Vec<Value>>,
-    front_cache: Option<(Vec<Bar>, f64)>,
+    integral_cache: Option<(Vec<Bar>, f64)>,
     derivative_cache: Option<Vec<Value>>,
 
     pub(crate) integral: bool,
@@ -57,7 +57,7 @@ impl FunctionEntry {
             max_x: 1.0,
             pixel_width: 100,
             back_cache: None,
-            front_cache: None,
+            integral_cache: None,
             derivative_cache: None,
             integral: false,
             derivative: false,
@@ -77,7 +77,7 @@ impl FunctionEntry {
             self.func_str = func_str.clone();
             self.function = BackingFunction::new(&func_str);
             self.back_cache = None;
-            self.front_cache = None;
+            self.integral_cache = None;
             self.derivative_cache = None;
         }
 
@@ -91,7 +91,7 @@ impl FunctionEntry {
                 | (integral_num != Some(self.integral_num))
                 | (sum != Some(self.sum))
         {
-            self.front_cache = None;
+            self.integral_cache = None;
             self.integral_min_x = integral_min_x.expect("integral_min_x is None");
             self.integral_max_x = integral_max_x.expect("integral_max_x is None");
             self.integral_num = integral_num.expect("integral_num is None");
@@ -190,12 +190,12 @@ impl FunctionEntry {
 
         let integral_data = match self.integral {
             true => {
-                if self.front_cache.is_none() {
+                if self.integral_cache.is_none() {
                     let (data, area) = self.integral_rectangles();
-                    self.front_cache =
+                    self.integral_cache =
                         Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
                 }
-                let cache = self.front_cache.as_ref().unwrap();
+                let cache = self.integral_cache.as_ref().unwrap();
                 Some((cache.0.clone(), cache.1))
             }
             false => None,
@@ -267,11 +267,11 @@ impl FunctionEntry {
 
     pub fn get_func_str(&self) -> &str { &self.func_str }
 
-    // Updates riemann value and invalidates front_cache if needed
+    // Updates riemann value and invalidates integral_cache if needed
     pub fn update_riemann(mut self, riemann: RiemannSum) -> Self {
         if self.sum != riemann {
             self.sum = riemann;
-            self.front_cache = None;
+            self.integral_cache = None;
         }
         self
     }
