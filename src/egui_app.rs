@@ -98,6 +98,17 @@ lazy_static::lazy_static! {
     };
 }
 
+cfg_if::cfg_if! {
+    if #[cfg(target_arch = "wasm32")] {
+        use wasm_bindgen::JsCast;
+        fn stop_loading() {
+            let document = web_sys::window().unwrap().document().unwrap();
+            let loading_element = document.get_element_by_id("loading").unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            loading_element.remove();
+        }
+    }
+}
+
 // Used when displaying supported expressions in the Help window
 const HELP_EXPR: &str = "- sqrt(x): square root of x
 - abs(x): absolute value of x
@@ -362,7 +373,10 @@ impl epi::App for MathApp {
     fn name(&self) -> &str { "(Yet-to-be-named) Graphing Software" }
 
     // Called once before the first frame.
-    fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {}
+    fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {
+        #[cfg(target_arch = "wasm32")]
+        stop_loading();
+    }
 
     // Called each time the UI needs repainting, which may be many times per second.
     #[inline(always)]

@@ -14,8 +14,8 @@ cfg_if::cfg_if! {
         #[global_allocator]
         static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-        #[wasm_bindgen]
-        pub fn start(canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
+        #[wasm_bindgen(start)]
+        pub fn start() -> Result<(), wasm_bindgen::JsValue> {
             log_helper("Initializing...");
 
             // Used in order to hook into `panic!()` to log in the browser's console
@@ -27,7 +27,7 @@ cfg_if::cfg_if! {
 
             log_helper("Starting App...");
             let app = egui_app::MathApp::default();
-            eframe::start_web(canvas_id, Box::new(app))
+            eframe::start_web("canvas", Box::new(app))
         }
     }
 }
