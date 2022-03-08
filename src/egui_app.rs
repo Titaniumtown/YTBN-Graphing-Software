@@ -13,6 +13,7 @@ use epi::{Frame, Storage};
 use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
+use std::collections::BTreeMap;
 use std::ops::{BitXorAssign, RangeInclusive};
 
 shadow!(build);
@@ -45,25 +46,26 @@ flate!(static EMOJI_FILE: [u8] from "assets/NotoEmoji-Regular.ttf"); // Font use
 
 lazy_static::lazy_static! {
     static ref FONT_DEFINITIONS: FontDefinitions = {
-        let mut fonts = FontDefinitions::default();
-        fonts
-            .font_data
-            .insert("Ubuntu-Light".to_owned(), FontData::from_static(&FONT_FILE));
+        let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
+        let mut families = BTreeMap::new();
+        
+        font_data.insert("Ubuntu-Light".to_owned(), FontData::from_static(&FONT_FILE));
+        font_data.insert("NotoEmoji-Regular".to_owned(), FontData::from_static(&EMOJI_FILE));
 
-        fonts
-            .font_data
-            .insert("NotoEmoji-Regular".to_owned(), FontData::from_static(&EMOJI_FILE));
-
-        fonts.families.insert(
+        families.insert(
             FontFamily::Monospace,
             vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
         );
 
-        fonts.families.insert(
+        families.insert(
             FontFamily::Proportional,
             vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
         );
-        fonts
+
+        FontDefinitions {
+            font_data,
+            families,
+        }
     };
 }
 
