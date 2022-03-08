@@ -3,12 +3,11 @@ use crate::misc::digits_precision;
 use crate::parsing::{add_asterisks, test_func};
 
 use const_format::formatc;
-use eframe::egui::FontTweak;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
     Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily,
-    RichText, SidePanel, Slider, TopBottomPanel, Vec2, Window,
+    RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use epi::{Frame, Storage};
 use include_flate::flate;
@@ -343,11 +342,10 @@ impl epi::App for MathApp {
     #[inline(always)]
     fn update(&mut self, ctx: &Context, _frame: &Frame) {
         let start = instant::Instant::now();
-        if self.settings.dark_mode {
-            ctx.set_visuals(egui::Visuals::dark());
-        } else {
-            ctx.set_visuals(egui::Visuals::light());
-        }
+        ctx.set_visuals(match self.settings.dark_mode {
+            true => Visuals::dark(),
+            false => Visuals::light(),
+        });
 
         // Reduce size of final binary by just including one font
         let mut fonts = FontDefinitions::default();
@@ -416,22 +414,18 @@ impl epi::App for MathApp {
                     self.settings.info_open = !self.settings.info_open;
                 }
 
-                if self.settings.dark_mode {
-                    if ui
-                        .add(Button::new("🌞"))
-                        .on_hover_text("Turn the Lights on!")
-                        .clicked()
-                    {
-                        self.settings.dark_mode = false;
-                    }
-                } else {
-                    if ui
-                        .add(Button::new("🌙"))
-                        .on_hover_text("Turn the Lights off.")
-                        .clicked()
-                    {
-                        self.settings.dark_mode = true;
-                    }
+                if ui
+                    .add(Button::new(match self.settings.dark_mode {
+                        true => "🌞",
+                        false => "🌙",
+                    }))
+                    .on_hover_text(match self.settings.dark_mode {
+                        true => "Turn the Lights on!",
+                        false => "Turn the Lights off.",
+                    })
+                    .clicked()
+                {
+                    self.settings.dark_mode = !self.settings.dark_mode;
                 }
 
                 ui.label(format!(
