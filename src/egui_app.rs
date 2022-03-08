@@ -84,7 +84,7 @@ const HELP_OTHER: &str =
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
 
 // The URL of the project
-const PROJECT_URL: &str = "https://github.com/Titaniumtown/integral_site";
+const PROJECT_URL: &str = "https://github.com/Titaniumtown/YTBN_graphing_software";
 
 // Stores settings
 struct AppSettings {
@@ -304,7 +304,7 @@ impl MathApp {
 
 impl epi::App for MathApp {
     // The name of the program (displayed when running natively as the window title)
-    fn name(&self) -> &str { "Integral Demonstration" }
+    fn name(&self) -> &str { "(Yet-to-be-named) Graphing Software" }
 
     // Called once before the first frame.
     fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {}

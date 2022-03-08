@@ -1,10 +1,10 @@
 [package]
-name = "integral_site"
+name = "ytbn_graphing_software"
 version = "0.1.0"
 edition = "2021"
 build = "build.rs"
 license = "AGPL-3.0"
-repository = "https://github.com/Titaniumtown/integral_site"
+repository = "https://github.com/Titaniumtown/YTBN-Graphing-Software"
 
 [lib]
 crate-type=["cdylib"]
