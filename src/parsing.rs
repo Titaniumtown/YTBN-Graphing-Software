@@ -19,7 +19,9 @@ impl BackingFunction {
         }
     }
 
-    pub fn get_derivative_str(&self) -> &str { self.derivative_1.unparse() } // TODO: maybe pretty-ify the output here? idk, it's pretty ugly
+    pub fn get_derivative_str(&self) -> String {
+        String::from(self.derivative_1.unparse()).replace("{x}", "x")
+    }
 
     pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 

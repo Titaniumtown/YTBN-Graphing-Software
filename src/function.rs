@@ -311,7 +311,7 @@ impl FunctionEntry {
         self
     }
 
-    pub fn get_derivative_str(&self) -> &str { self.function.get_derivative_str() }
+    pub fn get_derivative_str(&self) -> String { self.function.get_derivative_str() }
 }
 
 #[test]
