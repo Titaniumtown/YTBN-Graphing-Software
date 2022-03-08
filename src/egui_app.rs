@@ -77,10 +77,7 @@ lazy_static::lazy_static! {
         let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
         let mut families = BTreeMap::new();
 
-        font_data.insert(
-            "Hack".to_owned(),
-            hack.unwrap(),
-        );
+        font_data.insert("Hack".to_owned(), hack.unwrap());
         font_data.insert("Ubuntu-Light".to_owned(), ubuntu_light.unwrap());
         font_data.insert("NotoEmoji-Regular".to_owned(), notoemoji.unwrap());
 
