@@ -503,10 +503,6 @@ impl epi::App for MathApp {
                 .set_margin_fraction(Vec2::ZERO)
                 .data_aspect(1.0)
                 .include_y(0)
-                .label_formatter(|name, value| match name.is_empty() {
-                    true => format!("({:.2}, {:.2})", value.x, value.y),
-                    false => format!("{}\n({:.2}, {:.2})", name, value.x, value.y),
-                })
                 .show(ui, |plot_ui| {
                     let bounds = plot_ui.plot_bounds();
                     let minx_bounds: f64 = bounds.min()[0];
