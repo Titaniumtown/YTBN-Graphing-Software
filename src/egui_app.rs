@@ -13,7 +13,7 @@ use epi::{Frame, Storage};
 use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
-use std::ops::RangeInclusive;
+use std::ops::{BitXorAssign, RangeInclusive};
 
 shadow!(build);
 
@@ -343,16 +343,14 @@ impl epi::App for MathApp {
         // Creates Top bar that contains some general options
         TopBottomPanel::top("top_bar").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui
-                    .add(Button::new("Panel"))
-                    .on_hover_text(match self.settings.show_side_panel {
-                        true => "Hide Side Panel",
-                        false => "Show Side Panel",
-                    })
-                    .clicked()
-                {
-                    self.settings.show_side_panel = !self.settings.show_side_panel;
-                }
+                self.settings.show_side_panel.bitxor_assign(
+                    ui.add(Button::new("Panel"))
+                        .on_hover_text(match self.settings.show_side_panel {
+                            true => "Hide Side Panel",
+                            false => "Show Side Panel",
+                        })
+                        .clicked(),
+                );
 
                 if ui
                     .add(Button::new("Add Function"))
@@ -367,30 +365,26 @@ impl epi::App for MathApp {
                     self.func_strs.push(String::new());
                 }
 
-                if ui
-                    .add(Button::new("Help"))
-                    .on_hover_text(match self.settings.help_open {
-                        true => "Close Help Window",
-                        false => "Open Help Window",
-                    })
-                    .clicked()
-                {
-                    self.settings.help_open = !self.settings.help_open;
-                }
+                self.settings.help_open.bitxor_assign(
+                    ui.add(Button::new("Help"))
+                        .on_hover_text(match self.settings.help_open {
+                            true => "Close Help Window",
+                            false => "Open Help Window",
+                        })
+                        .clicked(),
+                );
 
-                if ui
-                    .add(Button::new("Info"))
-                    .on_hover_text(match self.settings.info_open {
-                        true => "Close Info Window",
-                        false => "Open Info Window",
-                    })
-                    .clicked()
-                {
-                    self.settings.info_open = !self.settings.info_open;
-                }
+                self.settings.info_open.bitxor_assign(
+                    ui.add(Button::new("Info"))
+                        .on_hover_text(match self.settings.info_open {
+                            true => "Close Info Window",
+                            false => "Open Info Window",
+                        })
+                        .clicked(),
+                );
 
-                if ui
-                    .add(Button::new(match self.settings.dark_mode {
+                self.settings.dark_mode.bitxor_assign(
+                    ui.add(Button::new(match self.settings.dark_mode {
                         true => "🌞",
                         false => "🌙",
                     }))
@@ -398,10 +392,8 @@ impl epi::App for MathApp {
                         true => "Turn the Lights on!",
                         false => "Turn the Lights off.",
                     })
-                    .clicked()
-                {
-                    self.settings.dark_mode = !self.settings.dark_mode;
-                }
+                    .clicked(),
+                );
 
                 ui.label(format!(
                     "Area: {:?} Took: {:?}",
