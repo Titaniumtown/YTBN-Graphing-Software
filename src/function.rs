@@ -130,20 +130,24 @@ impl FunctionEntry {
             );
 
             if self.derivative_cache.is_some() {
-                let derivative_cache = self.derivative_cache.as_ref().unwrap();
+                if self.derivative {
+                    let derivative_cache = self.derivative_cache.as_ref().unwrap();
 
-                self.derivative_cache = Some(
-                    (0..=self.pixel_width)
-                        .map(|x| (x as f64 / resolution as f64) + min_x)
-                        .map(|x| {
-                            if let Some(i) = x_data.get_index(x) {
-                                derivative_cache[i]
-                            } else {
-                                Value::new(x, self.function.derivative(x))
-                            }
-                        })
-                        .collect(),
-                );
+                    self.derivative_cache = Some(
+                        (0..=self.pixel_width)
+                            .map(|x| (x as f64 / resolution as f64) + min_x)
+                            .map(|x| {
+                                if let Some(i) = x_data.get_index(x) {
+                                    derivative_cache[i]
+                                } else {
+                                    Value::new(x, self.function.derivative(x))
+                                }
+                            })
+                            .collect(),
+                    );
+                } else {
+                    self.derivative_cache = None;
+                }
             }
         } else {
             self.back_cache = None;
