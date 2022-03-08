@@ -82,7 +82,8 @@ const HELP_PANEL: &str =
 "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
 - The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
 - The 'Help' button on the top bar opens and closes this window!
-- The 'Info' button provides information on the build currently running.";
+- The 'Info' button provides information on the build currently running.
+- The Sun/Moon button toggles Dark and Light mode.";
 
 // Used in the "Functions" section of the Help window
 const HELP_FUNCTION: &str = "- The 'X' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
@@ -95,6 +96,10 @@ const HELP_OTHER: &str =
 
 // Used to provide info on the Licensing of the project
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
+
+// The URL of the project
+const PROJECT_URL: &str = "https://github.com/Titaniumtown/integral_site";
+
 
 // Stores settings
 struct AppSettings {
@@ -322,7 +327,7 @@ impl MathApp {
                 // Open Source and Licensing information
                 ui.hyperlink_to(
                     "I'm Opensource!",
-                    "https://github.com/Titaniumtown/integral_site",
+                    PROJECT_URL,
                 );
 
                 ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
