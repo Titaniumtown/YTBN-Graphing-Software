@@ -34,7 +34,7 @@ const INTEGRAL_X_MAX: f64 = 1000.0;
 const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 
 // Default values
-const DEFAULT_FUNCION: &str = "x^2";
+pub const DEFAULT_FUNCION: &str = "x^2";
 pub const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
 const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;

@@ -3,6 +3,7 @@
 #[allow(unused_imports)]
 use crate::misc::{debug_log, SteppedVector};
 
+use crate::egui_app::{DEFAULT_FUNCION, DEFAULT_RIEMANN};
 use crate::parsing::BackingFunction;
 
 use eframe::egui::{
@@ -50,7 +51,7 @@ impl FunctionEntry {
     // Creates Empty Function instance
     pub fn empty() -> Self {
         Self {
-            function: BackingFunction::new("x^2"),
+            function: BackingFunction::new(DEFAULT_FUNCION),
             func_str: String::new(),
             min_x: -1.0,
             max_x: 1.0,
@@ -63,7 +64,7 @@ impl FunctionEntry {
             integral_min_x: f64::NAN,
             integral_max_x: f64::NAN,
             integral_num: 0,
-            sum: crate::egui_app::DEFAULT_RIEMANN,
+            sum: DEFAULT_RIEMANN,
         }
     }
 
