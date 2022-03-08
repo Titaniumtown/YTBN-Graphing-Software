@@ -51,7 +51,6 @@ lazy_static::lazy_static! {
 // Used when displaying supported expressions in the Help window
 const HELP_EXPR: &str = "- sqrt(x): square root of x
 - abs(x): absolute value of x
-- exp(x): e^x
 - ln(x): log with base e
 - log10(x): base 10 logarithm of x
 - log(x): same as log10(x)
