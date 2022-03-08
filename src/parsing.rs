@@ -1,5 +1,6 @@
 use exmex::prelude::*;
 
+#[derive(Clone)]
 pub struct BackingFunction {
     function: FlatEx<f64>,
     derivative_1: FlatEx<f64>,

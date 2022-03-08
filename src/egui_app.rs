@@ -1,4 +1,4 @@
-use crate::function::{FunctionEntry, RiemannSum};
+use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTIONENTRY};
 use crate::misc::digits_precision;
 use crate::parsing::{add_asterisks, test_func};
 
@@ -99,7 +99,6 @@ const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if 
 // The URL of the project
 const PROJECT_URL: &str = "https://github.com/Titaniumtown/integral_site";
 
-
 // Stores settings
 struct AppSettings {
     // Stores whether or not the Help window is open
@@ -164,7 +163,7 @@ pub struct MathApp {
 impl Default for MathApp {
     fn default() -> Self {
         Self {
-            functions: vec![FunctionEntry::empty().integral(true)],
+            functions: vec![EMPTY_FUNCTIONENTRY.clone().integral(true)],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             last_error: Vec::new(),
             last_info: (vec![0.0], Duration::ZERO),
@@ -324,10 +323,7 @@ impl MathApp {
                 }
 
                 // Open Source and Licensing information
-                ui.hyperlink_to(
-                    "I'm Opensource!",
-                    PROJECT_URL,
-                );
+                ui.hyperlink_to("I'm Opensource!", PROJECT_URL);
 
                 ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
                     .on_hover_text(LICENSE_INFO);
@@ -391,8 +387,11 @@ impl epi::App for MathApp {
                     .on_hover_text("Create and graph new function")
                     .clicked()
                 {
-                    self.functions
-                        .push(FunctionEntry::empty().update_riemann(self.settings.sum));
+                    self.functions.push(
+                        EMPTY_FUNCTIONENTRY
+                            .clone()
+                            .update_riemann(self.settings.sum),
+                    );
                     self.func_strs.push(String::new());
                 }
 

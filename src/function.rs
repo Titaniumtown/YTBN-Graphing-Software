@@ -22,6 +22,11 @@ impl fmt::Display for RiemannSum {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
+lazy_static::lazy_static! {
+    pub static ref EMPTY_FUNCTIONENTRY: FunctionEntry = FunctionEntry::empty();
+}
+
+#[derive(Clone)]
 pub struct FunctionEntry {
     function: BackingFunction,
     func_str: String,
