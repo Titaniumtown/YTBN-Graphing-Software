@@ -35,7 +35,7 @@ pub struct FunctionEntry {
     pixel_width: usize,
 
     back_cache: Option<Vec<Value>>,
-    front_cache: Option<(Vec<Bar>, Vec<Value>, f64)>,
+    front_cache: Option<(Vec<Bar>, f64)>,
     derivative_cache: Option<Vec<Value>>,
 
     pub(crate) integral: bool,
@@ -153,13 +153,7 @@ impl FunctionEntry {
         }
     }
 
-    pub fn run_back(
-        &mut self,
-    ) -> (
-        Vec<Value>,
-        Option<(Vec<Bar>, Vec<Value>, f64)>,
-        Option<Vec<Value>>,
-    ) {
+    pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
         let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
         let back_values: Vec<Value> = {
             if self.back_cache.is_none() {
@@ -193,14 +187,11 @@ impl FunctionEntry {
             true => {
                 if self.front_cache.is_none() {
                     let (data, area) = self.integral_rectangles();
-                    self.front_cache = Some((
-                        data.iter().map(|(x, y, _)| Bar::new(*x, *y)).collect(),
-                        data.iter().map(|(x, _, y)| Value::new(*x, *y)).collect(),
-                        area,
-                    ));
+                    self.front_cache =
+                        Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
                 }
                 let cache = self.front_cache.as_ref().unwrap();
-                Some((cache.0.clone(), cache.1.clone(), cache.2))
+                Some((cache.0.clone(), cache.1))
             }
             false => None,
         };
@@ -208,17 +199,13 @@ impl FunctionEntry {
         (back_values, integral_data, derivative_values)
     }
 
-    pub fn run(&mut self) -> (Line, Option<(BarChart, Line, f64)>, Option<Line>) {
+    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>, Option<Line>) {
         let (back_values, integral_data_option, derivative_option) = self.run_back();
 
         (
             Line::new(Values::from_values(back_values)),
             if let Some(integral_data) = integral_data_option {
-                Some((
-                    BarChart::new(integral_data.0),
-                    Line::new(Values::from_values(integral_data.1)),
-                    integral_data.2,
-                ))
+                Some((BarChart::new(integral_data.0), integral_data.1))
             } else {
                 None
             },
@@ -228,7 +215,7 @@ impl FunctionEntry {
     }
 
     // Creates and does the math for creating all the rectangles under the graph
-    fn integral_rectangles(&self) -> (Vec<(f64, f64, f64)>, f64) {
+    fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
         if self.integral_min_x.is_nan() {
             panic!("integral_min_x is NaN")
         } else if self.integral_max_x.is_nan() {
@@ -239,7 +226,7 @@ impl FunctionEntry {
 
         let mut last_positive: Option<bool> = None;
         let mut area: f64 = 0.0;
-        let data2: Vec<(f64, f64, f64)> = (0..self.integral_num)
+        let data2: Vec<(f64, f64)> = (0..self.integral_num)
             .map(|e| {
                 let x: f64 = ((e as f64) * step) + self.integral_min_x;
                 let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
@@ -266,9 +253,9 @@ impl FunctionEntry {
                     area += y * step;
                 }
 
-                (x + (step_offset / 2.0), y, area)
+                (x + (step_offset / 2.0), y)
             })
-            .filter(|(_, y, _)| !y.is_nan())
+            .filter(|(_, y)| !y.is_nan())
             .collect();
         (data2, area)
     }
@@ -359,7 +346,7 @@ fn left_function_test() {
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
 
-        assert_eq!(bars.clone().unwrap().2, area_target);
+        assert_eq!(bars.clone().unwrap().1, area_target);
 
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), integral_num);
@@ -376,17 +363,10 @@ fn left_function_test() {
 
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
-        assert_eq!(bars.clone().unwrap().2, area_target);
+        assert_eq!(bars.clone().unwrap().1, area_target);
         let bars_unwrapped = bars.unwrap();
 
         assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
-
-        let integral_line = bars_unwrapped.1;
-        let vec_integral: Vec<(f64, f64)> =
-            integral_line.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(vec_integral.len(), integral_num);
-
-        assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
 
@@ -433,7 +413,7 @@ fn middle_function_test() {
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
 
-        assert_eq!(bars.clone().unwrap().2, area_target);
+        assert_eq!(bars.clone().unwrap().1, area_target);
 
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), integral_num);
@@ -450,17 +430,10 @@ fn middle_function_test() {
 
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
-        assert_eq!(bars.clone().unwrap().2, area_target);
+        assert_eq!(bars.clone().unwrap().1, area_target);
         let bars_unwrapped = bars.unwrap();
 
         assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
-
-        let integral_line = bars_unwrapped.1;
-        let vec_integral: Vec<(f64, f64)> =
-            integral_line.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(vec_integral.len(), integral_num);
-
-        assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }
 
@@ -507,7 +480,7 @@ fn right_function_test() {
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
 
-        assert_eq!(bars.clone().unwrap().2, area_target);
+        assert_eq!(bars.clone().unwrap().1, area_target);
 
         let vec_bars = bars.unwrap().0;
         assert_eq!(vec_bars.len(), integral_num);
@@ -524,16 +497,9 @@ fn right_function_test() {
 
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
-        assert_eq!(bars.clone().unwrap().2, area_target);
+        assert_eq!(bars.clone().unwrap().1, area_target);
         let bars_unwrapped = bars.unwrap();
 
         assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
-
-        let integral_line = bars_unwrapped.1;
-        let vec_integral: Vec<(f64, f64)> =
-            integral_line.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(vec_integral.len(), integral_num);
-
-        assert_eq!(vec_integral[vec_integral.len() - 1].1, area_target);
     }
 }

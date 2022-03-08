@@ -13,21 +13,9 @@ use epi::{Frame, Storage};
 use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
-use std::fmt::{self, Debug};
 use std::ops::RangeInclusive;
 
 shadow!(build);
-
-// Represents the method in which an integral should be displayed
-#[derive(PartialEq, Debug, Copy, Clone)]
-enum IntegralDisplay {
-    Rectangles,
-    Line,
-}
-
-impl fmt::Display for IntegralDisplay {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
-}
 
 // Constant string that has a string containing information about the build.
 const BUILD_INFO: &str = formatc!(
@@ -120,9 +108,6 @@ struct AppSettings {
     // Number of rectangles used to calculate integral
     pub integral_num: usize,
 
-    // Stores how integrals should be displayed
-    pub integral_display_type: IntegralDisplay,
-
     // Stores whether or not dark mode is enabled
     pub dark_mode: bool,
 }
@@ -137,7 +122,6 @@ impl Default for AppSettings {
             integral_min_x: DEFAULT_MIN_X,
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
-            integral_display_type: IntegralDisplay::Rectangles,
             dark_mode: true,
         }
     }
@@ -185,23 +169,6 @@ impl MathApp {
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Middle, "Middle");
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
                     });
-
-                /*
-                ComboBox::from_label("Integral Display")
-                    .selected_text(self.settings.integral_display_type.to_string())
-                    .show_ui(ui, |ui| {
-                        ui.selectable_value(
-                            &mut self.settings.integral_display_type,
-                            IntegralDisplay::Rectangles,
-                            "Rectangles",
-                        );
-                        ui.selectable_value(
-                            &mut self.settings.integral_display_type,
-                            IntegralDisplay::Line,
-                            "Line",
-                        );
-                    });
-                */
 
                 let min_x_old = self.settings.integral_min_x;
                 let min_x_changed = ui
@@ -532,20 +499,16 @@ impl epi::App for MathApp {
                             }
 
                             if let Some(integral_data) = integral {
-                                let (integral_bar, integral_line, area) = integral_data;
                                 let integral_name = format!("Integral of {}", func_str);
-                                match self.settings.integral_display_type {
-                                    IntegralDisplay::Rectangles => plot_ui.bar_chart(
-                                        integral_bar
-                                            .color(Color32::BLUE)
-                                            .width(step)
-                                            .name(integral_name),
-                                    ),
-                                    IntegralDisplay::Line => plot_ui.line(
-                                        integral_line.color(Color32::BLUE).name(integral_name),
-                                    ),
-                                }
-                                digits_precision(area, 8)
+                                plot_ui.bar_chart(
+                                    integral_data
+                                        .0
+                                        .color(Color32::BLUE)
+                                        .width(step)
+                                        .name(integral_name),
+                                );
+
+                                digits_precision(integral_data.1, 8)
                             } else {
                                 f64::NAN
                             }
