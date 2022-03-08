@@ -9,5 +9,5 @@ rsync -av --delete --info=progress2 --exclude=".git" tmp/ ../titaniumtown.github
 rm -fr tmp
 cd ../titaniumtown.github.io
 git add .
-git commit -m "update"
+git commit -m "update" | true
 git push
