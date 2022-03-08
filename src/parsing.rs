@@ -29,6 +29,14 @@ impl BackingFunction {
     pub fn derivative(&self, x: f64) -> f64 { self.derivative_1.eval(&[x]).unwrap_or(f64::NAN) }
 }
 
+lazy_static::lazy_static! {
+    static ref VALID_VARIABLES: Vec<char> = "xeπ".chars().collect();
+    static ref LETTERS: Vec<char> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        .chars()
+        .collect();
+    static ref NUMBERS: Vec<char> = "0123456789".chars().collect();
+}
+
 /*
 EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
 One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
@@ -36,11 +44,6 @@ In the future I may want to completely rewrite this or implement this natively i
 */
 pub fn add_asterisks(function_in: String) -> String {
     let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
-    let valid_variables: Vec<char> = "xeπ".chars().collect();
-    let letters: Vec<char> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        .chars()
-        .collect();
-    let numbers: Vec<char> = "0123456789".chars().collect();
     let function_chars: Vec<char> = function.chars().collect();
     let mut output_string: String = String::new();
     let mut prev_chars: Vec<char> = Vec::new();
@@ -60,32 +63,32 @@ pub fn add_asterisks(function_in: String) -> String {
             ' '
         };
 
-        let c_letters_var = letters.contains(&c) | valid_variables.contains(&c);
-        let prev_letters_var = valid_variables.contains(&prev_char) | letters.contains(&prev_char);
+        let c_letters_var = LETTERS.contains(&c) | VALID_VARIABLES.contains(&c);
+        let prev_letters_var = VALID_VARIABLES.contains(&prev_char) | LETTERS.contains(&prev_char);
 
         if prev_char == ')' {
-            if (c == '(') | numbers.contains(&c) | c_letters_var {
+            if (c == '(') | NUMBERS.contains(&c) | c_letters_var {
                 add_asterisk = true;
             }
         } else if c == '(' {
-            if (valid_variables.contains(&prev_char)
+            if (VALID_VARIABLES.contains(&prev_char)
                 | (')' == prev_char)
-                | numbers.contains(&prev_char))
-                && !letters.contains(&prev_prev_char)
+                | NUMBERS.contains(&prev_char))
+                && !LETTERS.contains(&prev_prev_char)
             {
                 add_asterisk = true;
             }
-        } else if numbers.contains(&prev_char) {
+        } else if NUMBERS.contains(&prev_char) {
             if (c == '(') | c_letters_var {
                 add_asterisk = true;
             }
-        } else if letters.contains(&c) {
-            if numbers.contains(&prev_char)
-                | (valid_variables.contains(&prev_char) && valid_variables.contains(&c))
+        } else if LETTERS.contains(&c) {
+            if NUMBERS.contains(&prev_char)
+                | (VALID_VARIABLES.contains(&prev_char) && VALID_VARIABLES.contains(&c))
             {
                 add_asterisk = true;
             }
-        } else if (numbers.contains(&c) | c_letters_var) && prev_letters_var {
+        } else if (NUMBERS.contains(&c) | c_letters_var) && prev_letters_var {
             add_asterisk = true;
         }
 
