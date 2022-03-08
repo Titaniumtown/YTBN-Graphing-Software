@@ -481,20 +481,31 @@ impl epi::App for MathApp {
                             function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
                             let (back_values, bars, derivative) = function.run();
-                            plot_ui.line(back_values.color(Color32::RED));
+                            let func_str = function.get_func_str();
+                            plot_ui.line(back_values.color(Color32::RED).name(func_str));
 
                             if let Some(derivative_data) = derivative {
-                                plot_ui.line(derivative_data.color(Color32::GREEN));
+                                plot_ui.line(
+                                    derivative_data
+                                        .color(Color32::GREEN)
+                                        .name(function.get_derivative_str()),
+                                );
                             }
 
                             if let Some(bars_data) = bars {
                                 let (integral_bar, integral_line, area) = bars_data;
                                 match self.settings.integral_display_type {
-                                    IntegralDisplay::Rectangles => plot_ui
-                                        .bar_chart(integral_bar.color(Color32::BLUE).width(step)),
-                                    IntegralDisplay::Line => {
-                                        plot_ui.line(integral_line.color(Color32::BLUE))
-                                    }
+                                    IntegralDisplay::Rectangles => plot_ui.bar_chart(
+                                        integral_bar
+                                            .color(Color32::BLUE)
+                                            .width(step)
+                                            .name(format!("Integral of {}", func_str)),
+                                    ),
+                                    IntegralDisplay::Line => plot_ui.line(
+                                        integral_line
+                                            .color(Color32::BLUE)
+                                            .name(format!("Integral of {}", func_str)),
+                                    ),
                                 }
                                 digits_precision(area, 8)
                             } else {

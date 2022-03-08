@@ -310,6 +310,8 @@ impl FunctionEntry {
         self.integral_max_x = max_x;
         self
     }
+
+    pub fn get_derivative_str(&self) -> &str { self.function.get_derivative_str() }
 }
 
 #[test]
