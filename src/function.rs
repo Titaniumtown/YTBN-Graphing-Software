@@ -377,9 +377,7 @@ fn left_function_test() {
         assert_eq!(bars.clone().unwrap().2, area_target);
         let bars_unwrapped = bars.unwrap();
 
-        let vec_bars: Vec<f64> = bars_unwrapped.0.iter().map(|bar| bar.value).collect();
-
-        assert_eq!(vec_bars.len(), integral_num);
+        assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
 
         let integral_line = bars_unwrapped.1;
         let vec_integral: Vec<(f64, f64)> =
@@ -453,9 +451,7 @@ fn middle_function_test() {
         assert_eq!(bars.clone().unwrap().2, area_target);
         let bars_unwrapped = bars.unwrap();
 
-        let vec_bars: Vec<f64> = bars_unwrapped.0.iter().map(|bar| bar.value).collect();
-
-        assert_eq!(vec_bars.len(), integral_num);
+        assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
 
         let integral_line = bars_unwrapped.1;
         let vec_integral: Vec<(f64, f64)> =
@@ -529,9 +525,7 @@ fn right_function_test() {
         assert_eq!(bars.clone().unwrap().2, area_target);
         let bars_unwrapped = bars.unwrap();
 
-        let vec_bars: Vec<f64> = bars_unwrapped.0.iter().map(|bar| bar.value).collect();
-
-        assert_eq!(vec_bars.len(), integral_num);
+        assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
 
         let integral_line = bars_unwrapped.1;
         let vec_integral: Vec<(f64, f64)> =

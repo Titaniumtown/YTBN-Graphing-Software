@@ -9,7 +9,7 @@ pub struct BackingFunction {
 impl BackingFunction {
     pub fn new(func_str: &str) -> Self {
         let function = exmex::parse::<f64>(func_str).unwrap();
-        let derivative_1 = function.partial(0).unwrap_or(function.clone());
+        let derivative_1 = function.partial(0).unwrap_or_else(|_| function.clone());
         // let derivative_2 = function.partial(0).unwrap_or(derivative_1.clone());
 
         Self {

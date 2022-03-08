@@ -525,17 +525,16 @@ impl epi::App for MathApp {
 
                             if let Some(bars_data) = bars {
                                 let (integral_bar, integral_line, area) = bars_data;
+                                let integral_name = format!("Integral of {}", func_str);
                                 match self.settings.integral_display_type {
                                     IntegralDisplay::Rectangles => plot_ui.bar_chart(
                                         integral_bar
                                             .color(Color32::BLUE)
                                             .width(step)
-                                            .name(format!("Integral of {}", func_str)),
+                                            .name(integral_name),
                                     ),
                                     IntegralDisplay::Line => plot_ui.line(
-                                        integral_line
-                                            .color(Color32::BLUE)
-                                            .name(format!("Integral of {}", func_str)),
+                                        integral_line.color(Color32::BLUE).name(integral_name),
                                     ),
                                 }
                                 digits_precision(area, 8)
