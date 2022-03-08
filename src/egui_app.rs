@@ -523,7 +523,7 @@ impl epi::App for MathApp {
 
                             function.update_bounds(minx_bounds, maxx_bounds, available_width);
 
-                            let (back_values, bars, derivative) = function.run();
+                            let (back_values, integral, derivative) = function.run();
                             let func_str = function.get_func_str();
                             plot_ui.line(back_values.color(Color32::RED).name(func_str));
 
@@ -535,8 +535,8 @@ impl epi::App for MathApp {
                                 );
                             }
 
-                            if let Some(bars_data) = bars {
-                                let (integral_bar, integral_line, area) = bars_data;
+                            if let Some(integral_data) = integral {
+                                let (integral_bar, integral_line, area) = integral_data;
                                 let integral_name = format!("Integral of {}", func_str);
                                 match self.settings.integral_display_type {
                                     IntegralDisplay::Rectangles => plot_ui.bar_chart(

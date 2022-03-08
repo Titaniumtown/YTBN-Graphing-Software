@@ -189,7 +189,7 @@ impl FunctionEntry {
             false => None,
         };
 
-        let front_bars = match self.integral {
+        let integral_data = match self.integral {
             true => {
                 if self.front_cache.is_none() {
                     let (data, area) = self.integral_rectangles();
@@ -205,19 +205,19 @@ impl FunctionEntry {
             false => None,
         };
 
-        (back_values, front_bars, derivative_values)
+        (back_values, integral_data, derivative_values)
     }
 
     pub fn run(&mut self) -> (Line, Option<(BarChart, Line, f64)>, Option<Line>) {
-        let (back_values, front_data_option, derivative_option) = self.run_back();
+        let (back_values, integral_data_option, derivative_option) = self.run_back();
 
         (
             Line::new(Values::from_values(back_values)),
-            if let Some(front_data1) = front_data_option {
+            if let Some(integral_data) = integral_data_option {
                 Some((
-                    BarChart::new(front_data1.0),
-                    Line::new(Values::from_values(front_data1.1)),
-                    front_data1.2,
+                    BarChart::new(integral_data.0),
+                    Line::new(Values::from_values(integral_data.1)),
+                    integral_data.2,
                 ))
             } else {
                 None
