@@ -268,9 +268,6 @@ impl FunctionEntry {
         (data2, area)
     }
 
-    // Set func_str to an empty string
-    pub fn empty_func_str(&mut self) { self.func_str = String::new(); }
-
     pub fn get_func_str(&self) -> &str { &self.func_str }
 
     // Updates riemann value and invalidates front_cache if needed
