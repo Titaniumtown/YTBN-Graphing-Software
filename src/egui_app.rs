@@ -183,6 +183,21 @@ lazy_static::lazy_static! {
     };
 }
 
+
+// Tests to make sure archived (and compressed) assets match expected data
+#[test]
+fn test_file_data() {
+    assert_eq!(FILE_DATA.font_ubuntu_light, FontData::from_owned(include_bytes!("../assets/Ubuntu-Light.ttf").to_vec()));
+    assert_eq!(FILE_DATA.font_notoemoji, FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec()));
+    assert_eq!(FILE_DATA.font_hack, FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec()));
+    
+    assert_eq!(FILE_DATA.text_help_expr, include_str!("../assets/text_help_expr.txt"));
+    assert_eq!(FILE_DATA.text_help_vars, include_str!("../assets/text_help_vars.txt"));
+    assert_eq!(FILE_DATA.text_help_panel, include_str!("../assets/text_help_panel.txt"));
+    assert_eq!(FILE_DATA.text_help_function, include_str!("../assets/text_help_function.txt"));
+    assert_eq!(FILE_DATA.text_help_other, include_str!("../assets/text_help_other.txt"));
+}
+
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use wasm_bindgen::JsCast;
