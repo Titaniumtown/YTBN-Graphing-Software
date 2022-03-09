@@ -24,7 +24,7 @@ impl fmt::Display for RiemannSum {
 }
 
 lazy_static::lazy_static! {
-    pub static ref EMPTY_FUNCTIONENTRY: FunctionEntry = FunctionEntry::empty();
+    pub static ref EMPTY_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::empty();
 }
 
 #[derive(Clone)]

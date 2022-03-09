@@ -1,5 +1,5 @@
-use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTIONENTRY};
-use crate::misc::{digits_precision, log_helper, debug_log};
+use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
+use crate::misc::{debug_log, digits_precision, log_helper};
 use crate::parsing::{add_asterisks, test_func};
 
 use const_format::formatc;
@@ -12,10 +12,12 @@ use egui::{
 use epi::{Frame, Storage};
 use instant::Duration;
 use shadow_rs::shadow;
-use std::collections::BTreeMap;
-use std::io::Read;
-use std::ops::{BitXorAssign, RangeInclusive};
-use std::str;
+use std::{
+    collections::BTreeMap,
+    io::Read,
+    ops::{BitXorAssign, RangeInclusive},
+    str,
+};
 
 shadow!(build);
 
@@ -260,7 +262,7 @@ pub struct MathApp {
 impl Default for MathApp {
     fn default() -> Self {
         Self {
-            functions: vec![EMPTY_FUNCTIONENTRY.clone().integral(true)],
+            functions: vec![EMPTY_FUNCTION_ENTRY.clone().integral(true)],
             func_strs: vec![String::from(DEFAULT_FUNCION)],
             last_error: Vec::new(),
             last_info: (vec![0.0], Duration::ZERO),
@@ -459,7 +461,7 @@ impl epi::App for MathApp {
                     .clicked()
                 {
                     self.functions.push(
-                        EMPTY_FUNCTIONENTRY
+                        EMPTY_FUNCTION_ENTRY
                             .clone()
                             .update_riemann(self.settings.sum),
                     );
