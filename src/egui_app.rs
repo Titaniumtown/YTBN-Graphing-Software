@@ -110,14 +110,14 @@ lazy_static::lazy_static! {
         }
 
         FileData {
-            font_ubuntu_light: font_ubuntu_light.unwrap(),
-            font_notoemoji: font_notoemoji.unwrap(),
-            font_hack: font_hack.unwrap(),
-            text_help_expr: text_help_expr.unwrap(),
-            text_help_vars: text_help_vars.unwrap(),
-            text_help_panel: text_help_panel.unwrap(),
-            text_help_function: text_help_function.unwrap(),
-            text_help_other: text_help_other.unwrap(),
+            font_ubuntu_light: font_ubuntu_light.expect("Ubuntu Light font not found!"),
+            font_notoemoji: font_notoemoji.expect("Noto Emoji font not found!"),
+            font_hack: font_hack.expect("Hack font not found!"),
+            text_help_expr: text_help_expr.expect("HELP_EXPR not found"),
+            text_help_vars: text_help_vars.expect("HELP_VARS not found"),
+            text_help_panel: text_help_panel.expect("HELP_PANEL not found"),
+            text_help_function: text_help_function.expect("HELP_FUNCTION not found"),
+            text_help_other: text_help_other.expect("HELP_OTHER not found"),
         }
     };
 
