@@ -40,9 +40,9 @@ lazy_static::lazy_static! {
 /*
 EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
 One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
-In the future I may want to completely rewrite this or implement this natively into mevel-rs (which would probably be good to do)
+In the future I may want to completely rewrite this or implement this natively in exmex.
 */
-pub fn add_asterisks(function_in: String) -> String {
+pub fn process_func_str(function_in: String) -> String {
     let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
     let function_chars: Vec<char> = function.chars().collect();
     let mut output_string: String = String::new();
@@ -133,7 +133,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
 // Used for testing: passes function to `add_asterisks` before running `test_func`
 #[cfg(test)]
 fn test_func_helper(function_string: &str) -> Option<String> {
-    test_func(&add_asterisks(function_string.to_string()))
+    test_func(&process_func_str(function_string.to_string()))
 }
 
 #[test]
@@ -155,31 +155,34 @@ fn test_func_test() {
 
 // Tests to make sure my cursed function works as intended
 #[test]
-fn asterisk_test() {
-    assert_eq!(&add_asterisks("2x".to_string()), "2*x");
-    assert_eq!(&add_asterisks("x2".to_string()), "x*2");
-    assert_eq!(&add_asterisks("x(1+3)".to_string()), "x*(1+3)");
-    assert_eq!(&add_asterisks("(1+3)x".to_string()), "(1+3)*x");
-    assert_eq!(&add_asterisks("sin(x)".to_string()), "sin(x)");
-    assert_eq!(&add_asterisks("2sin(x)".to_string()), "2*sin(x)");
-    assert_eq!(&add_asterisks("max(x)".to_string()), "max(x)");
-    assert_eq!(&add_asterisks("2e^x".to_string()), "2*e^x");
-    assert_eq!(&add_asterisks("2max(x)".to_string()), "2*max(x)");
-    assert_eq!(&add_asterisks("cos(sin(x))".to_string()), "cos(sin(x))");
-    assert_eq!(&add_asterisks("x^(1+2x)".to_string()), "x^(1+2*x)");
-    assert_eq!(&add_asterisks("(x+2)x(1+3)".to_string()), "(x+2)*x*(1+3)");
-    assert_eq!(&add_asterisks("(x+2)(1+3)".to_string()), "(x+2)*(1+3)");
-    assert_eq!(&add_asterisks("xxx".to_string()), "x*x*x");
-    assert_eq!(&add_asterisks("eee".to_string()), "e*e*e");
-    assert_eq!(&add_asterisks("pi(x+2)".to_string()), "π*(x+2)");
-    assert_eq!(&add_asterisks("(x)pi".to_string()), "(x)*π");
-    assert_eq!(&add_asterisks("2e".to_string()), "2*e");
-    assert_eq!(&add_asterisks("2log10(x)".to_string()), "2*log(x)");
-    assert_eq!(&add_asterisks("2log(x)".to_string()), "2*log(x)");
-    assert_eq!(&add_asterisks("x!".to_string()), "x!");
-    assert_eq!(&add_asterisks("pipipipipipi".to_string()), "π*π*π*π*π*π");
-    assert_eq!(&add_asterisks("10pi".to_string()), "10*π");
-    assert_eq!(&add_asterisks("pi10".to_string()), "π*10");
+fn func_process_test() {
+    assert_eq!(&process_func_str("2x".to_string()), "2*x");
+    assert_eq!(&process_func_str("x2".to_string()), "x*2");
+    assert_eq!(&process_func_str("x(1+3)".to_string()), "x*(1+3)");
+    assert_eq!(&process_func_str("(1+3)x".to_string()), "(1+3)*x");
+    assert_eq!(&process_func_str("sin(x)".to_string()), "sin(x)");
+    assert_eq!(&process_func_str("2sin(x)".to_string()), "2*sin(x)");
+    assert_eq!(&process_func_str("max(x)".to_string()), "max(x)");
+    assert_eq!(&process_func_str("2e^x".to_string()), "2*e^x");
+    assert_eq!(&process_func_str("2max(x)".to_string()), "2*max(x)");
+    assert_eq!(&process_func_str("cos(sin(x))".to_string()), "cos(sin(x))");
+    assert_eq!(&process_func_str("x^(1+2x)".to_string()), "x^(1+2*x)");
+    assert_eq!(
+        &process_func_str("(x+2)x(1+3)".to_string()),
+        "(x+2)*x*(1+3)"
+    );
+    assert_eq!(&process_func_str("(x+2)(1+3)".to_string()), "(x+2)*(1+3)");
+    assert_eq!(&process_func_str("xxx".to_string()), "x*x*x");
+    assert_eq!(&process_func_str("eee".to_string()), "e*e*e");
+    assert_eq!(&process_func_str("pi(x+2)".to_string()), "π*(x+2)");
+    assert_eq!(&process_func_str("(x)pi".to_string()), "(x)*π");
+    assert_eq!(&process_func_str("2e".to_string()), "2*e");
+    assert_eq!(&process_func_str("2log10(x)".to_string()), "2*log(x)");
+    assert_eq!(&process_func_str("2log(x)".to_string()), "2*log(x)");
+    assert_eq!(&process_func_str("x!".to_string()), "x!");
+    assert_eq!(&process_func_str("pipipipipipi".to_string()), "π*π*π*π*π*π");
+    assert_eq!(&process_func_str("10pi".to_string()), "10*π");
+    assert_eq!(&process_func_str("pi10".to_string()), "π*10");
 
     // Need to fix these checks, maybe I need to rewrite the whole asterisk adding system... (or just implement these changes into meval-rs, idk)
     // assert_eq!(&add_asterisks("emax(x)".to_string()), "e*max(x)");

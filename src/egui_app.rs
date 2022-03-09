@@ -1,6 +1,6 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
 use crate::misc::{debug_log, digits_precision, log_helper};
-use crate::parsing::{add_asterisks, test_func};
+use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
 use eframe::{egui, epi};
@@ -404,7 +404,7 @@ impl MathApp {
                         ui.text_edit_singleline(&mut self.func_strs[i]);
                     });
 
-                    let proc_func_str = add_asterisks(self.func_strs[i].clone());
+                    let proc_func_str = process_func_str(self.func_strs[i].clone());
                     if integral_toggle
                         | derivative_toggle
                         | max_x_changed
