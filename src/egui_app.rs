@@ -425,7 +425,7 @@ impl epi::App for MathApp {
     fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {
         #[cfg(target_arch = "wasm32")]
         stop_loading();
-        log_helper("Initialized.");
+        log_helper("egui app initialized.");
     }
 
     // Called each time the UI needs repainting, which may be many times per second.
