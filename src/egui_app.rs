@@ -46,10 +46,14 @@ const DEFAULT_INTEGRAL_NUM: usize = 100;
 // Font Data
 flate!(static DATA_FILE: [u8] from "data.tar");
 
+// Stores data loaded from files
 struct FileData {
+    // Stores fonts
     pub font_ubuntu_light: FontData,
     pub font_notoemoji: FontData,
     pub font_hack: FontData,
+
+    // Stores text
     pub text_help_expr: String,
     pub text_help_vars: String,
     pub text_help_panel: String,
@@ -58,13 +62,16 @@ struct FileData {
 }
 
 lazy_static::lazy_static! {
+    // Load all of the data from the compressed tarballe
     static ref FILE_DATA: FileData = {
         let mut tar_archive = tar::Archive::new(&**DATA_FILE);
 
+        // Stores fonts
         let mut font_ubuntu_light: Option<FontData> = None;
         let mut font_notoemoji: Option<FontData> = None;
         let mut font_hack: Option<FontData> = None;
 
+        // Stores text
         let mut text_help_expr: Option<String> = None;
         let mut text_help_vars: Option<String> = None;
         let mut text_help_panel: Option<String> = None;
@@ -72,12 +79,15 @@ lazy_static::lazy_static! {
         let mut text_help_other: Option<String> = None;
 
 
+        // Iterate through all entries in the tarball
         for file in tar_archive.entries().unwrap() {
             let mut file = file.unwrap();
             let mut data: Vec<u8> = Vec::new();
             file.read_to_end(&mut data).unwrap();
             let path = file.header().path().unwrap();
             let path_string = path.to_string_lossy();
+
+            // Match the filename
             match path_string.as_ref() {
                 "Hack-Regular.ttf" => {
                     font_hack = Some(FontData::from_owned(data))
@@ -109,6 +119,7 @@ lazy_static::lazy_static! {
             }
         }
 
+        // Create and return FileData struct
         FileData {
             font_ubuntu_light: font_ubuntu_light.expect("Ubuntu Light font not found!"),
             font_notoemoji: font_notoemoji.expect("Noto Emoji font not found!"),
@@ -121,6 +132,7 @@ lazy_static::lazy_static! {
         }
     };
 
+    // Stores the FontDefinitions used by egui
     static ref FONT_DEFINITIONS: FontDefinitions = {
         let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
         let mut families = BTreeMap::new();
