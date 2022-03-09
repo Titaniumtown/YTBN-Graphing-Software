@@ -279,6 +279,7 @@ impl MathApp {
 
                 ui.add(
                     Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
+                        .step_by(1.0)
                         .text("Interval"),
                 );
 
