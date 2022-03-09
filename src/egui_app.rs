@@ -238,7 +238,7 @@ cfg_if::cfg_if! {
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
 
 // The URL of the project
-const PROJECT_URL: &str = "https://github.com/Titaniumtown/YTBN_graphing_software";
+const PROJECT_URL: &str = "https://github.com/Titaniumtown/YTBN-Graphing-Software";
 
 // Stores settings
 struct AppSettings {
