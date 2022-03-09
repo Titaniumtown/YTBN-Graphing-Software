@@ -23,13 +23,14 @@ lto = false
 
 [dependencies]
 eframe = { git = "https://github.com/Titaniumtown/egui", default-features = false, features = ["egui_glow"] }
-include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
+# include-flate = { git = "https://github.com/Titaniumtown/include-flate.git" }
 shadow-rs = { version = "0.9", default-features = false }
 const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
 cfg-if = "1.0.0"
 exmex = { git = "https://github.com/Titaniumtown/exmex.git", branch = "main", features = ["partial"] }
 lazy_static = "1.4.0"
 tar = "0.4.38"
+ruzstd = { git = "https://github.com/KillingSpark/zstd-rs.git" }
 
 [build-dependencies]
 shadow-rs = "0.9"

@@ -1,5 +1,3 @@
 #!/bin/bash
-cd assets
-rm -fr data.tar | true
-tar -cvf data.tar *.*
-mv data.tar ../
+rm -fr data.tar.zst | true
+tar -I 'zstd --ultra -22' -cf data.tar.zst assets/*.*

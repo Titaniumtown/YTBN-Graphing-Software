@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTIONENTRY};
-use crate::misc::digits_precision;
+use crate::misc::{digits_precision, log_helper};
 use crate::parsing::{add_asterisks, test_func};
 
 use const_format::formatc;
@@ -10,7 +10,6 @@ use egui::{
     RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use epi::{Frame, Storage};
-use include_flate::flate;
 use instant::Duration;
 use shadow_rs::shadow;
 use std::collections::BTreeMap;
@@ -43,9 +42,6 @@ const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
-// Font Data
-flate!(static DATA_FILE: [u8] from "data.tar");
-
 // Stores data loaded from files
 struct FileData {
     // Stores fonts
@@ -64,7 +60,16 @@ struct FileData {
 lazy_static::lazy_static! {
     // Load all of the data from the compressed tarballe
     static ref FILE_DATA: FileData = {
-        let mut tar_archive = tar::Archive::new(&**DATA_FILE);
+        let start = instant::Instant::now();
+        log_helper("Loading tarball...");
+        let mut tar_file_raw = include_bytes!("../data.tar.zst").as_slice();
+        log_helper("Decompressing...");
+        let mut tar_file = ruzstd::StreamingDecoder::new(&mut tar_file_raw).unwrap();
+        let mut tar_file_data = Vec::new();
+        log_helper("Reading tarball....");
+        tar_file.read_to_end(&mut tar_file_data).unwrap();
+
+        let mut tar_archive = tar::Archive::new(&*tar_file_data);
 
         // Stores fonts
         let mut font_ubuntu_light: Option<FontData> = None;
@@ -118,6 +123,8 @@ lazy_static::lazy_static! {
                 }
             }
         }
+
+        log_helper(&format!("Done loading assets! Took: {:?}", start.elapsed()));
 
         // Create and return FileData struct
         FileData {
