@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTIONENTRY};
-use crate::misc::{digits_precision, log_helper};
+use crate::misc::{digits_precision, log_helper, debug_log};
 use crate::parsing::{add_asterisks, test_func};
 
 use const_format::formatc;
@@ -91,6 +91,8 @@ lazy_static::lazy_static! {
             file.read_to_end(&mut data).unwrap();
             let path = file.header().path().unwrap();
             let path_string = path.to_string_lossy();
+
+            debug_log(&format!("Loading file: {}", path_string));
 
             // Match the filename
             if path_string.ends_with(".ttf") {
