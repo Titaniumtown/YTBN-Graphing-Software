@@ -308,32 +308,11 @@ impl FunctionEntry {
     pub fn get_derivative_str(&self) -> String { self.function.get_derivative_str() }
 }
 
-#[test]
-fn left_function_test() {
-    let integral_num = 10;
-    let pixel_width = 10;
-
-    let mut function = FunctionEntry::empty()
-        .update_riemann(RiemannSum::Left)
-        .pixel_width(pixel_width)
-        .integral_num(integral_num)
-        .integral_bounds(-1.0, 1.0);
-
-    let back_values_target = vec![
-        (-1.0, 1.0),
-        (-0.8, 0.6400000000000001),
-        (-0.6, 0.36),
-        (-0.4, 0.16000000000000003),
-        (-0.19999999999999996, 0.03999999999999998),
-        (0.0, 0.0),
-        (0.19999999999999996, 0.03999999999999998),
-        (0.3999999999999999, 0.15999999999999992),
-        (0.6000000000000001, 0.3600000000000001),
-        (0.8, 0.6400000000000001),
-    ];
-
-    let area_target = 0.9600000000000001;
-
+#[cfg(test)]
+fn verify_function(
+    integral_num: usize, pixel_width: usize, function: &mut FunctionEntry,
+    back_values_target: Vec<(f64, f64)>, area_target: f64,
+) {
     {
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_none());
@@ -345,7 +324,7 @@ fn left_function_test() {
     }
 
     {
-        function = function.integral(true);
+        *function = function.clone().integral(true);
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_none());
         assert!(bars.is_some());
@@ -373,6 +352,41 @@ fn left_function_test() {
 
         assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
     }
+}
+
+#[test]
+fn left_function_test() {
+    let integral_num = 10;
+    let pixel_width = 10;
+
+    let mut function = FunctionEntry::empty()
+        .update_riemann(RiemannSum::Left)
+        .pixel_width(pixel_width)
+        .integral_num(integral_num)
+        .integral_bounds(-1.0, 1.0);
+
+    let back_values_target = vec![
+        (-1.0, 1.0),
+        (-0.8, 0.6400000000000001),
+        (-0.6, 0.36),
+        (-0.4, 0.16000000000000003),
+        (-0.19999999999999996, 0.03999999999999998),
+        (0.0, 0.0),
+        (0.19999999999999996, 0.03999999999999998),
+        (0.3999999999999999, 0.15999999999999992),
+        (0.6000000000000001, 0.3600000000000001),
+        (0.8, 0.6400000000000001),
+    ];
+
+    let area_target = 0.9600000000000001;
+
+    verify_function(
+        integral_num,
+        pixel_width,
+        &mut function,
+        back_values_target,
+        area_target,
+    );
 }
 
 #[test]
@@ -401,45 +415,13 @@ fn middle_function_test() {
 
     let area_target = 0.92;
 
-    {
-        let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_none());
-        assert!(bars.is_none());
-        assert_eq!(back_values.len(), pixel_width);
-        let back_values_tuple: Vec<(f64, f64)> =
-            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(back_values_tuple, back_values_target);
-    }
-
-    {
-        function = function.integral(true);
-        let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_none());
-        assert!(bars.is_some());
-        assert_eq!(back_values.len(), pixel_width);
-
-        assert_eq!(bars.clone().unwrap().1, area_target);
-
-        let vec_bars = bars.unwrap().0;
-        assert_eq!(vec_bars.len(), integral_num);
-
-        let back_values_tuple: Vec<(f64, f64)> =
-            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(back_values_tuple, back_values_target);
-    }
-
-    {
-        function.derivative = true;
-        let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_some());
-
-        assert!(bars.is_some());
-        assert_eq!(back_values.len(), pixel_width);
-        assert_eq!(bars.clone().unwrap().1, area_target);
-        let bars_unwrapped = bars.unwrap();
-
-        assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
-    }
+    verify_function(
+        integral_num,
+        pixel_width,
+        &mut function,
+        back_values_target,
+        area_target,
+    );
 }
 
 #[test]
@@ -468,43 +450,11 @@ fn right_function_test() {
 
     let area_target = 0.8800000000000001;
 
-    {
-        let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_none());
-        assert!(bars.is_none());
-        assert_eq!(back_values.len(), pixel_width);
-        let back_values_tuple: Vec<(f64, f64)> =
-            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(back_values_tuple, back_values_target);
-    }
-
-    {
-        function = function.integral(true);
-        let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_none());
-        assert!(bars.is_some());
-        assert_eq!(back_values.len(), pixel_width);
-
-        assert_eq!(bars.clone().unwrap().1, area_target);
-
-        let vec_bars = bars.unwrap().0;
-        assert_eq!(vec_bars.len(), integral_num);
-
-        let back_values_tuple: Vec<(f64, f64)> =
-            back_values.iter().map(|ele| (ele.x, ele.y)).collect();
-        assert_eq!(back_values_tuple, back_values_target);
-    }
-
-    {
-        function.derivative = true;
-        let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_some());
-
-        assert!(bars.is_some());
-        assert_eq!(back_values.len(), pixel_width);
-        assert_eq!(bars.clone().unwrap().1, area_target);
-        let bars_unwrapped = bars.unwrap();
-
-        assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
-    }
+    verify_function(
+        integral_num,
+        pixel_width,
+        &mut function,
+        back_values_target,
+        area_target,
+    );
 }
