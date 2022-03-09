@@ -2,3 +2,4 @@
 Cargo.lock
 /pkg
 /tmp
+/assets/data.tar

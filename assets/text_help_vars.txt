@@ -1,0 +1,2 @@
+- Euler's number is supported via 'E' (noted it being uppercase)
+- PI is available through 'pi' or 'π'

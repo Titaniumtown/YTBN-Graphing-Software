@@ -33,6 +33,7 @@ tar = "0.4.38"
 
 [build-dependencies]
 shadow-rs = "0.9"
+command-run = "1.1.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = { version = "0.1.12" }

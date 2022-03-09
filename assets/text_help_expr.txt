@@ -1,0 +1,13 @@
+- sqrt(x): square root of x
+- abs(x): absolute value of x
+- ln(x): log with base e
+- log10(x): base 10 logarithm of x
+- log(x): same as log10(x)
+- sin(x): Sine of x
+- cos(x): Cosine of x
+- tan(x): Tangent of x
+- asin(x): arcsine of x
+- acos(x): arccosine of x
+- atan(x): arctangent of x
+- atan2, sinh, cosh, tanh, asinh, acosh, atanh
+- floor, ceil, round, signum

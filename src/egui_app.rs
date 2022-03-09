@@ -16,6 +16,7 @@ use shadow_rs::shadow;
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::ops::{BitXorAssign, RangeInclusive};
+use std::str;
 
 shadow!(build);
 
@@ -43,43 +44,90 @@ const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 // Font Data
-flate!(static FONTS_FILE: [u8] from "assets/fonts.tar");
+flate!(static DATA_FILE: [u8] from "assets/data.tar");
+
+struct FileData {
+    pub font_ubuntu_light: FontData,
+    pub font_notoemoji: FontData,
+    pub font_hack: FontData,
+    pub text_help_expr: String,
+    pub text_help_vars: String,
+    pub text_help_panel: String,
+    pub text_help_function: String,
+    pub text_help_other: String,
+}
 
 lazy_static::lazy_static! {
-    static ref FONT_DEFINITIONS: FontDefinitions = {
-        let mut tar_archive = tar::Archive::new(&**FONTS_FILE);
+    static ref FILE_DATA: FileData = {
+        let mut tar_archive = tar::Archive::new(&**DATA_FILE);
 
-        let mut ubuntu_light: Result<FontData, _> = Err("");
-        let mut notoemoji: Result<FontData, _> = Err("");
-        let mut hack: Result<FontData, _> = Err("");
+        let mut font_ubuntu_light: Option<FontData> = None;
+        let mut font_notoemoji: Option<FontData> = None;
+        let mut font_hack: Option<FontData> = None;
+
+        let mut text_help_expr: Option<String> = None;
+        let mut text_help_vars: Option<String> = None;
+        let mut text_help_panel: Option<String> = None;
+        let mut text_help_function: Option<String> = None;
+        let mut text_help_other: Option<String> = None;
+
 
         for file in tar_archive.entries().unwrap() {
             let mut file = file.unwrap();
             let mut data: Vec<u8> = Vec::new();
             file.read_to_end(&mut data).unwrap();
-
-            match file.header().path().unwrap().to_string_lossy().as_ref() {
+            let path = file.header().path().unwrap();
+            let path_string = path.to_string_lossy();
+            match path_string.as_ref() {
                 "Hack-Regular.ttf" => {
-                    hack = Ok(FontData::from_owned(data))
+                    font_hack = Some(FontData::from_owned(data))
                 },
                 "NotoEmoji-Regular.ttf" => {
-                    notoemoji = Ok(FontData::from_owned(data))
+                    font_notoemoji = Some(FontData::from_owned(data))
                 },
                 "Ubuntu-Light.ttf" => {
-                    ubuntu_light = Ok(FontData::from_owned(data))
+                    font_ubuntu_light = Some(FontData::from_owned(data))
+                },
+                "text_help_expr.txt" => {
+                    text_help_expr = Some(str::from_utf8(&data).unwrap().to_string());
+                },
+                "text_help_vars.txt" => {
+                    text_help_vars = Some(str::from_utf8(&data).unwrap().to_string());
+                },
+                "text_help_panel.txt" => {
+                    text_help_panel = Some(str::from_utf8(&data).unwrap().to_string());
+                },
+                "text_help_function.txt" => {
+                    text_help_function = Some(str::from_utf8(&data).unwrap().to_string());
+                },
+                "text_help_other.txt" => {
+                    text_help_other = Some(str::from_utf8(&data).unwrap().to_string());
                 },
                 _ => {
-                    panic!("Other files in this archive!!");
+                    panic!("File {} not expected!", path_string);
                 }
             }
         }
 
+        FileData {
+            font_ubuntu_light: font_ubuntu_light.unwrap(),
+            font_notoemoji: font_notoemoji.unwrap(),
+            font_hack: font_hack.unwrap(),
+            text_help_expr: text_help_expr.unwrap(),
+            text_help_vars: text_help_vars.unwrap(),
+            text_help_panel: text_help_panel.unwrap(),
+            text_help_function: text_help_function.unwrap(),
+            text_help_other: text_help_other.unwrap(),
+        }
+    };
+
+    static ref FONT_DEFINITIONS: FontDefinitions = {
         let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
         let mut families = BTreeMap::new();
 
-        font_data.insert("Hack".to_owned(), hack.unwrap());
-        font_data.insert("Ubuntu-Light".to_owned(), ubuntu_light.unwrap());
-        font_data.insert("NotoEmoji-Regular".to_owned(), notoemoji.unwrap());
+        font_data.insert("Hack".to_owned(), FILE_DATA.font_hack.clone());
+        font_data.insert("Ubuntu-Light".to_owned(), FILE_DATA.font_ubuntu_light.clone());
+        font_data.insert("NotoEmoji-Regular".to_owned(), FILE_DATA.font_notoemoji.clone());
 
         families.insert(
             FontFamily::Monospace,
@@ -108,41 +156,6 @@ cfg_if::cfg_if! {
         }
     }
 }
-
-// Used when displaying supported expressions in the Help window
-const HELP_EXPR: &str = "- sqrt(x): square root of x
-- abs(x): absolute value of x
-- ln(x): log with base e
-- log10(x): base 10 logarithm of x
-- log(x): same as log10(x)
-- sin(x): Sine of x
-- cos(x): Cosine of x
-- tan(x): Tangent of x
-- asin(x): arcsine of x
-- acos(x): arccosine of x
-- atan(x): arctangent of x
-- atan2, sinh, cosh, tanh, asinh, acosh, atanh
-- floor, ceil, round, signum";
-
-const HELP_VARS: &str = "- Euler's number is supported via 'E' (noted it being uppercase)
-- PI is available through 'pi' or 'π'";
-
-// Used in the "Panel" section of the Help window
-const HELP_PANEL: &str =
-"- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
-- The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
-- The 'Help' button on the top bar opens and closes this window!
-- The 'Info' button provides information on the build currently running.
-- The Sun/Moon button toggles Dark and Light mode.";
-
-// Used in the "Functions" section of the Help window
-const HELP_FUNCTION: &str = "- The 'X' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
-- The ∫ button (between the 'X' and 'd/dx' buttons) indicates whether to integrate the function in question.
-- The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not.";
-
-// Misc help info
-const HELP_OTHER: &str =
-"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a current workaround would be explicitly stating a multiplication operation through the use of an asterisk.";
 
 // Used to provide info on the Licensing of the project
 const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
@@ -461,23 +474,23 @@ impl epi::App for MathApp {
                 ui.heading("Help With...");
 
                 ui.collapsing("Supported Expressions", |ui| {
-                    ui.label(HELP_EXPR);
+                    ui.label(&FILE_DATA.text_help_expr);
                 });
 
                 ui.collapsing("Supported Constants", |ui| {
-                    ui.label(HELP_VARS);
+                    ui.label(&FILE_DATA.text_help_vars);
                 });
 
                 ui.collapsing("Panel", |ui| {
-                    ui.label(HELP_PANEL);
+                    ui.label(&FILE_DATA.text_help_panel);
                 });
 
                 ui.collapsing("Functions", |ui| {
-                    ui.label(HELP_FUNCTION);
+                    ui.label(&FILE_DATA.text_help_function);
                 });
 
                 ui.collapsing("Other", |ui| {
-                    ui.label(HELP_OTHER);
+                    ui.label(&FILE_DATA.text_help_other);
                 });
             });
 

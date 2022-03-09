@@ -1,0 +1,3 @@
+- The 'X' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.
+- The ∫ button (between the 'X' and 'd/dx' buttons) indicates whether to integrate the function in question.
+- The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not.
