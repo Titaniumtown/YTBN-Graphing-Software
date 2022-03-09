@@ -44,7 +44,7 @@ const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 // Font Data
-flate!(static DATA_FILE: [u8] from "assets/data.tar");
+flate!(static DATA_FILE: [u8] from "data.tar");
 
 struct FileData {
     pub font_ubuntu_light: FontData,
