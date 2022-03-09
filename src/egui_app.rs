@@ -61,12 +61,11 @@ lazy_static::lazy_static! {
     // Load all of the data from the compressed tarball
     static ref FILE_DATA: FileData = {
         let start = instant::Instant::now();
-        log_helper("Loading tarball...");
+        log_helper("Loading assets...");
         let mut tar_file_raw = include_bytes!("../data.tar.zst").as_slice();
         log_helper("Decompressing...");
         let mut tar_file = ruzstd::StreamingDecoder::new(&mut tar_file_raw).unwrap();
         let mut tar_file_data = Vec::new();
-        log_helper("Reading tarball....");
         tar_file.read_to_end(&mut tar_file_data).unwrap();
 
         let mut tar_archive = tar::Archive::new(&*tar_file_data);
@@ -84,6 +83,7 @@ lazy_static::lazy_static! {
         let mut text_help_other: Option<String> = None;
 
 
+        log_helper("Reading asset files...");
         // Iterate through all entries in the tarball
         for file in tar_archive.entries().unwrap() {
             let mut file = file.unwrap();
