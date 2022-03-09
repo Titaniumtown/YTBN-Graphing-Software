@@ -352,10 +352,12 @@ impl MathApp {
                     }
                 }
 
-                ui.add(
-                    Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
-                        .text("Interval"),
-                );
+                let integral_num_changed = ui
+                    .add(
+                        Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
+                            .text("Interval"),
+                    )
+                    .changed();
 
                 let functions_len = self.functions.len();
                 let mut remove_i: Option<usize> = None;
@@ -407,6 +409,7 @@ impl MathApp {
                         | derivative_toggle
                         | max_x_changed
                         | min_x_changed
+                        | integral_num_changed
                         | (proc_func_str != function.get_func_str())
                         | self.last_error.iter().any(|ele| ele.0 == i)
                     {

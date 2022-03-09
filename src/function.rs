@@ -117,7 +117,7 @@ impl FunctionEntry {
                 .into();
 
             self.back_cache = Some(
-                (0..=self.pixel_width)
+                (0..self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + min_x)
                     .map(|x| {
                         if let Some(i) = x_data.get_index(x) {
@@ -128,13 +128,14 @@ impl FunctionEntry {
                     })
                     .collect(),
             );
+            // assert_eq!(self.back_cache.as_ref().unwrap().len(), self.pixel_width);
 
             if self.derivative_cache.is_some() {
                 if self.derivative {
                     let derivative_cache = self.derivative_cache.as_ref().unwrap();
 
                     self.derivative_cache = Some(
-                        (0..=self.pixel_width)
+                        (0..self.pixel_width)
                             .map(|x| (x as f64 / resolution as f64) + min_x)
                             .map(|x| {
                                 if let Some(i) = x_data.get_index(x) {
@@ -145,6 +146,7 @@ impl FunctionEntry {
                             })
                             .collect(),
                     );
+                    // assert_eq!(self.derivative_cache.as_ref().unwrap().len(), self.pixel_width);
                 } else {
                     self.derivative_cache = None;
                 }
@@ -262,6 +264,8 @@ impl FunctionEntry {
             })
             .filter(|(_, y)| !y.is_nan())
             .collect();
+        // assert_eq!(data2.len(), self.integral_num);
+
         (data2, area)
     }
 
