@@ -149,6 +149,8 @@ lazy_static::lazy_static! {
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use wasm_bindgen::JsCast;
+
+        // removes the "loading" element on the web page that displays a loading indicator
         fn stop_loading() {
             let document = web_sys::window().unwrap().document().unwrap();
             let loading_element = document.get_element_by_id("loading").unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
