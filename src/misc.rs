@@ -15,7 +15,9 @@ cfg_if::cfg_if! {
         }
 
         #[allow(dead_code)]
+        #[allow(unused_variables)]
         pub fn debug_log(s: &str) {
+            #[cfg(debug_assertions)]
             log(s);
         }
     } else {
@@ -25,7 +27,9 @@ cfg_if::cfg_if! {
         }
 
         #[allow(dead_code)]
+        #[allow(unused_variables)]
         pub fn debug_log(s: &str) {
+            #[cfg(debug_assertions)]
             println!("{}", s);
         }
     }
