@@ -58,7 +58,7 @@ struct FileData {
 }
 
 lazy_static::lazy_static! {
-    // Load all of the data from the compressed tarballe
+    // Load all of the data from the compressed tarball
     static ref FILE_DATA: FileData = {
         let start = instant::Instant::now();
         log_helper("Loading tarball...");
@@ -93,34 +93,48 @@ lazy_static::lazy_static! {
             let path_string = path.to_string_lossy();
 
             // Match the filename
-            match path_string.as_ref() {
-                "Hack-Regular.ttf" => {
-                    font_hack = Some(FontData::from_owned(data))
-                },
-                "NotoEmoji-Regular.ttf" => {
-                    font_notoemoji = Some(FontData::from_owned(data))
-                },
-                "Ubuntu-Light.ttf" => {
-                    font_ubuntu_light = Some(FontData::from_owned(data))
-                },
-                "text_help_expr.txt" => {
-                    text_help_expr = Some(str::from_utf8(&data).unwrap().to_string());
-                },
-                "text_help_vars.txt" => {
-                    text_help_vars = Some(str::from_utf8(&data).unwrap().to_string());
-                },
-                "text_help_panel.txt" => {
-                    text_help_panel = Some(str::from_utf8(&data).unwrap().to_string());
-                },
-                "text_help_function.txt" => {
-                    text_help_function = Some(str::from_utf8(&data).unwrap().to_string());
-                },
-                "text_help_other.txt" => {
-                    text_help_other = Some(str::from_utf8(&data).unwrap().to_string());
-                },
-                _ => {
-                    panic!("File {} not expected!", path_string);
+            if path_string.ends_with(".ttf") {
+                // Parse font files
+                let font_data = FontData::from_owned(data);
+                match path_string.as_ref() {
+                    "Hack-Regular.ttf" => {
+                        font_hack = Some(font_data);
+                    },
+                    "NotoEmoji-Regular.ttf" => {
+                        font_notoemoji = Some(font_data);
+                    },
+                    "Ubuntu-Light.ttf" => {
+                        font_ubuntu_light = Some(font_data);
+                    },
+                    _ => {
+                        panic!("Font File {} not expected!", path_string);
+                    }
                 }
+            } else if path_string.ends_with(".txt") {
+                // Parse text files
+                let string_data = str::from_utf8(&data).unwrap().to_string();
+                match path_string.as_ref() {
+                    "text_help_expr.txt" => {
+                        text_help_expr = Some(string_data);
+                    },
+                    "text_help_vars.txt" => {
+                        text_help_vars = Some(string_data);
+                    },
+                    "text_help_panel.txt" => {
+                        text_help_panel = Some(string_data);
+                    },
+                    "text_help_function.txt" => {
+                        text_help_function = Some(string_data);
+                    },
+                    "text_help_other.txt" => {
+                        text_help_other = Some(string_data);
+                    },
+                    _ => {
+                        panic!("Text file {} not expected!", path_string);
+                    }
+                }
+            } else {
+                panic!("Other file {} not expected!", path_string);
             }
         }
 
@@ -411,6 +425,7 @@ impl epi::App for MathApp {
     fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {
         #[cfg(target_arch = "wasm32")]
         stop_loading();
+        log_helper("Initialized.");
     }
 
     // Called each time the UI needs repainting, which may be many times per second.
