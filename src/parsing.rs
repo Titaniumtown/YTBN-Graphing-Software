@@ -120,7 +120,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
                     .collect::<Vec<String>>();
 
                 return match var_names_not_x.len() {
-                    1 => Some(format!("Error: invalid variables: {}", var_names_not_x[0])),
+                    1 => Some(format!("Error: invalid variable: {}", var_names_not_x[0])),
                     _ => Some(format!("Error: invalid variables: {:?}", var_names_not_x)),
                 };
             }
