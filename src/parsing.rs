@@ -105,9 +105,28 @@ pub fn add_asterisks(function_in: String) -> String {
 
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: &str) -> Option<String> {
-    match exmex::parse::<f64>(function_string) {
+    let parse_result = exmex::parse::<f64>(function_string);
+
+    match parse_result {
         Err(e) => Some(e.to_string()),
-        Ok(_) => None,
+        Ok(_) => {
+            let var_names = parse_result.unwrap().var_names().to_vec();
+
+            if var_names != ["x"] {
+                let var_names_not_x: Vec<String> = var_names
+                    .iter()
+                    .filter(|ele| *ele != &"x".to_owned())
+                    .map(|ele| ele.clone())
+                    .collect::<Vec<String>>();
+
+                return match var_names_not_x.len() {
+                    1 => Some(format!("Error: invalid variables: {}", var_names_not_x[0])),
+                    _ => Some(format!("Error: invalid variables: {:?}", var_names_not_x)),
+                };
+            }
+
+            None
+        }
     }
 }
 
