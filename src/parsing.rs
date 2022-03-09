@@ -30,7 +30,7 @@ impl BackingFunction {
 }
 
 lazy_static::lazy_static! {
-    static ref VALID_VARIABLES: Vec<char> = "xXEπ".chars().collect();
+    static ref VALID_VARIABLES: Vec<char> = "xXeEπ".chars().collect();
     static ref LETTERS: Vec<char> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         .chars()
         .collect();
