@@ -116,7 +116,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
                 let var_names_not_x: Vec<String> = var_names
                     .iter()
                     .filter(|ele| *ele != &"x".to_owned())
-                    .map(|ele| ele.clone())
+                    .cloned()
                     .collect::<Vec<String>>();
 
                 return match var_names_not_x.len() {
