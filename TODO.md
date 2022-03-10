@@ -17,4 +17,3 @@
 9. nth derivative support (again)
 10. Update function tests
 11. rewrite FunctionEntry to move more information and handling to egui_app (such as config changes)
-12. dynamically adjust newton iterations and resolution of graph based on performance and if the machine is lagging
