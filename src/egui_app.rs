@@ -464,8 +464,6 @@ impl MathApp {
 								Some(self.settings.integral_max_x),
 								Some(self.settings.integral_num),
 								Some(self.settings.sum),
-								self.settings.extrema,
-								self.settings.roots,
 							);
 							self.last_error = self
 								.last_error
@@ -652,7 +650,14 @@ impl epi::App for MathApp {
 								return f64::NAN;
 							}
 
-							function.display(plot_ui, minx_bounds, maxx_bounds, available_width)
+							function.display(
+								plot_ui,
+								minx_bounds,
+								maxx_bounds,
+								available_width,
+								self.settings.extrema,
+								self.settings.roots,
+							)
 						})
 						.collect();
 					self.last_info = (area_list, start.elapsed());

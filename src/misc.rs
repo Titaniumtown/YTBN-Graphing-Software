@@ -95,7 +95,6 @@ pub fn digits_precision(x: f64, digits: usize) -> f64 {
 	(x * large_number).round() / large_number
 }
 
-
 /// Implements newton's method of finding roots.
 /// `threshold` is the target accuracy threshold
 /// `range` is the range of valid x values (used to stop calculation when the point won't display anyways)

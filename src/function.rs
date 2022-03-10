@@ -42,8 +42,6 @@ pub struct FunctionEntry {
 	integral_max_x: f64,
 	integral_num: usize,
 	sum: RiemannSum,
-	roots: bool,
-	extrema: bool,
 }
 
 impl FunctionEntry {
@@ -62,15 +60,12 @@ impl FunctionEntry {
 			integral_max_x: f64::NAN,
 			integral_num: 0,
 			sum: DEFAULT_RIEMANN,
-			roots: true,
-			extrema: true,
 		}
 	}
 
 	pub fn update(
 		&mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: Option<f64>,
 		integral_max_x: Option<f64>, integral_num: Option<usize>, sum: Option<RiemannSum>,
-		extrema: bool, roots: bool,
 	) {
 		// If the function string changes, just wipe and restart from scratch
 		if func_str != self.func_str {
@@ -81,8 +76,6 @@ impl FunctionEntry {
 
 		self.derivative = derivative;
 		self.integral = integral;
-		self.extrema = extrema;
-		self.roots = roots;
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if integral
@@ -99,6 +92,8 @@ impl FunctionEntry {
 		}
 	}
 
+	// TODO: refactor this
+	// Returns back values, integral data (Bars and total area), and Derivative values
 	pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
 		let back_values: Vec<Value> = {
@@ -225,42 +220,9 @@ impl FunctionEntry {
 		self
 	}
 
-	// Finds roots
-	fn roots(&mut self) {
-		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
-		self.output.roots = Some(
-			newtons_method(
-				resolution,
-				self.min_x..self.max_x,
-				self.output.back.to_owned().unwrap(),
-				&|x: f64| self.function.get(x),
-				&|x: f64| self.function.get_derivative_1(x),
-			)
-			.iter()
-			.map(|x| Value::new(*x, self.function.get(*x)))
-			.collect(),
-		);
-	}
-
-	// Finds extrema
-	fn extrema(&mut self) {
-		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
-		self.output.extrema = Some(
-			newtons_method(
-				resolution,
-				self.min_x..self.max_x,
-				self.output.derivative.to_owned().unwrap(),
-				&|x: f64| self.function.get_derivative_1(x),
-				&|x: f64| self.function.get_derivative_2(x),
-			)
-			.iter()
-			.map(|x| Value::new(*x, self.function.get(*x)))
-			.collect(),
-		);
-	}
-
 	pub fn display(
-		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, pixel_width: usize,
+		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, pixel_width: usize, extrema: bool,
+		roots: bool,
 	) -> f64 {
 		if pixel_width != self.pixel_width {
 			self.output.invalidate_back();
@@ -311,40 +273,51 @@ impl FunctionEntry {
 			self.pixel_width = pixel_width;
 		}
 
-		if self.extrema {
-			if (min_x != self.min_x) | (max_x != self.max_x) {
-				self.extrema();
-			}
-		} else {
-			self.output.extrema = None;
-		}
-
-		if self.roots {
-			if (min_x != self.min_x) | (max_x != self.max_x) {
-				self.roots();
-			}
-		} else {
-			self.output.roots = None;
-		}
+		let do_extrema = extrema
+			&& ((min_x != self.min_x) | (max_x != self.max_x) | self.output.extrema.is_none());
+		let do_roots =
+			roots && ((min_x != self.min_x) | (max_x != self.max_x) | self.output.roots.is_none());
 
 		self.min_x = min_x;
 		self.max_x = max_x;
+
+		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
 
 		let (back_values, integral, derivative) = self.run_back();
 		self.output.back = Some(back_values);
 		self.output.integral = integral;
 		self.output.derivative = derivative;
 
-		if self.extrema {
-			self.extrema();
-		} else {
-			self.output.extrema = None;
+		// Calculates extrema
+		if do_extrema {
+			self.output.extrema = Some(
+				newtons_method(
+					resolution,
+					self.min_x..self.max_x,
+					self.output.derivative.to_owned().unwrap(),
+					&|x: f64| self.function.get_derivative_1(x),
+					&|x: f64| self.function.get_derivative_2(x),
+				)
+				.iter()
+				.map(|x| Value::new(*x, self.function.get(*x)))
+				.collect(),
+			);
 		}
 
-		if self.roots {
-			self.roots();
-		} else {
-			self.output.roots = None;
+		// Calculates roots
+		if do_roots {
+			self.output.roots = Some(
+				newtons_method(
+					resolution,
+					self.min_x..self.max_x,
+					self.output.back.to_owned().unwrap(),
+					&|x: f64| self.function.get(x),
+					&|x: f64| self.function.get_derivative_1(x),
+				)
+				.iter()
+				.map(|x| Value::new(*x, self.function.get(*x)))
+				.collect(),
+			);
 		}
 
 		self.output.display(
