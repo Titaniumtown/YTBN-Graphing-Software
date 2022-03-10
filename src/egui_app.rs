@@ -462,10 +462,10 @@ impl MathApp {
 								proc_func_str,
 								integral_enabled,
 								derivative_enabled,
-								Some(self.settings.integral_min_x),
-								Some(self.settings.integral_max_x),
-								Some(self.settings.integral_num),
-								Some(self.settings.sum),
+								self.settings.integral_min_x,
+								self.settings.integral_max_x,
+								self.settings.integral_num,
+								self.settings.sum,
 							);
 							self.last_error = self
 								.last_error

@@ -11,6 +11,7 @@ use eframe::egui::plot::PlotUi;
 use eframe::egui::{plot::Value, widgets::plot::Bar};
 use std::fmt::{self, Debug};
 
+/// Represents the possible variations of Riemann Sums
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub enum RiemannSum {
 	Left,
@@ -26,26 +27,44 @@ lazy_static::lazy_static! {
 	pub static ref EMPTY_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::empty();
 }
 
+/// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
 #[derive(Clone)]
 pub struct FunctionEntry {
+	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
 	function: BackingFunction,
+
+	/// Stores a function string (that hasn't been processed via `process_func_str`) to display to the user
 	func_str: String,
+
+	/// Minimum and Maximum values of what do display
 	min_x: f64,
 	max_x: f64,
+
+	/// How many horizontal pixels? (used for calculating the step at which to generate values at)
 	pixel_width: usize,
 
+	/// output/cached data
 	output: FunctionOutput,
 
+	/// If calculating/displayingintegrals are enabled
 	pub(crate) integral: bool,
+
+	/// If displaying derivatives are enabled (note, they are still calculated for other purposes)
 	pub(crate) derivative: bool,
+
+	/// Minumum and maximum range of integral
 	integral_min_x: f64,
 	integral_max_x: f64,
+
+	/// Number of rectangles used to approximate the integral via a Riemann Sum
 	integral_num: usize,
+
+	/// The type of RiemannSum to use
 	sum: RiemannSum,
 }
 
 impl FunctionEntry {
-	// Creates Empty Function instance
+	/// Creates Empty Function instance
 	pub fn empty() -> Self {
 		Self {
 			function: BackingFunction::new(DEFAULT_FUNCION),
@@ -63,9 +82,10 @@ impl FunctionEntry {
 		}
 	}
 
+	/// Update function settings
 	pub fn update(
-		&mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: Option<f64>,
-		integral_max_x: Option<f64>, integral_num: Option<usize>, sum: Option<RiemannSum>,
+		&mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: f64,
+		integral_max_x: f64, integral_num: usize, sum: RiemannSum,
 	) {
 		// If the function string changes, just wipe and restart from scratch
 		if func_str != self.func_str {
@@ -79,21 +99,21 @@ impl FunctionEntry {
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if integral
-			&& (integral_min_x != Some(self.integral_min_x))
-				| (integral_max_x != Some(self.integral_max_x))
-				| (integral_num != Some(self.integral_num))
-				| (sum != Some(self.sum))
+			&& (integral_min_x != self.integral_min_x)
+				| (integral_max_x != self.integral_max_x)
+				| (integral_num != self.integral_num)
+				| (sum != self.sum)
 		{
 			self.output.invalidate_integral();
-			self.integral_min_x = integral_min_x.expect("integral_min_x is None");
-			self.integral_max_x = integral_max_x.expect("integral_max_x is None");
-			self.integral_num = integral_num.expect("integral_num is None");
-			self.sum = sum.expect("sum is None");
+			self.integral_min_x = integral_min_x;
+			self.integral_max_x = integral_max_x;
+			self.integral_num = integral_num;
+			self.sum = sum;
 		}
 	}
 
 	// TODO: refactor this
-	// Returns back values, integral data (Bars and total area), and Derivative values
+	/// Returns back values, integral data (Bars and total area), and Derivative values
 	pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
 		let back_values: Vec<Value> = {
@@ -137,7 +157,7 @@ impl FunctionEntry {
 		(back_values, integral_data, derivative_values)
 	}
 
-	// Creates and does the math for creating all the rectangles under the graph
+	/// Creates and does the math for creating all the rectangles under the graph
 	fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
 		if self.integral_min_x.is_nan() {
 			panic!("integral_min_x is NaN")
@@ -180,9 +200,10 @@ impl FunctionEntry {
 		(data2, area)
 	}
 
+	/// Returns `func_str`
 	pub fn get_func_str(&self) -> &str { &self.func_str }
 
-	// Updates riemann value and invalidates integral_cache if needed
+	/// Updates riemann value and invalidates integral_cache if needed
 	pub fn update_riemann(mut self, riemann: RiemannSum) -> Self {
 		if self.sum != riemann {
 			self.sum = riemann;
@@ -191,24 +212,27 @@ impl FunctionEntry {
 		self
 	}
 
-	// Toggles integral
-	pub fn integral(mut self, integral: bool) -> Self {
-		self.integral = integral;
+	/// Sets whether integral is enabled or not
+	pub fn integral(mut self, enabled: bool) -> Self {
+		self.integral = enabled;
 		self
 	}
 
+	/// Sets number of rectangles to use to calculate the integral
 	#[allow(dead_code)]
 	pub fn integral_num(mut self, integral_num: usize) -> Self {
 		self.integral_num = integral_num;
 		self
 	}
 
+	/// Sets the number of horizontal pixels
 	#[allow(dead_code)]
 	pub fn pixel_width(mut self, pixel_width: usize) -> Self {
 		self.pixel_width = pixel_width;
 		self
 	}
 
+	/// Sets the bounds of the integral
 	#[allow(dead_code)]
 	pub fn integral_bounds(mut self, min_x: f64, max_x: f64) -> Self {
 		if min_x >= max_x {
@@ -220,6 +244,7 @@ impl FunctionEntry {
 		self
 	}
 
+	/// Calculates and displays the function on PlotUI `plot_ui`
 	pub fn display(
 		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, pixel_width: usize, extrema: bool,
 		roots: bool,

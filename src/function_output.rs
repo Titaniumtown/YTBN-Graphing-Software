@@ -1,3 +1,4 @@
+use crate::misc::decimal_round;
 use eframe::{
 	egui::{
 		plot::{BarChart, Line, PlotUi, Points, Value, Values},
@@ -5,8 +6,6 @@ use eframe::{
 	},
 	epaint::Color32,
 };
-
-use crate::misc::digits_precision;
 
 #[derive(Clone)]
 pub struct FunctionOutput {
@@ -18,6 +17,7 @@ pub struct FunctionOutput {
 }
 
 impl FunctionOutput {
+	/// Creates empty instance of `FunctionOutput`
 	pub fn new_empty() -> Self {
 		Self {
 			back: None,
@@ -28,6 +28,7 @@ impl FunctionOutput {
 		}
 	}
 
+	/// Invalidate all data (setting it all to `None`)
 	pub fn invalidate_whole(&mut self) {
 		self.back = None;
 		self.integral = None;
@@ -36,22 +37,29 @@ impl FunctionOutput {
 		self.roots = None;
 	}
 
+	/// Invalidate `back` data
 	pub fn invalidate_back(&mut self) { self.back = None; }
 
+	/// Invalidate Integral data
 	pub fn invalidate_integral(&mut self) { self.integral = None; }
 
+	/// Invalidate Derivative data
 	pub fn invalidate_derivative(&mut self) { self.derivative = None; }
 
+	/// Display output on PlotUi `plot_ui`
+	/// Returns `f64` containing rounded integral area (if integrals are disabled, it returns `f64::NAN`)
 	pub fn display(
 		&self, plot_ui: &mut PlotUi, func_str: &str, derivative_str: &str, step: f64,
 		derivative_enabled: bool,
 	) -> f64 {
+		// Plot back data
 		plot_ui.line(
 			Line::new(Values::from_values(self.back.clone().unwrap()))
 				.color(Color32::RED)
 				.name(func_str),
 		);
 
+		// Plot derivative data
 		if derivative_enabled {
 			if let Some(derivative_data) = self.derivative.clone() {
 				plot_ui.line(
@@ -62,6 +70,7 @@ impl FunctionOutput {
 			}
 		}
 
+		// Plot extrema points
 		if let Some(extrema_data) = self.extrema.clone() {
 			plot_ui.points(
 				Points::new(Values::from_values(extrema_data))
@@ -71,6 +80,7 @@ impl FunctionOutput {
 			);
 		}
 
+		// Plot roots points
 		if let Some(roots_data) = self.roots.clone() {
 			plot_ui.points(
 				Points::new(Values::from_values(roots_data))
@@ -80,6 +90,7 @@ impl FunctionOutput {
 			);
 		}
 
+		// Plot integral data
 		if let Some(integral_data) = self.integral.clone() {
 			plot_ui.bar_chart(
 				BarChart::new(integral_data.0)
@@ -87,9 +98,9 @@ impl FunctionOutput {
 					.width(step),
 			);
 
-			digits_precision(integral_data.1, 8)
+			decimal_round(integral_data.1, 8) // return value rounded to 8 decimal places
 		} else {
-			f64::NAN
+			f64::NAN // return NaN if integrals are disabled
 		}
 	}
 }
