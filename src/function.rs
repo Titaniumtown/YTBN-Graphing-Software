@@ -276,6 +276,33 @@ impl FunctionEntry {
         self
     }
 
+    // Finds roots
+    fn roots(&mut self) {
+        let mut root_list: Vec<Value> = Vec::new();
+        let mut last_ele: Option<Value> = None;
+        for ele in self.output.back.as_ref().unwrap().iter() {
+            if last_ele.is_none() {
+                last_ele = Some(*ele);
+                continue;
+            }
+
+            if last_ele.unwrap().y.signum() != ele.y.signum() {
+                // Do 10 iterations of newton's method, should be more than accurate
+                let x = {
+                    let mut x1: f64 = last_ele.unwrap().x;
+                    for _ in 0..10 {
+                        x1 = last_ele.unwrap().x
+                            - (self.function.get(x1) / self.function.derivative(x1))
+                    }
+                    x1
+                };
+                root_list.push(Value::new(x, self.function.get(x)));
+            }
+            last_ele = Some(*ele);
+        }
+        self.output.roots = Some(root_list);
+    }
+
     // Finds extrema
     fn extrema(&mut self) {
         let mut extrama_list: Vec<Value> = Vec::new();
@@ -309,6 +336,7 @@ impl FunctionEntry {
         self.output.integral = integral;
         self.output.derivative = derivative;
         self.extrema();
+        self.roots();
 
         self.output.display(
             plot_ui,

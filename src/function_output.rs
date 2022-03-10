@@ -14,6 +14,7 @@ pub struct FunctionOutput {
     pub(crate) integral: Option<(Vec<Bar>, f64)>,
     pub(crate) derivative: Option<Vec<Value>>,
     pub(crate) extrema: Option<Vec<Value>>,
+    pub(crate) roots: Option<Vec<Value>>,
 }
 
 impl FunctionOutput {
@@ -23,6 +24,7 @@ impl FunctionOutput {
             integral: None,
             derivative: None,
             extrema: None,
+            roots: None,
         }
     }
 
@@ -31,6 +33,7 @@ impl FunctionOutput {
         self.integral = None;
         self.derivative = None;
         self.extrema = None;
+        self.roots = None;
     }
 
     pub fn invalidate_back(&mut self) { self.back = None; }
@@ -64,6 +67,15 @@ impl FunctionOutput {
                 Points::new(Values::from_values(extrema_data))
                     .color(Color32::YELLOW)
                     .name("Extrema")
+                    .radius(5.0),
+            );
+        }
+
+        if let Some(roots_data) = self.roots.clone() {
+            plot_ui.points(
+                Points::new(Values::from_values(roots_data))
+                    .color(Color32::LIGHT_BLUE)
+                    .name("Root")
                     .radius(5.0),
             );
         }
