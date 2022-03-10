@@ -192,38 +192,40 @@ fn test_func_test() {
 	assert!(test_func_helper("abcdef").is_some());
 }
 
+#[cfg(test)]
+fn test_process_helper(input: &str, expected: &str) {
+	assert_eq!(&process_func_str(input.to_string()), expected);
+}
+
 // Tests to make sure my cursed function works as intended
 #[test]
 fn func_process_test() {
-	assert_eq!(&process_func_str("2x".to_string()), "2*x");
-	assert_eq!(&process_func_str("x2".to_string()), "x*2");
-	assert_eq!(&process_func_str("x(1+3)".to_string()), "x*(1+3)");
-	assert_eq!(&process_func_str("(1+3)x".to_string()), "(1+3)*x");
-	assert_eq!(&process_func_str("sin(x)".to_string()), "sin(x)");
-	assert_eq!(&process_func_str("2sin(x)".to_string()), "2*sin(x)");
-	assert_eq!(&process_func_str("max(x)".to_string()), "max(x)");
-	assert_eq!(&process_func_str("2e^x".to_string()), "2*e^x");
-	assert_eq!(&process_func_str("2max(x)".to_string()), "2*max(x)");
-	assert_eq!(&process_func_str("cos(sin(x))".to_string()), "cos(sin(x))");
-	assert_eq!(&process_func_str("x^(1+2x)".to_string()), "x^(1+2*x)");
-	assert_eq!(
-		&process_func_str("(x+2)x(1+3)".to_string()),
-		"(x+2)*x*(1+3)"
-	);
-	assert_eq!(&process_func_str("(x+2)(1+3)".to_string()), "(x+2)*(1+3)");
-	assert_eq!(&process_func_str("xxx".to_string()), "x*x*x");
-	assert_eq!(&process_func_str("eee".to_string()), "e*e*e");
-	assert_eq!(&process_func_str("pi(x+2)".to_string()), "π*(x+2)");
-	assert_eq!(&process_func_str("(x)pi".to_string()), "(x)*π");
-	assert_eq!(&process_func_str("2e".to_string()), "2*e");
-	assert_eq!(&process_func_str("2log10(x)".to_string()), "2*log10(x)");
-	assert_eq!(&process_func_str("2log(x)".to_string()), "2*log10(x)");
-	assert_eq!(&process_func_str("x!".to_string()), "x!");
-	assert_eq!(&process_func_str("pipipipipipi".to_string()), "π*π*π*π*π*π");
-	assert_eq!(&process_func_str("10pi".to_string()), "10*π");
-	assert_eq!(&process_func_str("pi10".to_string()), "π*10");
+	test_process_helper("2x", "2*x");
+	test_process_helper("x2", "x*2");
+	test_process_helper("x(1+3)", "x*(1+3)");
+	test_process_helper("(1+3)x", "(1+3)*x");
+	test_process_helper("sin(x)", "sin(x)");
+	test_process_helper("2sin(x)", "2*sin(x)");
+	test_process_helper("max(x)", "max(x)");
+	test_process_helper("2e^x", "2*e^x");
+	test_process_helper("2max(x)", "2*max(x)");
+	test_process_helper("cos(sin(x))", "cos(sin(x))");
+	test_process_helper("x^(1+2x)", "x^(1+2*x)");
+	test_process_helper("(x+2)x(1+3)", "(x+2)*x*(1+3)");
+	test_process_helper("(x+2)(1+3)", "(x+2)*(1+3)");
+	test_process_helper("xxx", "x*x*x");
+	test_process_helper("eee", "e*e*e");
+	test_process_helper("pi(x+2)", "π*(x+2)");
+	test_process_helper("(x)pi", "(x)*π");
+	test_process_helper("2e", "2*e");
+	test_process_helper("2log10(x)", "2*log10(x)");
+	test_process_helper("2log(x)", "2*log10(x)");
+	test_process_helper("x!", "x!");
+	test_process_helper("pipipipipipi", "π*π*π*π*π*π");
+	test_process_helper("10pi", "10*π");
+	test_process_helper("pi10", "π*10");
 
 	// Need to fix these checks, maybe I need to rewrite the whole asterisk adding system... (or just implement these changes into meval-rs, idk)
-	// assert_eq!(&add_asterisks("emax(x)".to_string()), "e*max(x)");
-	// assert_eq!(&add_asterisks("pisin(x)".to_string()), "pi*sin(x)");
+	// test_process_helper("emax(x)", "e*max(x)");
+	// test_process_helper("pisin(x)", "pi*sin(x)");
 }

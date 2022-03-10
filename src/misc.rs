@@ -190,7 +190,6 @@ pub fn parse_value(value: &serde_json::Value) -> String {
 		.map(|ele| ele.as_str().unwrap())
 		.collect::<Vec<&str>>();
 
-
 	// Deliminate vector with a new line and return the resulting multiline string
 	string_vector
 		.iter()
