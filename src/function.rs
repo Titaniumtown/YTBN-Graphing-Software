@@ -306,7 +306,8 @@ impl FunctionEntry {
 		self.min_x = min_x;
 		self.max_x = max_x;
 
-		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
+		let threshold: f64 =
+			((self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64) / 2.0;
 
 		let (back_values, integral, derivative) = self.run_back();
 		self.output.back = Some(back_values);
@@ -317,7 +318,7 @@ impl FunctionEntry {
 		if do_extrema {
 			self.output.extrema = Some(
 				newtons_method(
-					resolution,
+					threshold,
 					self.min_x..self.max_x,
 					self.output.derivative.to_owned().unwrap(),
 					&|x: f64| self.function.get_derivative_1(x),
@@ -333,7 +334,7 @@ impl FunctionEntry {
 		if do_roots {
 			self.output.roots = Some(
 				newtons_method(
-					resolution,
+					threshold,
 					self.min_x..self.max_x,
 					self.output.back.to_owned().unwrap(),
 					&|x: f64| self.function.get(x),
