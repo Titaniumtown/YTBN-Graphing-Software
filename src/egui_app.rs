@@ -192,7 +192,7 @@ fn test_file_data() {
 		FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec())
 	);
 
-	let json_data: Value = serde_json::from_str(&include_str!("../assets/text.json")).unwrap();
+	let json_data: Value = serde_json::from_str(include_str!("../assets/text.json")).unwrap();
 
 	assert_eq!(
 		FILE_DATA.text_help_expr,
