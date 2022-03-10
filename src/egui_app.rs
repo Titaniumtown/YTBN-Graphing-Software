@@ -94,7 +94,7 @@ lazy_static::lazy_static! {
 
 			debug_log(&format!("Loading file: {}", path_string));
 
-			// Match the filename
+			// Match the file extention
 			if path_string.ends_with(".ttf") {
 				// Parse font files
 				let font_data = FontData::from_owned(data);

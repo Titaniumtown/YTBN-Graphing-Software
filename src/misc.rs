@@ -146,7 +146,6 @@ pub fn newtons_method(
 		}
 
 		if last_ele_signum != ele_signum {
-			// Do 50 iterations of newton's method, should be more than accurate
 			let x = {
 				let mut x1: f64 = last_ele.unwrap().x;
 				let mut x2: f64;
