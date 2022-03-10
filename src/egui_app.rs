@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
-use crate::misc::{debug_log, log_helper};
+use crate::misc::{debug_log, log_helper, parse_value};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
@@ -11,6 +11,7 @@ use egui::{
 };
 use epi::{Frame, Storage};
 use instant::Duration;
+use serde_json::Value;
 use shadow_rs::shadow;
 use std::{
 	collections::BTreeMap,
@@ -112,24 +113,18 @@ lazy_static::lazy_static! {
 						panic!("Font File {} not expected!", path_string);
 					}
 				}
-			} else if path_string.ends_with(".txt") {
-				// Parse text files
+			} else if path_string.ends_with(".json") {
+				// Parse json file
 				let string_data = str::from_utf8(&data).unwrap().to_string();
 				match path_string.as_ref() {
-					"text_help_expr.txt" => {
-						text_help_expr = Some(string_data);
-					},
-					"text_help_vars.txt" => {
-						text_help_vars = Some(string_data);
-					},
-					"text_help_panel.txt" => {
-						text_help_panel = Some(string_data);
-					},
-					"text_help_function.txt" => {
-						text_help_function = Some(string_data);
-					},
-					"text_help_other.txt" => {
-						text_help_other = Some(string_data);
+					"text.json" => {
+						let json_data: Value = serde_json::from_str(&string_data).unwrap();
+						text_help_expr = Some(parse_value(&json_data["help_expr"]));
+						text_help_vars = Some(parse_value(&json_data["help_vars"]));
+						text_help_panel = Some(parse_value(&json_data["help_panel"]));
+						text_help_function = Some(parse_value(&json_data["help_function"]));
+						text_help_other = Some(parse_value(&json_data["help_other"]));
+
 					},
 					_ => {
 						panic!("Text file {} not expected!", path_string);
@@ -197,25 +192,28 @@ fn test_file_data() {
 		FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec())
 	);
 
+	let json_data: Value = serde_json::from_str(&include_str!("../assets/text.json")).unwrap();
+
 	assert_eq!(
 		FILE_DATA.text_help_expr,
-		include_str!("../assets/text_help_expr.txt")
+		parse_value(&json_data["help_expr"])
 	);
+
 	assert_eq!(
 		FILE_DATA.text_help_vars,
-		include_str!("../assets/text_help_vars.txt")
+		parse_value(&json_data["help_vars"])
 	);
 	assert_eq!(
 		FILE_DATA.text_help_panel,
-		include_str!("../assets/text_help_panel.txt")
+		parse_value(&json_data["help_panel"])
 	);
 	assert_eq!(
 		FILE_DATA.text_help_function,
-		include_str!("../assets/text_help_function.txt")
+		parse_value(&json_data["help_function"])
 	);
 	assert_eq!(
 		FILE_DATA.text_help_other,
-		include_str!("../assets/text_help_other.txt")
+		parse_value(&json_data["help_other"])
 	);
 }
 

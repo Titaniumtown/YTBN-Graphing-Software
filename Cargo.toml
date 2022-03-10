@@ -30,6 +30,7 @@ exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", fea
 lazy_static = "1.4.0"
 tar = "0.4.38"
 ruzstd = { git = "https://github.com/KillingSpark/zstd-rs.git" }
+serde_json = "1.0.79"
 
 [build-dependencies]
 shadow-rs = "0.9"

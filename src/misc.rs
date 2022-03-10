@@ -179,3 +179,17 @@ pub fn newtons_method(
 	}
 	output_list
 }
+
+pub fn parse_value(value: &serde_json::Value) -> String {
+	let string_vector: Vec<&str> = value
+		.as_array()
+		.unwrap()
+		.iter()
+		.map(|ele| ele.as_str().unwrap())
+		.collect::<Vec<&str>>();
+	string_vector
+		.iter()
+		.fold(String::new(), |s, l| s + l + "\n")
+		.trim()
+		.to_string()
+}

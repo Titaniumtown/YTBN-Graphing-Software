@@ -1,5 +1,0 @@
-- The 'Panel' button on the top bar toggles if the side bar should be shown or not.
-- The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.
-- The 'Help' button on the top bar opens and closes this window!
-- The 'Info' button provides information on the build currently running.
-- The Sun/Moon button toggles Dark and Light mode.
