@@ -44,6 +44,9 @@ pub struct FunctionEntry {
     sum: RiemannSum,
 }
 
+// How many times should newton's method iterate?
+const NEWTON_LOOPS: usize = 50;
+
 impl FunctionEntry {
     // Creates Empty Function instance
     pub fn empty() -> Self {
@@ -290,9 +293,10 @@ impl FunctionEntry {
                 // Do 50 iterations of newton's method, should be more than accurate
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
-                    for _ in 0..50 {
-                        x1 = last_ele.unwrap().x
-                            - (self.function.get(x1) / self.function.derivative(x1))
+                    let mut x2: f64;
+                    for _ in 0..NEWTON_LOOPS {
+                        x2 = x1 - (self.function.get(x1) / self.function.derivative(x1));
+                        x1 = x2;
                     }
                     x1
                 };
@@ -317,9 +321,11 @@ impl FunctionEntry {
                 // Do 50 iterations of newton's method, should be more than accurate
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
-                    for _ in 0..50 {
-                        x1 = last_ele.unwrap().x
-                            - (self.function.derivative(x1) / self.function.get_derivative_2(x1))
+                    let mut x2: f64;
+                    for _ in 0..NEWTON_LOOPS {
+                        x2 = x1
+                            - (self.function.derivative(x1) / self.function.get_derivative_2(x1));
+                        x1 = x2;
                     }
                     x1
                 };
