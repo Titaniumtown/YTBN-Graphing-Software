@@ -308,13 +308,25 @@ impl FunctionEntry {
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
                     let mut x2: f64;
+                    let mut fail: bool = false;
                     for _ in 0..NEWTON_LOOPS {
                         x2 = x1 - (self.function.get(x1) / self.function.derivative(x1));
+                        if !(self.min_x..self.max_x).contains(&x2) {
+                            fail = true;
+                            break;
+                        }
                         x1 = x2;
                     }
-                    x1
+
+                    match fail {
+                        true => f64::NAN,
+                        false => x1,
+                    }
                 };
-                root_list.push(Value::new(x, self.function.get(x)));
+
+                if !x.is_nan() {
+                    root_list.push(Value::new(x, self.function.get(x)));
+                }
             }
             last_ele = Some(*ele);
         }
@@ -343,14 +355,26 @@ impl FunctionEntry {
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
                     let mut x2: f64;
+                    let mut fail: bool = false;
                     for _ in 0..NEWTON_LOOPS {
                         x2 = x1
                             - (self.function.derivative(x1) / self.function.get_derivative_2(x1));
+                        if !(self.min_x..self.max_x).contains(&x2) {
+                            fail = true;
+                            break;
+                        }
                         x1 = x2;
                     }
-                    x1
+
+                    match fail {
+                        true => f64::NAN,
+                        false => x1,
+                    }
                 };
-                extrama_list.push(Value::new(x, self.function.get(x)));
+
+                if !x.is_nan() {
+                    extrama_list.push(Value::new(x, self.function.get(x)));
+                }
             }
             last_ele = Some(*ele);
         }
