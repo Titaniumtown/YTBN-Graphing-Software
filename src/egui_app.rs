@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
-use crate::misc::{debug_log, digits_precision, log_helper};
+use crate::misc::{debug_log, log_helper};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
@@ -602,9 +602,6 @@ impl epi::App for MathApp {
             }
 
             let available_width: usize = ui.available_width() as usize;
-            let step = (self.settings.integral_min_x - self.settings.integral_max_x).abs()
-                / (self.settings.integral_num as f64);
-
             Plot::new("plot")
                 .set_margin_fraction(Vec2::ZERO)
                 .data_aspect(1.0)
@@ -624,33 +621,7 @@ impl epi::App for MathApp {
                             }
 
                             function.update_bounds(minx_bounds, maxx_bounds, available_width);
-
-                            let (back_values, integral, derivative) = function.run();
-                            let func_str = function.get_func_str();
-                            plot_ui.line(back_values.color(Color32::RED).name(func_str));
-
-                            if let Some(derivative_data) = derivative {
-                                plot_ui.line(
-                                    derivative_data
-                                        .color(Color32::GREEN)
-                                        .name(function.get_derivative_str()),
-                                );
-                            }
-
-                            if let Some(integral_data) = integral {
-                                let integral_name = format!("Integral of {}", func_str);
-                                plot_ui.bar_chart(
-                                    integral_data
-                                        .0
-                                        .color(Color32::BLUE)
-                                        .width(step)
-                                        .name(integral_name),
-                                );
-
-                                digits_precision(integral_data.1, 8)
-                            } else {
-                                f64::NAN
-                            }
+                            function.display(plot_ui)
                         })
                         .collect();
                     self.last_info = (area_list, start.elapsed());

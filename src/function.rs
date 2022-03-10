@@ -1,15 +1,14 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
+use crate::function_output::FunctionOutput;
 #[allow(unused_imports)]
 use crate::misc::{debug_log, SteppedVector};
 
 use crate::egui_app::{DEFAULT_FUNCION, DEFAULT_RIEMANN};
 use crate::parsing::BackingFunction;
 
-use eframe::egui::{
-    plot::{BarChart, Line, Value, Values},
-    widgets::plot::Bar,
-};
+use eframe::egui::plot::PlotUi;
+use eframe::egui::{plot::Value, widgets::plot::Bar};
 use std::fmt::{self, Debug};
 
 #[derive(PartialEq, Debug, Copy, Clone)]
@@ -35,9 +34,7 @@ pub struct FunctionEntry {
     max_x: f64,
     pixel_width: usize,
 
-    back_cache: Option<Vec<Value>>,
-    integral_cache: Option<(Vec<Bar>, f64)>,
-    derivative_cache: Option<Vec<Value>>,
+    output: FunctionOutput,
 
     pub(crate) integral: bool,
     pub(crate) derivative: bool,
@@ -56,9 +53,7 @@ impl FunctionEntry {
             min_x: -1.0,
             max_x: 1.0,
             pixel_width: 100,
-            back_cache: None,
-            integral_cache: None,
-            derivative_cache: None,
+            output: FunctionOutput::new_empty(),
             integral: false,
             derivative: false,
             integral_min_x: f64::NAN,
@@ -76,9 +71,7 @@ impl FunctionEntry {
         if func_str != self.func_str {
             self.func_str = func_str.clone();
             self.function = BackingFunction::new(&func_str);
-            self.back_cache = None;
-            self.integral_cache = None;
-            self.derivative_cache = None;
+            self.output.invalidate_whole();
         }
 
         self.derivative = derivative;
@@ -91,7 +84,7 @@ impl FunctionEntry {
                 | (integral_num != Some(self.integral_num))
                 | (sum != Some(self.sum))
         {
-            self.integral_cache = None;
+            self.output.invalidate_integral();
             self.integral_min_x = integral_min_x.expect("integral_min_x is None");
             self.integral_max_x = integral_max_x.expect("integral_max_x is None");
             self.integral_num = integral_num.expect("integral_num is None");
@@ -101,14 +94,14 @@ impl FunctionEntry {
 
     pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
         if pixel_width != self.pixel_width {
-            self.back_cache = None;
-            self.derivative_cache = None;
+            self.output.invalidate_back();
+            self.output.invalidate_derivative();
             self.min_x = min_x;
             self.max_x = max_x;
             self.pixel_width = pixel_width;
-        } else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.back_cache.is_some() {
+        } else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.output.back.is_some() {
             let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
-            let back_cache = self.back_cache.as_ref().unwrap();
+            let back_cache = self.output.back.as_ref().unwrap();
 
             let x_data: SteppedVector = back_cache
                 .iter()
@@ -116,7 +109,7 @@ impl FunctionEntry {
                 .collect::<Vec<f64>>()
                 .into();
 
-            self.back_cache = Some(
+            self.output.back = Some(
                 (0..self.pixel_width)
                     .map(|x| (x as f64 / resolution as f64) + min_x)
                     .map(|x| {
@@ -128,13 +121,13 @@ impl FunctionEntry {
                     })
                     .collect(),
             );
-            // assert_eq!(self.back_cache.as_ref().unwrap().len(), self.pixel_width);
+            // assert_eq!(self.output.back.as_ref().unwrap().len(), self.pixel_width);
 
-            if self.derivative_cache.is_some() {
+            if self.output.derivative.is_some() {
                 if self.derivative {
-                    let derivative_cache = self.derivative_cache.as_ref().unwrap();
+                    let derivative_cache = self.output.derivative.as_ref().unwrap();
 
-                    self.derivative_cache = Some(
+                    self.output.derivative = Some(
                         (0..self.pixel_width)
                             .map(|x| (x as f64 / resolution as f64) + min_x)
                             .map(|x| {
@@ -146,14 +139,14 @@ impl FunctionEntry {
                             })
                             .collect(),
                     );
-                    // assert_eq!(self.derivative_cache.as_ref().unwrap().len(), self.pixel_width);
+                    // assert_eq!(self.output.derivative.as_ref().unwrap().len(), self.pixel_width);
                 } else {
-                    self.derivative_cache = None;
+                    self.output.invalidate_derivative();
                 }
             }
         } else {
-            self.back_cache = None;
-            self.derivative_cache = None;
+            self.output.invalidate_back();
+            self.output.invalidate_derivative();
             self.min_x = min_x;
             self.max_x = max_x;
             self.pixel_width = pixel_width;
@@ -163,8 +156,8 @@ impl FunctionEntry {
     pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
         let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
         let back_values: Vec<Value> = {
-            if self.back_cache.is_none() {
-                self.back_cache = Some(
+            if self.output.back.is_none() {
+                self.output.back = Some(
                     (0..self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
                         .map(|x| Value::new(x, self.function.get(x)))
@@ -172,53 +165,38 @@ impl FunctionEntry {
                 );
             }
 
-            self.back_cache.as_ref().unwrap().clone()
+            self.output.back.as_ref().unwrap().clone()
         };
 
         let derivative_values: Option<Vec<Value>> = match self.derivative {
             true => {
-                if self.derivative_cache.is_none() {
-                    self.derivative_cache = Some(
+                if self.output.derivative.is_none() {
+                    self.output.derivative = Some(
                         (0..self.pixel_width)
                             .map(|x| (x as f64 / resolution as f64) + self.min_x)
                             .map(|x| Value::new(x, self.function.derivative(x)))
                             .collect(),
                     );
                 }
-                Some(self.derivative_cache.as_ref().unwrap().clone())
+                Some(self.output.derivative.as_ref().unwrap().clone())
             }
             false => None,
         };
 
         let integral_data = match self.integral {
             true => {
-                if self.integral_cache.is_none() {
+                if self.output.integral.is_none() {
                     let (data, area) = self.integral_rectangles();
-                    self.integral_cache =
+                    self.output.integral =
                         Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
                 }
-                let cache = self.integral_cache.as_ref().unwrap();
+                let cache = self.output.integral.as_ref().unwrap();
                 Some((cache.0.clone(), cache.1))
             }
             false => None,
         };
 
         (back_values, integral_data, derivative_values)
-    }
-
-    pub fn run(&mut self) -> (Line, Option<(BarChart, f64)>, Option<Line>) {
-        let (back_values, integral_data_option, derivative_option) = self.run_back();
-
-        (
-            Line::new(Values::from_values(back_values)),
-            if let Some(integral_data) = integral_data_option {
-                Some((BarChart::new(integral_data.0), integral_data.1))
-            } else {
-                None
-            },
-            derivative_option
-                .map(|derivative_data| Line::new(Values::from_values(derivative_data))),
-        )
     }
 
     // Creates and does the math for creating all the rectangles under the graph
@@ -275,7 +253,7 @@ impl FunctionEntry {
     pub fn update_riemann(mut self, riemann: RiemannSum) -> Self {
         if self.sum != riemann {
             self.sum = riemann;
-            self.integral_cache = None;
+            self.output.invalidate_integral();
         }
         self
     }
@@ -309,7 +287,19 @@ impl FunctionEntry {
         self
     }
 
-    pub fn get_derivative_str(&self) -> String { self.function.get_derivative_str() }
+    pub fn display(&mut self, plot_ui: &mut PlotUi) -> f64 {
+        let (back_values, integral, derivative) = self.run_back();
+        self.output.back = Some(back_values);
+        self.output.integral = integral;
+        self.output.derivative = derivative;
+
+        self.output.display(
+            plot_ui,
+            self.get_func_str(),
+            &self.function.get_derivative_str(),
+            (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64),
+        )
+    }
 }
 
 #[cfg(test)]

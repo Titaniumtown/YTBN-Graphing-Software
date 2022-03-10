@@ -3,6 +3,7 @@
 
 mod egui_app;
 mod function;
+mod function_output;
 mod misc;
 mod parsing;
 
