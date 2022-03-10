@@ -130,24 +130,23 @@ pub fn newtons_method(
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	let mut output_list: Vec<f64> = Vec::new();
-	let mut last_ele: Option<Value> = None;
+	let mut last_ele_option: Option<Value> = None;
 	for ele in data.iter() {
-		if last_ele.is_none() {
-			last_ele = Some(*ele);
+		if last_ele_option.is_none() {
+			last_ele_option = Some(*ele);
 			continue;
 		}
 
-		let last_ele_signum = last_ele.unwrap().y.signum();
-		let ele_signum = ele.y.signum();
+		let last_ele_y = last_ele_option.unwrap().y; // store this here as it's used multiple times
 
 		// If either are NaN, just continue iterating
-		if last_ele_signum.is_nan() | ele_signum.is_nan() {
+		if last_ele_y.is_nan() | ele.y.is_nan() {
 			continue;
 		}
 
-		if last_ele_signum != ele_signum {
+		if last_ele_y.signum() != ele.y.signum() {
 			let x = {
-				let mut x1: f64 = last_ele.unwrap().x;
+				let mut x1: f64 = last_ele_option.unwrap().x;
 				let mut x2: f64;
 				let mut fail: bool = false;
 				loop {
@@ -157,6 +156,7 @@ pub fn newtons_method(
 						break;
 					}
 
+					// If below threshold, break
 					if (x2 - x1).abs() < threshold {
 						break;
 					}
@@ -164,6 +164,7 @@ pub fn newtons_method(
 					x1 = x2;
 				}
 
+				// If failed, return NaN, which is then filtered out
 				match fail {
 					true => f64::NAN,
 					false => x1,
@@ -174,7 +175,7 @@ pub fn newtons_method(
 				output_list.push(x);
 			}
 		}
-		last_ele = Some(*ele);
+		last_ele_option = Some(*ele);
 	}
 	output_list
 }
