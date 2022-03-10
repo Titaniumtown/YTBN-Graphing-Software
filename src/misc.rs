@@ -180,13 +180,18 @@ pub fn newtons_method(
 	output_list
 }
 
+/// Parses a json array of strings into a single, multiline string
 pub fn parse_value(value: &serde_json::Value) -> String {
+	// Create vector of strings
 	let string_vector: Vec<&str> = value
 		.as_array()
 		.unwrap()
 		.iter()
 		.map(|ele| ele.as_str().unwrap())
 		.collect::<Vec<&str>>();
+
+
+	// Deliminate vector with a new line and return the resulting multiline string
 	string_vector
 		.iter()
 		.fold(String::new(), |s, l| s + l + "\n")
