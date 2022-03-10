@@ -8,9 +8,7 @@
     - Non `y=` functions.
 3. Smart display of graph
     - Display of intersections between functions
-    - Add docs about roots and extrema
     - Caching of roots and extrema
-    - add configs for toggling display of roots and extrema
 4. Fix integral line
 5. re-add euler's number (well it works if you use capital e like `E^x`)
 6. allow constants in min/max integral input (like pi or euler's number)
