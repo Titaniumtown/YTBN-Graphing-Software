@@ -100,61 +100,6 @@ impl FunctionEntry {
 		}
 	}
 
-	pub fn update_bounds(&mut self, min_x: f64, max_x: f64, pixel_width: usize) {
-		if pixel_width != self.pixel_width {
-			self.output.invalidate_back();
-			self.output.invalidate_derivative();
-			self.min_x = min_x;
-			self.max_x = max_x;
-			self.pixel_width = pixel_width;
-		} else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.output.back.is_some() {
-			let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
-			let back_cache = self.output.back.as_ref().unwrap();
-
-			let x_data: SteppedVector = back_cache
-				.iter()
-				.map(|ele| ele.x)
-				.collect::<Vec<f64>>()
-				.into();
-
-			self.output.back = Some(
-				(0..self.pixel_width)
-					.map(|x| (x as f64 / resolution as f64) + min_x)
-					.map(|x| {
-						if let Some(i) = x_data.get_index(x) {
-							back_cache[i]
-						} else {
-							Value::new(x, self.function.get(x))
-						}
-					})
-					.collect(),
-			);
-			// assert_eq!(self.output.back.as_ref().unwrap().len(), self.pixel_width);
-
-			let derivative_cache = self.output.derivative.as_ref().unwrap();
-			let new_data = (0..self.pixel_width)
-				.map(|x| (x as f64 / resolution as f64) + min_x)
-				.map(|x| {
-					if let Some(i) = x_data.get_index(x) {
-						derivative_cache[i]
-					} else {
-						Value::new(x, self.function.get_derivative_1(x))
-					}
-				})
-				.collect();
-
-			self.output.derivative = Some(new_data);
-		} else {
-			self.output.invalidate_back();
-			self.output.invalidate_derivative();
-			self.pixel_width = pixel_width;
-		}
-
-		self.min_x = min_x;
-		self.max_x = max_x;
-		self.output.invalidate_points();
-	}
-
 	pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
 		let back_values: Vec<Value> = {
@@ -394,7 +339,77 @@ impl FunctionEntry {
 		self.output.extrema = Some(extrama_list);
 	}
 
-	pub fn display(&mut self, plot_ui: &mut PlotUi) -> f64 {
+	pub fn display(
+		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, pixel_width: usize,
+	) -> f64 {
+		if pixel_width != self.pixel_width {
+			self.output.invalidate_back();
+			self.output.invalidate_derivative();
+			self.min_x = min_x;
+			self.max_x = max_x;
+			self.pixel_width = pixel_width;
+		} else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.output.back.is_some() {
+			let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
+			let back_cache = self.output.back.as_ref().unwrap();
+
+			let x_data: SteppedVector = back_cache
+				.iter()
+				.map(|ele| ele.x)
+				.collect::<Vec<f64>>()
+				.into();
+
+			self.output.back = Some(
+				(0..self.pixel_width)
+					.map(|x| (x as f64 / resolution as f64) + min_x)
+					.map(|x| {
+						if let Some(i) = x_data.get_index(x) {
+							back_cache[i]
+						} else {
+							Value::new(x, self.function.get(x))
+						}
+					})
+					.collect(),
+			);
+			// assert_eq!(self.output.back.as_ref().unwrap().len(), self.pixel_width);
+
+			let derivative_cache = self.output.derivative.as_ref().unwrap();
+			let new_data = (0..self.pixel_width)
+				.map(|x| (x as f64 / resolution as f64) + min_x)
+				.map(|x| {
+					if let Some(i) = x_data.get_index(x) {
+						derivative_cache[i]
+					} else {
+						Value::new(x, self.function.get_derivative_1(x))
+					}
+				})
+				.collect();
+
+			self.output.derivative = Some(new_data);
+		} else {
+			self.output.invalidate_back();
+			self.output.invalidate_derivative();
+			self.pixel_width = pixel_width;
+		}
+
+		if self.extrema {
+			if (min_x != self.min_x) | (max_x != self.max_x) {
+				self.extrema();
+			}
+		} else {
+			self.output.extrema = None;
+		}
+
+		if self.roots {
+			if (min_x != self.min_x) | (max_x != self.max_x) {
+				self.roots();
+			}
+		} else {
+			self.output.roots = None;
+		}
+
+		self.min_x = min_x;
+		self.max_x = max_x;
+
 		let (back_values, integral, derivative) = self.run_back();
 		self.output.back = Some(back_values);
 		self.output.integral = integral;

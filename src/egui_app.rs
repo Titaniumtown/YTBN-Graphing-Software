@@ -389,10 +389,8 @@ impl MathApp {
 					.changed();
 
 				let configs_changed = max_x_changed
-					| min_x_changed
-					| integral_num_changed
-					| roots_toggled
-					| extrema_toggled;
+					| min_x_changed | integral_num_changed
+					| roots_toggled | extrema_toggled;
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
@@ -441,8 +439,7 @@ impl MathApp {
 
 					let proc_func_str = process_func_str(self.func_strs[i].clone());
 					if configs_changed
-						| integral_toggle
-						| derivative_toggle
+						| integral_toggle | derivative_toggle
 						| (proc_func_str != function.get_func_str())
 						| self.last_error.iter().any(|ele| ele.0 == i)
 					{
@@ -655,8 +652,7 @@ impl epi::App for MathApp {
 								return f64::NAN;
 							}
 
-							function.update_bounds(minx_bounds, maxx_bounds, available_width);
-							function.display(plot_ui)
+							function.display(plot_ui, minx_bounds, maxx_bounds, available_width)
 						})
 						.collect();
 					self.last_info = (area_list, start.elapsed());

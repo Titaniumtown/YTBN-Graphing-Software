@@ -1,3 +1,4 @@
 edition = "2021"
 fn_args_layout = "Compressed"
 fn_single_line = true
+hard_tabs = true
