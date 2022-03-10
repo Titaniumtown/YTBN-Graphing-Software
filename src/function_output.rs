@@ -1,6 +1,6 @@
 use eframe::{
     egui::{
-        plot::{BarChart, Line, PlotUi, Value, Values},
+        plot::{BarChart, Line, PlotUi, Points, Value, Values},
         widgets::plot::Bar,
     },
     epaint::Color32,
@@ -13,24 +13,16 @@ pub struct FunctionOutput {
     pub(crate) back: Option<Vec<Value>>,
     pub(crate) integral: Option<(Vec<Bar>, f64)>,
     pub(crate) derivative: Option<Vec<Value>>,
+    pub(crate) extrema: Option<Vec<Value>>,
 }
 
 impl FunctionOutput {
-    pub fn new(
-        back: Option<Vec<Value>>, integral: Option<(Vec<Bar>, f64)>, derivative: Option<Vec<Value>>,
-    ) -> Self {
-        Self {
-            back,
-            integral,
-            derivative,
-        }
-    }
-
     pub fn new_empty() -> Self {
         Self {
             back: None,
             integral: None,
             derivative: None,
+            extrema: None,
         }
     }
 
@@ -38,6 +30,7 @@ impl FunctionOutput {
         self.back = None;
         self.integral = None;
         self.derivative = None;
+        self.extrema = None;
     }
 
     pub fn invalidate_back(&mut self) { self.back = None; }
@@ -48,17 +41,30 @@ impl FunctionOutput {
 
     pub fn display(
         &self, plot_ui: &mut PlotUi, func_str: &str, derivative_str: &str, step: f64,
+        derivative_enabled: bool,
     ) -> f64 {
         plot_ui.line(
             Line::new(Values::from_values(self.back.clone().unwrap()))
                 .color(Color32::RED)
                 .name(func_str),
         );
-        if let Some(derivative_data) = self.derivative.clone() {
-            plot_ui.line(
-                Line::new(Values::from_values(derivative_data))
-                    .color(Color32::GREEN)
-                    .name(derivative_str),
+
+        if derivative_enabled {
+            if let Some(derivative_data) = self.derivative.clone() {
+                plot_ui.line(
+                    Line::new(Values::from_values(derivative_data))
+                        .color(Color32::GREEN)
+                        .name(derivative_str),
+                );
+            }
+        }
+
+        if let Some(extrema_data) = self.extrema.clone() {
+            plot_ui.points(
+                Points::new(Values::from_values(extrema_data))
+                    .color(Color32::YELLOW)
+                    .name("Extrema")
+                    .radius(5.0),
             );
         }
 

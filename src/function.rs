@@ -123,27 +123,19 @@ impl FunctionEntry {
             );
             // assert_eq!(self.output.back.as_ref().unwrap().len(), self.pixel_width);
 
-            if self.output.derivative.is_some() {
-                if self.derivative {
-                    let derivative_cache = self.output.derivative.as_ref().unwrap();
+            let derivative_cache = self.output.derivative.as_ref().unwrap();
+            let new_data = (0..self.pixel_width)
+                .map(|x| (x as f64 / resolution as f64) + min_x)
+                .map(|x| {
+                    if let Some(i) = x_data.get_index(x) {
+                        derivative_cache[i]
+                    } else {
+                        Value::new(x, self.function.derivative(x))
+                    }
+                })
+                .collect();
 
-                    self.output.derivative = Some(
-                        (0..self.pixel_width)
-                            .map(|x| (x as f64 / resolution as f64) + min_x)
-                            .map(|x| {
-                                if let Some(i) = x_data.get_index(x) {
-                                    derivative_cache[i]
-                                } else {
-                                    Value::new(x, self.function.derivative(x))
-                                }
-                            })
-                            .collect(),
-                    );
-                    // assert_eq!(self.output.derivative.as_ref().unwrap().len(), self.pixel_width);
-                } else {
-                    self.output.invalidate_derivative();
-                }
-            }
+            self.output.derivative = Some(new_data);
         } else {
             self.output.invalidate_back();
             self.output.invalidate_derivative();
@@ -168,19 +160,16 @@ impl FunctionEntry {
             self.output.back.as_ref().unwrap().clone()
         };
 
-        let derivative_values: Option<Vec<Value>> = match self.derivative {
-            true => {
-                if self.output.derivative.is_none() {
-                    self.output.derivative = Some(
-                        (0..self.pixel_width)
-                            .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                            .map(|x| Value::new(x, self.function.derivative(x)))
-                            .collect(),
-                    );
-                }
-                Some(self.output.derivative.as_ref().unwrap().clone())
+        let derivative_values: Option<Vec<Value>> = {
+            if self.output.derivative.is_none() {
+                self.output.derivative = Some(
+                    (0..self.pixel_width)
+                        .map(|x| (x as f64 / resolution as f64) + self.min_x)
+                        .map(|x| Value::new(x, self.function.derivative(x)))
+                        .collect(),
+                );
             }
-            false => None,
+            Some(self.output.derivative.as_ref().unwrap().clone())
         };
 
         let integral_data = match self.integral {
@@ -287,17 +276,46 @@ impl FunctionEntry {
         self
     }
 
+    // Finds extrema
+    fn extrema(&mut self) {
+        let mut extrama_list: Vec<Value> = Vec::new();
+        let mut last_ele: Option<Value> = None;
+        for ele in self.output.derivative.as_ref().unwrap().iter() {
+            if last_ele.is_none() {
+                last_ele = Some(*ele);
+                continue;
+            }
+
+            if last_ele.unwrap().y.signum() != ele.y.signum() {
+                // Do 10 iterations of newton's method, should be more than accurate
+                let x = {
+                    let mut x1: f64 = last_ele.unwrap().x;
+                    for _ in 0..10 {
+                        x1 = last_ele.unwrap().x
+                            - (self.function.derivative(x1) / self.function.get_derivative_2(x1))
+                    }
+                    x1
+                };
+                extrama_list.push(Value::new(x, self.function.get(x)));
+            }
+            last_ele = Some(*ele);
+        }
+        self.output.extrema = Some(extrama_list);
+    }
+
     pub fn display(&mut self, plot_ui: &mut PlotUi) -> f64 {
         let (back_values, integral, derivative) = self.run_back();
         self.output.back = Some(back_values);
         self.output.integral = integral;
         self.output.derivative = derivative;
+        self.extrema();
 
         self.output.display(
             plot_ui,
             self.get_func_str(),
             &self.function.get_derivative_str(),
             (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64),
+            self.derivative,
         )
     }
 }

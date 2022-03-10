@@ -1,22 +1,30 @@
 use exmex::prelude::*;
 
+lazy_static::lazy_static! {
+    static ref EMPTY_FUNCTION: FlatEx<f64> = exmex::parse::<f64>("0").unwrap();
+}
+
 #[derive(Clone)]
 pub struct BackingFunction {
     function: FlatEx<f64>,
     derivative_1: FlatEx<f64>,
-    // derivative_2: FlatEx<f64>,
+    derivative_2: FlatEx<f64>,
 }
 
 impl BackingFunction {
     pub fn new(func_str: &str) -> Self {
         let function = exmex::parse::<f64>(func_str).unwrap();
-        let derivative_1 = function.partial(0).unwrap_or_else(|_| function.clone());
-        // let derivative_2 = function.partial(0).unwrap_or(derivative_1.clone());
+        let derivative_1 = function
+            .partial(0)
+            .unwrap_or_else(|_| EMPTY_FUNCTION.clone());
+        let derivative_2 = function
+            .partial_iter([0, 0].iter())
+            .unwrap_or_else(|_| EMPTY_FUNCTION.clone());
 
         Self {
             function,
             derivative_1,
-            // derivative_2,
+            derivative_2,
         }
     }
 
@@ -27,6 +35,10 @@ impl BackingFunction {
     pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
     pub fn derivative(&self, x: f64) -> f64 { self.derivative_1.eval(&[x]).unwrap_or(f64::NAN) }
+
+    pub fn get_derivative_2(&self, x: f64) -> f64 {
+        self.derivative_2.eval(&[x]).unwrap_or(f64::NAN)
+    }
 }
 
 lazy_static::lazy_static! {
