@@ -263,6 +263,10 @@ struct AppSettings {
 
     // Stores whether or not dark mode is enabled
     pub dark_mode: bool,
+
+    pub extrema: bool,
+
+    pub roots: bool,
 }
 
 impl Default for AppSettings {
@@ -276,6 +280,8 @@ impl Default for AppSettings {
             integral_max_x: DEFAULT_MAX_X,
             integral_num: DEFAULT_INTEGRAL_NUM,
             dark_mode: true,
+            extrema: true,
+            roots: true,
         }
     }
 }
@@ -323,6 +329,29 @@ impl MathApp {
                         ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
                     });
 
+                let mut extrema_toggled: bool = false;
+                let mut roots_toggled: bool = false;
+                ui.horizontal(|ui| {
+                    extrema_toggled = ui
+                        .add(Button::new("Extrema"))
+                        .on_hover_text(match self.settings.extrema {
+                            true => "Disable Displaying Extrema",
+                            false => "Display Extrema",
+                        })
+                        .clicked();
+
+                    roots_toggled = ui
+                        .add(Button::new("Roots"))
+                        .on_hover_text(match self.settings.roots {
+                            true => "Disable Displaying Roots",
+                            false => "Display Roots",
+                        })
+                        .clicked();
+                });
+
+                self.settings.extrema.bitxor_assign(extrema_toggled);
+                self.settings.roots.bitxor_assign(roots_toggled);
+
                 let min_x_old = self.settings.integral_min_x;
                 let min_x_changed = ui
                     .add(
@@ -358,6 +387,12 @@ impl MathApp {
                             .text("Interval"),
                     )
                     .changed();
+
+                let configs_changed = max_x_changed
+                    | min_x_changed
+                    | integral_num_changed
+                    | roots_toggled
+                    | extrema_toggled;
 
                 let functions_len = self.functions.len();
                 let mut remove_i: Option<usize> = None;
@@ -405,11 +440,9 @@ impl MathApp {
                     });
 
                     let proc_func_str = process_func_str(self.func_strs[i].clone());
-                    if integral_toggle
+                    if configs_changed
+                        | integral_toggle
                         | derivative_toggle
-                        | max_x_changed
-                        | min_x_changed
-                        | integral_num_changed
                         | (proc_func_str != function.get_func_str())
                         | self.last_error.iter().any(|ele| ele.0 == i)
                     {
@@ -434,6 +467,8 @@ impl MathApp {
                                 Some(self.settings.integral_max_x),
                                 Some(self.settings.integral_num),
                                 Some(self.settings.sum),
+                                self.settings.extrema,
+                                self.settings.roots,
                             );
                             self.last_error = self
                                 .last_error

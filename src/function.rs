@@ -42,6 +42,8 @@ pub struct FunctionEntry {
     integral_max_x: f64,
     integral_num: usize,
     sum: RiemannSum,
+    roots: bool,
+    extrema: bool,
 }
 
 // How many times should newton's method iterate?
@@ -63,12 +65,15 @@ impl FunctionEntry {
             integral_max_x: f64::NAN,
             integral_num: 0,
             sum: DEFAULT_RIEMANN,
+            roots: true,
+            extrema: true,
         }
     }
 
     pub fn update(
         &mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: Option<f64>,
         integral_max_x: Option<f64>, integral_num: Option<usize>, sum: Option<RiemannSum>,
+        extrema: bool, roots: bool,
     ) {
         // If the function string changes, just wipe and restart from scratch
         if func_str != self.func_str {
@@ -79,6 +84,8 @@ impl FunctionEntry {
 
         self.derivative = derivative;
         self.integral = integral;
+        self.extrema = extrema;
+        self.roots = roots;
 
         // Makes sure proper arguments are passed when integral is enabled
         if integral
@@ -289,7 +296,14 @@ impl FunctionEntry {
                 continue;
             }
 
-            if last_ele.unwrap().y.signum() != ele.y.signum() {
+            let last_ele_signum = last_ele.unwrap().y.signum();
+            let ele_signum = ele.y.signum();
+
+            if last_ele_signum.is_nan() | ele_signum.is_nan() {
+                continue;
+            }
+
+            if last_ele_signum != ele_signum {
                 // Do 50 iterations of newton's method, should be more than accurate
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
@@ -317,7 +331,14 @@ impl FunctionEntry {
                 continue;
             }
 
-            if last_ele.unwrap().y.signum() != ele.y.signum() {
+            let last_ele_signum = last_ele.unwrap().y.signum();
+            let ele_signum = ele.y.signum();
+
+            if last_ele_signum.is_nan() | ele_signum.is_nan() {
+                continue;
+            }
+
+            if last_ele_signum != ele_signum {
                 // Do 50 iterations of newton's method, should be more than accurate
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
@@ -341,8 +362,18 @@ impl FunctionEntry {
         self.output.back = Some(back_values);
         self.output.integral = integral;
         self.output.derivative = derivative;
-        self.extrema();
-        self.roots();
+
+        if self.extrema {
+            self.extrema();
+        } else {
+            self.output.extrema = None;
+        }
+
+        if self.roots {
+            self.roots();
+        } else {
+            self.output.roots = None;
+        }
 
         self.output.display(
             plot_ui,

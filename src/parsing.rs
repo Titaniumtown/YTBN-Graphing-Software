@@ -1,7 +1,7 @@
 use exmex::prelude::*;
 
 lazy_static::lazy_static! {
-    static ref EMPTY_FUNCTION: FlatEx<f64> = exmex::parse::<f64>("0").unwrap();
+    static ref EMPTY_FUNCTION: FlatEx<f64> = exmex::parse::<f64>("0/0").unwrap();
 }
 
 #[derive(Clone)]
