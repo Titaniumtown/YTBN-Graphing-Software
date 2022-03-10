@@ -77,7 +77,6 @@ impl FunctionEntry {
 			self.func_str = func_str.clone();
 			self.function = BackingFunction::new(&func_str);
 			self.output.invalidate_whole();
-			self.output.invalidate_points();
 		}
 
 		self.derivative = derivative;
@@ -153,7 +152,6 @@ impl FunctionEntry {
 
 		let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
-		let mut last_positive: Option<bool> = None;
 		let mut area: f64 = 0.0;
 		let data2: Vec<(f64, f64)> = (0..self.integral_num)
 			.map(|e| {
@@ -173,10 +171,6 @@ impl FunctionEntry {
 						(self.function.get(left_x) + self.function.get(right_x)) / 2.0
 					}
 				};
-
-				if last_positive.is_none() {
-					last_positive = Some(x.is_sign_positive());
-				}
 
 				if !y.is_nan() {
 					area += y * step;
