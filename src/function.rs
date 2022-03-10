@@ -80,6 +80,7 @@ impl FunctionEntry {
             self.func_str = func_str.clone();
             self.function = BackingFunction::new(&func_str);
             self.output.invalidate_whole();
+            self.output.invalidate_points();
         }
 
         self.derivative = derivative;
@@ -149,10 +150,12 @@ impl FunctionEntry {
         } else {
             self.output.invalidate_back();
             self.output.invalidate_derivative();
-            self.min_x = min_x;
-            self.max_x = max_x;
             self.pixel_width = pixel_width;
         }
+
+        self.min_x = min_x;
+        self.max_x = max_x;
+        self.output.invalidate_points();
     }
 
     pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {

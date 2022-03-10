@@ -42,6 +42,11 @@ impl FunctionOutput {
 
     pub fn invalidate_derivative(&mut self) { self.derivative = None; }
 
+    pub fn invalidate_points(&mut self) {
+        self.extrema = None;
+        self.roots = None;
+    }
+
     pub fn display(
         &self, plot_ui: &mut PlotUi, func_str: &str, derivative_str: &str, step: f64,
         derivative_enabled: bool,
