@@ -27,7 +27,7 @@ eframe = { git = "https://github.com/emilk/egui", default-features = false, feat
 shadow-rs = { version = "0.9", default-features = false }
 const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
 cfg-if = "1.0.0"
-exmex = { git = "https://github.com/Titaniumtown/exmex.git", branch = "main", features = ["partial"] }
+exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", features = ["partial"] }
 lazy_static = "1.4.0"
 tar = "0.4.38"
 ruzstd = { git = "https://github.com/KillingSpark/zstd-rs.git" }
