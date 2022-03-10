@@ -11,4 +11,3 @@
 5. re-add euler's number (well it works if you use capital e like `E^x`)
 6. allow constants in min/max integral input
 7. sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
-8. fix log2()

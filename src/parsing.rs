@@ -51,6 +51,12 @@ pub fn process_func_str(function_in: String) -> String {
         let mut add_asterisk: bool = false;
         let prev_chars_len = prev_chars.len();
 
+        let prev_prev_prev_char = if prev_chars_len >= 3 {
+            *prev_chars.get(prev_chars_len - 3).unwrap()
+        } else {
+            ' '
+        };
+
         let prev_prev_char = if prev_chars_len >= 2 {
             *prev_chars.get(prev_chars_len - 2).unwrap()
         } else {
@@ -62,6 +68,16 @@ pub fn process_func_str(function_in: String) -> String {
         } else {
             ' '
         };
+
+        if (prev_prev_prev_char == 'l')
+            && (prev_prev_char == 'o')
+            && (prev_char == 'g')
+            && (NUMBERS.contains(&c))
+        {
+            prev_chars.push(c);
+            output_string += &c.to_string();
+            continue;
+        }
 
         let c_letters_var = LETTERS.contains(&c) | VALID_VARIABLES.contains(&c);
         let prev_letters_var = VALID_VARIABLES.contains(&prev_char) | LETTERS.contains(&prev_char);
