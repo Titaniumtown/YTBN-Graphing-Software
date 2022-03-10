@@ -1,3 +1,7 @@
+use std::ops::Range;
+
+use eframe::egui::plot::Value;
+
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
 		use wasm_bindgen::prelude::*;
@@ -89,4 +93,67 @@ impl From<Vec<f64>> for SteppedVector {
 pub fn digits_precision(x: f64, digits: usize) -> f64 {
 	let large_number: f64 = 10.0_f64.powf(digits as f64);
 	(x * large_number).round() / large_number
+}
+
+
+/// Implements newton's method of finding roots.
+/// `threshold` is the target accuracy threshold
+/// `range` is the range of valid x values (used to stop calculation when the point won't display anyways)
+/// `data` is the data to iterate over (a Vector of egui's `Value` struct)
+/// `f` is f(x)
+/// `f_` is f'(x)
+/// The function returns a list of `x` values where roots occur
+pub fn newtons_method(
+	threshold: f64, range: Range<f64>, data: Vec<Value>, f: &dyn Fn(f64) -> f64,
+	f_1: &dyn Fn(f64) -> f64,
+) -> Vec<f64> {
+	let mut output_list: Vec<f64> = Vec::new();
+	let mut last_ele: Option<Value> = None;
+	for ele in data.iter() {
+		if last_ele.is_none() {
+			last_ele = Some(*ele);
+			continue;
+		}
+
+		let last_ele_signum = last_ele.unwrap().y.signum();
+		let ele_signum = ele.y.signum();
+
+		// If either are NaN, just continue iterating
+		if last_ele_signum.is_nan() | ele_signum.is_nan() {
+			continue;
+		}
+
+		if last_ele_signum != ele_signum {
+			// Do 50 iterations of newton's method, should be more than accurate
+			let x = {
+				let mut x1: f64 = last_ele.unwrap().x;
+				let mut x2: f64;
+				let mut fail: bool = false;
+				loop {
+					x2 = x1 - (f(x1) / f_1(x1));
+					if !range.contains(&x2) {
+						fail = true;
+						break;
+					}
+
+					if (x2 - x1).abs() < threshold {
+						break;
+					}
+
+					x1 = x2;
+				}
+
+				match fail {
+					true => f64::NAN,
+					false => x1,
+				}
+			};
+
+			if !x.is_nan() {
+				output_list.push(x);
+			}
+		}
+		last_ele = Some(*ele);
+	}
+	output_list
 }

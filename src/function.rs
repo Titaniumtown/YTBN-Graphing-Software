@@ -2,7 +2,7 @@
 
 use crate::function_output::FunctionOutput;
 #[allow(unused_imports)]
-use crate::misc::{debug_log, SteppedVector};
+use crate::misc::{debug_log, newtons_method, SteppedVector};
 
 use crate::egui_app::{DEFAULT_FUNCION, DEFAULT_RIEMANN};
 use crate::parsing::BackingFunction;
@@ -228,109 +228,35 @@ impl FunctionEntry {
 	// Finds roots
 	fn roots(&mut self) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
-		let mut root_list: Vec<Value> = Vec::new();
-		let mut last_ele: Option<Value> = None;
-		for ele in self.output.back.as_ref().unwrap().iter() {
-			if last_ele.is_none() {
-				last_ele = Some(*ele);
-				continue;
-			}
-
-			let last_ele_signum = last_ele.unwrap().y.signum();
-			let ele_signum = ele.y.signum();
-
-			if last_ele_signum.is_nan() | ele_signum.is_nan() {
-				continue;
-			}
-
-			if last_ele_signum != ele_signum {
-				// Do 50 iterations of newton's method, should be more than accurate
-				let x = {
-					let mut x1: f64 = last_ele.unwrap().x;
-					let mut x2: f64;
-					let mut fail: bool = false;
-					loop {
-						x2 = x1 - (self.function.get(x1) / self.function.get_derivative_1(x1));
-						if !(self.min_x..self.max_x).contains(&x2) {
-							fail = true;
-							break;
-						}
-
-						if (x2 - x1).abs() < resolution {
-							break;
-						}
-
-						x1 = x2;
-					}
-
-					match fail {
-						true => f64::NAN,
-						false => x1,
-					}
-				};
-
-				if !x.is_nan() {
-					root_list.push(Value::new(x, self.function.get(x)));
-				}
-			}
-			last_ele = Some(*ele);
-		}
-		self.output.roots = Some(root_list);
+		self.output.roots = Some(
+			newtons_method(
+				resolution,
+				self.min_x..self.max_x,
+				self.output.back.to_owned().unwrap(),
+				&|x: f64| self.function.get(x),
+				&|x: f64| self.function.get_derivative_1(x),
+			)
+			.iter()
+			.map(|x| Value::new(*x, self.function.get(*x)))
+			.collect(),
+		);
 	}
 
 	// Finds extrema
 	fn extrema(&mut self) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
-		let mut extrama_list: Vec<Value> = Vec::new();
-		let mut last_ele: Option<Value> = None;
-		for ele in self.output.derivative.as_ref().unwrap().iter() {
-			if last_ele.is_none() {
-				last_ele = Some(*ele);
-				continue;
-			}
-
-			let last_ele_signum = last_ele.unwrap().y.signum();
-			let ele_signum = ele.y.signum();
-
-			if last_ele_signum.is_nan() | ele_signum.is_nan() {
-				continue;
-			}
-
-			if last_ele_signum != ele_signum {
-				// Do 50 iterations of newton's method, should be more than accurate
-				let x = {
-					let mut x1: f64 = last_ele.unwrap().x;
-					let mut x2: f64;
-					let mut fail: bool = false;
-					loop {
-						x2 = x1
-							- (self.function.get_derivative_1(x1)
-								/ self.function.get_derivative_2(x1));
-						if !(self.min_x..self.max_x).contains(&x2) {
-							fail = true;
-							break;
-						}
-
-						if (x2 - x1).abs() < resolution {
-							break;
-						}
-
-						x1 = x2;
-					}
-
-					match fail {
-						true => f64::NAN,
-						false => x1,
-					}
-				};
-
-				if !x.is_nan() {
-					extrama_list.push(Value::new(x, self.function.get(x)));
-				}
-			}
-			last_ele = Some(*ele);
-		}
-		self.output.extrema = Some(extrama_list);
+		self.output.extrema = Some(
+			newtons_method(
+				resolution,
+				self.min_x..self.max_x,
+				self.output.derivative.to_owned().unwrap(),
+				&|x: f64| self.function.get_derivative_1(x),
+				&|x: f64| self.function.get_derivative_2(x),
+			)
+			.iter()
+			.map(|x| Value::new(*x, self.function.get(*x)))
+			.collect(),
+		);
 	}
 
 	pub fn display(
