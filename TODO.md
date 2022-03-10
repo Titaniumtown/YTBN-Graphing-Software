@@ -17,3 +17,4 @@
 9. nth derivative support (again)
 10. add configs for toggling display of roots and extrema
 11. reduce jittering of roots and extrema points
+12. Update function tests

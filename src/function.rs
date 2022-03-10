@@ -355,7 +355,7 @@ fn verify_function(
 ) {
     {
         let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_none());
+        assert!(derivative.is_some());
         assert!(bars.is_none());
         assert_eq!(back_values.len(), pixel_width);
         let back_values_tuple: Vec<(f64, f64)> =
@@ -366,7 +366,7 @@ fn verify_function(
     {
         *function = function.clone().integral(true);
         let (back_values, bars, derivative) = function.run_back();
-        assert!(derivative.is_none());
+        assert!(derivative.is_some());
         assert!(bars.is_some());
         assert_eq!(back_values.len(), pixel_width);
 
@@ -381,7 +381,6 @@ fn verify_function(
     }
 
     {
-        function.derivative = true;
         let (back_values, bars, derivative) = function.run_back();
         assert!(derivative.is_some());
 
