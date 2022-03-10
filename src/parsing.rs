@@ -100,7 +100,7 @@ pub fn process_func_str(function_in: String) -> String {
         output_string += &c.to_string();
     }
 
-    output_string
+    output_string.replace("log(", "log10(")
 }
 
 // Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
@@ -186,8 +186,8 @@ fn func_process_test() {
     assert_eq!(&process_func_str("pi(x+2)".to_string()), "π*(x+2)");
     assert_eq!(&process_func_str("(x)pi".to_string()), "(x)*π");
     assert_eq!(&process_func_str("2e".to_string()), "2*e");
-    assert_eq!(&process_func_str("2log10(x)".to_string()), "2*log(x)");
-    assert_eq!(&process_func_str("2log(x)".to_string()), "2*log(x)");
+    assert_eq!(&process_func_str("2log10(x)".to_string()), "2*log10(x)");
+    assert_eq!(&process_func_str("2log(x)".to_string()), "2*log10(x)");
     assert_eq!(&process_func_str("x!".to_string()), "x!");
     assert_eq!(&process_func_str("pipipipipipi".to_string()), "π*π*π*π*π*π");
     assert_eq!(&process_func_str("10pi".to_string()), "10*π");
