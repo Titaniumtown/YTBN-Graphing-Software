@@ -34,7 +34,9 @@ impl BackingFunction {
 
     pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
-    pub fn derivative(&self, x: f64) -> f64 { self.derivative_1.eval(&[x]).unwrap_or(f64::NAN) }
+    pub fn get_derivative_1(&self, x: f64) -> f64 {
+        self.derivative_1.eval(&[x]).unwrap_or(f64::NAN)
+    }
 
     pub fn get_derivative_2(&self, x: f64) -> f64 {
         self.derivative_2.eval(&[x]).unwrap_or(f64::NAN)

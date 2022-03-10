@@ -138,7 +138,7 @@ impl FunctionEntry {
                     if let Some(i) = x_data.get_index(x) {
                         derivative_cache[i]
                     } else {
-                        Value::new(x, self.function.derivative(x))
+                        Value::new(x, self.function.get_derivative_1(x))
                     }
                 })
                 .collect();
@@ -175,7 +175,7 @@ impl FunctionEntry {
                 self.output.derivative = Some(
                     (0..self.pixel_width)
                         .map(|x| (x as f64 / resolution as f64) + self.min_x)
-                        .map(|x| Value::new(x, self.function.derivative(x)))
+                        .map(|x| Value::new(x, self.function.get_derivative_1(x)))
                         .collect(),
                 );
             }
@@ -311,7 +311,7 @@ impl FunctionEntry {
                     let mut x2: f64;
                     let mut fail: bool = false;
                     loop {
-                        x2 = x1 - (self.function.get(x1) / self.function.derivative(x1));
+                        x2 = x1 - (self.function.get(x1) / self.function.get_derivative_1(x1));
                         if !(self.min_x..self.max_x).contains(&x2) {
                             fail = true;
                             break;
@@ -365,7 +365,8 @@ impl FunctionEntry {
                     let mut fail: bool = false;
                     loop {
                         x2 = x1
-                            - (self.function.derivative(x1) / self.function.get_derivative_2(x1));
+                            - (self.function.get_derivative_1(x1)
+                                / self.function.get_derivative_2(x1));
                         if !(self.min_x..self.max_x).contains(&x2) {
                             fail = true;
                             break;
