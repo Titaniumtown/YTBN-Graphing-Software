@@ -287,10 +287,10 @@ impl FunctionEntry {
             }
 
             if last_ele.unwrap().y.signum() != ele.y.signum() {
-                // Do 10 iterations of newton's method, should be more than accurate
+                // Do 50 iterations of newton's method, should be more than accurate
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
-                    for _ in 0..10 {
+                    for _ in 0..50 {
                         x1 = last_ele.unwrap().x
                             - (self.function.get(x1) / self.function.derivative(x1))
                     }
@@ -314,10 +314,10 @@ impl FunctionEntry {
             }
 
             if last_ele.unwrap().y.signum() != ele.y.signum() {
-                // Do 10 iterations of newton's method, should be more than accurate
+                // Do 50 iterations of newton's method, should be more than accurate
                 let x = {
                     let mut x1: f64 = last_ele.unwrap().x;
-                    for _ in 0..10 {
+                    for _ in 0..50 {
                         x1 = last_ele.unwrap().x
                             - (self.function.derivative(x1) / self.function.get_derivative_2(x1))
                     }
