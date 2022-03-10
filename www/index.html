@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-    <!-- Disable zooming: -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<!-- Disable zooming: -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
-    <head>
-        <meta charset="utf-8" />
-        <title>(Yet-to-be-named) Graphing Software</title>
-        <link rel="stylesheet" href="style.css" />
-    </head>
-    <body>
-        <noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
+	<head>
+		<meta charset="utf-8" />
+		<title>(Yet-to-be-named) Graphing Software</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
 
-        <canvas id="canvas"></canvas>
-        <div class="centered" id="loading">
-            <p style="font-size: 16px;">
-                Loading…
-            </p>
-            <div class="lds-dual-ring"></div>
-        </div>
+		<canvas id="canvas"></canvas>
+		<div class="centered" id="loading">
+			<p style="font-size: 16px;">
+				Loading…
+			</p>
+			<div class="lds-dual-ring"></div>
+		</div>
 
-        <script type="module">
-            import init, { start } from "./ytbn_graphing_software.js";
+		<script type="module">
+			import init, { start } from "./ytbn_graphing_software.js";
 
-            async function run() {
-                await init();
-            }
-            run();
-        </script>
-    </body>
+			async function run() {
+				await init();
+			}
+			run();
+		</script>
+	</body>
 </html>
