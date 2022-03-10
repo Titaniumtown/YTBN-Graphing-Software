@@ -63,12 +63,10 @@ lazy_static::lazy_static! {
 	// Load all of the data from the compressed tarball
 	static ref FILE_DATA: FileData = {
 		let start = instant::Instant::now();
+
 		log_helper("Loading assets...");
-		let mut tar_file_raw = include_bytes!("../data.tar.zst").as_slice();
-		log_helper("Decompressing...");
-		let mut tar_file = ruzstd::StreamingDecoder::new(&mut tar_file_raw).unwrap();
 		let mut tar_file_data = Vec::new();
-		tar_file.read_to_end(&mut tar_file_data).unwrap();
+		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../data.tar.zst").as_slice()).unwrap().read_to_end(&mut tar_file_data).unwrap();
 
 		let mut tar_archive = tar::Archive::new(&*tar_file_data);
 
