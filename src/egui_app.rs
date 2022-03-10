@@ -264,8 +264,10 @@ struct AppSettings {
 	// Stores whether or not dark mode is enabled
 	pub dark_mode: bool,
 
+	// Stores whether or not displaying extrema is enabled
 	pub extrema: bool,
 
+	// Stores whether or not displaying roots is enabled
 	pub roots: bool,
 }
 
@@ -299,7 +301,7 @@ pub struct MathApp {
 	// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<f64>, Duration),
 
-	// Stores Settings (pretty self explanatory)
+	// Stores Settings (pretty self-explanatory)
 	settings: AppSettings,
 }
 
@@ -321,6 +323,7 @@ impl MathApp {
 		SidePanel::left("side_panel")
 			.resizable(false)
 			.show(ctx, |ui| {
+				// ComboBox for selecting what Riemann sum type to use
 				ComboBox::from_label("Riemann Sum Type")
 					.selected_text(self.settings.sum.to_string())
 					.show_ui(ui, |ui| {
@@ -329,6 +332,7 @@ impl MathApp {
 						ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
 					});
 
+				// Config options for Extrema and roots
 				let mut extrema_toggled: bool = false;
 				let mut roots_toggled: bool = false;
 				ui.horizontal(|ui| {
@@ -349,6 +353,7 @@ impl MathApp {
 						.clicked();
 				});
 
+				// If options toggled, flip the boolean
 				self.settings.extrema.bitxor_assign(extrema_toggled);
 				self.settings.roots.bitxor_assign(roots_toggled);
 
@@ -368,7 +373,7 @@ impl MathApp {
 					)
 					.changed();
 
-				// Checks bounds, and if they are invalid, fix them
+				// Checks integral bounds, and if they are invalid, fix them
 				if self.settings.integral_min_x >= self.settings.integral_max_x {
 					if max_x_changed {
 						self.settings.integral_max_x = max_x_old;
@@ -381,6 +386,7 @@ impl MathApp {
 					}
 				}
 
+				// Number of Rectangles for Riemann sum
 				let integral_num_changed = ui
 					.add(
 						Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
@@ -388,6 +394,7 @@ impl MathApp {
 					)
 					.changed();
 
+				// Stores whether global config options changed
 				let configs_changed = max_x_changed
 					| min_x_changed | integral_num_changed
 					| roots_toggled | extrema_toggled;
@@ -395,8 +402,9 @@ impl MathApp {
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
 				for (i, function) in self.functions.iter_mut().enumerate() {
-					let integral_enabled = function.integral;
-					let derivative_enabled = function.derivative;
+					let mut integral_enabled = function.integral;
+					let mut derivative_enabled = function.derivative;
+
 					let mut derivative_toggle: bool = false;
 					let mut integral_toggle: bool = false;
 
@@ -418,6 +426,7 @@ impl MathApp {
 							ui.add_enabled(false, Button::new("X"));
 						}
 
+						// Toggle integral being enabled or not
 						integral_toggle = ui
 							.add(Button::new("∫"))
 							.on_hover_text(match integral_enabled {
@@ -426,6 +435,7 @@ impl MathApp {
 							})
 							.clicked();
 
+						// Toggle showing the derivative (even though it's already calculated, this option just toggles if it's displayed or not)
 						derivative_toggle = ui
 							.add(Button::new("d/dx"))
 							.on_hover_text(match derivative_enabled {
@@ -434,6 +444,7 @@ impl MathApp {
 							})
 							.clicked();
 
+						// Contains the function string in a text box that the user can edit
 						ui.text_edit_singleline(&mut self.func_strs[i]);
 					});
 
@@ -443,23 +454,16 @@ impl MathApp {
 						| (proc_func_str != function.get_func_str())
 						| self.last_error.iter().any(|ele| ele.0 == i)
 					{
-						// let proc_func_str = self.func_strs[i].clone();
-						let func_test_output = test_func(&proc_func_str);
-						if let Some(test_output_value) = func_test_output {
+						integral_enabled.bitxor_assign(integral_toggle);
+						derivative_enabled.bitxor_assign(derivative_toggle);
+
+						if let Some(test_output_value) = test_func(&proc_func_str) {
 							self.last_error.push((i, test_output_value));
 						} else {
 							function.update(
 								proc_func_str,
-								if integral_toggle {
-									!integral_enabled
-								} else {
-									integral_enabled
-								},
-								if derivative_toggle {
-									!derivative_enabled
-								} else {
-									derivative_enabled
-								},
+								integral_enabled,
+								derivative_enabled,
 								Some(self.settings.integral_min_x),
 								Some(self.settings.integral_max_x),
 								Some(self.settings.integral_num),
@@ -475,11 +479,10 @@ impl MathApp {
 					}
 				}
 
-				if self.functions.len() > 1 {
-					if let Some(remove_i_unwrap) = remove_i {
-						self.functions.remove(remove_i_unwrap);
-						self.func_strs.remove(remove_i_unwrap);
-					}
+				// Remove function if the user requests it
+				if let Some(remove_i_unwrap) = remove_i {
+					self.functions.remove(remove_i_unwrap);
+					self.func_strs.remove(remove_i_unwrap);
 				}
 
 				// Open Source and Licensing information
@@ -506,6 +509,8 @@ impl epi::App for MathApp {
 	#[inline(always)]
 	fn update(&mut self, ctx: &Context, _frame: &Frame) {
 		let start = instant::Instant::now();
+
+		// Set dark/light mode depending on the variable `self.settings.dark_mode`
 		ctx.set_visuals(match self.settings.dark_mode {
 			true => Visuals::dark(),
 			false => Visuals::light(),
@@ -516,6 +521,7 @@ impl epi::App for MathApp {
 		// Creates Top bar that contains some general options
 		TopBottomPanel::top("top_bar").show(ctx, |ui| {
 			ui.horizontal(|ui| {
+				// Button in top bar to toggle showing the side panel
 				self.settings.show_side_panel.bitxor_assign(
 					ui.add(Button::new("Panel"))
 						.on_hover_text(match self.settings.show_side_panel {
@@ -525,6 +531,7 @@ impl epi::App for MathApp {
 						.clicked(),
 				);
 
+				// Button to add a new function
 				if ui
 					.add(Button::new("Add Function"))
 					.on_hover_text("Create and graph new function")
@@ -538,6 +545,7 @@ impl epi::App for MathApp {
 					self.func_strs.push(String::new());
 				}
 
+				// Toggles opening the Help window
 				self.settings.help_open.bitxor_assign(
 					ui.add(Button::new("Help"))
 						.on_hover_text(match self.settings.help_open {
@@ -547,6 +555,7 @@ impl epi::App for MathApp {
 						.clicked(),
 				);
 
+				// Toggles opening the Info window
 				self.settings.info_open.bitxor_assign(
 					ui.add(Button::new("Info"))
 						.on_hover_text(match self.settings.info_open {
@@ -556,6 +565,7 @@ impl epi::App for MathApp {
 						.clicked(),
 				);
 
+				// Toggles dark/light mode
 				self.settings.dark_mode.bitxor_assign(
 					ui.add(Button::new(match self.settings.dark_mode {
 						true => "🌞",
@@ -568,6 +578,7 @@ impl epi::App for MathApp {
 					.clicked(),
 				);
 
+				// Display Area and time of last frame
 				ui.label(format!(
 					"Area: {:?} Took: {:?}",
 					self.last_info.0, self.last_info.1
@@ -605,7 +616,7 @@ impl epi::App for MathApp {
 				});
 			});
 
-		// Window with Misc Information
+		// Window with information about the build and current commit
 		Window::new("Info")
 			.default_pos([200.0, 200.0])
 			.open(&mut self.settings.info_open)
@@ -620,8 +631,11 @@ impl epi::App for MathApp {
 			self.side_panel(ctx);
 		}
 
+		let mut area_list: Vec<f64> = Vec::new(); // Referenced in plotting code, but needs to be here so it can be later referenced when storing `last_info`
+
 		// Central panel which contains the central plot (or an error created when parsing)
 		CentralPanel::default().show(ctx, |ui| {
+			// Display an error if it exists
 			if !self.last_error.is_empty() {
 				ui.centered_and_justified(|ui| {
 					self.last_error.iter().for_each(|ele| {
@@ -631,7 +645,9 @@ impl epi::App for MathApp {
 				return;
 			}
 
-			let available_width: usize = ui.available_width() as usize;
+			let available_width: usize = ui.available_width() as usize; // Used in later logic
+
+			// Create and setup plot
 			Plot::new("plot")
 				.set_margin_fraction(Vec2::ZERO)
 				.data_aspect(1.0)
@@ -641,7 +657,7 @@ impl epi::App for MathApp {
 					let minx_bounds: f64 = bounds.min()[0];
 					let maxx_bounds: f64 = bounds.max()[0];
 
-					let area_list: Vec<f64> = self
+					area_list = self
 						.functions
 						.iter_mut()
 						.enumerate()
@@ -660,9 +676,9 @@ impl epi::App for MathApp {
 							)
 						})
 						.collect();
-					self.last_info = (area_list, start.elapsed());
 				});
 		});
+		self.last_info = (area_list, start.elapsed()); // Store list of functions' areas along with the time it took to process.
 	}
 
 	// Uncaps max canvas size. This was capped in egui due to a bug in Firefox. But it's fixed now.
