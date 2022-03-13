@@ -3,6 +3,7 @@ use crate::misc::{debug_log, log_helper, parse_value};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
+use eframe::egui::Key;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
@@ -511,6 +512,10 @@ impl epi::App for MathApp {
 			true => Visuals::dark(),
 			false => Visuals::light(),
 		});
+
+		self.settings
+			.show_side_panel
+			.bitxor_assign(ctx.input().key_down(Key::H));
 
 		ctx.set_fonts(FONT_DEFINITIONS.clone()); // Initialize fonts
 
