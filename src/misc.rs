@@ -194,6 +194,6 @@ pub fn parse_value(value: &serde_json::Value) -> String {
 	string_vector
 		.iter()
 		.fold(String::new(), |s, l| s + l + "\n")
-		.trim()
+		.trim_end()
 		.to_string()
 }
