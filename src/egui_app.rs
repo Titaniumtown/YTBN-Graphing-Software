@@ -10,7 +10,7 @@ use egui::{
 	Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily,
 	RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
-use epi::{Frame, Storage};
+use epi::Frame;
 use instant::Duration;
 use serde_json::Value;
 use shadow_rs::shadow;
@@ -318,6 +318,14 @@ impl Default for MathApp {
 }
 
 impl MathApp {
+	#[allow(dead_code)] // this is used lol
+	pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+		#[cfg(target_arch = "wasm32")]
+		stop_loading();
+		log_helper("egui app initialized.");
+		Self::default()
+	}
+
 	fn side_panel(&mut self, ctx: &Context) {
 		// Side Panel which contains vital options to the operation of the application
 		// (such as adding functions and other options)
@@ -497,19 +505,6 @@ impl MathApp {
 }
 
 impl epi::App for MathApp {
-	// The name of the program (displayed when running natively as the window title)
-	fn name(&self) -> &str { "(Yet-to-be-named) Graphing Software" }
-
-	// Called once before the first frame.
-	fn setup(
-		&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>,
-		_gl: &std::rc::Rc<epi::glow::Context>,
-	) {
-		#[cfg(target_arch = "wasm32")]
-		stop_loading();
-		log_helper("egui app initialized.");
-	}
-
 	// Called each time the UI needs repainting, which may be many times per second.
 	#[inline(always)]
 	fn update(&mut self, ctx: &Context, _frame: &Frame) {

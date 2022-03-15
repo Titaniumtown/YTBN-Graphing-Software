@@ -27,8 +27,7 @@ cfg_if::cfg_if! {
 			log_helper("Finished initializing!");
 
 			log_helper("Starting App...");
-			let app = egui_app::MathApp::default();
-			eframe::start_web("canvas", Box::new(app))
+			eframe::start_web("canvas", |cc| Box::new(egui_app::MathApp::new(cc)))
 		}
 	}
 }
