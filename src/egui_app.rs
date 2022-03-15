@@ -496,7 +496,7 @@ impl epi::App for MathApp {
 	fn name(&self) -> &str { "(Yet-to-be-named) Graphing Software" }
 
 	// Called once before the first frame.
-	fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>) {
+	fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>,  _gl: &std::rc::Rc<epi::glow::Context>,) {
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
 		log_helper("egui app initialized.");
