@@ -133,7 +133,8 @@ pub fn process_func_str(function_in: String) -> String {
 	output_string.replace("log(", "log10(")
 }
 
-// Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
+// Tests function to make sure it's able to be parsed. Returns the string of the
+// Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: &str) -> Option<String> {
 	let parse_result = exmex::parse::<f64>(function_string);
 
@@ -169,7 +170,8 @@ pub fn test_func(function_string: &str) -> Option<String> {
 	}
 }
 
-// Used for testing: passes function to `add_asterisks` before running `test_func`
+// Used for testing: passes function to `add_asterisks` before running
+// `test_func`
 #[cfg(test)]
 fn test_func_helper(function_string: &str) -> Option<String> {
 	test_func(&process_func_str(function_string.to_string()))
@@ -225,7 +227,8 @@ fn func_process_test() {
 	test_process_helper("10pi", "10*π");
 	test_process_helper("pi10", "π*10");
 
-	// Need to fix these checks, maybe I need to rewrite the whole asterisk adding system... (or just implement these changes into meval-rs, idk)
+	// Need to fix these checks, maybe I need to rewrite the whole asterisk
+	// adding system... (or just implement these changes into meval-rs, idk)
 	// test_process_helper("emax(x)", "e*max(x)");
 	// test_process_helper("pisin(x)", "pi*sin(x)");
 }

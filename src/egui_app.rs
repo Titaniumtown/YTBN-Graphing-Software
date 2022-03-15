@@ -289,13 +289,16 @@ pub struct MathApp {
 	// Stores vector of functions
 	functions: Vec<FunctionEntry>,
 
-	// Stores vector containing the string representation of the functions. This is used because of hacky reasons
+	// Stores vector containing the string representation of the functions. This is used because of
+	// hacky reasons
 	func_strs: Vec<String>,
 
-	// Stores last error from parsing functions (used to display the same error when side panel is minimized)
+	// Stores last error from parsing functions (used to display the same error when side panel is
+	// minimized)
 	last_error: Vec<(usize, String)>,
 
-	// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
+	// Contains the list of Areas calculated (the vector of f64) and time it took for the last
+	// frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<f64>, Duration),
 
 	// Stores Settings (pretty self-explanatory)
@@ -316,7 +319,8 @@ impl Default for MathApp {
 
 impl MathApp {
 	fn side_panel(&mut self, ctx: &Context) {
-		// Side Panel which contains vital options to the operation of the application (such as adding functions and other options)
+		// Side Panel which contains vital options to the operation of the application
+		// (such as adding functions and other options)
 		SidePanel::left("side_panel")
 			.resizable(false)
 			.show(ctx, |ui| {
@@ -432,7 +436,8 @@ impl MathApp {
 							})
 							.clicked();
 
-						// Toggle showing the derivative (even though it's already calculated, this option just toggles if it's displayed or not)
+						// Toggle showing the derivative (even though it's already calculated, this
+						// option just toggles if it's displayed or not)
 						derivative_toggle = ui
 							.add(Button::new("d/dx"))
 							.on_hover_text(match derivative_enabled {
@@ -496,7 +501,10 @@ impl epi::App for MathApp {
 	fn name(&self) -> &str { "(Yet-to-be-named) Graphing Software" }
 
 	// Called once before the first frame.
-	fn setup(&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>,  _gl: &std::rc::Rc<epi::glow::Context>,) {
+	fn setup(
+		&mut self, _ctx: &Context, _frame: &Frame, _storage: Option<&dyn Storage>,
+		_gl: &std::rc::Rc<epi::glow::Context>,
+	) {
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
 		log_helper("egui app initialized.");
@@ -632,9 +640,11 @@ impl epi::App for MathApp {
 			self.side_panel(ctx);
 		}
 
-		let mut area_list: Vec<f64> = Vec::new(); // Referenced in plotting code, but needs to be here so it can be later referenced when storing `last_info`
+		let mut area_list: Vec<f64> = Vec::new(); // Referenced in plotting code, but needs to be here so it can be later
+										  // referenced when storing `last_info`
 
-		// Central panel which contains the central plot (or an error created when parsing)
+		// Central panel which contains the central plot (or an error created when
+		// parsing)
 		CentralPanel::default().show(ctx, |ui| {
 			// Display an error if it exists
 			if !self.last_error.is_empty() {
@@ -679,9 +689,12 @@ impl epi::App for MathApp {
 						.collect();
 				});
 		});
-		self.last_info = (area_list, start.elapsed()); // Store list of functions' areas along with the time it took to process.
+		self.last_info = (area_list, start.elapsed()); // Store list of functions' areas
+		                                       // along with the time it took to
+		                                       // process.
 	}
 
-	// Uncaps max canvas size. This was capped in egui due to a bug in Firefox. But it's fixed now.
+	// Uncaps max canvas size. This was capped in egui due to a bug in Firefox. But
+	// it's fixed now.
 	fn max_size_points(&self) -> Vec2 { Vec2::new(f32::MAX, f32::MAX) }
 }

@@ -47,7 +47,8 @@ impl FunctionOutput {
 	pub fn invalidate_derivative(&mut self) { self.derivative = None; }
 
 	/// Display output on PlotUi `plot_ui`
-	/// Returns `f64` containing rounded integral area (if integrals are disabled, it returns `f64::NAN`)
+	/// Returns `f64` containing rounded integral area (if integrals are
+	/// disabled, it returns `f64::NAN`)
 	pub fn display(
 		&self, plot_ui: &mut PlotUi, func_str: &str, derivative_str: &str, step: f64,
 		derivative_enabled: bool,

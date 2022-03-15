@@ -27,20 +27,24 @@ lazy_static::lazy_static! {
 	pub static ref EMPTY_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::empty();
 }
 
-/// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
+/// `FunctionEntry` is a function that can calculate values, integrals,
+/// derivatives, etc etc
 #[derive(Clone)]
 pub struct FunctionEntry {
-	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
+	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`,
+	/// and `f''(x)`
 	function: BackingFunction,
 
-	/// Stores a function string (that hasn't been processed via `process_func_str`) to display to the user
+	/// Stores a function string (that hasn't been processed via
+	/// `process_func_str`) to display to the user
 	func_str: String,
 
 	/// Minimum and Maximum values of what do display
 	min_x: f64,
 	max_x: f64,
 
-	/// How many horizontal pixels? (used for calculating the step at which to generate values at)
+	/// How many horizontal pixels? (used for calculating the step at which to
+	/// generate values at)
 	pixel_width: usize,
 
 	/// output/cached data
@@ -49,7 +53,8 @@ pub struct FunctionEntry {
 	/// If calculating/displayingintegrals are enabled
 	pub(crate) integral: bool,
 
-	/// If displaying derivatives are enabled (note, they are still calculated for other purposes)
+	/// If displaying derivatives are enabled (note, they are still calculated
+	/// for other purposes)
 	pub(crate) derivative: bool,
 
 	/// Minumum and maximum range of integral
@@ -113,7 +118,8 @@ impl FunctionEntry {
 	}
 
 	// TODO: refactor this
-	/// Returns back values, integral data (Bars and total area), and Derivative values
+	/// Returns back values, integral data (Bars and total area), and Derivative
+	/// values
 	pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
 		let back_values: Vec<Value> = {
@@ -157,7 +163,8 @@ impl FunctionEntry {
 		(back_values, integral_data, derivative_values)
 	}
 
-	/// Creates and does the math for creating all the rectangles under the graph
+	/// Creates and does the math for creating all the rectangles under the
+	/// graph
 	fn integral_rectangles(&self) -> (Vec<(f64, f64)>, f64) {
 		if self.integral_min_x.is_nan() {
 			panic!("integral_min_x is NaN")
