@@ -51,7 +51,7 @@ impl FunctionOutput {
 	/// disabled, it returns `f64::NAN`)
 	pub fn display(
 		&self, plot_ui: &mut PlotUi, func_str: &str, derivative_str: &str, step: f64,
-		derivative_enabled: bool,
+		derivative_enabled: bool, extrema: bool, roots: bool,
 	) -> f64 {
 		// Plot back data
 		plot_ui.line(
@@ -72,23 +72,27 @@ impl FunctionOutput {
 		}
 
 		// Plot extrema points
-		if let Some(extrema_data) = self.extrema.clone() {
-			plot_ui.points(
-				Points::new(Values::from_values(extrema_data))
-					.color(Color32::YELLOW)
-					.name("Extrema")
-					.radius(5.0),
-			);
+		if extrema {
+			if let Some(extrema_data) = self.extrema.clone() {
+				plot_ui.points(
+					Points::new(Values::from_values(extrema_data))
+						.color(Color32::YELLOW)
+						.name("Extrema")
+						.radius(5.0),
+				);
+			}
 		}
 
 		// Plot roots points
-		if let Some(roots_data) = self.roots.clone() {
-			plot_ui.points(
-				Points::new(Values::from_values(roots_data))
-					.color(Color32::LIGHT_BLUE)
-					.name("Root")
-					.radius(5.0),
-			);
+		if roots {
+			if let Some(roots_data) = self.roots.clone() {
+				plot_ui.points(
+					Points::new(Values::from_values(roots_data))
+						.color(Color32::LIGHT_BLUE)
+						.name("Root")
+						.radius(5.0),
+				);
+			}
 		}
 
 		// Plot integral data

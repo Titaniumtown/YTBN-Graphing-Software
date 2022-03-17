@@ -362,6 +362,8 @@ impl FunctionEntry {
 			&self.function.get_derivative_str(),
 			(self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64),
 			self.derivative,
+			extrema,
+			roots,
 		)
 	}
 }
