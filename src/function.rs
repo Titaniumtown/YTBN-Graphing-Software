@@ -120,6 +120,7 @@ impl FunctionEntry {
 	// TODO: refactor this
 	/// Returns back values, integral data (Bars and total area), and Derivative
 	/// values
+	#[allow(clippy::type_complexity)]
 	pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
 		let back_values: Vec<Value> = {
