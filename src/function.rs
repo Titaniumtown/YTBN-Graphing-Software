@@ -145,6 +145,7 @@ impl FunctionEntry {
 						.collect(),
 				);
 			}
+
 			Some(self.output.derivative.as_ref().unwrap().clone())
 		};
 
@@ -155,6 +156,7 @@ impl FunctionEntry {
 					self.output.integral =
 						Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
 				}
+
 				let cache = self.output.integral.as_ref().unwrap();
 				Some((cache.0.clone(), cache.1))
 			}
