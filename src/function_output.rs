@@ -49,6 +49,7 @@ impl FunctionOutput {
 	/// Display output on PlotUi `plot_ui`
 	/// Returns `f64` containing rounded integral area (if integrals are
 	/// disabled, it returns `f64::NAN`)
+	#[allow(clippy::too_many_arguments)]
 	pub fn display(
 		&self, plot_ui: &mut PlotUi, func_str: &str, derivative_str: &str, step: f64,
 		derivative_enabled: bool, extrema: bool, roots: bool,
