@@ -14,7 +14,9 @@ fn main() {
 		drag_and_drop_support: true,
 		..Default::default()
 	};
-	eframe::run_native("(Yet-to-be-named) Graphing Software", options, |cc| {
-		Box::new(egui_app::MathApp::new(cc))
-	});
+	eframe::run_native(
+		"(Yet-to-be-named) Graphing Software",
+		options,
+		Box::new(|cc| Box::new(egui_app::MathApp::new(cc))),
+	);
 }
