@@ -332,6 +332,7 @@ impl MathApp {
 		SidePanel::left("side_panel")
 			.resizable(false)
 			.show(ctx, |ui| {
+				let prev_sum = self.settings.sum;
 				// ComboBox for selecting what Riemann sum type to use
 				ComboBox::from_label("Riemann Sum Type")
 					.selected_text(self.settings.sum.to_string())
@@ -340,6 +341,7 @@ impl MathApp {
 						ui.selectable_value(&mut self.settings.sum, RiemannSum::Middle, "Middle");
 						ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
 					});
+				let riemann_changed = prev_sum == self.settings.sum;
 
 				// Config options for Extrema and roots
 				let mut extrema_toggled: bool = false;
@@ -404,9 +406,11 @@ impl MathApp {
 					.changed();
 
 				// Stores whether global config options changed
+				// TODO: only take into account integral settings if integral is enabled (maybe)
 				let configs_changed = max_x_changed
 					| min_x_changed | integral_num_changed
-					| roots_toggled | extrema_toggled;
+					| roots_toggled | extrema_toggled
+					| riemann_changed;
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
