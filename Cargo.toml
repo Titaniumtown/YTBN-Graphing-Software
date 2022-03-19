@@ -7,12 +7,12 @@ license = "AGPL-3.0"
 repository = "https://github.com/Titaniumtown/YTBN-Graphing-Software"
 
 [lib]
-crate-type=["cdylib"]
+crate-type = ["cdylib"]
 
 [profile.release]
 debug = false
 codegen-units = 1
-opt-level = "z" #optimize for size
+opt-level = "z"   #optimize for size
 lto = true
 strip = true
 
@@ -24,9 +24,13 @@ lto = false
 [dependencies]
 eframe = { git = "https://github.com/emilk/egui", default-features = false }
 shadow-rs = { version = "0.9", default-features = false }
-const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
+const_format = { version = "0.2.22", default-features = false, features = [
+    "fmt",
+] }
 cfg-if = "1.0.0"
-exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", features = ["partial"] }
+exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", features = [
+    "partial",
+] }
 lazy_static = "1.4.0"
 tar = "0.4.38"
 ruzstd = { git = "https://github.com/KillingSpark/zstd-rs.git" }
@@ -43,5 +47,7 @@ instant = { version = "0.1.12" }
 instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 console_error_panic_hook = "0.1.7"
 wee_alloc = "0.4.5"
-wasm-bindgen = { version = "0.2.79", default-features = false, features = ["std"] }
+wasm-bindgen = { version = "0.2.79", default-features = false, features = [
+    "std",
+] }
 web-sys = "0.3.56"
