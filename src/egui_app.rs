@@ -684,12 +684,7 @@ impl epi::App for MathApp {
 						.collect();
 				});
 		});
-		self.last_info = (area_list, start.elapsed()); // Store list of functions' areas
-		                                       // along with the time it took to
-		                                       // process.
+		// Store list of functions' areas along with the time it took to process.
+		self.last_info = (area_list, start.elapsed());
 	}
-
-	// Uncaps max canvas size. This was capped in egui due to a bug in Firefox. But
-	// it's fixed now.
-	fn max_size_points(&self) -> Vec2 { Vec2::new(f32::MAX, f32::MAX) }
 }
