@@ -3,11 +3,10 @@ use crate::misc::{debug_log, log_helper, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
-use eframe::egui::Key;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
-	Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily,
+	Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily, Key,
 	RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use epi::Frame;
