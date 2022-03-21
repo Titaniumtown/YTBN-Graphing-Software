@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e #kill script if error occurs
 
+cargo test
+
 bash build.sh
 
 echo "rsyncing"

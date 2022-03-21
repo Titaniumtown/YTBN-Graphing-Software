@@ -33,5 +33,6 @@
     "help_other": [
         "- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points on the graph. You can toggle these in the Side Panel.",
         "- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a current workaround would be explicitly stating a multiplication operation through the use of an asterisk."
-    ]
+    ],
+    "license_info": "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question."
 }

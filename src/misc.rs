@@ -1,7 +1,5 @@
 use std::ops::Range;
 
-use eframe::egui::plot::Value;
-
 // Handles logging based on if the target is wasm (or not) and if
 // `debug_assertions` is enabled or not
 cfg_if::cfg_if! {
@@ -136,11 +134,11 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method(
-	threshold: f64, range: Range<f64>, data: Vec<Value>, f: &dyn Fn(f64) -> f64,
-	f_1: &dyn Fn(f64) -> f64,
+	threshold: f64, range: Range<f64>, data: Vec<eframe::egui::plot::Value>,
+	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	let mut output_list: Vec<f64> = Vec::new();
-	let mut last_ele_option: Option<Value> = None;
+	let mut last_ele_option: Option<eframe::egui::plot::Value> = None;
 	for ele in data.iter() {
 		if last_ele_option.is_none() {
 			last_ele_option = Some(*ele);
@@ -190,20 +188,48 @@ pub fn newtons_method(
 	output_list
 }
 
-/// Parses a json array of strings into a single, multiline string
-pub fn parse_value(value: &serde_json::Value) -> String {
-	// Create vector of strings
-	let string_vector: Vec<&str> = value
-		.as_array()
-		.unwrap()
-		.iter()
-		.map(|ele| ele.as_str().unwrap())
-		.collect::<Vec<&str>>();
+#[derive(PartialEq, Debug)]
+pub struct JsonFileOutput {
+	pub help_expr: String,
+	pub help_vars: String,
+	pub help_panel: String,
+	pub help_function: String,
+	pub help_other: String,
+	pub license_info: String,
+}
 
-	// Deliminate vector with a new line and return the resulting multiline string
-	string_vector
-		.iter()
-		.fold(String::new(), |s, l| s + l + "\n")
-		.trim_end()
-		.to_string()
+pub struct SerdeValueHelper {
+	value: serde_json::Value,
+}
+
+impl SerdeValueHelper {
+	pub fn new(string: &str) -> Self {
+		Self {
+			value: serde_json::from_str(string).unwrap(),
+		}
+	}
+
+	fn parse_multiline(&self, key: &str) -> String {
+		(&self.value[key])
+			.as_array()
+			.unwrap()
+			.iter()
+			.map(|ele| ele.as_str().unwrap())
+			.fold(String::new(), |s, l| s + l + "\n")
+			.trim_end()
+			.to_owned()
+	}
+
+	fn parse_singleline(&self, key: &str) -> String { self.value[key].as_str().unwrap().to_owned() }
+
+	pub fn parse_values(&self) -> JsonFileOutput {
+		JsonFileOutput {
+			help_expr: self.parse_multiline("help_expr"),
+			help_vars: self.parse_multiline("help_vars"),
+			help_panel: self.parse_multiline("help_panel"),
+			help_function: self.parse_multiline("help_function"),
+			help_other: self.parse_multiline("help_other"),
+			license_info: self.parse_singleline("license_info"),
+		}
+	}
 }

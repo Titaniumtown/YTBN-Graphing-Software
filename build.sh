@@ -4,7 +4,7 @@ set -e
 rm -fr tmp | true
 rm -fr pkg | true
 
-cargo test
+# cargo test
 
 #apply optimizations via wasm-opt
 wasm_opt() {

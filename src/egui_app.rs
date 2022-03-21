@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
-use crate::misc::{debug_log, log_helper, parse_value};
+use crate::misc::{debug_log, log_helper, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
@@ -12,7 +12,6 @@ use egui::{
 };
 use epi::Frame;
 use instant::Duration;
-use serde_json::Value;
 use shadow_rs::shadow;
 use std::{
 	collections::BTreeMap,
@@ -47,23 +46,50 @@ const DEFAULT_MAX_X: f64 = 10.0;
 const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 // Stores data loaded from files
-struct FileData {
-	// Stores fonts
-	pub font_ubuntu_light: FontData,
-	pub font_notoemoji: FontData,
-	pub font_hack: FontData,
+struct Assets {
+	// Stores `FontDefinitions`
+	pub fonts: FontDefinitions,
 
-	// Stores text
+	// Help blurbs
 	pub text_help_expr: String,
 	pub text_help_vars: String,
 	pub text_help_panel: String,
 	pub text_help_function: String,
 	pub text_help_other: String,
+
+	// Explanation of license
+	pub text_license_info: String,
+}
+
+impl Assets {
+	pub fn new(fonts: FontDefinitions, json: JsonFileOutput) -> Self {
+		Self {
+			fonts,
+			text_help_expr: json.help_expr,
+			text_help_vars: json.help_vars,
+			text_help_panel: json.help_panel,
+			text_help_function: json.help_function,
+			text_help_other: json.help_other,
+			text_license_info: json.license_info,
+		}
+	}
+
+	#[cfg(test)] // Only used for testing
+	pub fn get_json_file_output(&self) -> JsonFileOutput {
+		JsonFileOutput {
+			help_expr: self.text_help_expr.clone(),
+			help_vars: self.text_help_vars.clone(),
+			help_panel: self.text_help_panel.clone(),
+			help_function: self.text_help_function.clone(),
+			help_other: self.text_help_other.clone(),
+			license_info: self.text_license_info.clone(),
+		}
+	}
 }
 
 lazy_static::lazy_static! {
 	// Load all of the data from the compressed tarball
-	static ref FILE_DATA: FileData = {
+	static ref ASSETS: Assets = {
 		let start = instant::Instant::now();
 
 		log_helper("Loading assets...");
@@ -78,11 +104,7 @@ lazy_static::lazy_static! {
 		let mut font_hack: Option<FontData> = None;
 
 		// Stores text
-		let mut text_help_expr: Option<String> = None;
-		let mut text_help_vars: Option<String> = None;
-		let mut text_help_panel: Option<String> = None;
-		let mut text_help_function: Option<String> = None;
-		let mut text_help_other: Option<String> = None;
+		let mut text_data: Option<JsonFileOutput> = None;
 
 
 		log_helper("Reading assets...");
@@ -119,16 +141,10 @@ lazy_static::lazy_static! {
 				let string_data = str::from_utf8(&data).unwrap().to_string();
 				match path_string.as_ref() {
 					"text.json" => {
-						let json_data: Value = serde_json::from_str(&string_data).unwrap();
-						text_help_expr = Some(parse_value(&json_data["help_expr"]));
-						text_help_vars = Some(parse_value(&json_data["help_vars"]));
-						text_help_panel = Some(parse_value(&json_data["help_panel"]));
-						text_help_function = Some(parse_value(&json_data["help_function"]));
-						text_help_other = Some(parse_value(&json_data["help_other"]));
-
+						text_data = Some(SerdeValueHelper::new(&string_data).parse_values());
 					},
 					_ => {
-						panic!("Text file {} not expected!", path_string);
+						panic!("Json file {} not expected!", path_string);
 					}
 				}
 			} else {
@@ -138,31 +154,20 @@ lazy_static::lazy_static! {
 
 		log_helper(&format!("Done loading assets! Took: {:?}", start.elapsed()));
 
-		// Create and return FileData struct
-		FileData {
-			font_ubuntu_light: font_ubuntu_light.expect("Ubuntu Light font not found!"),
-			font_notoemoji: font_notoemoji.expect("Noto Emoji font not found!"),
-			font_hack: font_hack.expect("Hack font not found!"),
-			text_help_expr: text_help_expr.expect("HELP_EXPR not found"),
-			text_help_vars: text_help_vars.expect("HELP_VARS not found"),
-			text_help_panel: text_help_panel.expect("HELP_PANEL not found"),
-			text_help_function: text_help_function.expect("HELP_FUNCTION not found"),
-			text_help_other: text_help_other.expect("HELP_OTHER not found"),
-		}
-	};
-
-	// Stores the FontDefinitions used by egui
-	static ref FONT_DEFINITIONS: FontDefinitions = {
 		let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
 		let mut families = BTreeMap::new();
 
-		font_data.insert("Hack".to_owned(), FILE_DATA.font_hack.clone());
-		font_data.insert("Ubuntu-Light".to_owned(), FILE_DATA.font_ubuntu_light.clone());
-		font_data.insert("NotoEmoji-Regular".to_owned(), FILE_DATA.font_notoemoji.clone());
+		font_data.insert("Hack".to_owned(), font_hack.expect("Hack font not found!"));
+		font_data.insert("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu Light font not found!"));
+		font_data.insert("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("Noto Emoji font not found!"));
 
 		families.insert(
 			FontFamily::Monospace,
-			vec!["Hack".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+			vec![
+				"Hack".to_owned(),
+				"Ubuntu-Light".to_owned(),
+				"NotoEmoji-Regular".to_owned(),
+			],
 		);
 
 		families.insert(
@@ -170,105 +175,115 @@ lazy_static::lazy_static! {
 			vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
 		);
 
-		FontDefinitions {
+		let fonts = FontDefinitions {
 			font_data,
 			families,
-		}
+		};
+
+
+		// Create and return Assets struct
+		Assets::new(
+			fonts, text_data.expect("Text data not found!"))
 	};
 }
 
 // Tests to make sure archived (and compressed) assets match expected data
 #[test]
 fn test_file_data() {
-	assert_eq!(
-		FILE_DATA.font_ubuntu_light,
-		FontData::from_owned(include_bytes!("../assets/Ubuntu-Light.ttf").to_vec())
+	let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
+	let mut families = BTreeMap::new();
+
+	font_data.insert(
+		"Hack".to_owned(),
+		FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec()),
 	);
-	assert_eq!(
-		FILE_DATA.font_notoemoji,
-		FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec())
+	font_data.insert(
+		"Ubuntu-Light".to_owned(),
+		FontData::from_owned(include_bytes!("../assets/Ubuntu-Light.ttf").to_vec()),
 	);
-	assert_eq!(
-		FILE_DATA.font_hack,
-		FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec())
+	font_data.insert(
+		"NotoEmoji-Regular".to_owned(),
+		FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec()),
 	);
 
-	let json_data: Value = serde_json::from_str(include_str!("../assets/text.json")).unwrap();
-
-	assert_eq!(
-		FILE_DATA.text_help_expr,
-		parse_value(&json_data["help_expr"])
+	families.insert(
+		FontFamily::Monospace,
+		vec![
+			"Hack".to_owned(),
+			"Ubuntu-Light".to_owned(),
+			"NotoEmoji-Regular".to_owned(),
+		],
 	);
 
-	assert_eq!(
-		FILE_DATA.text_help_vars,
-		parse_value(&json_data["help_vars"])
+	families.insert(
+		FontFamily::Proportional,
+		vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
 	);
-	assert_eq!(
-		FILE_DATA.text_help_panel,
-		parse_value(&json_data["help_panel"])
-	);
-	assert_eq!(
-		FILE_DATA.text_help_function,
-		parse_value(&json_data["help_function"])
-	);
-	assert_eq!(
-		FILE_DATA.text_help_other,
-		parse_value(&json_data["help_other"])
-	);
+
+	let fonts = FontDefinitions {
+		font_data,
+		families,
+	};
+
+	assert_eq!(ASSETS.fonts, fonts);
+
+	let json_data: SerdeValueHelper = SerdeValueHelper::new(include_str!("../assets/text.json"));
+
+	assert_eq!(ASSETS.get_json_file_output(), json_data.parse_values());
 }
 
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
 		use wasm_bindgen::JsCast;
 
-		// removes the "loading" element on the web page that displays a loading indicator
+		/// Removes the "loading" element on the web page that displays a loading indicator
 		fn stop_loading() {
-			let document = web_sys::window().unwrap().document().unwrap();
-			let loading_element = document.get_element_by_id("loading").unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+			let document = web_sys::window().expect("Could not get web_sys window").document().expect("Could not get web_sys document");
+
+			let loading_element = document.get_element_by_id("loading").expect("Couldn't get loading indicator element")
+			.dyn_into::<web_sys::HtmlElement>().unwrap();
+
+			// Remove the element
 			loading_element.remove();
 		}
 	}
 }
 
-// Used to provide info on the Licensing of the project
-const LICENSE_INFO: &str = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
-
-// The URL of the project
-const PROJECT_URL: &str = "https://github.com/Titaniumtown/YTBN-Graphing-Software";
-
-// Stores settings
+/// Stores current settings/state of `MathApp`
+// TODO: find a better name for this
 struct AppSettings {
-	// Stores whether or not the Help window is open
+	/// Stores whether or not the Help window is open
 	pub help_open: bool,
 
-	// Stores whether or not the Info window is open
+	/// Stores whether or not the Info window is open
 	pub info_open: bool,
 
-	// Stores whether or not the side panel is shown or not
+	/// Stores whether or not the side panel is shown or not
 	pub show_side_panel: bool,
 
-	// Stores the type of Rienmann sum that should be calculated
+	/// Stores the type of Rienmann sum that should be calculated
 	pub sum: RiemannSum,
 
-	// Min and Max range for calculating an integral
+	/// Min and Max range for calculating an integral
 	pub integral_min_x: f64,
 	pub integral_max_x: f64,
 
-	// Number of rectangles used to calculate integral
+	/// Number of rectangles used to calculate integral
 	pub integral_num: usize,
 
-	// Stores whether or not dark mode is enabled
+	/// Stores whether or not dark mode is enabled
 	pub dark_mode: bool,
 
-	// Stores whether or not displaying extrema is enabled
+	/// Stores whether or not displaying extrema is enabled
 	pub extrema: bool,
 
-	// Stores whether or not displaying roots is enabled
+	/// Stores whether or not displaying roots is enabled
 	pub roots: bool,
 }
 
 impl Default for AppSettings {
+	/// Default implementation of `AppSettings`, this is how the application
+	/// starts up
 	fn default() -> Self {
 		Self {
 			help_open: true,
@@ -285,23 +300,24 @@ impl Default for AppSettings {
 	}
 }
 
+/// The actual application
 pub struct MathApp {
-	// Stores vector of functions
+	/// Stores vector of functions
 	functions: Vec<FunctionEntry>,
 
-	// Stores vector containing the string representation of the functions. This is used because of
-	// hacky reasons
+	/// Stores vector containing the string representation of the functions.
+	/// This is used because of hacky reasons
 	func_strs: Vec<String>,
 
-	// Stores last error from parsing functions (used to display the same error when side panel is
-	// minimized)
+	/// Stores last error from parsing functions (used to display the same error
+	/// when side panel is minimized)
 	last_error: Vec<(usize, String)>,
 
-	// Contains the list of Areas calculated (the vector of f64) and time it took for the last
-	// frame (the Duration). Stored in a Tuple.
+	/// Contains the list of Areas calculated (the vector of f64) and time it
+	/// took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<f64>, Duration),
 
-	// Stores Settings (pretty self-explanatory)
+	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
 }
 
@@ -318,14 +334,18 @@ impl Default for MathApp {
 }
 
 impl MathApp {
-	#[allow(dead_code)] // this is used lol
+	#[allow(dead_code)] // This is used lol
+	/// Create new instance of `MathApp` and return it
 	pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+		// Remove loading indicator on wasm
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
+
 		log_helper("egui app initialized.");
-		Self::default()
+		Self::default() // initialize `MathApp`
 	}
 
+	/// Creates SidePanel which contains configuration options
 	fn side_panel(&mut self, ctx: &Context) {
 		// Side Panel which contains vital options to the operation of the application
 		// (such as adding functions and other options)
@@ -500,10 +520,13 @@ impl MathApp {
 				}
 
 				// Open Source and Licensing information
-				ui.hyperlink_to("I'm Opensource!", PROJECT_URL);
+				ui.hyperlink_to(
+					"I'm Opensource!",
+					"https://github.com/Titaniumtown/YTBN-Graphing-Software",
+				);
 
 				ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
-					.on_hover_text(LICENSE_INFO);
+					.on_hover_text(&ASSETS.text_license_info);
 			});
 	}
 }
@@ -524,7 +547,7 @@ impl epi::App for MathApp {
 			.show_side_panel
 			.bitxor_assign(ctx.input().key_down(Key::H));
 
-		ctx.set_fonts(FONT_DEFINITIONS.clone()); // Initialize fonts
+		ctx.set_fonts(ASSETS.fonts.clone()); // Initialize fonts
 
 		// Creates Top bar that contains some general options
 		TopBottomPanel::top("top_bar").show(ctx, |ui| {
@@ -604,23 +627,23 @@ impl epi::App for MathApp {
 				ui.heading("Help With...");
 
 				ui.collapsing("Supported Expressions", |ui| {
-					ui.label(&FILE_DATA.text_help_expr);
+					ui.label(&ASSETS.text_help_expr);
 				});
 
 				ui.collapsing("Supported Constants", |ui| {
-					ui.label(&FILE_DATA.text_help_vars);
+					ui.label(&ASSETS.text_help_vars);
 				});
 
 				ui.collapsing("Panel", |ui| {
-					ui.label(&FILE_DATA.text_help_panel);
+					ui.label(&ASSETS.text_help_panel);
 				});
 
 				ui.collapsing("Functions", |ui| {
-					ui.label(&FILE_DATA.text_help_function);
+					ui.label(&ASSETS.text_help_function);
 				});
 
 				ui.collapsing("Other", |ui| {
-					ui.label(&FILE_DATA.text_help_other);
+					ui.label(&ASSETS.text_help_other);
 				});
 			});
 
