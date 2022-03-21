@@ -359,7 +359,7 @@ impl FunctionEntry {
 		self.output.display(
 			plot_ui,
 			self.get_func_str(),
-			&self.function.get_derivative_str(),
+			self.function.get_derivative_str(),
 			(self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64),
 			self.derivative,
 			extrema,

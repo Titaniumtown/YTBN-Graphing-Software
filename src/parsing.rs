@@ -8,6 +8,7 @@ lazy_static::lazy_static! {
 pub struct BackingFunction {
 	function: FlatEx<f64>,
 	derivative_1: FlatEx<f64>,
+	derivative_1_str: String,
 	derivative_2: FlatEx<f64>,
 }
 
@@ -17,6 +18,7 @@ impl BackingFunction {
 		let derivative_1 = function
 			.partial(0)
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
+		let derivative_1_str = derivative_1.unparse().to_owned().replace("{x}", "x");
 		let derivative_2 = function
 			.partial_iter([0, 0].iter())
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
@@ -24,13 +26,12 @@ impl BackingFunction {
 		Self {
 			function,
 			derivative_1,
+			derivative_1_str,
 			derivative_2,
 		}
 	}
 
-	pub fn get_derivative_str(&self) -> String {
-		String::from(self.derivative_1.unparse()).replace("{x}", "x")
-	}
+	pub fn get_derivative_str(&self) -> &str { &self.derivative_1_str }
 
 	pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
