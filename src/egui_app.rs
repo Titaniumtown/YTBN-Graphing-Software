@@ -521,7 +521,7 @@ impl MathApp {
 
 				// Open Source and Licensing information
 				ui.hyperlink_to(
-					"I'm Opensource!",
+					"I'm Open Source!",
 					"https://github.com/Titaniumtown/YTBN-Graphing-Software",
 				);
 
