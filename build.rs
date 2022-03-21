@@ -1,9 +1,10 @@
 fn main() {
+	// rebuild if new commit or contents of `assets` folder changed
+	println!("cargo:rerun-if-changed=.git/logs/HEAD");
+	println!("cargo:rerun-if-changed=assets");
+
 	let _ = command_run::Command::with_args("./pack_assets.sh", &[""])
 		.enable_capture()
 		.run();
-
-	println!("cargo:rerun-if-changed=.git/logs/HEAD"); // genius
-	println!("cargo:rerun-if-changed=assets"); // genius
 	shadow_rs::new().unwrap();
 }

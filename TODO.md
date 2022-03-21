@@ -17,3 +17,4 @@
 9. Update function tests
 10. rewrite FunctionEntry to move more information and handling to egui_app (such as config changes)
 11. Threading
+12. fix integral display
