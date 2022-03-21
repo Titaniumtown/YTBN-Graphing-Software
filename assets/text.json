@@ -19,7 +19,7 @@
         "- PI is available through 'pi' or 'π'"
     ],
     "help_panel": [
-        "- The 'Panel' button on the top bar toggles if the side bar should be shown or not.",
+        "- The 'Panel' button on the top bar toggles if the side bar should be shown or not. This can also be accomplished by pressing the 'h' key.",
         "- The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.",
         "- The 'Help' button on the top bar opens and closes this window!",
         "- The 'Info' button provides information on the build currently running.",
