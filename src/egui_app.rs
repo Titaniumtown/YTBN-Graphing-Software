@@ -68,7 +68,7 @@ lazy_static::lazy_static! {
 
 		log_helper("Loading assets...");
 		let mut tar_file_data = Vec::new();
-		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../data.tar.zst").as_slice()).unwrap().read_to_end(&mut tar_file_data).unwrap();
+		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice()).expect("failed to decompress tarball").read_to_end(&mut tar_file_data).expect("failed to read asset contents");
 
 		let mut tar_archive = tar::Archive::new(&*tar_file_data);
 

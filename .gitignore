@@ -2,4 +2,4 @@
 Cargo.lock
 /pkg
 /tmp
-/data.tar.zst
+/assets.tar.zst
