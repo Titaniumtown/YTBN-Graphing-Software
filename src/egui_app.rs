@@ -547,7 +547,8 @@ impl epi::App for MathApp {
 			.show_side_panel
 			.bitxor_assign(ctx.input().key_down(Key::H));
 
-		ctx.set_fonts(ASSETS.fonts.clone()); // Initialize fonts
+		// Initialize fonts
+		ctx.set_fonts(ASSETS.fonts.clone());
 
 		// Creates Top bar that contains some general options
 		TopBottomPanel::top("top_bar").show(ctx, |ui| {
