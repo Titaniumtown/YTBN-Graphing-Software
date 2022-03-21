@@ -68,7 +68,7 @@ lazy_static::lazy_static! {
 
 		log_helper("Loading assets...");
 		let mut tar_file_data = Vec::new();
-		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice()).expect("failed to decompress tarball").read_to_end(&mut tar_file_data).expect("failed to read asset contents");
+		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice()).expect("failed to decompress assets").read_to_end(&mut tar_file_data).expect("failed to read assets");
 
 		let mut tar_archive = tar::Archive::new(&*tar_file_data);
 
@@ -85,7 +85,7 @@ lazy_static::lazy_static! {
 		let mut text_help_other: Option<String> = None;
 
 
-		log_helper("Reading asset files...");
+		log_helper("Reading assets...");
 		// Iterate through all entries in the tarball
 		for file in tar_archive.entries().unwrap() {
 			let mut file = file.unwrap();
