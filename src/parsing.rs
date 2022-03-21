@@ -1,18 +1,24 @@
 use exmex::prelude::*;
 
 lazy_static::lazy_static! {
+	/// Function returns `f64::NaN` at every x value, which is not displayed.
 	static ref EMPTY_FUNCTION: FlatEx<f64> = exmex::parse::<f64>("0/0").unwrap();
 }
 
 #[derive(Clone)]
 pub struct BackingFunction {
+	/// f(x)
 	function: FlatEx<f64>,
+	/// f'(x)
 	derivative_1: FlatEx<f64>,
+	/// Mathematical representation of f'(x)
 	derivative_1_str: String,
+	/// f''(x)
 	derivative_2: FlatEx<f64>,
 }
 
 impl BackingFunction {
+	/// Create new BackingFunction instance
 	pub fn new(func_str: &str) -> Self {
 		let function = exmex::parse::<f64>(func_str).unwrap();
 		let derivative_1 = function
@@ -31,14 +37,18 @@ impl BackingFunction {
 		}
 	}
 
+	/// Returns Mathematical representation of the function's derivative
 	pub fn get_derivative_str(&self) -> &str { &self.derivative_1_str }
 
+	/// Calculate f(x)
 	pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
 
+	/// Calculate f'(x)
 	pub fn get_derivative_1(&self, x: f64) -> f64 {
 		self.derivative_1.eval(&[x]).unwrap_or(f64::NAN)
 	}
 
+	/// Calculate f''(x)
 	pub fn get_derivative_2(&self, x: f64) -> f64 {
 		self.derivative_2.eval(&[x]).unwrap_or(f64::NAN)
 	}
@@ -134,8 +144,8 @@ pub fn process_func_str(function_in: String) -> String {
 	output_string.replace("log(", "log10(")
 }
 
-// Tests function to make sure it's able to be parsed. Returns the string of the
-// Error produced, or an empty string if it runs successfully.
+/// Tests function to make sure it's able to be parsed. Returns the string of
+/// the Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: &str) -> Option<String> {
 	let parse_result = exmex::parse::<f64>(function_string);
 
@@ -171,13 +181,14 @@ pub fn test_func(function_string: &str) -> Option<String> {
 	}
 }
 
-// Used for testing: passes function to `add_asterisks` before running
-// `test_func`
+/// Used for testing: passes function to `add_asterisks` before running
+/// `test_func`
 #[cfg(test)]
 fn test_func_helper(function_string: &str) -> Option<String> {
 	test_func(&process_func_str(function_string.to_string()))
 }
 
+/// Tests to make sure functions are parsed correctly
 #[test]
 fn test_func_test() {
 	// These shouldn't fail
@@ -195,12 +206,13 @@ fn test_func_test() {
 	assert!(test_func_helper("abcdef").is_some());
 }
 
+/// Helps with tests of `process_func_str`
 #[cfg(test)]
 fn test_process_helper(input: &str, expected: &str) {
 	assert_eq!(&process_func_str(input.to_string()), expected);
 }
 
-// Tests to make sure my cursed function works as intended
+/// Tests to make sure my cursed function works as intended
 #[test]
 fn func_process_test() {
 	test_process_helper("2x", "2*x");
