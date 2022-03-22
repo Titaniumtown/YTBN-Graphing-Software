@@ -151,10 +151,15 @@ pub fn newtons_method(
 			continue;
 		}
 
+		// if `ele.y` is NaN, just continue iterating
+		if ele.y.is_nan() {
+			continue;
+		}
+
 		let last_ele_y = last_ele_option.unwrap().y; // store this here as it's used multiple times
 
-		// If either are NaN, just continue iterating
-		if last_ele_y.is_nan() | ele.y.is_nan() {
+		// if `last_ele.y` is NaN, continue iterating
+		if last_ele_y.is_nan() {
 			continue;
 		}
 
