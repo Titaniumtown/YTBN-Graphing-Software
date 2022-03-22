@@ -50,18 +50,6 @@ impl SteppedVector {
 			// (For some reason) it wasn't!
 			return None;
 		}
-
-		// Old (inefficent) code
-		/*
-		for (i, ele) in self.data.iter().enumerate() {
-			if ele > &x {
-				return None;
-			} else if &x == ele {
-				return Some(i);
-			}
-		}
-		None
-		*/
 	}
 
 	#[allow(dead_code)]
