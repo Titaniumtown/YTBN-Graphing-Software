@@ -43,10 +43,10 @@ impl SteppedVector {
 		// data (just in case)
 		if self.data[possible_i] == x {
 			// It is valid!
-			return Some(possible_i);
+			Some(possible_i)
 		} else {
 			// (For some reason) it wasn't!
-			return None;
+			None
 		}
 	}
 
