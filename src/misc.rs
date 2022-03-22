@@ -31,7 +31,7 @@ impl SteppedVector {
 		}
 
 		// Do some math in order to calculate the expected index value
-		let possible_i = ((x + self.min) / self.step) as usize;
+		let possible_i = (((x + self.min) / self.step) as usize) - 1;
 
 		// Make sure that the index is valid by checking the data returned vs the actual
 		// data (just in case)
