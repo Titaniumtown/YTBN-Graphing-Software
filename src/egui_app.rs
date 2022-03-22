@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
-use crate::misc::{debug_log, log_helper, JsonFileOutput, SerdeValueHelper};
+use crate::misc::{JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
@@ -91,7 +91,7 @@ lazy_static::lazy_static! {
 	static ref ASSETS: Assets = {
 		let start = instant::Instant::now();
 
-		log_helper("Loading assets...");
+		tracing::info!("Loading assets...");
 		let mut tar_file_data = Vec::new();
 		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice()).expect("failed to decompress assets").read_to_end(&mut tar_file_data).expect("failed to read assets");
 
@@ -106,7 +106,7 @@ lazy_static::lazy_static! {
 		let mut text_data: Option<JsonFileOutput> = None;
 
 
-		log_helper("Reading assets...");
+		tracing::info!("Reading assets...");
 		// Iterate through all entries in the tarball
 		for file in tar_archive.entries().unwrap() {
 			let mut file = file.unwrap();
@@ -115,7 +115,7 @@ lazy_static::lazy_static! {
 			let path = file.header().path().unwrap();
 			let path_string = path.to_string_lossy();
 
-			debug_log(&format!("Loading file: {}", path_string));
+			tracing::debug!("Loading file: {}", path_string);
 
 			// Match the file extention
 			if path_string.ends_with(".ttf") {
@@ -151,7 +151,7 @@ lazy_static::lazy_static! {
 			}
 		}
 
-		log_helper(&format!("Done loading assets! Took: {:?}", start.elapsed()));
+		tracing::info!("Done loading assets! Took: {:?}", start.elapsed());
 
 		let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
 		let mut families = BTreeMap::new();
@@ -340,7 +340,7 @@ impl MathApp {
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
 
-		log_helper("egui app initialized.");
+		tracing::info!("egui app initialized.");
 		Self::default() // initialize `MathApp`
 	}
 

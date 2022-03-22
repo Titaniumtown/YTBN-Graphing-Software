@@ -2,7 +2,7 @@
 
 use crate::function_output::FunctionOutput;
 #[allow(unused_imports)]
-use crate::misc::{debug_log, newtons_method, SteppedVector};
+use crate::misc::{newtons_method, SteppedVector};
 
 use crate::egui_app::{DEFAULT_FUNCION, DEFAULT_RIEMANN};
 use crate::parsing::BackingFunction;

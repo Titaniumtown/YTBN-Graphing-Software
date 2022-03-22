@@ -1,47 +1,5 @@
 use std::ops::Range;
 
-// Handles logging based on if the target is wasm (or not) and if
-// `debug_assertions` is enabled or not
-cfg_if::cfg_if! {
-	if #[cfg(target_arch = "wasm32")] {
-		use wasm_bindgen::prelude::*;
-		#[wasm_bindgen]
-		extern "C" {
-			// `console.log(...)`
-			#[wasm_bindgen(js_namespace = console)]
-			fn log(s: &str);
-		}
-
-		/// Used for logging normal messages
-		#[allow(dead_code)]
-		pub fn log_helper(s: &str) {
-			log(s);
-		}
-
-		/// Used for debug messages, only does anything if `debug_assertions` is enabled
-		#[allow(dead_code)]
-		#[allow(unused_variables)]
-		pub fn debug_log(s: &str) {
-			#[cfg(debug_assertions)]
-			log(s);
-		}
-	} else {
-		/// Used for logging normal messages
-		#[allow(dead_code)]
-		pub fn log_helper(s: &str) {
-			println!("{}", s);
-		}
-
-		/// Used for debug messages, only does anything if `debug_assertions` is enabled
-		#[allow(dead_code)]
-		#[allow(unused_variables)]
-		pub fn debug_log(s: &str) {
-			#[cfg(debug_assertions)]
-			println!("{}", s);
-		}
-	}
-}
-
 /// `SteppedVector` is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
@@ -106,7 +64,7 @@ impl From<Vec<f64>> for SteppedVector {
 		// length of data
 		let data_length = data.len();
 		// length of data subtracted by 1 (represents the maximum index value)
-		let data_i_length = data.len() - 1;
+		let data_i_length = data_length - 1;
 
 		// Ensure data is of correct length
 		if data_length < 2 {
@@ -118,12 +76,14 @@ impl From<Vec<f64>> for SteppedVector {
 
 		// if min is bigger than max, sort the input data
 		if min > max {
+			tracing::debug!("SteppedVector: min is larger than max, sorting.");
 			data.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 			max = data[0];
 			min = data[data_i_length];
 		}
 
-		let step = (max - min).abs() / (data_i_length as f64); // Calculate the step between elements
+		// Calculate the step between elements
+		let step = (max - min).abs() / (data_i_length as f64);
 
 		// Create and return the struct
 		SteppedVector {

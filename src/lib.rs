@@ -9,7 +9,6 @@ mod parsing;
 
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
-		use misc::log_helper;
 		use wasm_bindgen::prelude::*;
 
 		#[global_allocator]
@@ -17,16 +16,17 @@ cfg_if::cfg_if! {
 
 		#[wasm_bindgen(start)]
 		pub fn start() -> Result<(), wasm_bindgen::JsValue> {
-			log_helper("Initializing...");
+			tracing::info!("Initializing...");
 
 			// Used in order to hook into `panic!()` to log in the browser's console
-			log_helper("Initializing panic hooks...");
-			std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-			log_helper("Initialized panic hooks!");
+			tracing::info!("Initializing panic hooks...");
+			console_error_panic_hook::set_once();
+			tracing_wasm::set_as_global_default();
+			tracing::info!("Initialized panic hooks!");
 
-			log_helper("Finished initializing!");
+			tracing::info!("Finished initializing!");
 
-			log_helper("Starting App...");
+			tracing::info!("Starting App...");
 			eframe::start_web("canvas", Box::new(|cc| Box::new(egui_app::MathApp::new(cc))))
 		}
 	}
