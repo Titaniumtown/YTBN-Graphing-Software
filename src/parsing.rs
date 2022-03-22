@@ -68,7 +68,7 @@ EXTREMELY Janky function that tries to put asterisks in the proper places to be 
 One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
 In the future I may want to completely rewrite this or implement this natively in exmex.
 */
-pub fn process_func_str(function_in: String) -> String {
+pub fn process_func_str(function_in: &str) -> String {
 	let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
 	let function_chars: Vec<char> = function.chars().collect();
 	let mut output_string: String = String::new();
@@ -186,7 +186,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
 /// `test_func`
 #[cfg(test)]
 fn test_func_helper(function_string: &str) -> Option<String> {
-	test_func(&process_func_str(function_string.to_string()))
+	test_func(&process_func_str(function_string))
 }
 
 /// Tests to make sure functions are parsed correctly
@@ -210,7 +210,7 @@ fn test_func_test() {
 /// Helps with tests of `process_func_str`
 #[cfg(test)]
 fn test_process_helper(input: &str, expected: &str) {
-	assert_eq!(&process_func_str(input.to_string()), expected);
+	assert_eq!(&process_func_str(input), expected);
 }
 
 /// Tests to make sure my cursed function works as intended

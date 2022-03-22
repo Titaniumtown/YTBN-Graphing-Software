@@ -481,7 +481,7 @@ impl MathApp {
 						ui.text_edit_singleline(&mut self.func_strs[i]);
 					});
 
-					let proc_func_str = process_func_str(self.func_strs[i].clone());
+					let proc_func_str = process_func_str(&self.func_strs[i]);
 					if configs_changed
 						| integral_toggle | derivative_toggle
 						| (proc_func_str != function.get_func_str())
