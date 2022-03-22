@@ -135,7 +135,7 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `range` is the range of valid x values (used to stop calculation when the
 /// point won't display anyways) `data` is the data to iterate over (a Vector of
 /// egui's `Value` struct) `f` is f(x)
-/// `f_1` is f'(x)
+/// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method(
 	threshold: f64, range: std::ops::Range<f64>, data: Vec<eframe::egui::plot::Value>,
@@ -162,6 +162,7 @@ pub fn newtons_method(
 		}
 
 		if last_ele_y.signum() != ele.y.signum() {
+			// actual start of newton's method
 			let x = {
 				let mut x1: f64 = last_ele_option.unwrap().x;
 				let mut x2: f64;
