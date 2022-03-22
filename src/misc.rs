@@ -6,7 +6,7 @@ use std::ops::Range;
 /// index was calculated with `.iter().position(....` which was horribly
 /// inefficient
 pub struct SteppedVector {
-	// Actual data being referenced. HAS to be sorted from maximum value to minumum
+	// Actual data being referenced. HAS to be sorted from minimum to maximum
 	data: Vec<f64>,
 
 	// Minimum value
@@ -30,17 +30,25 @@ impl SteppedVector {
 			return None;
 		}
 
+		if x == self.min {
+			return Some(0);
+		}
+
+		if x == self.max {
+			return Some(self.data.len() - 1);
+		}
+
 		// Do some math in order to calculate the expected index value
-		let possible_i = (((x + self.min) / self.step) as usize) - 1;
+		let possible_i = ((x - self.min) / self.step) as usize;
 
 		// Make sure that the index is valid by checking the data returned vs the actual
 		// data (just in case)
 		if self.data[possible_i] == x {
 			// It is valid!
-			Some(possible_i)
+			return Some(possible_i);
 		} else {
 			// (For some reason) it wasn't!
-			None
+			return None;
 		}
 
 		// Old (inefficent) code
@@ -55,6 +63,15 @@ impl SteppedVector {
 		None
 		*/
 	}
+
+	#[allow(dead_code)]
+	pub fn get_min(&self) -> f64 { self.min }
+
+	#[allow(dead_code)]
+	pub fn get_max(&self) -> f64 { self.max }
+
+	#[allow(dead_code)]
+	pub fn get_data(&self) -> Vec<f64> { self.data.clone() }
 }
 
 // Convert `Vec<f64>` into `SteppedVector`
@@ -63,27 +80,30 @@ impl From<Vec<f64>> for SteppedVector {
 		let mut data = input_data;
 		// length of data
 		let data_length = data.len();
-		// length of data subtracted by 1 (represents the maximum index value)
-		let data_i_length = data_length - 1;
 
 		// Ensure data is of correct length
 		if data_length < 2 {
 			panic!("SteppedVector: data should have a length longer than 2");
 		}
 
-		let mut max: f64 = data[0]; // The max value should be the first element
-		let mut min: f64 = data[data_i_length]; // The minimum value should be the last element
+		// length of data subtracted by 1 (represents the maximum index value)
+		let data_i_length = data_length - 1;
 
-		// if min is bigger than max, sort the input data
+		let mut max: f64 = data[data_i_length]; // The max value should be the first element
+		let mut min: f64 = data[0]; // The minimum value should be the last element
+
 		if min > max {
 			tracing::debug!("SteppedVector: min is larger than max, sorting.");
-			data.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
-			max = data[0];
-			min = data[data_i_length];
+			data.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
+			max = data[data_i_length];
+			min = data[0];
 		}
 
+		assert!(min >= 0.0);
+		assert!(max >= 0.0);
+
 		// Calculate the step between elements
-		let step = (max - min).abs() / (data_i_length as f64);
+		let step = (max - min).abs() / (data_length as f64);
 
 		// Create and return the struct
 		SteppedVector {
@@ -93,6 +113,33 @@ impl From<Vec<f64>> for SteppedVector {
 			step,
 		}
 	}
+}
+
+#[test]
+fn stepped_vector_test() {
+	let min = 0;
+	let max = 10;
+	let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
+	let len_data = data.len();
+	let stepped_vector: SteppedVector = data.into();
+
+	assert_eq!(
+		stepped_vector.get_data(),
+		vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+	);
+
+	assert_eq!(stepped_vector.get_min(), min as f64);
+	assert_eq!(stepped_vector.get_max(), max as f64);
+
+	assert_eq!(stepped_vector.get_index(min as f64), Some(0));
+	assert_eq!(stepped_vector.get_index(max as f64), Some(len_data - 1));
+
+	for i in min..=max {
+		assert_eq!(stepped_vector.get_index(i as f64), Some(i));
+	}
+
+	assert_eq!(stepped_vector.get_index(-1.0), None);
+	assert_eq!(stepped_vector.get_index(11.0), None);
 }
 
 // Rounds f64 to specific number of decimal places
