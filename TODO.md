@@ -16,4 +16,7 @@
 9. Threading
 10. fix integral display
 11. Improve loading indicator
+	- Dynamically hide and unhide it when lagging
 12. add comments in `parsing::process_func_str` for it to be better understandable
+13. Look into other, better methods of compression that would be faster
+14. Better handling of panics and errors to display to the user
