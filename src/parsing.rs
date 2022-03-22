@@ -25,6 +25,7 @@ impl BackingFunction {
 			.partial(0)
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
 		let derivative_1_str = derivative_1.unparse().to_owned().replace("{x}", "x");
+
 		let derivative_2 = function
 			.partial_iter([0, 0].iter())
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());

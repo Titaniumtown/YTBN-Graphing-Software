@@ -105,9 +105,25 @@ impl From<Vec<f64>> for SteppedVector {
 	/// `data` is a Vector of 64 bit floating point numbers ordered from max ->
 	/// min
 	fn from(data: Vec<f64>) -> SteppedVector {
+		// length of data
+		let data_length = data.len();
+		// length of data subtracted by 1 (represents the maximum index value)
+		let data_i_length = data.len() - 1;
+
+		// Ensure data is of correct length
+		if data_length < 2 {
+			panic!("SteppedVector: data should have a length longer than 2")
+		}
+
 		let max = data[0]; // The max value should be the first element
-		let min = data[data.len() - 1]; // The minimum value should be the last element
-		let step = (max - min).abs() / ((data.len() - 1) as f64); // Calculate the step between elements
+		let min = data[data_i_length]; // The minimum value should be the last element
+
+		// Just some checks here
+		if min > max {
+			panic!("SteppedVector: first element is smaller than the last element")
+		}
+
+		let step = (max - min).abs() / (data_i_length as f64); // Calculate the step between elements
 
 		// Create and return the struct
 		SteppedVector {
