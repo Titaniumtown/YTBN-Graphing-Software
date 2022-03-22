@@ -11,12 +11,9 @@
 4. re-add euler's number (well it works if you use capital e like `E^x`)
 5. allow constants in min/max integral input (like pi or euler's number)
 6. sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
-7. Keybinds
-8. nth derivative support (again)
-9. Update function tests
-10. rewrite FunctionEntry to move more information and handling to egui_app (such as config changes)
-11. Threading
-12. fix integral display
-13. Improve loading indicator
-14. Hash asset tarball and compare hash on runtime (just an idea, idk if this is actually worth it)
-15. add comments in `parsing::process_func_str` for it to be better understandable
+7. nth derivative support (again)
+8. rewrite FunctionEntry to move more information and handling to egui_app (such as config changes)
+9. Threading
+10. fix integral display
+11. Improve loading indicator
+12. add comments in `parsing::process_func_str` for it to be better understandable
