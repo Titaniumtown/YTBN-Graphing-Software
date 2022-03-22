@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 /// `SteppedVector` is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
@@ -140,7 +138,7 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method(
-	threshold: f64, range: Range<f64>, data: Vec<eframe::egui::plot::Value>,
+	threshold: f64, range: std::ops::Range<f64>, data: Vec<eframe::egui::plot::Value>,
 	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	let mut output_list: Vec<f64> = Vec::new();
