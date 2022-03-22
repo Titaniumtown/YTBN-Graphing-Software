@@ -18,5 +18,5 @@
 11. Threading
 12. fix integral display
 13. Improve loading indicator
-14. Hash asset tarball and compare hash on runtime
+14. Hash asset tarball and compare hash on runtime (just an idea, idk if this is actually worth it)
 15. add comments in `parsing::process_func_str` for it to be better understandable
