@@ -95,50 +95,71 @@ pub fn process_func_str(function_in: &str) -> String {
 			' '
 		};
 
+		let c_is_number = NUMBERS.contains(&c);
+		let c_is_letter = LETTERS.contains(&c);
+		let c_is_variable = VALID_VARIABLES.contains(&c);
+		let prev_char_is_variable = VALID_VARIABLES.contains(&prev_char);
+		let prev_char_is_number = NUMBERS.contains(&prev_char);
+
+		// makes special case for log with base of a 1-2 digit number
 		if (prev_prev_prev_char == 'l')
 			&& (prev_prev_char == 'o')
 			&& (prev_char == 'g')
-			&& (NUMBERS.contains(&c))
+			&& (c_is_number)
 		{
 			prev_chars.push(c);
 			output_string += &c.to_string();
 			continue;
 		}
 
-		let c_letters_var = LETTERS.contains(&c) | VALID_VARIABLES.contains(&c);
-		let prev_letters_var = VALID_VARIABLES.contains(&prev_char) | LETTERS.contains(&prev_char);
+		let c_letters_var = c_is_letter | c_is_variable;
+		let prev_letters_var = prev_char_is_variable | LETTERS.contains(&prev_char);
 
 		if prev_char == ')' {
-			if (c == '(') | NUMBERS.contains(&c) | c_letters_var {
+			// cases like `)x` like `(2x+3)x`
+			if c_letters_var {
 				add_asterisk = true;
 			}
+
+			// cases like `(x+1)2`
+			if c_is_number {
+				add_asterisk = true;
+			}
+
+			// cases such as `)(` like `(x+1)(x-3)`
+			if c == '(' {
+				add_asterisk = true
+			}
 		} else if c == '(' {
-			if (VALID_VARIABLES.contains(&prev_char)
-				| (')' == prev_char)
-				| NUMBERS.contains(&prev_char))
+			if (prev_char_is_variable | (')' == prev_char) | prev_char_is_number)
 				&& !LETTERS.contains(&prev_prev_char)
 			{
 				add_asterisk = true;
 			}
-		} else if NUMBERS.contains(&prev_char) {
+		} else if prev_char_is_number {
 			if (c == '(') | c_letters_var {
 				add_asterisk = true;
 			}
-		} else if LETTERS.contains(&c) {
-			if NUMBERS.contains(&prev_char)
-				| (VALID_VARIABLES.contains(&prev_char) && VALID_VARIABLES.contains(&c))
+		} else if c_is_letter {
+			if prev_char_is_number
+				| (prev_char_is_variable && c_is_variable)
+				| prev_char_is_variable
 			{
 				add_asterisk = true;
 			}
-		} else if (NUMBERS.contains(&c) | c_letters_var) && prev_letters_var {
+		} else if (c_is_number | c_letters_var) && prev_letters_var {
 			add_asterisk = true;
 		}
 
+		// if add_asterisk is true, add the asterisk
 		if add_asterisk {
 			output_string += "*";
 		}
 
+		// puch current char to vector of previously parsed chars
 		prev_chars.push(c);
+
+		// push current char to `output_string` (which is eventually returned)
 		output_string += &c.to_string();
 	}
 
@@ -182,67 +203,108 @@ pub fn test_func(function_string: &str) -> Option<String> {
 	}
 }
 
-/// Used for testing: passes function to `add_asterisks` before running
-/// `test_func`
 #[cfg(test)]
-fn test_func_helper(function_string: &str) -> bool {
-	test_func(&process_func_str(function_string)).is_some()
-}
+mod test {
+	use super::*;
 
-/// Tests to make sure functions are parsed correctly
-#[test]
-fn test_func_test() {
-	// These shouldn't fail
-	assert!(!test_func_helper("x^2"));
-	assert!(!test_func_helper("2x"));
-	// assert!(test_func_helper("e^x")); // need to fix!!! PR to exmex
-	assert!(!test_func_helper("E^x"));
-	assert!(!test_func_helper("log10(x)"));
-	assert!(!test_func_helper("xxxxx"));
+	/// returns if function with string `func_str` is valid after processing
+	/// through `process_func_str`
+	fn func_is_valid(func_str: &str) -> bool { test_func(&process_func_str(func_str)).is_none() }
 
-	// Expect these to fail
-	assert!(test_func_helper("a")); // variable `a` is invalid
-	assert!(test_func_helper("l^2")); // variable `l` is invalid
-	assert!(test_func_helper("log222(x)")); // there is no such thing as `log222`
-	assert!(test_func_helper("abcdef")); // invalid variables
-}
+	/// Used for testing: passes function to `add_asterisks` before running
+	/// `test_func`. if `expect_valid` == `true`, it expects no errors to be
+	/// created.
+	fn test_func_helper(func_str: &str, expect_valid: bool) {
+		let is_valid = func_is_valid(func_str);
+		println!(
+			"function: {} (expected: {}, got: {})",
+			func_str, expect_valid, is_valid
+		);
 
-/// Helps with tests of `process_func_str`
-#[cfg(test)]
-fn test_process_helper(input: &str, expected: &str) {
-	assert_eq!(&process_func_str(input), expected);
-}
+		assert!(is_valid == expect_valid);
+	}
 
-/// Tests to make sure my cursed function works as intended
-#[test]
-fn func_process_test() {
-	test_process_helper("2x", "2*x");
-	test_process_helper("x2", "x*2");
-	test_process_helper("x(1+3)", "x*(1+3)");
-	test_process_helper("(1+3)x", "(1+3)*x");
-	test_process_helper("sin(x)", "sin(x)");
-	test_process_helper("2sin(x)", "2*sin(x)");
-	test_process_helper("max(x)", "max(x)");
-	test_process_helper("2e^x", "2*e^x");
-	test_process_helper("2max(x)", "2*max(x)");
-	test_process_helper("cos(sin(x))", "cos(sin(x))");
-	test_process_helper("x^(1+2x)", "x^(1+2*x)");
-	test_process_helper("(x+2)x(1+3)", "(x+2)*x*(1+3)");
-	test_process_helper("(x+2)(1+3)", "(x+2)*(1+3)");
-	test_process_helper("xxx", "x*x*x");
-	test_process_helper("eee", "e*e*e");
-	test_process_helper("pi(x+2)", "π*(x+2)");
-	test_process_helper("(x)pi", "(x)*π");
-	test_process_helper("2e", "2*e");
-	test_process_helper("2log10(x)", "2*log10(x)");
-	test_process_helper("2log(x)", "2*log10(x)");
-	test_process_helper("x!", "x!");
-	test_process_helper("pipipipipipi", "π*π*π*π*π*π");
-	test_process_helper("10pi", "10*π");
-	test_process_helper("pi10", "π*10");
+	/// Tests to make sure functions that are expected to succeed, succeed.
+	#[test]
+	fn test_expected_func_successes() {
+		let functions = vec![
+			"x^2",
+			"2x",
+			"E^x",
+			"log10(x)",
+			"xxxxx", // test variables side-by-side
+			"sin(x)",
+			"xsin(x)",
+			"sin(x)cos(x)",
+			"x/0",        // always returns NaN
+			"(x+1)(x-3)", // tests 2 parentheses in `)(` pattern
+			"(2x+1)x",
+			"(2x+1)pi",
+			"pi(2x+1)",
+			// "pipipipipipi", // need to fix
+		];
 
-	// Need to fix these checks, maybe I need to rewrite the whole asterisk
-	// adding system... (or just implement these changes into meval-rs, idk)
-	// test_process_helper("emax(x)", "e*max(x)");
-	// test_process_helper("pisin(x)", "pi*sin(x)");
+		for func_str in functions.iter().cloned() {
+			test_func_helper(func_str, true);
+		}
+	}
+
+	/// Tests to make sure functions that are expected to fail, fail.
+	#[test]
+	fn test_expected_func_failures() {
+		let functions = vec![
+			"a",            // Invalid variable
+			"l^2",          // Invalid variable
+			"log222(x)",    // Invalid function
+			"abcdef",       // Invalid variables
+			"log10(x",      // unclosed bracket
+			"x^a",          // Invalid variable
+			"sin(cos(x)))", // extra bracket
+			"((())",
+			"0/0",
+		];
+
+		for func_str in functions.iter().cloned() {
+			test_func_helper(func_str, false);
+		}
+	}
+	/// Helps with tests of `process_func_str`
+	#[cfg(test)]
+	fn test_process_helper(input: &str, expected: &str) {
+		assert_eq!(&process_func_str(input), expected);
+	}
+
+	/// Tests to make sure my cursed function works as intended
+	#[test]
+	fn func_process_test() {
+		test_process_helper("2x", "2*x");
+		test_process_helper("x2", "x*2");
+		test_process_helper("x(1+3)", "x*(1+3)");
+		test_process_helper("(1+3)x", "(1+3)*x");
+		test_process_helper("sin(x)", "sin(x)");
+		test_process_helper("2sin(x)", "2*sin(x)");
+		test_process_helper("max(x)", "max(x)");
+		test_process_helper("2e^x", "2*e^x");
+		test_process_helper("2max(x)", "2*max(x)");
+		test_process_helper("cos(sin(x))", "cos(sin(x))");
+		test_process_helper("x^(1+2x)", "x^(1+2*x)");
+		test_process_helper("(x+2)x(1+3)", "(x+2)*x*(1+3)");
+		test_process_helper("(x+2)(1+3)", "(x+2)*(1+3)");
+		test_process_helper("xxx", "x*x*x");
+		test_process_helper("eee", "e*e*e");
+		test_process_helper("pi(x+2)", "π*(x+2)");
+		test_process_helper("(x)pi", "(x)*π");
+		test_process_helper("2e", "2*e");
+		test_process_helper("2log10(x)", "2*log10(x)");
+		test_process_helper("2log(x)", "2*log10(x)");
+		test_process_helper("x!", "x!");
+		test_process_helper("pipipipipipi", "π*π*π*π*π*π");
+		test_process_helper("10pi", "10*π");
+		test_process_helper("pi10", "π*10");
+
+		// Need to fix these checks, maybe I need to rewrite the whole asterisk
+		// adding system... (or just implement these changes into meval-rs, idk)
+		// test_process_helper("emax(x)", "e*max(x)");
+		// test_process_helper("pisin(x)", "pi*sin(x)");
+	}
 }
