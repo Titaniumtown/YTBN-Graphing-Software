@@ -8,7 +8,6 @@
 	- Non `y=` functions.
 3. Smart display of graph
 	- Display of intersections between functions
-	- Caching of roots and extrema
 4. re-add euler's number (well it works if you use capital e like `E^x`)
 5. allow constants in min/max integral input (like pi or euler's number)
 6. sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
