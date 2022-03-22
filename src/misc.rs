@@ -137,7 +137,7 @@ fn stepped_vector_test() {
 	assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
 }
 
-// Rounds f64 to specific number of decimal places
+/// Rounds f64 to `n` decimal places
 pub fn decimal_round(x: f64, n: usize) -> f64 {
 	let large_number: f64 = 10.0_f64.powf(n as f64); // 10^n
 	(x * large_number).round() / large_number // round and devide in order to cut
