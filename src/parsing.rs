@@ -185,26 +185,26 @@ pub fn test_func(function_string: &str) -> Option<String> {
 /// Used for testing: passes function to `add_asterisks` before running
 /// `test_func`
 #[cfg(test)]
-fn test_func_helper(function_string: &str) -> Option<String> {
-	test_func(&process_func_str(function_string))
+fn test_func_helper(function_string: &str) -> bool {
+	test_func(&process_func_str(function_string)).is_some()
 }
 
 /// Tests to make sure functions are parsed correctly
 #[test]
 fn test_func_test() {
 	// These shouldn't fail
-	assert!(test_func_helper("x^2").is_none());
-	assert!(test_func_helper("2x").is_none());
-	// assert!(test_func_helper("e^x").is_none()); // need to fix!!! PR to exmex
-	assert!(test_func_helper("E^x").is_none());
-	assert!(test_func_helper("log10(x)").is_none());
-	assert!(test_func_helper("xxxxx").is_none());
+	assert!(!test_func_helper("x^2"));
+	assert!(!test_func_helper("2x"));
+	// assert!(test_func_helper("e^x")); // need to fix!!! PR to exmex
+	assert!(!test_func_helper("E^x"));
+	assert!(!test_func_helper("log10(x)"));
+	assert!(!test_func_helper("xxxxx"));
 
 	// Expect these to fail
-	assert!(test_func_helper("a").is_some());
-	assert!(test_func_helper("l^2").is_some());
-	assert!(test_func_helper("log222(x)").is_some());
-	assert!(test_func_helper("abcdef").is_some());
+	assert!(test_func_helper("a")); // variable `a` is invalid
+	assert!(test_func_helper("l^2")); // variable `l` is invalid
+	assert!(test_func_helper("log222(x)")); // there is no such thing as `log222`
+	assert!(test_func_helper("abcdef")); // invalid variables
 }
 
 /// Helps with tests of `process_func_str`
