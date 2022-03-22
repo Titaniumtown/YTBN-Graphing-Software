@@ -101,10 +101,8 @@ impl SteppedVector {
 
 // Convert `Vec<f64>` into `SteppedVector`
 impl From<Vec<f64>> for SteppedVector {
-	/// Note: input `data` is assumed to be sorted properly
-	/// `data` is a Vector of 64 bit floating point numbers ordered from max ->
-	/// min
-	fn from(data: Vec<f64>) -> SteppedVector {
+	fn from(input_data: Vec<f64>) -> SteppedVector {
+		let mut data = input_data;
 		// length of data
 		let data_length = data.len();
 		// length of data subtracted by 1 (represents the maximum index value)
@@ -112,15 +110,17 @@ impl From<Vec<f64>> for SteppedVector {
 
 		// Ensure data is of correct length
 		if data_length < 2 {
-			panic!("SteppedVector: data should have a length longer than 2")
+			panic!("SteppedVector: data should have a length longer than 2");
 		}
 
-		let max = data[0]; // The max value should be the first element
-		let min = data[data_i_length]; // The minimum value should be the last element
+		let mut max: f64 = data[0]; // The max value should be the first element
+		let mut min: f64 = data[data_i_length]; // The minimum value should be the last element
 
-		// Just some checks here
+		// if min is bigger than max, sort the input data
 		if min > max {
-			panic!("SteppedVector: first element is smaller than the last element")
+			data.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
+			max = data[0];
+			min = data[data_i_length];
 		}
 
 		let step = (max - min).abs() / (data_i_length as f64); // Calculate the step between elements
