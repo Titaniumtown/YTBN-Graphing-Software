@@ -18,3 +18,4 @@
 11. Threading
 12. fix integral display
 13. Improve loading indicator
+14. Hash asset tarball and compare hash on runtime
