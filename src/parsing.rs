@@ -20,7 +20,11 @@ pub struct BackingFunction {
 impl BackingFunction {
 	/// Create new BackingFunction instance
 	pub fn new(func_str: &str) -> Self {
-		let function = exmex::parse::<f64>(func_str).unwrap();
+		let function = match func_str {
+			"" => EMPTY_FUNCTION.clone(),
+			_ => exmex::parse::<f64>(func_str).unwrap(),
+		};
+
 		let derivative_1 = function
 			.partial(0)
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
@@ -169,6 +173,10 @@ pub fn process_func_str(function_in: &str) -> String {
 /// Tests function to make sure it's able to be parsed. Returns the string of
 /// the Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: &str) -> Option<String> {
+	if function_string == "" {
+		return None;
+	}
+
 	let parse_result = exmex::parse::<f64>(function_string);
 
 	match parse_result {

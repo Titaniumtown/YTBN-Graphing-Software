@@ -38,7 +38,6 @@ const INTEGRAL_X_MAX: f64 = 1000.0;
 const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 
 // Default values
-pub const DEFAULT_FUNCION: &str = "x^2";
 pub const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
 const DEFAULT_MIN_X: f64 = -10.0;
 const DEFAULT_MAX_X: f64 = 10.0;
@@ -259,7 +258,8 @@ cfg_if::cfg_if! {
 
 /// Stores current settings/state of `MathApp`
 // TODO: find a better name for this
-struct AppSettings {
+#[derive(Copy, Clone)]
+pub struct AppSettings {
 	/// Stores whether or not the Help window is open
 	pub help_open: bool,
 
@@ -276,6 +276,8 @@ struct AppSettings {
 	pub integral_min_x: f64,
 	pub integral_max_x: f64,
 
+	pub integral_changed: bool,
+
 	/// Number of rectangles used to calculate integral
 	pub integral_num: usize,
 
@@ -287,6 +289,8 @@ struct AppSettings {
 
 	/// Stores whether or not displaying roots is enabled
 	pub roots: bool,
+
+	pub pixel_width: usize,
 }
 
 impl Default for AppSettings {
@@ -300,10 +304,12 @@ impl Default for AppSettings {
 			sum: DEFAULT_RIEMANN,
 			integral_min_x: DEFAULT_MIN_X,
 			integral_max_x: DEFAULT_MAX_X,
+			integral_changed: true,
 			integral_num: DEFAULT_INTEGRAL_NUM,
 			dark_mode: true,
 			extrema: true,
 			roots: true,
+			pixel_width: 0,
 		}
 	}
 }
@@ -332,8 +338,8 @@ pub struct MathApp {
 impl Default for MathApp {
 	fn default() -> Self {
 		Self {
-			functions: vec![DEFAULT_FUNCTION_ENTRY.clone().integral(true)],
-			func_strs: vec![String::from(DEFAULT_FUNCION)],
+			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
+			func_strs: vec![String::new()],
 			last_error: Vec::new(),
 			last_info: (vec![0.0], Duration::ZERO),
 			settings: AppSettings::default(),
@@ -432,6 +438,9 @@ impl MathApp {
 							.text("Interval"),
 					)
 					.changed();
+
+				self.settings.integral_changed =
+					max_x_changed | min_x_changed | integral_num_changed | riemann_changed;
 
 				// Stores whether global config options changed
 				// TODO: only take into account integral settings if integral is enabled (maybe)
@@ -569,11 +578,7 @@ impl epi::App for MathApp {
 					.on_hover_text("Create and graph new function")
 					.clicked()
 				{
-					self.functions.push(
-						DEFAULT_FUNCTION_ENTRY
-							.clone()
-							.update_riemann(self.settings.sum),
-					);
+					self.functions.push(DEFAULT_FUNCTION_ENTRY.clone());
 					self.func_strs.push(String::new());
 				}
 
@@ -679,7 +684,13 @@ impl epi::App for MathApp {
 				return;
 			}
 
-			let available_width: usize = ui.available_width() as usize; // Used in later logic
+			let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
+			let width_changed = available_width != self.settings.pixel_width;
+
+			if width_changed {
+				self.settings.pixel_width = available_width;
+			}
+			let settings_copy = self.settings;
 
 			// Create and setup plot
 			Plot::new("plot")
@@ -705,12 +716,8 @@ impl epi::App for MathApp {
 								minx_bounds,
 								maxx_bounds,
 								available_width,
-								self.settings.extrema,
-								self.settings.roots,
-								self.settings.integral_min_x,
-								self.settings.integral_max_x,
-								self.settings.integral_num,
-								self.settings.sum,
+								width_changed,
+								settings_copy,
 							)
 						})
 						.collect();
