@@ -2,7 +2,7 @@
 
 use crate::egui_app::{DEFAULT_FUNCION, DEFAULT_RIEMANN};
 use crate::function_output::FunctionOutput;
-use crate::misc::{newtons_method, SteppedVector};
+use crate::misc::{newtons_method, resolution_helper, step_helper, SteppedVector};
 use crate::parsing::BackingFunction;
 use eframe::{egui, epaint};
 use egui::{
@@ -53,11 +53,11 @@ pub struct FunctionEntry {
 	output: FunctionOutput,
 
 	/// If calculating/displayingintegrals are enabled
-	pub(crate) integral: bool,
+	pub integral: bool,
 
 	/// If displaying derivatives are enabled (note, they are still calculated
 	/// for other purposes)
-	pub(crate) derivative: bool,
+	pub derivative: bool,
 
 	/// Minumum and maximum range of integral
 	integral_min_x: f64,
@@ -110,10 +110,12 @@ impl FunctionEntry {
 	#[allow(clippy::type_complexity)]
 	pub fn run_back(&mut self) -> (Vec<Value>, Option<(Vec<Bar>, f64)>, Option<Vec<Value>>) {
 		let resolution: f64 = (self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64;
+		let resolution_iter = resolution_helper(self.pixel_width, self.min_x, resolution);
 		let back_values: Vec<Value> = {
 			if self.output.back.is_none() {
 				self.output.back = Some(
-					crate::misc::resolution_helper(self.pixel_width, self.min_x, resolution)
+					resolution_iter
+						.clone()
 						.iter()
 						.map(|x| Value::new(*x, self.function.get(*x)))
 						.collect(),
@@ -126,9 +128,9 @@ impl FunctionEntry {
 		let derivative_values: Option<Vec<Value>> = {
 			if self.output.derivative.is_none() {
 				self.output.derivative = Some(
-					(0..self.pixel_width)
-						.map(|x| (x as f64 / resolution as f64) + self.min_x)
-						.map(|x| Value::new(x, self.function.get_derivative_1(x)))
+					resolution_iter
+						.iter()
+						.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 						.collect(),
 				);
 			}
@@ -165,9 +167,10 @@ impl FunctionEntry {
 		let step = (self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
 
 		let mut area: f64 = 0.0;
-		let data2: Vec<(f64, f64)> = (0..self.integral_num)
-			.map(|e| {
-				let x: f64 = ((e as f64) * step) + self.integral_min_x;
+		let data2: Vec<(f64, f64)> = step_helper(self.integral_num, self.integral_min_x, step)
+			.iter()
+			.map(|x| {
+				let x: f64 = (*x * step) + self.integral_min_x;
 				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
 				let x2: f64 = x + step_offset;
 
@@ -280,8 +283,7 @@ impl FunctionEntry {
 		sum: RiemannSum,
 	) -> f64 {
 		let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter =
-			crate::misc::resolution_helper(self.pixel_width, self.min_x, resolution);
+		let resolution_iter = resolution_helper(self.pixel_width, self.min_x, resolution);
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral
@@ -354,8 +356,7 @@ impl FunctionEntry {
 		self.min_x = min_x;
 		self.max_x = max_x;
 
-		let threshold: f64 =
-			((self.pixel_width as f64 / (self.max_x - self.min_x).abs()) as f64) / 2.0;
+		let threshold: f64 = resolution / 2.0;
 
 		let (back_values, integral, derivative) = self.run_back();
 		self.output.back = Some(back_values);
