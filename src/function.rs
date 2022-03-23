@@ -1,14 +1,15 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
-use crate::function_output::FunctionOutput;
-#[allow(unused_imports)]
-use crate::misc::{newtons_method, SteppedVector};
-
 use crate::egui_app::{DEFAULT_FUNCION, DEFAULT_RIEMANN};
+use crate::function_output::FunctionOutput;
+use crate::misc::{newtons_method, SteppedVector};
 use crate::parsing::BackingFunction;
-
-use eframe::egui::plot::PlotUi;
-use eframe::egui::{plot::Value, widgets::plot::Bar};
+use eframe::{egui, epaint};
+use egui::{
+	plot::{BarChart, Line, PlotUi, Points, Value, Values},
+	widgets::plot::Bar,
+};
+use epaint::Color32;
 use std::fmt::{self, Debug};
 
 /// Represents the possible variations of Riemann Sums
@@ -24,7 +25,8 @@ impl fmt::Display for RiemannSum {
 }
 
 lazy_static::lazy_static! {
-	pub static ref EMPTY_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::empty();
+	/// Represents a "default" instance of `FunctionEntry`
+	pub static ref DEFAULT_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::default();
 }
 
 /// `FunctionEntry` is a function that can calculate values, integrals,
@@ -68,10 +70,10 @@ pub struct FunctionEntry {
 	sum: RiemannSum,
 }
 
-impl FunctionEntry {
-	/// Creates Empty Function instance
-	pub fn empty() -> Self {
-		Self {
+impl Default for FunctionEntry {
+	/// Creates default FunctionEntry instance (which is empty)
+	fn default() -> FunctionEntry {
+		FunctionEntry {
 			function: BackingFunction::new(DEFAULT_FUNCION),
 			func_str: String::new(),
 			min_x: -1.0,
@@ -86,12 +88,11 @@ impl FunctionEntry {
 			sum: DEFAULT_RIEMANN,
 		}
 	}
+}
 
+impl FunctionEntry {
 	/// Update function settings
-	pub fn update(
-		&mut self, func_str: String, integral: bool, derivative: bool, integral_min_x: f64,
-		integral_max_x: f64, integral_num: usize, sum: RiemannSum,
-	) {
+	pub fn update(&mut self, func_str: String, integral: bool, derivative: bool) {
 		// If the function string changes, just wipe and restart from scratch
 		if func_str != self.func_str {
 			self.func_str = func_str.clone();
@@ -101,20 +102,6 @@ impl FunctionEntry {
 
 		self.derivative = derivative;
 		self.integral = integral;
-
-		// Makes sure proper arguments are passed when integral is enabled
-		if integral
-			&& (integral_min_x != self.integral_min_x)
-				| (integral_max_x != self.integral_max_x)
-				| (integral_num != self.integral_num)
-				| (sum != self.sum)
-		{
-			self.output.invalidate_integral();
-			self.integral_min_x = integral_min_x;
-			self.integral_max_x = integral_max_x;
-			self.integral_num = integral_num;
-			self.sum = sum;
-		}
 	}
 
 	// TODO: refactor this
@@ -126,9 +113,9 @@ impl FunctionEntry {
 		let back_values: Vec<Value> = {
 			if self.output.back.is_none() {
 				self.output.back = Some(
-					(0..self.pixel_width)
-						.map(|x| (x as f64 / resolution as f64) + self.min_x)
-						.map(|x| Value::new(x, self.function.get(x)))
+					crate::misc::resolution_helper(self.pixel_width, self.min_x, resolution)
+						.iter()
+						.map(|x| Value::new(*x, self.function.get(*x)))
 						.collect(),
 				);
 			}
@@ -254,11 +241,62 @@ impl FunctionEntry {
 		self
 	}
 
+	fn newtons_method_helper(&self, threshold: f64, derivative_level: usize) -> Option<Vec<Value>> {
+		let newtons_method_output: Vec<f64> = match derivative_level {
+			0 => newtons_method(
+				threshold,
+				self.min_x..self.max_x,
+				self.output.back.to_owned().unwrap(),
+				&|x: f64| self.function.get(x),
+				&|x: f64| self.function.get_derivative_1(x),
+			),
+			1 => newtons_method(
+				threshold,
+				self.min_x..self.max_x,
+				self.output.derivative.to_owned().unwrap(),
+				&|x: f64| self.function.get_derivative_1(x),
+				&|x: f64| self.function.get_derivative_2(x),
+			),
+			_ => unreachable!(),
+		};
+
+		if newtons_method_output.is_empty() {
+			None
+		} else {
+			Some(
+				newtons_method_output
+					.iter()
+					.map(|x| (*x, self.function.get(*x)))
+					.map(|(x, y)| Value::new(x, y))
+					.collect(),
+			)
+		}
+	}
+
 	/// Calculates and displays the function on PlotUI `plot_ui`
 	pub fn display(
 		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, pixel_width: usize, extrema: bool,
-		roots: bool,
+		roots: bool, integral_min_x: f64, integral_max_x: f64, integral_num: usize,
+		sum: RiemannSum,
 	) -> f64 {
+		let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
+		let resolution_iter =
+			crate::misc::resolution_helper(self.pixel_width, self.min_x, resolution);
+
+		// Makes sure proper arguments are passed when integral is enabled
+		if self.integral
+			&& (integral_min_x != self.integral_min_x)
+				| (integral_max_x != self.integral_max_x)
+				| (integral_num != self.integral_num)
+				| (sum != self.sum)
+		{
+			self.output.invalidate_integral();
+			self.integral_min_x = integral_min_x;
+			self.integral_max_x = integral_max_x;
+			self.integral_num = integral_num;
+			self.sum = sum;
+		}
+
 		if pixel_width != self.pixel_width {
 			self.output.invalidate_back();
 			self.output.invalidate_derivative();
@@ -266,7 +304,6 @@ impl FunctionEntry {
 			self.max_x = max_x;
 			self.pixel_width = pixel_width;
 		} else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.output.back.is_some() {
-			let resolution: f64 = self.pixel_width as f64 / (max_x.abs() + min_x.abs());
 			let back_cache = self.output.back.as_ref().unwrap();
 
 			let x_data: SteppedVector = back_cache
@@ -275,31 +312,32 @@ impl FunctionEntry {
 				.collect::<Vec<f64>>()
 				.into();
 
-			self.output.back = Some(
-				(0..self.pixel_width)
-					.map(|x| (x as f64 / resolution as f64) + min_x)
-					.map(|x| {
-						if let Some(i) = x_data.get_index(x) {
-							back_cache[i]
-						} else {
-							Value::new(x, self.function.get(x))
-						}
-					})
-					.collect(),
-			);
-			// assert_eq!(self.output.back.as_ref().unwrap().len(), self.pixel_width);
-
-			let derivative_cache = self.output.derivative.as_ref().unwrap();
-			let new_data = (0..self.pixel_width)
-				.map(|x| (x as f64 / resolution as f64) + min_x)
+			let back_data: Vec<Value> = resolution_iter
+				.iter()
+				.cloned()
 				.map(|x| {
 					if let Some(i) = x_data.get_index(x) {
-						derivative_cache[i]
+						back_cache[i]
 					} else {
-						Value::new(x, self.function.get_derivative_1(x))
+						Value::new(x, self.function.get(x))
 					}
 				})
 				.collect();
+			assert_eq!(back_data.len(), self.pixel_width);
+			self.output.back = Some(back_data);
+
+			let derivative_cache = self.output.derivative.as_ref().unwrap();
+			let new_data: Vec<Value> = resolution_iter
+				.iter()
+				.map(|x| {
+					if let Some(i) = x_data.get_index(*x) {
+						derivative_cache[i]
+					} else {
+						Value::new(*x, self.function.get_derivative_1(*x))
+					}
+				})
+				.collect();
+			assert_eq!(new_data.len(), self.pixel_width);
 
 			self.output.derivative = Some(new_data);
 		} else {
@@ -326,194 +364,229 @@ impl FunctionEntry {
 
 		// Calculates extrema
 		if do_extrema {
-			self.output.extrema = Some(
-				newtons_method(
-					threshold,
-					self.min_x..self.max_x,
-					self.output.derivative.to_owned().unwrap(),
-					&|x: f64| self.function.get_derivative_1(x),
-					&|x: f64| self.function.get_derivative_2(x),
-				)
-				.iter()
-				.map(|x| Value::new(*x, self.function.get(*x)))
-				.collect(),
-			);
+			self.output.extrema = self.newtons_method_helper(threshold, 1);
 		}
 
 		// Calculates roots
 		if do_roots {
-			self.output.roots = Some(
-				newtons_method(
-					threshold,
-					self.min_x..self.max_x,
-					self.output.back.to_owned().unwrap(),
-					&|x: f64| self.function.get(x),
-					&|x: f64| self.function.get_derivative_1(x),
-				)
-				.iter()
-				.map(|x| Value::new(*x, self.function.get(*x)))
-				.collect(),
-			);
+			self.output.roots = self.newtons_method_helper(threshold, 0);
 		}
 
-		self.output.display(
-			plot_ui,
-			self.get_func_str(),
-			self.function.get_derivative_str(),
-			(self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64),
-			self.derivative,
-			extrema,
-			roots,
-		)
+		{
+			let func_str = self.get_func_str();
+			let derivative_str = self.function.get_derivative_str();
+			let step =
+				(self.integral_min_x - self.integral_max_x).abs() / (self.integral_num as f64);
+			let derivative_enabled = self.derivative;
+			// Plot back data
+			plot_ui.line(
+				Line::new(Values::from_values(self.output.back.clone().unwrap()))
+					.color(Color32::RED)
+					.name(func_str),
+			);
+
+			// Plot derivative data
+			if derivative_enabled {
+				if let Some(derivative_data) = self.output.derivative.clone() {
+					plot_ui.line(
+						Line::new(Values::from_values(derivative_data))
+							.color(Color32::GREEN)
+							.name(derivative_str),
+					);
+				}
+			}
+
+			// Plot extrema points
+			if extrema {
+				if let Some(extrema_data) = self.output.extrema.clone() {
+					plot_ui.points(
+						Points::new(Values::from_values(extrema_data))
+							.color(Color32::YELLOW)
+							.name("Extrema")
+							.radius(5.0),
+					);
+				}
+			}
+
+			// Plot roots points
+			if roots {
+				if let Some(roots_data) = self.output.roots.clone() {
+					plot_ui.points(
+						Points::new(Values::from_values(roots_data))
+							.color(Color32::LIGHT_BLUE)
+							.name("Root")
+							.radius(5.0),
+					);
+				}
+			}
+
+			// Plot integral data
+			if let Some(integral_data) = self.output.integral.clone() {
+				plot_ui.bar_chart(
+					BarChart::new(integral_data.0)
+						.color(Color32::BLUE)
+						.width(step),
+				);
+
+				// return value rounded to 8 decimal places
+				crate::misc::decimal_round(integral_data.1, 8)
+			} else {
+				f64::NAN // return NaN if integrals are disabled
+			}
+		}
 	}
 }
 
 #[cfg(test)]
-fn verify_function(
-	integral_num: usize, pixel_width: usize, function: &mut FunctionEntry,
-	back_values_target: Vec<(f64, f64)>, area_target: f64,
-) {
-	{
-		let (back_values, bars, derivative) = function.run_back();
-		assert!(derivative.is_some());
-		assert!(bars.is_none());
-		assert_eq!(back_values.len(), pixel_width);
-		let back_values_tuple: Vec<(f64, f64)> =
-			back_values.iter().map(|ele| (ele.x, ele.y)).collect();
-		assert_eq!(back_values_tuple, back_values_target);
+mod tests {
+	use super::*;
+
+	fn verify_function(
+		integral_num: usize, pixel_width: usize, function: &mut FunctionEntry,
+		back_values_target: Vec<(f64, f64)>, area_target: f64,
+	) {
+		{
+			let (back_values, bars, derivative) = function.run_back();
+			assert!(derivative.is_some());
+			assert!(bars.is_none());
+			assert_eq!(back_values.len(), pixel_width);
+			let back_values_tuple: Vec<(f64, f64)> =
+				back_values.iter().map(|ele| (ele.x, ele.y)).collect();
+			assert_eq!(back_values_tuple, back_values_target);
+		}
+
+		{
+			*function = function.clone().integral(true);
+			let (back_values, bars, derivative) = function.run_back();
+			assert!(derivative.is_some());
+			assert!(bars.is_some());
+			assert_eq!(back_values.len(), pixel_width);
+
+			assert_eq!(bars.clone().unwrap().1, area_target);
+
+			let vec_bars = bars.unwrap().0;
+			assert_eq!(vec_bars.len(), integral_num);
+
+			let back_values_tuple: Vec<(f64, f64)> =
+				back_values.iter().map(|ele| (ele.x, ele.y)).collect();
+			assert_eq!(back_values_tuple, back_values_target);
+		}
+
+		{
+			let (back_values, bars, derivative) = function.run_back();
+			assert!(derivative.is_some());
+
+			assert!(bars.is_some());
+			assert_eq!(back_values.len(), pixel_width);
+			assert_eq!(bars.clone().unwrap().1, area_target);
+			let bars_unwrapped = bars.unwrap();
+
+			assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
+		}
 	}
 
-	{
-		*function = function.clone().integral(true);
-		let (back_values, bars, derivative) = function.run_back();
-		assert!(derivative.is_some());
-		assert!(bars.is_some());
-		assert_eq!(back_values.len(), pixel_width);
+	#[test]
+	fn left_function_test() {
+		let integral_num = 10;
+		let pixel_width = 10;
 
-		assert_eq!(bars.clone().unwrap().1, area_target);
+		let mut function = FunctionEntry::default()
+			.update_riemann(RiemannSum::Left)
+			.pixel_width(pixel_width)
+			.integral_num(integral_num)
+			.integral_bounds(-1.0, 1.0);
 
-		let vec_bars = bars.unwrap().0;
-		assert_eq!(vec_bars.len(), integral_num);
+		let back_values_target = vec![
+			(-1.0, 1.0),
+			(-0.8, 0.6400000000000001),
+			(-0.6, 0.36),
+			(-0.4, 0.16000000000000003),
+			(-0.19999999999999996, 0.03999999999999998),
+			(0.0, 0.0),
+			(0.19999999999999996, 0.03999999999999998),
+			(0.3999999999999999, 0.15999999999999992),
+			(0.6000000000000001, 0.3600000000000001),
+			(0.8, 0.6400000000000001),
+		];
 
-		let back_values_tuple: Vec<(f64, f64)> =
-			back_values.iter().map(|ele| (ele.x, ele.y)).collect();
-		assert_eq!(back_values_tuple, back_values_target);
+		let area_target = 0.9600000000000001;
+
+		verify_function(
+			integral_num,
+			pixel_width,
+			&mut function,
+			back_values_target,
+			area_target,
+		);
 	}
 
-	{
-		let (back_values, bars, derivative) = function.run_back();
-		assert!(derivative.is_some());
+	#[test]
+	fn middle_function_test() {
+		let integral_num = 10;
+		let pixel_width = 10;
 
-		assert!(bars.is_some());
-		assert_eq!(back_values.len(), pixel_width);
-		assert_eq!(bars.clone().unwrap().1, area_target);
-		let bars_unwrapped = bars.unwrap();
+		let mut function = FunctionEntry::default()
+			.update_riemann(RiemannSum::Middle)
+			.pixel_width(pixel_width)
+			.integral_num(integral_num)
+			.integral_bounds(-1.0, 1.0);
 
-		assert_eq!(bars_unwrapped.0.iter().len(), integral_num);
+		let back_values_target = vec![
+			(-1.0, 1.0),
+			(-0.8, 0.6400000000000001),
+			(-0.6, 0.36),
+			(-0.4, 0.16000000000000003),
+			(-0.19999999999999996, 0.03999999999999998),
+			(0.0, 0.0),
+			(0.19999999999999996, 0.03999999999999998),
+			(0.3999999999999999, 0.15999999999999992),
+			(0.6000000000000001, 0.3600000000000001),
+			(0.8, 0.6400000000000001),
+		];
+
+		let area_target = 0.92;
+
+		verify_function(
+			integral_num,
+			pixel_width,
+			&mut function,
+			back_values_target,
+			area_target,
+		);
 	}
-}
 
-#[test]
-fn left_function_test() {
-	let integral_num = 10;
-	let pixel_width = 10;
+	#[test]
+	fn right_function_test() {
+		let integral_num = 10;
+		let pixel_width = 10;
 
-	let mut function = FunctionEntry::empty()
-		.update_riemann(RiemannSum::Left)
-		.pixel_width(pixel_width)
-		.integral_num(integral_num)
-		.integral_bounds(-1.0, 1.0);
+		let mut function = FunctionEntry::default()
+			.update_riemann(RiemannSum::Right)
+			.pixel_width(pixel_width)
+			.integral_num(integral_num)
+			.integral_bounds(-1.0, 1.0);
 
-	let back_values_target = vec![
-		(-1.0, 1.0),
-		(-0.8, 0.6400000000000001),
-		(-0.6, 0.36),
-		(-0.4, 0.16000000000000003),
-		(-0.19999999999999996, 0.03999999999999998),
-		(0.0, 0.0),
-		(0.19999999999999996, 0.03999999999999998),
-		(0.3999999999999999, 0.15999999999999992),
-		(0.6000000000000001, 0.3600000000000001),
-		(0.8, 0.6400000000000001),
-	];
+		let back_values_target = vec![
+			(-1.0, 1.0),
+			(-0.8, 0.6400000000000001),
+			(-0.6, 0.36),
+			(-0.4, 0.16000000000000003),
+			(-0.19999999999999996, 0.03999999999999998),
+			(0.0, 0.0),
+			(0.19999999999999996, 0.03999999999999998),
+			(0.3999999999999999, 0.15999999999999992),
+			(0.6000000000000001, 0.3600000000000001),
+			(0.8, 0.6400000000000001),
+		];
 
-	let area_target = 0.9600000000000001;
+		let area_target = 0.8800000000000001;
 
-	verify_function(
-		integral_num,
-		pixel_width,
-		&mut function,
-		back_values_target,
-		area_target,
-	);
-}
-
-#[test]
-fn middle_function_test() {
-	let integral_num = 10;
-	let pixel_width = 10;
-
-	let mut function = FunctionEntry::empty()
-		.update_riemann(RiemannSum::Middle)
-		.pixel_width(pixel_width)
-		.integral_num(integral_num)
-		.integral_bounds(-1.0, 1.0);
-
-	let back_values_target = vec![
-		(-1.0, 1.0),
-		(-0.8, 0.6400000000000001),
-		(-0.6, 0.36),
-		(-0.4, 0.16000000000000003),
-		(-0.19999999999999996, 0.03999999999999998),
-		(0.0, 0.0),
-		(0.19999999999999996, 0.03999999999999998),
-		(0.3999999999999999, 0.15999999999999992),
-		(0.6000000000000001, 0.3600000000000001),
-		(0.8, 0.6400000000000001),
-	];
-
-	let area_target = 0.92;
-
-	verify_function(
-		integral_num,
-		pixel_width,
-		&mut function,
-		back_values_target,
-		area_target,
-	);
-}
-
-#[test]
-fn right_function_test() {
-	let integral_num = 10;
-	let pixel_width = 10;
-
-	let mut function = FunctionEntry::empty()
-		.update_riemann(RiemannSum::Right)
-		.pixel_width(pixel_width)
-		.integral_num(integral_num)
-		.integral_bounds(-1.0, 1.0);
-
-	let back_values_target = vec![
-		(-1.0, 1.0),
-		(-0.8, 0.6400000000000001),
-		(-0.6, 0.36),
-		(-0.4, 0.16000000000000003),
-		(-0.19999999999999996, 0.03999999999999998),
-		(0.0, 0.0),
-		(0.19999999999999996, 0.03999999999999998),
-		(0.3999999999999999, 0.15999999999999992),
-		(0.6000000000000001, 0.3600000000000001),
-		(0.8, 0.6400000000000001),
-	];
-
-	let area_target = 0.8800000000000001;
-
-	verify_function(
-		integral_num,
-		pixel_width,
-		&mut function,
-		back_values_target,
-		area_target,
-	);
+		verify_function(
+			integral_num,
+			pixel_width,
+			&mut function,
+			back_values_target,
+			area_target,
+		);
+	}
 }

@@ -204,7 +204,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 	use super::*;
 
 	/// returns if function with string `func_str` is valid after processing

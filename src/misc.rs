@@ -1,3 +1,6 @@
+use eframe::egui::plot::Value as EguiValue;
+use serde_json::Value as JsonValue;
+
 /// `SteppedVector` is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
@@ -98,29 +101,54 @@ impl From<Vec<f64>> for SteppedVector {
 	}
 }
 
-#[test]
-fn stepped_vector_test() {
-	let min: i32 = -10;
-	let max: i32 = 10;
-	let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
-	let len_data = data.len();
-	let stepped_vector: SteppedVector = data.into();
+#[derive(PartialEq, Debug)]
+pub struct JsonFileOutput {
+	pub help_expr: String,
+	pub help_vars: String,
+	pub help_panel: String,
+	pub help_function: String,
+	pub help_other: String,
+	pub license_info: String,
+}
 
-	assert_eq!(stepped_vector.get_min(), min as f64);
-	assert_eq!(stepped_vector.get_max(), max as f64);
+/// Helps parsing text data from `text.json`
+pub struct SerdeValueHelper {
+	value: JsonValue,
+}
 
-	assert_eq!(stepped_vector.get_index(min as f64), Some(0));
-	assert_eq!(stepped_vector.get_index(max as f64), Some(len_data - 1));
-
-	for i in min..=max {
-		assert_eq!(
-			stepped_vector.get_index(i as f64),
-			Some((i + min.abs()) as usize)
-		);
+impl SerdeValueHelper {
+	pub fn new(string: &str) -> Self {
+		Self {
+			value: serde_json::from_str(string).unwrap(),
+		}
 	}
 
-	assert_eq!(stepped_vector.get_index((min - 1) as f64), None);
-	assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
+	/// Parses an array of strings at `self.value[key]` as a multiline string
+	fn parse_multiline(&self, key: &str) -> String {
+		(&self.value[key])
+			.as_array()
+			.unwrap()
+			.iter()
+			.map(|ele| ele.as_str().unwrap())
+			.fold(String::new(), |s, l| s + l + "\n")
+			.trim_end()
+			.to_owned()
+	}
+
+	/// Parses `self.value[key]` as a single line string
+	fn parse_singleline(&self, key: &str) -> String { self.value[key].as_str().unwrap().to_owned() }
+
+	/// Used to parse `text.json`
+	pub fn parse_values(&self) -> JsonFileOutput {
+		JsonFileOutput {
+			help_expr: self.parse_multiline("help_expr"),
+			help_vars: self.parse_multiline("help_vars"),
+			help_panel: self.parse_multiline("help_panel"),
+			help_function: self.parse_multiline("help_function"),
+			help_other: self.parse_multiline("help_other"),
+			license_info: self.parse_singleline("license_info"),
+		}
+	}
 }
 
 /// Rounds f64 to `n` decimal places
@@ -138,11 +166,11 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method(
-	threshold: f64, range: std::ops::Range<f64>, data: Vec<eframe::egui::plot::Value>,
-	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64,
+	threshold: f64, range: std::ops::Range<f64>, data: Vec<EguiValue>, f: &dyn Fn(f64) -> f64,
+	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	let mut output_list: Vec<f64> = Vec::new();
-	let mut last_ele_option: Option<eframe::egui::plot::Value> = None;
+	let mut last_ele_option: Option<EguiValue> = None;
 	for ele in data.iter() {
 		if last_ele_option.is_none() {
 			last_ele_option = Some(*ele);
@@ -198,48 +226,77 @@ pub fn newtons_method(
 	output_list
 }
 
-#[derive(PartialEq, Debug)]
-pub struct JsonFileOutput {
-	pub help_expr: String,
-	pub help_vars: String,
-	pub help_panel: String,
-	pub help_function: String,
-	pub help_other: String,
-	pub license_info: String,
+// Returns a vector of length `max_i` starting at value `min_x` with resolution
+// of `resolution`
+pub fn resolution_helper(max_i: usize, min_x: f64, resolution: f64) -> Vec<f64> {
+	(0..max_i)
+		.map(|x| (x as f64 / resolution as f64) + min_x)
+		.collect()
 }
 
-pub struct SerdeValueHelper {
-	value: serde_json::Value,
-}
+#[cfg(test)]
+mod tests {
+	use super::*;
 
-impl SerdeValueHelper {
-	pub fn new(string: &str) -> Self {
-		Self {
-			value: serde_json::from_str(string).unwrap(),
+	/// Tests SteppedVector to ensure everything works properly (helped me find
+	/// a bunch of issues)
+	#[test]
+	fn stepped_vector_test() {
+		let min: i32 = -10;
+		let max: i32 = 10;
+		let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
+		let len_data = data.len();
+		let stepped_vector: SteppedVector = data.into();
+
+		assert_eq!(stepped_vector.get_min(), min as f64);
+		assert_eq!(stepped_vector.get_max(), max as f64);
+
+		assert_eq!(stepped_vector.get_index(min as f64), Some(0));
+		assert_eq!(stepped_vector.get_index(max as f64), Some(len_data - 1));
+
+		for i in min..=max {
+			assert_eq!(
+				stepped_vector.get_index(i as f64),
+				Some((i + min.abs()) as usize)
+			);
 		}
+
+		assert_eq!(stepped_vector.get_index((min - 1) as f64), None);
+		assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
 	}
 
-	fn parse_multiline(&self, key: &str) -> String {
-		(&self.value[key])
-			.as_array()
-			.unwrap()
-			.iter()
-			.map(|ele| ele.as_str().unwrap())
-			.fold(String::new(), |s, l| s + l + "\n")
-			.trim_end()
-			.to_owned()
+	/// Ensures decimal_round returns correct values
+	#[test]
+	fn decimal_round_test() {
+		assert_eq!(decimal_round(0.00001, 1), 0.0);
+		assert_eq!(decimal_round(0.00001, 2), 0.0);
+		assert_eq!(decimal_round(0.00001, 3), 0.0);
+		assert_eq!(decimal_round(0.00001, 4), 0.0);
+		assert_eq!(decimal_round(0.00001, 5), 0.00001);
+
+		assert_eq!(decimal_round(0.12345, 1), 0.1);
+		assert_eq!(decimal_round(0.12345, 2), 0.12);
+		assert_eq!(decimal_round(0.12345, 3), 0.123);
+		assert_eq!(decimal_round(0.12345, 4), 0.1235); // rounds up
+		assert_eq!(decimal_round(0.12345, 5), 0.12345);
+
+		assert_eq!(decimal_round(1.9, 0), 2.0);
+		assert_eq!(decimal_round(1.9, 1), 1.9);
 	}
 
-	fn parse_singleline(&self, key: &str) -> String { self.value[key].as_str().unwrap().to_owned() }
+	/// Tests `resolution_helper` to make sure it returns expected output
+	#[test]
+	fn resolution_helper_test() {
+		assert_eq!(
+			resolution_helper(10, 1.0, 1.0),
+			vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+		);
 
-	pub fn parse_values(&self) -> JsonFileOutput {
-		JsonFileOutput {
-			help_expr: self.parse_multiline("help_expr"),
-			help_vars: self.parse_multiline("help_vars"),
-			help_panel: self.parse_multiline("help_panel"),
-			help_function: self.parse_multiline("help_function"),
-			help_other: self.parse_multiline("help_other"),
-			license_info: self.parse_singleline("license_info"),
-		}
+		assert_eq!(
+			resolution_helper(5, -2.0, 1.0),
+			vec![-2.0, -1.0, 0.0, 1.0, 2.0]
+		);
+
+		assert_eq!(resolution_helper(3, -2.0, 1.0), vec![-2.0, -1.0, 0.0]);
 	}
 }

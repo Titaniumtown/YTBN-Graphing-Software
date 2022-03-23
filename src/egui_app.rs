@@ -1,4 +1,4 @@
-use crate::function::{FunctionEntry, RiemannSum, EMPTY_FUNCTION_ENTRY};
+use crate::function::{FunctionEntry, RiemannSum, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
@@ -186,7 +186,7 @@ lazy_static::lazy_static! {
 	};
 }
 
-// Tests to make sure archived (and compressed) assets match expected data
+/// Tests to make sure archived (and compressed) assets match expected data
 #[test]
 fn test_file_data() {
 	let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
@@ -228,7 +228,16 @@ fn test_file_data() {
 
 	let json_data: SerdeValueHelper = SerdeValueHelper::new(include_str!("../assets/text.json"));
 
-	assert_eq!(ASSETS.get_json_file_output(), json_data.parse_values());
+	let asset_json = ASSETS.get_json_file_output();
+	let json_data_parsed = json_data.parse_values();
+
+	assert_eq!(asset_json, json_data_parsed);
+
+	// NOTE: UPDATE THIS STRING IF `license_info` IN `text.json` IS MODIFIED
+	let target_license_info = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
+
+	assert_eq!(target_license_info, asset_json.license_info);
+	assert_eq!(target_license_info, json_data_parsed.license_info);
 }
 
 cfg_if::cfg_if! {
@@ -323,7 +332,7 @@ pub struct MathApp {
 impl Default for MathApp {
 	fn default() -> Self {
 		Self {
-			functions: vec![EMPTY_FUNCTION_ENTRY.clone().integral(true)],
+			functions: vec![DEFAULT_FUNCTION_ENTRY.clone().integral(true)],
 			func_strs: vec![String::from(DEFAULT_FUNCION)],
 			last_error: Vec::new(),
 			last_info: (vec![0.0], Duration::ZERO),
@@ -493,15 +502,7 @@ impl MathApp {
 						if let Some(test_output_value) = test_func(&proc_func_str) {
 							self.last_error.push((i, test_output_value));
 						} else {
-							function.update(
-								proc_func_str,
-								integral_enabled,
-								derivative_enabled,
-								self.settings.integral_min_x,
-								self.settings.integral_max_x,
-								self.settings.integral_num,
-								self.settings.sum,
-							);
+							function.update(proc_func_str, integral_enabled, derivative_enabled);
 							self.last_error = self
 								.last_error
 								.iter()
@@ -569,7 +570,7 @@ impl epi::App for MathApp {
 					.clicked()
 				{
 					self.functions.push(
-						EMPTY_FUNCTION_ENTRY
+						DEFAULT_FUNCTION_ENTRY
 							.clone()
 							.update_riemann(self.settings.sum),
 					);
@@ -706,6 +707,10 @@ impl epi::App for MathApp {
 								available_width,
 								self.settings.extrema,
 								self.settings.roots,
+								self.settings.integral_min_x,
+								self.settings.integral_max_x,
+								self.settings.integral_num,
+								self.settings.sum,
 							)
 						})
 						.collect();

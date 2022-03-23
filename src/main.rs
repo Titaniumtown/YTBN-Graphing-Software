@@ -15,15 +15,9 @@ fn main() {
 
 	tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-	let options = eframe::NativeOptions {
-		transparent: true,
-		drag_and_drop_support: true,
-		..Default::default()
-	};
-
 	eframe::run_native(
 		"(Yet-to-be-named) Graphing Software",
-		options,
+		eframe::NativeOptions::default(),
 		Box::new(|cc| Box::new(egui_app::MathApp::new(cc))),
 	);
 }
