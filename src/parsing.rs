@@ -173,7 +173,7 @@ pub fn process_func_str(function_in: &str) -> String {
 /// Tests function to make sure it's able to be parsed. Returns the string of
 /// the Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: &str) -> Option<String> {
-	if function_string == "" {
+	if function_string.is_empty() {
 		return None;
 	}
 
