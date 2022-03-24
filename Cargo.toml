@@ -44,6 +44,7 @@ command-run = "1.1.1"
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = { version = "0.1.12" }
 tracing-subscriber = "0.3.9"
+rayon = { git = "https://github.com/rayon-rs/rayon.git" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 instant = { version = "0.1.12", features = ["wasm-bindgen"] }

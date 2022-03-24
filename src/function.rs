@@ -2,7 +2,7 @@
 
 use crate::egui_app::AppSettings;
 use crate::function_output::FunctionOutput;
-use crate::misc::{newtons_method, resolution_helper, step_helper, SteppedVector};
+use crate::misc::{dyn_iter, newtons_method, resolution_helper, step_helper, SteppedVector};
 use crate::parsing::BackingFunction;
 use eframe::{egui, epaint};
 use egui::{
@@ -11,6 +11,9 @@ use egui::{
 };
 use epaint::Color32;
 use std::fmt::{self, Debug};
+
+#[cfg(not(target_arch = "wasm32"))]
+use rayon::iter::ParallelIterator;
 
 /// Represents the possible variations of Riemann Sums
 #[derive(PartialEq, Debug, Copy, Clone)]
@@ -98,13 +101,8 @@ impl FunctionEntry {
 
 		let step = (integral_min_x - integral_max_x).abs() / (integral_num as f64);
 
-		let mut area: f64 = 0.0;
-		let mut i: usize = 0;
-		let data2: Vec<(f64, f64)> = (step_helper(integral_num, integral_min_x, step))
-			.iter()
+		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(integral_num, integral_min_x, step))
 			.map(|x| {
-				i += 1;
-
 				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
 				let x2: f64 = x + step_offset;
 
@@ -121,15 +119,11 @@ impl FunctionEntry {
 					}
 				};
 
-				if !y.is_nan() {
-					area += y * step;
-				}
-
 				(x + (step_offset / 2.0), y)
 			})
 			.filter(|(_, y)| !y.is_nan())
 			.collect();
-		assert_eq!(i, integral_num);
+		let area = data2.iter().map(|(_, y)| y * step).sum();
 
 		(data2, area)
 	}
@@ -160,8 +154,7 @@ impl FunctionEntry {
 			None
 		} else {
 			Some(
-				newtons_method_output
-					.iter()
+				dyn_iter(&newtons_method_output)
 					.map(|x| (*x, self.function.get(*x)))
 					.map(|(x, y)| Value::new(x, y))
 					.collect(),
@@ -201,8 +194,7 @@ impl FunctionEntry {
 				.collect::<Vec<f64>>()
 				.into();
 
-			let back_data: Vec<Value> = resolution_iter
-				.iter()
+			let back_data: Vec<Value> = dyn_iter(&resolution_iter)
 				.cloned()
 				.map(|x| {
 					if let Some(i) = x_data.get_index(x) {
@@ -216,8 +208,7 @@ impl FunctionEntry {
 			self.output.back = Some(back_data);
 
 			let derivative_cache = self.output.derivative.as_ref().unwrap();
-			let new_derivative_data: Vec<Value> = resolution_iter
-				.iter()
+			let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
 				.map(|x| {
 					if let Some(i) = x_data.get_index(*x) {
 						derivative_cache[i]
@@ -246,9 +237,7 @@ impl FunctionEntry {
 		if !partial_regen {
 			self.output.back = Some({
 				if self.output.back.is_none() {
-					let data: Vec<Value> = resolution_iter
-						.clone()
-						.iter()
+					let data: Vec<Value> = dyn_iter(&resolution_iter)
 						.map(|x| Value::new(*x, self.function.get(*x)))
 						.collect();
 					assert_eq!(data.len(), pixel_width + 1);
@@ -261,8 +250,7 @@ impl FunctionEntry {
 
 			self.output.derivative = {
 				if self.output.derivative.is_none() {
-					let data: Vec<Value> = resolution_iter
-						.iter()
+					let data: Vec<Value> = dyn_iter(&resolution_iter)
 						.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 						.collect();
 					assert_eq!(data.len(), pixel_width + 1);

@@ -1,6 +1,20 @@
 use eframe::egui::plot::Value as EguiValue;
 use serde_json::Value as JsonValue;
 
+#[cfg(not(target_arch = "wasm32"))]
+use rayon::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+pub fn dyn_iter<'a, T>(input: &'a Vec<T>) -> impl Iterator<Item = &'a T> { input.iter() }
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn dyn_iter<'a, T>(input: &'a Vec<T>) -> <&'a [T] as IntoParallelIterator>::Iter
+where
+	&'a [T]: IntoParallelIterator,
+{
+	input.par_iter()
+}
+
 /// `SteppedVector` is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
