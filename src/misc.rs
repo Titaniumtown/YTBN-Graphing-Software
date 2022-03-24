@@ -16,6 +16,17 @@ where
 	input.par_iter()
 }
 
+pub trait VecValueToTuple {
+	fn to_tuple(&self) -> Vec<(f64, f64)>;
+}
+
+impl VecValueToTuple for Vec<EguiValue>
+where
+	Self: IntoIterator,
+{
+	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
+}
+
 /// `SteppedVector` is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
@@ -268,13 +279,6 @@ pub fn step_helper(max_i: usize, min_x: f64, step: f64) -> Vec<f64> {
 	(0..max_i)
 		.map(|x| (x as f64 * step as f64) + min_x)
 		.collect()
-}
-
-/// Extracts x and y values from `egui::plot::Value` in `data`. Returns
-/// `Vec<(f64, f64)>`
-#[allow(dead_code)]
-pub fn value_vec_to_tuple(data: Vec<EguiValue>) -> Vec<(f64, f64)> {
-	data.iter().map(|ele| (ele.x, ele.y)).collect()
 }
 
 #[cfg(test)]

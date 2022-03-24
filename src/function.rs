@@ -363,7 +363,7 @@ impl FunctionEntry {
 		assert!(self.output.back.is_some());
 		let back_data = self.output.back.as_ref().unwrap().clone();
 		assert_eq!(back_data.len(), settings.pixel_width + 1);
-		let back_vec_tuple = value_vec_to_tuple(back_data);
+		let back_vec_tuple = back_data.to_tuple();
 		assert_eq!(back_vec_tuple, back_target);
 
 		assert_eq!(integral_enabled, self.integral);
