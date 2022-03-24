@@ -185,7 +185,7 @@ pub fn newtons_method(
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	data.iter()
-		.tuples()
+		.tuple_windows()
 		.filter(|(prev, curr)| !(prev.y.is_nan() | curr.y.is_nan()))
 		.map(|(prev, curr)| {
 			if prev.y.signum() != curr.y.signum() {
