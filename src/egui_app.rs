@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, RiemannSum, DEFAULT_FUNCTION_ENTRY};
-use crate::misc::{JsonFileOutput, SerdeValueHelper};
+use crate::misc::{option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
 use const_format::formatc;
@@ -329,7 +329,7 @@ pub struct MathApp {
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it
 	/// took for the last frame (the Duration). Stored in a Tuple.
-	last_info: (Vec<f64>, Duration),
+	last_info: (Vec<Option<f64>>, Duration),
 
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
@@ -341,7 +341,7 @@ impl Default for MathApp {
 			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
 			func_strs: vec![String::new()],
 			last_error: Vec::new(),
-			last_info: (vec![0.0], Duration::ZERO),
+			last_info: (vec![None], Duration::ZERO),
 			settings: AppSettings::default(),
 		}
 	}
@@ -617,8 +617,9 @@ impl epi::App for MathApp {
 
 				// Display Area and time of last frame
 				ui.label(format!(
-					"Area: {:?} Took: {:?}",
-					self.last_info.0, self.last_info.1
+					"Area: {} Took: {:?}",
+					option_vec_printer(self.last_info.0.clone()),
+					self.last_info.1
 				));
 			});
 		});
@@ -668,8 +669,9 @@ impl epi::App for MathApp {
 			self.side_panel(ctx);
 		}
 
-		let mut area_list: Vec<f64> = Vec::new(); // Referenced in plotting code, but needs to be here so it can be later
-										  // referenced when storing `last_info`
+		// Referenced in plotting code, but needs to be here so it can be later
+		// referenced when storing `last_info`
+		let mut area_list: Vec<Option<f64>> = Vec::new();
 
 		// Central panel which contains the central plot (or an error created when
 		// parsing)
@@ -708,7 +710,7 @@ impl epi::App for MathApp {
 						.enumerate()
 						.map(|(i, function)| {
 							if self.func_strs[i].is_empty() {
-								return f64::NAN;
+								return None;
 							}
 
 							function.display(

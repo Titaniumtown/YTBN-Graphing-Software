@@ -229,6 +229,35 @@ fn newtons_method(
 	}
 }
 
+/// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty
+/// representation of the Vector
+pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String {
+	let none_representation = "None";
+	let unwrapped: Vec<String> = data
+		.iter()
+		.map(|x| {
+			if let Some(inner) = x {
+				inner.to_string()
+			} else {
+				none_representation.to_owned()
+			}
+		})
+		.collect();
+
+	let mut output: String = String::from("[");
+	let mut curr_len: usize = 0;
+	let total_len: usize = unwrapped.len();
+	for ele in unwrapped.iter() {
+		curr_len += 1;
+		output += ele;
+		if total_len > curr_len {
+			output += ", ";
+		}
+	}
+	output += "]";
+	output
+}
+
 // Returns a vector of length `max_i` starting at value `min_x` with resolution
 // of `resolution`
 pub fn resolution_helper(max_i: usize, min_x: f64, resolution: f64) -> Vec<f64> {

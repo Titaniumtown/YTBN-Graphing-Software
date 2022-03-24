@@ -166,7 +166,7 @@ impl FunctionEntry {
 	pub fn display(
 		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, pixel_width: usize,
 		width_changed: bool, settings: AppSettings,
-	) -> f64 {
+	) -> Option<f64> {
 		let resolution: f64 = pixel_width as f64 / (max_x.abs() + min_x.abs());
 		let resolution_iter = resolution_helper(pixel_width + 1, min_x, resolution);
 
@@ -342,9 +342,9 @@ impl FunctionEntry {
 			);
 
 			// return value rounded to 8 decimal places
-			crate::misc::decimal_round(integral_data.1, 8)
+			Some(crate::misc::decimal_round(integral_data.1, 8))
 		} else {
-			f64::NAN // return NaN if integrals are disabled
+			None
 		}
 	}
 }
