@@ -283,6 +283,7 @@ mod tests {
 	}
 
 	/// Tests to make sure my cursed function works as intended
+	// TODO: use hashmap for input and expected values
 	#[test]
 	fn func_process_test() {
 		test_process_helper("2x", "2*x");
