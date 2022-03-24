@@ -357,14 +357,14 @@ mod tests {
 			assert_eq!(option_vec_printer(key), value);
 		}
 
-		let values_floats = HashMap::from([
+		let values_nums = HashMap::from([
 			(vec![Some(10)], "[10]"),
 			(vec![Some(10), None], "[10, None]"),
 			(vec![None, Some(10)], "[None, 10]"),
 			(vec![Some(10), Some(100)], "[10, 100]"),
 		]);
 
-		for (key, value) in values_floats {
+		for (key, value) in values_nums {
 			assert_eq!(option_vec_printer(key), value);
 		}
 	}
