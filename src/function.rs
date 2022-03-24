@@ -358,7 +358,7 @@ impl FunctionEntry {
 	#[cfg(test)]
 	fn assert(
 		&self, settings: AppSettings, back_target: Vec<(f64, f64)>, integral_enabled: bool,
-		derivative_enabled: bool, roots_enabled: bool, extrema_enabled: bool,
+		derivative_enabled: bool,
 	) {
 		assert!(self.output.back.is_some());
 		let back_data = self.output.back.as_ref().unwrap().clone();
@@ -369,8 +369,10 @@ impl FunctionEntry {
 		assert_eq!(integral_enabled, self.integral);
 		assert_eq!(derivative_enabled, self.derivative);
 
-		assert_eq!(self.output.roots.is_some(), roots_enabled);
-		assert_eq!(self.output.extrema.is_some(), extrema_enabled);
+		assert_eq!(self.output.roots.is_some(), settings.roots);
+		assert_eq!(self.output.extrema.is_some(), settings.extrema);
+		assert_eq!(self.output.derivative.is_some(), derivative_enabled);
+		assert_eq!(self.output.integral.is_some(), integral_enabled);
 	}
 
 	#[cfg(test)]
@@ -380,14 +382,7 @@ impl FunctionEntry {
 	) {
 		{
 			self.calculate(min_x, max_x, true, settings);
-			self.assert(
-				settings,
-				back_values_target,
-				true,
-				true,
-				settings.roots,
-				settings.extrema,
-			);
+			self.assert(settings, back_values_target, true, true);
 			assert_eq!(self.output.integral.clone().unwrap().1, area_target);
 		}
 	}

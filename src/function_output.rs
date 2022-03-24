@@ -39,3 +39,39 @@ impl FunctionOutput {
 	/// Invalidate Derivative data
 	pub fn invalidate_derivative(&mut self) { self.derivative = None; }
 }
+
+#[test]
+fn function_output_test() {
+	let mut function_output = FunctionOutput::new_empty();
+	assert!(function_output.back.is_none());
+	assert!(function_output.integral.is_none());
+	assert!(function_output.derivative.is_none());
+	assert!(function_output.extrema.is_none());
+	assert!(function_output.roots.is_none());
+
+	function_output.back = Some(vec![Value::new(0, 0)]);
+	function_output.invalidate_back();
+	assert!(function_output.back.is_none());
+
+	function_output.integral = Some((vec![Bar::new(0.0, 0.0)], 0.0));
+	function_output.invalidate_integral();
+	assert!(function_output.integral.is_none());
+
+	function_output.derivative = Some(vec![Value::new(0, 0)]);
+	function_output.invalidate_derivative();
+	assert!(function_output.derivative.is_none());
+
+	function_output.back = Some(vec![Value::new(0, 0)]);
+	function_output.integral = Some((vec![Bar::new(0.0, 0.0)], 0.0));
+	function_output.derivative = Some(vec![Value::new(0, 0)]);
+	function_output.extrema = Some(vec![Value::new(0, 0)]);
+	function_output.roots = Some(vec![Value::new(0, 0)]);
+
+	function_output.invalidate_whole();
+
+	assert!(function_output.back.is_none());
+	assert!(function_output.integral.is_none());
+	assert!(function_output.derivative.is_none());
+	assert!(function_output.extrema.is_none());
+	assert!(function_output.roots.is_none());
+}
