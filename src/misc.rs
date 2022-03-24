@@ -242,8 +242,11 @@ fn newtons_method(
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty
 /// representation of the Vector
-pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String {
-	let none_representation = "None";
+pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String
+where
+	T: ToString,
+	T: Clone,
+{
 	let max_i: i32 = (data.len() as i32) - 1;
 	let output: String = data
 		.iter()
@@ -251,7 +254,7 @@ pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String {
 		.map(|(i, x)| {
 			let mut tmp = match x {
 				Some(inner) => inner.to_string(),
-				_ => none_representation.to_string(),
+				_ => "None".to_string(),
 			};
 
 			// Add comma and space if needed
