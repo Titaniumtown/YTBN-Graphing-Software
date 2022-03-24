@@ -186,39 +186,33 @@ pub fn newtons_method(
 ) -> Vec<f64> {
 	data.iter()
 		.tuple_windows()
-		.filter(|(prev, curr)| !(prev.y.is_nan() | curr.y.is_nan()))
-		.map(|(prev, curr)| {
-			if prev.y.signum() != curr.y.signum() {
-				// actual start of newton's method
-				let x = {
-					let mut x1: f64 = prev.x;
-					let mut x2: f64;
-					let mut fail: bool = false;
-					loop {
-						x2 = x1 - (f(x1) / f_1(x1));
-						if !range.contains(&x2) {
-							fail = true;
-							break;
-						}
+		.filter(|(prev, curr)| !prev.y.is_nan() && !curr.y.is_nan())
+		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
+		.map(|(prev, _)| prev.x)
+		.map(|start_x| {
+			let mut x1: f64 = start_x;
+			let mut x2: f64;
+			let mut fail: bool = false;
+			loop {
+				x2 = x1 - (f(x1) / f_1(x1));
+				if !range.contains(&x2) {
+					fail = true;
+					break;
+				}
 
-						// If below threshold, break
-						if (x2 - x1).abs() < threshold {
-							break;
-						}
+				// If below threshold, break
+				if (x2 - x1).abs() < threshold {
+					break;
+				}
 
-						x1 = x2;
-					}
-
-					// If failed, return NaN, which is then filtered out
-					match fail {
-						true => f64::NAN,
-						false => x1,
-					}
-				};
-
-				return x;
+				x1 = x2;
 			}
-			f64::NAN
+
+			// If failed, return NaN, which is then filtered out
+			match fail {
+				true => f64::NAN,
+				false => x1,
+			}
 		})
 		.filter(|x| !x.is_nan())
 		.collect()
