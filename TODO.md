@@ -13,7 +13,7 @@
 6. Sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
 7. nth derivative support (again)
 8. Rewrite `FunctionEntry` to move more information and handling to egui_app (such as config changes)
-9. Threading
+9. Threading (Partially mplemented when running natively)
 10. Fix integral display
 11. Improve loading indicator
 	- Dynamically hide and unhide it when lagging
