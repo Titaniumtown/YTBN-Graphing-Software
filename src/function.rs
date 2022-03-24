@@ -168,7 +168,7 @@ impl FunctionEntry {
 		width_changed: bool, settings: AppSettings,
 	) -> f64 {
 		let resolution: f64 = pixel_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter = resolution_helper(pixel_width, min_x, resolution);
+		let resolution_iter = resolution_helper(pixel_width + 1, min_x, resolution);
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
