@@ -354,35 +354,34 @@ impl FunctionEntry {
 			None
 		}
 	}
-
-	#[cfg(test)]
-	fn assert(
-		&self, settings: AppSettings, back_target: Vec<(f64, f64)>, integral_enabled: bool,
-		derivative_enabled: bool,
-	) {
-		assert!(self.output.back.is_some());
-		let back_data = self.output.back.as_ref().unwrap().clone();
-		assert_eq!(back_data.len(), settings.pixel_width + 1);
-		let back_vec_tuple = back_data.to_tuple();
-		assert_eq!(back_vec_tuple, back_target);
-
-		assert_eq!(integral_enabled, self.integral);
-		assert_eq!(derivative_enabled, self.derivative);
-
-		assert_eq!(self.output.roots.is_some(), settings.roots);
-		assert_eq!(self.output.extrema.is_some(), settings.extrema);
-		assert_eq!(self.output.derivative.is_some(), derivative_enabled);
-		assert_eq!(self.output.integral.is_some(), integral_enabled);
-	}
-
 	#[cfg(test)]
 	pub fn tests(
-		&mut self, settings: AppSettings, back_values_target: Vec<(f64, f64)>, area_target: f64,
-		min_x: f64, max_x: f64,
+		&mut self, settings: AppSettings, back_target: Vec<(f64, f64)>,
+		derivative_target: Vec<(f64, f64)>, area_target: f64, min_x: f64, max_x: f64,
 	) {
 		{
 			self.calculate(min_x, max_x, true, settings);
-			self.assert(settings, back_values_target, true, true);
+			let settings = settings;
+			let back_target = back_target;
+			assert!(self.output.back.is_some());
+			let back_data = self.output.back.as_ref().unwrap().clone();
+			assert_eq!(back_data.len(), settings.pixel_width + 1);
+			let back_vec_tuple = back_data.to_tuple();
+			assert_eq!(back_vec_tuple, back_target);
+
+			assert_eq!(true, self.integral);
+			assert_eq!(true, self.derivative);
+
+			assert_eq!(self.output.roots.is_some(), settings.roots);
+			assert_eq!(self.output.extrema.is_some(), settings.extrema);
+			assert_eq!(self.output.derivative.is_some(), true);
+			assert_eq!(self.output.integral.is_some(), true);
+
+			assert_eq!(
+				self.output.derivative.as_ref().unwrap().to_tuple(),
+				derivative_target
+			);
+
 			assert_eq!(self.output.integral.clone().unwrap().1, area_target);
 		}
 	}
@@ -426,13 +425,34 @@ mod tests {
 		(1.0, 1.0),
 	];
 
+	static DERIVATIVE_TARGET: [(f64, f64); 11] = [
+		(-1.0, -2.0),
+		(-0.8, -1.6),
+		(-0.6, -1.2),
+		(-0.4, -0.8),
+		(-0.19999999999999996, -0.3999999999999999),
+		(0.0, 0.0),
+		(0.19999999999999996, 0.3999999999999999),
+		(0.3999999999999999, 0.7999999999999998),
+		(0.6000000000000001, 1.2000000000000002),
+		(0.8, 1.6),
+		(1.0, 2.0),
+	];
+
 	fn do_test(sum: Riemann, area_target: f64) {
 		let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10);
 
 		let mut function = FunctionEntry::default();
 		function.update("x^2", true, true);
 
-		function.tests(settings, BACK_TARGET.to_vec(), area_target, -1.0, 1.0);
+		function.tests(
+			settings,
+			BACK_TARGET.to_vec(),
+			DERIVATIVE_TARGET.to_vec(),
+			area_target,
+			-1.0,
+			1.0,
+		);
 	}
 
 	#[test]
