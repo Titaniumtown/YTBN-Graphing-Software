@@ -233,31 +233,27 @@ fn newtons_method(
 /// representation of the Vector
 pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String {
 	let none_representation = "None";
-	let unwrapped: Vec<String> = data
+	let max_i = data.len() - 1;
+	let output: String = data
 		.iter()
-		.map(|x| {
-			if let Some(inner) = x {
-				inner.to_string()
-			} else {
-				none_representation.to_owned()
+		.enumerate()
+		.map(|(i, x)| {
+			let mut tmp = match x {
+				Some(inner) => inner.to_string(),
+				_ => none_representation.to_string(),
+			};
+
+			// Add comma and space if needed
+			if max_i > i {
+				tmp += ", ";
 			}
+			tmp
 		})
-		.collect();
+		.collect::<Vec<String>>()
+		.concat();
 
-	let mut output: String = String::from("[");
-	let mut curr_len: usize = 0;
-	let total_len: usize = unwrapped.len();
-	for ele in unwrapped.iter() {
-		curr_len += 1;
-		output += ele;
-		if total_len > curr_len {
-			output += ", ";
-		}
-	}
-	output += "]";
-	output
+	format!("[{}]", output)
 }
-
 // Returns a vector of length `max_i` starting at value `min_x` with resolution
 // of `resolution`
 pub fn resolution_helper(max_i: usize, min_x: f64, resolution: f64) -> Vec<f64> {
@@ -277,6 +273,7 @@ pub fn step_helper(max_i: usize, min_x: f64, step: f64) -> Vec<f64> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use std::collections::HashMap;
 
 	/// Tests SteppedVector to ensure everything works properly (helped me find
 	/// a bunch of issues)
@@ -338,5 +335,30 @@ mod tests {
 		);
 
 		assert_eq!(resolution_helper(3, -2.0, 1.0), vec![-2.0, -1.0, 0.0]);
+	}
+
+	#[test]
+	fn option_vec_printer_test() {
+		let values_strings: HashMap<Vec<Option<&str>>, &str> = HashMap::from([
+			(vec![None], "[None]"),
+			(vec![Some("text"), None], "[text, None]"),
+			(vec![None, None], "[None, None]"),
+			(vec![Some("text1"), Some("text2")], "[text1, text2]"),
+		]);
+
+		for (key, value) in values_strings {
+			assert_eq!(option_vec_printer(key), value);
+		}
+
+		let values_floats = HashMap::from([
+			(vec![Some(10)], "[10]"),
+			(vec![Some(10), None], "[10, None]"),
+			(vec![None, Some(10)], "[None, 10]"),
+			(vec![Some(10), Some(100)], "[10, 100]"),
+		]);
+
+		for (key, value) in values_floats {
+			assert_eq!(option_vec_printer(key), value);
+		}
 	}
 }
