@@ -22,17 +22,17 @@ where
 /// index was calculated with `.iter().position(....` which was horribly
 /// inefficient
 pub struct SteppedVector {
-	// Actual data being referenced. HAS to be sorted from minimum to maximum
+	/// Actual data being referenced. HAS to be sorted from minimum to maximum
 	data: Vec<f64>,
 
-	// Minimum value
+	/// Minimum value
 	min: f64,
 
-	// Maximum value
+	/// Maximum value
 	max: f64,
 
-	// Since all entries in `data` are evenly spaced, this field stores the step between 2 adjacent
-	// elements
+	/// Since all entries in `data` are evenly spaced, this field stores the
+	/// step between 2 adjacent elements
 	step: f64,
 }
 
