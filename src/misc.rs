@@ -248,25 +248,25 @@ where
 	T: Clone,
 {
 	let max_i: i32 = (data.len() as i32) - 1;
-	let output: String = data
-		.iter()
-		.enumerate()
-		.map(|(i, x)| {
-			let mut tmp = match x {
-				Some(inner) => inner.to_string(),
-				_ => "None".to_string(),
-			};
+	"[".to_owned()
+		+ &data
+			.iter()
+			.enumerate()
+			.map(|(i, x)| {
+				let mut tmp = match x {
+					Some(inner) => inner.to_string(),
+					_ => "None".to_string(),
+				};
 
-			// Add comma and space if needed
-			if max_i > i as i32 {
-				tmp += ", ";
-			}
-			tmp
-		})
-		.collect::<Vec<String>>()
-		.concat();
-
-	format!("[{}]", output)
+				// Add comma and space if needed
+				if max_i > i as i32 {
+					tmp += ", ";
+				}
+				tmp
+			})
+			.collect::<Vec<String>>()
+			.concat()
+		+ "]"
 }
 // Returns a vector of length `max_i` starting at value `min_x` with resolution
 // of `resolution`
