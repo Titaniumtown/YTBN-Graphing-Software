@@ -214,6 +214,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use std::collections::HashMap;
 
 	/// returns if function with string `func_str` is valid after processing
 	/// through `process_func_str`
@@ -283,33 +284,38 @@ mod tests {
 	}
 
 	/// Tests to make sure my cursed function works as intended
-	// TODO: use hashmap for input and expected values
 	#[test]
 	fn func_process_test() {
-		test_process_helper("2x", "2*x");
-		test_process_helper("x2", "x*2");
-		test_process_helper("x(1+3)", "x*(1+3)");
-		test_process_helper("(1+3)x", "(1+3)*x");
-		test_process_helper("sin(x)", "sin(x)");
-		test_process_helper("2sin(x)", "2*sin(x)");
-		test_process_helper("max(x)", "max(x)");
-		test_process_helper("2e^x", "2*e^x");
-		test_process_helper("2max(x)", "2*max(x)");
-		test_process_helper("cos(sin(x))", "cos(sin(x))");
-		test_process_helper("x^(1+2x)", "x^(1+2*x)");
-		test_process_helper("(x+2)x(1+3)", "(x+2)*x*(1+3)");
-		test_process_helper("(x+2)(1+3)", "(x+2)*(1+3)");
-		test_process_helper("xxx", "x*x*x");
-		test_process_helper("eee", "e*e*e");
-		test_process_helper("pi(x+2)", "π*(x+2)");
-		test_process_helper("(x)pi", "(x)*π");
-		test_process_helper("2e", "2*e");
-		test_process_helper("2log10(x)", "2*log10(x)");
-		test_process_helper("2log(x)", "2*log10(x)");
-		test_process_helper("x!", "x!");
-		test_process_helper("pipipipipipi", "π*π*π*π*π*π");
-		test_process_helper("10pi", "10*π");
-		test_process_helper("pi10", "π*10");
+		let values = HashMap::from([
+			("2x", "2*x"),
+			("x2", "x*2"),
+			("x(1+3)", "x*(1+3)"),
+			("(1+3)x", "(1+3)*x"),
+			("sin(x)", "sin(x)"),
+			("2sin(x)", "2*sin(x)"),
+			("max(x)", "max(x)"),
+			("2e^x", "2*e^x"),
+			("2max(x)", "2*max(x)"),
+			("cos(sin(x))", "cos(sin(x))"),
+			("x^(1+2x)", "x^(1+2*x)"),
+			("(x+2)x(1+3)", "(x+2)*x*(1+3)"),
+			("(x+2)(1+3)", "(x+2)*(1+3)"),
+			("xxx", "x*x*x"),
+			("eee", "e*e*e"),
+			("pi(x+2)", "π*(x+2)"),
+			("(x)pi", "(x)*π"),
+			("2e", "2*e"),
+			("2log10(x)", "2*log10(x)"),
+			("2log(x)", "2*log10(x)"),
+			("x!", "x!"),
+			("pipipipipipi", "π*π*π*π*π*π"),
+			("10pi", "10*π"),
+			("pi10", "π*10"),
+		]);
+
+		for (key, value) in values {
+			test_process_helper(key, value);
+		}
 
 		// Need to fix these checks, maybe I need to rewrite the whole asterisk
 		// adding system... (or just implement these changes into meval-rs, idk)
