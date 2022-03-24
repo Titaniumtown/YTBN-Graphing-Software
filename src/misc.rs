@@ -6,14 +6,35 @@ use serde_json::Value as JsonValue;
 use rayon::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
-pub fn dyn_iter<'a, T>(input: &'a Vec<T>) -> impl Iterator<Item = &'a T> { input.iter() }
+pub fn dyn_iter<'a, T>(input: &'a Vec<T>) -> impl Iterator<Item = &'a T>
+where
+	&'a [T]: IntoIterator,
+{
+	input.iter()
+}
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn dyn_iter<'a, T>(input: &'a Vec<T>) -> <&'a [T] as IntoParallelIterator>::Iter
+pub fn dyn_iter<'a, I>(input: &'a I) -> <&'a I as IntoParallelIterator>::Iter
 where
-	&'a [T]: IntoParallelIterator,
+	&'a I: IntoParallelIterator,
 {
 	input.par_iter()
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn dyn_mut_iter<'a, T>(input: &'a mut Vec<T>) -> impl Iterator<Item = &'a mut T>
+where
+	&'a mut [T]: IntoIterator,
+{
+	input.iter_mut()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn dyn_mut_iter<'a, I>(input: &'a mut I) -> <&'a mut I as IntoParallelIterator>::Iter
+where
+	&'a mut I: IntoParallelIterator,
+{
+	input.par_iter_mut()
 }
 
 pub trait VecValueToTuple {

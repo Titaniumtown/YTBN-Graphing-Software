@@ -288,11 +288,8 @@ impl FunctionEntry {
 	}
 
 	/// Calculates and displays the function on PlotUI `plot_ui`
-	pub fn display(
-		&mut self, plot_ui: &mut PlotUi, min_x: f64, max_x: f64, width_changed: bool,
-		settings: AppSettings,
-	) -> Option<f64> {
-		self.calculate(min_x, max_x, width_changed, settings);
+	pub fn display(&self, plot_ui: &mut PlotUi, settings: AppSettings) -> Option<f64> {
+		// self.calculate(min_x, max_x, width_changed, settings);
 
 		let func_str = self.get_func_str();
 		let derivative_str = self.function.get_derivative_str();

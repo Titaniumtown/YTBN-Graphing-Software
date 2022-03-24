@@ -1,5 +1,5 @@
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
-use crate::misc::{option_vec_printer, JsonFileOutput, SerdeValueHelper};
+use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
 use crate::consts::*;
@@ -14,6 +14,9 @@ use epi::Frame;
 use instant::Duration;
 use shadow_rs::shadow;
 use std::{collections::BTreeMap, io::Read, ops::BitXorAssign, str};
+
+#[cfg(not(target_arch = "wasm32"))]
+use rayon::iter::{IndexedParallelIterator, ParallelIterator};
 
 shadow!(build);
 
@@ -688,23 +691,25 @@ impl epi::App for MathApp {
 					let minx_bounds: f64 = bounds.min()[0];
 					let maxx_bounds: f64 = bounds.max()[0];
 
-					area_list = self
-						.functions
-						.iter_mut()
+					dyn_mut_iter(&mut self.functions)
+						// .iter_mut()
 						.enumerate()
-						.map(|(i, function)| {
-							if self.func_strs[i].is_empty() {
-								return None;
-							}
-
-							function.display(
-								plot_ui,
+						.filter(|(i, _)| !self.func_strs[*i].is_empty())
+						.for_each(|(_, function)| {
+							function.calculate(
 								minx_bounds,
 								maxx_bounds,
 								width_changed,
 								settings_copy,
 							)
-						})
+						});
+
+					area_list = self
+						.functions
+						.iter()
+						.enumerate()
+						.filter(|(i, _)| !self.func_strs[*i].is_empty())
+						.map(|(_, function)| function.display(plot_ui, settings_copy))
 						.collect();
 				});
 		});
