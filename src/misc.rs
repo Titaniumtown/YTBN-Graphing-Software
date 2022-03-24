@@ -233,7 +233,7 @@ fn newtons_method(
 /// representation of the Vector
 pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String {
 	let none_representation = "None";
-	let max_i = data.len() - 1;
+	let max_i: i32 = (data.len() as i32) - 1;
 	let output: String = data
 		.iter()
 		.enumerate()
@@ -244,7 +244,7 @@ pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String {
 			};
 
 			// Add comma and space if needed
-			if max_i > i {
+			if max_i > i as i32 {
 				tmp += ", ";
 			}
 			tmp
