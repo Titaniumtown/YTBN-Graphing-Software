@@ -323,7 +323,7 @@ impl FunctionEntry {
 					Points::new(Values::from_values(extrema_data))
 						.color(Color32::YELLOW)
 						.name("Extrema")
-						.radius(5.0),
+						.radius(5.0), // Radius of points of Extrema
 				);
 			}
 		}
@@ -335,7 +335,7 @@ impl FunctionEntry {
 					Points::new(Values::from_values(roots_data))
 						.color(Color32::LIGHT_BLUE)
 						.name("Root")
-						.radius(5.0),
+						.radius(5.0), // Radius of points of Roots
 				);
 			}
 		}
