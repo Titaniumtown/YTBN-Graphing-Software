@@ -123,15 +123,11 @@ pub fn process_func_str(function_in: &str) -> String {
 			// cases like `)x` like `(2x+3)x`
 			if c_letters_var {
 				add_asterisk = true;
-			}
-
-			// cases like `(x+1)2`
-			if c_is_number {
+			} else if c_is_number {
+				// cases like `(x+1)2`
 				add_asterisk = true;
-			}
-
-			// cases such as `)(` like `(x+1)(x-3)`
-			if c == '(' {
+			} else if c == '(' {
+				// cases such as `)(` like `(x+1)(x-3)`
 				add_asterisk = true
 			}
 		} else if c == '(' {
