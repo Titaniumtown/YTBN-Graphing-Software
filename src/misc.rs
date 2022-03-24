@@ -270,6 +270,13 @@ pub fn step_helper(max_i: usize, min_x: f64, step: f64) -> Vec<f64> {
 		.collect()
 }
 
+/// Extracts x and y values from `egui::plot::Value` in `data`. Returns
+/// `Vec<(f64, f64)>`
+#[allow(dead_code)]
+pub fn value_vec_to_tuple(data: Vec<EguiValue>) -> Vec<(f64, f64)> {
+	data.iter().map(|ele| (ele.x, ele.y)).collect()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

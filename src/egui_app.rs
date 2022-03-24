@@ -1,7 +1,8 @@
-use crate::function::{FunctionEntry, RiemannSum, DEFAULT_FUNCTION_ENTRY};
+use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
 
+use crate::consts::*;
 use const_format::formatc;
 use eframe::{egui, epi};
 use egui::plot::Plot;
@@ -12,12 +13,7 @@ use egui::{
 use epi::Frame;
 use instant::Duration;
 use shadow_rs::shadow;
-use std::{
-	collections::BTreeMap,
-	io::Read,
-	ops::{BitXorAssign, RangeInclusive},
-	str,
-};
+use std::{collections::BTreeMap, io::Read, ops::BitXorAssign, str};
 
 shadow!(build);
 
@@ -30,18 +26,6 @@ const BUILD_INFO: &str = formatc!(
 	&build::RUST_CHANNEL,
 	&build::RUST_VERSION,
 );
-
-// Sets some hard-coded limits to the application
-const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=100000;
-const INTEGRAL_X_MIN: f64 = -1000.0;
-const INTEGRAL_X_MAX: f64 = 1000.0;
-const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
-
-// Default values
-pub const DEFAULT_RIEMANN: RiemannSum = RiemannSum::Left;
-const DEFAULT_MIN_X: f64 = -10.0;
-const DEFAULT_MAX_X: f64 = 10.0;
-const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 // Stores data loaded from files
 struct Assets {
@@ -270,7 +254,7 @@ pub struct AppSettings {
 	pub show_side_panel: bool,
 
 	/// Stores the type of Rienmann sum that should be calculated
-	pub sum: RiemannSum,
+	pub sum: Riemann,
 
 	/// Min and Max range for calculating an integral
 	pub integral_min_x: f64,
@@ -371,9 +355,9 @@ impl MathApp {
 				ComboBox::from_label("Riemann Sum Type")
 					.selected_text(self.settings.sum.to_string())
 					.show_ui(ui, |ui| {
-						ui.selectable_value(&mut self.settings.sum, RiemannSum::Left, "Left");
-						ui.selectable_value(&mut self.settings.sum, RiemannSum::Middle, "Middle");
-						ui.selectable_value(&mut self.settings.sum, RiemannSum::Right, "Right");
+						ui.selectable_value(&mut self.settings.sum, Riemann::Left, "Left");
+						ui.selectable_value(&mut self.settings.sum, Riemann::Middle, "Middle");
+						ui.selectable_value(&mut self.settings.sum, Riemann::Right, "Right");
 					});
 				let riemann_changed = prev_sum == self.settings.sum;
 
@@ -511,7 +495,7 @@ impl MathApp {
 						if let Some(test_output_value) = test_func(&proc_func_str) {
 							self.last_error.push((i, test_output_value));
 						} else {
-							function.update(proc_func_str, integral_enabled, derivative_enabled);
+							function.update(&proc_func_str, integral_enabled, derivative_enabled);
 							self.last_error = self
 								.last_error
 								.iter()
@@ -717,7 +701,6 @@ impl epi::App for MathApp {
 								plot_ui,
 								minx_bounds,
 								maxx_bounds,
-								available_width,
 								width_changed,
 								settings_copy,
 							)

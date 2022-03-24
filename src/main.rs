@@ -1,5 +1,6 @@
 #![feature(const_mut_refs)]
 
+mod consts;
 mod egui_app;
 mod function;
 mod function_output;
