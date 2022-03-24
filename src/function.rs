@@ -183,13 +183,14 @@ impl FunctionEntry {
 		}
 
 		let mut partial_regen = false;
+		let min_max_changed = (min_x != self.min_x) | (max_x != self.max_x);
 
 		if width_changed {
 			self.output.invalidate_back();
 			self.output.invalidate_derivative();
 			self.min_x = min_x;
 			self.max_x = max_x;
-		} else if ((min_x != self.min_x) | (max_x != self.max_x)) && self.output.back.is_some() {
+		} else if min_max_changed && self.output.back.is_some() {
 			partial_regen = true;
 
 			let back_cache = self.output.back.as_ref().unwrap();
@@ -234,10 +235,8 @@ impl FunctionEntry {
 			self.output.invalidate_derivative();
 		}
 
-		let do_extrema = settings.extrema
-			&& ((min_x != self.min_x) | (max_x != self.max_x) | self.output.extrema.is_none());
-		let do_roots = settings.roots
-			&& ((min_x != self.min_x) | (max_x != self.max_x) | self.output.roots.is_none());
+		let do_extrema = settings.extrema && (min_max_changed | self.output.extrema.is_none());
+		let do_roots = settings.roots && (min_max_changed | self.output.roots.is_none());
 
 		self.min_x = min_x;
 		self.max_x = max_x;
