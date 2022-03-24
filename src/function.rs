@@ -2,7 +2,7 @@
 
 use crate::egui_app::AppSettings;
 use crate::function_output::FunctionOutput;
-use crate::misc::{dyn_iter, newtons_method, resolution_helper, step_helper, SteppedVector};
+use crate::misc::{dyn_iter, newtons_method_helper, resolution_helper, step_helper, SteppedVector};
 use crate::parsing::BackingFunction;
 use eframe::{egui, epaint};
 use egui::{
@@ -133,14 +133,14 @@ impl FunctionEntry {
 
 	fn newtons_method_helper(&self, threshold: f64, derivative_level: usize) -> Option<Vec<Value>> {
 		let newtons_method_output: Vec<f64> = match derivative_level {
-			0 => newtons_method(
+			0 => newtons_method_helper(
 				threshold,
 				self.min_x..self.max_x,
 				self.output.back.to_owned().unwrap(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
-			1 => newtons_method(
+			1 => newtons_method_helper(
 				threshold,
 				self.min_x..self.max_x,
 				self.output.derivative.to_owned().unwrap(),

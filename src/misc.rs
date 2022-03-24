@@ -173,14 +173,14 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 	                                      // off after the `n`th decimal place
 }
 
-/// Implements newton's method of finding roots.
-/// `threshold` is the target accuracy threshold
+/// Helper that assists with using newton's method of finding roots, iterating
+/// over data `data` `threshold` is the target accuracy threshold
 /// `range` is the range of valid x values (used to stop calculation when the
 /// point won't display anyways) `data` is the data to iterate over (a Vector of
 /// egui's `Value` struct) `f` is f(x)
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
-pub fn newtons_method(
+pub fn newtons_method_helper(
 	threshold: f64, range: std::ops::Range<f64>, data: Vec<EguiValue>, f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
@@ -190,32 +190,43 @@ pub fn newtons_method(
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
 		.map(|(prev, _)| prev.x)
 		.map(|start_x| {
-			let mut x1: f64 = start_x;
-			let mut x2: f64;
-			let mut fail: bool = false;
-			loop {
-				x2 = x1 - (f(x1) / f_1(x1));
-				if !range.contains(&x2) {
-					fail = true;
-					break;
-				}
-
-				// If below threshold, break
-				if (x2 - x1).abs() < threshold {
-					break;
-				}
-
-				x1 = x2;
-			}
-
-			// If failed, return NaN, which is then filtered out
-			match fail {
-				true => f64::NAN,
-				false => x1,
-			}
+			newtons_method(f, f_1, start_x, range.clone(), threshold).unwrap_or(f64::NAN)
 		})
 		.filter(|x| !x.is_nan())
 		.collect()
+}
+
+/// `range` is the range of valid x values (used to stop calculation when the
+/// `f` is f(x)
+/// `f_1` is f'(x) aka the derivative of f(x)
+/// The function returns an `Option<f64>` of the x value at which a root occurs
+fn newtons_method(
+	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: f64, range: std::ops::Range<f64>,
+	threshold: f64,
+) -> Option<f64> {
+	let mut x1: f64 = start_x;
+	let mut x2: f64;
+	let mut fail: bool = false;
+	loop {
+		x2 = x1 - (f(x1) / f_1(x1));
+		if !range.contains(&x2) {
+			fail = true;
+			break;
+		}
+
+		// If below threshold, break
+		if (x2 - x1).abs() < threshold {
+			break;
+		}
+
+		x1 = x2;
+	}
+
+	// If failed, return NaN, which is then filtered out
+	match fail {
+		true => None,
+		false => Some(x1),
+	}
 }
 
 // Returns a vector of length `max_i` starting at value `min_x` with resolution
