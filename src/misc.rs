@@ -1,4 +1,5 @@
 use eframe::egui::plot::Value as EguiValue;
+use itertools::Itertools;
 use serde_json::Value as JsonValue;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -183,61 +184,44 @@ pub fn newtons_method(
 	threshold: f64, range: std::ops::Range<f64>, data: Vec<EguiValue>, f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
-	let mut output_list: Vec<f64> = Vec::new();
-	let mut last_ele_option: Option<EguiValue> = None;
-	for ele in data.iter() {
-		if last_ele_option.is_none() {
-			last_ele_option = Some(*ele);
-			continue;
-		}
+	data.iter()
+		.tuples()
+		.filter(|(prev, curr)| !(prev.y.is_nan() | curr.y.is_nan()))
+		.map(|(prev, curr)| {
+			if prev.y.signum() != curr.y.signum() {
+				// actual start of newton's method
+				let x = {
+					let mut x1: f64 = prev.x;
+					let mut x2: f64;
+					let mut fail: bool = false;
+					loop {
+						x2 = x1 - (f(x1) / f_1(x1));
+						if !range.contains(&x2) {
+							fail = true;
+							break;
+						}
 
-		// if `ele.y` is NaN, just continue iterating
-		if ele.y.is_nan() {
-			continue;
-		}
+						// If below threshold, break
+						if (x2 - x1).abs() < threshold {
+							break;
+						}
 
-		let last_ele_y = last_ele_option.unwrap().y; // store this here as it's used multiple times
-
-		// if `last_ele.y` is NaN, continue iterating
-		if last_ele_y.is_nan() {
-			continue;
-		}
-
-		if last_ele_y.signum() != ele.y.signum() {
-			// actual start of newton's method
-			let x = {
-				let mut x1: f64 = last_ele_option.unwrap().x;
-				let mut x2: f64;
-				let mut fail: bool = false;
-				loop {
-					x2 = x1 - (f(x1) / f_1(x1));
-					if !range.contains(&x2) {
-						fail = true;
-						break;
+						x1 = x2;
 					}
 
-					// If below threshold, break
-					if (x2 - x1).abs() < threshold {
-						break;
+					// If failed, return NaN, which is then filtered out
+					match fail {
+						true => f64::NAN,
+						false => x1,
 					}
+				};
 
-					x1 = x2;
-				}
-
-				// If failed, return NaN, which is then filtered out
-				match fail {
-					true => f64::NAN,
-					false => x1,
-				}
-			};
-
-			if !x.is_nan() {
-				output_list.push(x);
+				return x;
 			}
-		}
-		last_ele_option = Some(*ele);
-	}
-	output_list
+			f64::NAN
+		})
+		.filter(|x| !x.is_nan())
+		.collect()
 }
 
 // Returns a vector of length `max_i` starting at value `min_x` with resolution

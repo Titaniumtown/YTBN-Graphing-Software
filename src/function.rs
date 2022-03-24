@@ -226,9 +226,6 @@ impl FunctionEntry {
 			self.output.invalidate_derivative();
 		}
 
-		let do_extrema = settings.extrema && (min_max_changed | self.output.extrema.is_none());
-		let do_roots = settings.roots && (min_max_changed | self.output.roots.is_none());
-
 		self.min_x = min_x;
 		self.max_x = max_x;
 
@@ -281,12 +278,12 @@ impl FunctionEntry {
 		};
 
 		// Calculates extrema
-		if do_extrema {
+		if settings.extrema && (min_max_changed | self.output.extrema.is_none()) {
 			self.output.extrema = self.newtons_method_helper(threshold, 1);
 		}
 
 		// Calculates roots
-		if do_roots {
+		if settings.roots && (min_max_changed | self.output.roots.is_none()) {
 			self.output.roots = self.newtons_method_helper(threshold, 0);
 		}
 
