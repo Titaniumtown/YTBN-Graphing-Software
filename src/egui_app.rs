@@ -323,10 +323,20 @@ impl Default for MathApp {
 impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of `MathApp` and return it
-	pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
 		// Remove loading indicator on wasm
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
+
+		tracing::info!(
+			"Integration name: {} Url: {:?}",
+			cc.integration_info.name,
+			if let Some(url) = &cc.integration_info.web_info {
+				url.location.url.clone()
+			} else {
+				"N/A".to_owned()
+			}
+		);
 
 		tracing::info!("egui app initialized.");
 		Self::default() // initialize `MathApp`
