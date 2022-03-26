@@ -1,4 +1,4 @@
-use eframe::egui::plot::Value as EguiValue;
+use eframe::egui::plot::{Line, Points, Value as EguiValue, Values};
 use itertools::Itertools;
 use serde_json::Value as JsonValue;
 
@@ -147,6 +147,14 @@ impl From<Vec<f64>> for SteppedVector {
 		}
 	}
 }
+
+/// Converts Vector of egui `Value` into `Points`
+pub fn vec_tuple_to_points(data: Vec<EguiValue>) -> Points {
+	Points::new(Values::from_values(data))
+}
+
+/// Converts Vector of egui `Value` into `Line`
+pub fn vec_tuple_to_line(data: Vec<EguiValue>) -> Line { Line::new(Values::from_values(data)) }
 
 #[derive(PartialEq, Debug)]
 pub struct JsonFileOutput {

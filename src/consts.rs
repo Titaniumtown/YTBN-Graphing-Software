@@ -1,6 +1,20 @@
 use crate::function::Riemann;
 use std::ops::RangeInclusive;
 
+use const_format::formatc;
+use shadow_rs::shadow;
+shadow!(build);
+
+// Constant string that has a string containing information about the build.
+pub const BUILD_INFO: &str = formatc!(
+	"Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
+	&build::SHORT_COMMIT,
+	&build::BRANCH,
+	&build::BUILD_TIME,
+	&build::RUST_CHANNEL,
+	&build::RUST_VERSION,
+);
+
 // Hard-Coded limits
 
 /// Range of acceptable input values for integral_num

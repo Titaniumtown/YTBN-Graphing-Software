@@ -3,7 +3,6 @@ use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHe
 use crate::parsing::{process_func_str, test_func};
 
 use crate::consts::*;
-use const_format::formatc;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
@@ -12,23 +11,10 @@ use egui::{
 };
 use epi::Frame;
 use instant::Duration;
-use shadow_rs::shadow;
 use std::{collections::BTreeMap, io::Read, ops::BitXorAssign, str};
 
 #[cfg(not(target_arch = "wasm32"))]
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
-
-shadow!(build);
-
-// Constant string that has a string containing information about the build.
-const BUILD_INFO: &str = formatc!(
-	"Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
-	&build::SHORT_COMMIT,
-	&build::BRANCH,
-	&build::BUILD_TIME,
-	&build::RUST_CHANNEL,
-	&build::RUST_VERSION,
-);
 
 // Stores data loaded from files
 struct Assets {
@@ -529,7 +515,6 @@ impl MathApp {
 
 impl epi::App for MathApp {
 	// Called each time the UI needs repainting, which may be many times per second.
-	#[inline(always)]
 	fn update(&mut self, ctx: &Context, _frame: &Frame) {
 		let start = instant::Instant::now();
 

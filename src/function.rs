@@ -6,7 +6,7 @@ use crate::misc::*;
 use crate::parsing::BackingFunction;
 use eframe::{egui, epaint};
 use egui::{
-	plot::{BarChart, Line, PlotUi, Points, Value, Values},
+	plot::{BarChart, PlotUi, Value},
 	widgets::plot::Bar,
 };
 use epaint::Color32;
@@ -297,7 +297,7 @@ impl FunctionEntry {
 			/ (settings.integral_num as f64);
 		// Plot back data
 		plot_ui.line(
-			Line::new(Values::from_values(self.output.back.clone().unwrap()))
+			vec_tuple_to_line(self.output.back.clone().unwrap())
 				.color(Color32::RED)
 				.name(func_str),
 		);
@@ -306,7 +306,7 @@ impl FunctionEntry {
 		if self.derivative {
 			if let Some(derivative_data) = self.output.derivative.clone() {
 				plot_ui.line(
-					Line::new(Values::from_values(derivative_data))
+					vec_tuple_to_line(derivative_data)
 						.color(Color32::GREEN)
 						.name(derivative_str),
 				);
@@ -317,7 +317,7 @@ impl FunctionEntry {
 		if settings.extrema {
 			if let Some(extrema_data) = self.output.extrema.clone() {
 				plot_ui.points(
-					Points::new(Values::from_values(extrema_data))
+					vec_tuple_to_points(extrema_data)
 						.color(Color32::YELLOW)
 						.name("Extrema")
 						.radius(5.0), // Radius of points of Extrema
@@ -329,7 +329,7 @@ impl FunctionEntry {
 		if settings.roots {
 			if let Some(roots_data) = self.output.roots.clone() {
 				plot_ui.points(
-					Points::new(Values::from_values(roots_data))
+					vec_tuple_to_points(roots_data)
 						.color(Color32::LIGHT_BLUE)
 						.name("Root")
 						.radius(5.0), // Radius of points of Roots
@@ -351,6 +351,7 @@ impl FunctionEntry {
 			None
 		}
 	}
+
 	#[cfg(test)]
 	pub fn tests(
 		&mut self, settings: AppSettings, back_target: Vec<(f64, f64)>,
@@ -366,13 +367,13 @@ impl FunctionEntry {
 			let back_vec_tuple = back_data.to_tuple();
 			assert_eq!(back_vec_tuple, back_target);
 
-			assert_eq!(true, self.integral);
-			assert_eq!(true, self.derivative);
+			assert!(self.integral);
+			assert!(self.derivative);
 
 			assert_eq!(self.output.roots.is_some(), settings.roots);
 			assert_eq!(self.output.extrema.is_some(), settings.extrema);
-			assert_eq!(self.output.derivative.is_some(), true);
-			assert_eq!(self.output.integral.is_some(), true);
+			assert!(self.output.derivative.is_some());
+			assert!(self.output.integral.is_some());
 
 			assert_eq!(
 				self.output.derivative.as_ref().unwrap().to_tuple(),
