@@ -304,7 +304,7 @@ mod tests {
 			("10pi", "10*π"),
 			("pi10", "π*10"),
 			("emax(x)", "e*max(x)"),
-			// ("pisin(x)", "pi*sin(x)"),
+			// ("pisin(x)", "pi*sin(x)"), // todo: fix this
 		]);
 
 		for (key, value) in values {
