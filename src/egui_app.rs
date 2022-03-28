@@ -693,6 +693,7 @@ impl epi::App for MathApp {
 				.set_margin_fraction(Vec2::ZERO)
 				.data_aspect(1.0)
 				.include_y(0)
+				.legend(egui::plot::Legend::default())
 				.show(ui, |plot_ui| {
 					let bounds = plot_ui.plot_bounds();
 					let minx_bounds: f64 = bounds.min()[0];
