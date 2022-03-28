@@ -139,6 +139,7 @@ pub fn process_func_str(function_in: &str) -> String {
 			if prev_char_is_number
 				| (prev_char_is_variable && c_is_variable)
 				| prev_char_is_variable
+				| (prev_char == 'π')
 			{
 				add_asterisk = true;
 			}
@@ -242,7 +243,7 @@ mod tests {
 			"(2x+1)x",
 			"(2x+1)pi",
 			"pi(2x+1)",
-			// "pipipipipipi", // need to fix
+			"pipipipipipix",
 		];
 
 		for func_str in functions.iter().cloned() {
@@ -304,7 +305,7 @@ mod tests {
 			("10pi", "10*π"),
 			("pi10", "π*10"),
 			("emax(x)", "e*max(x)"),
-			// ("pisin(x)", "pi*sin(x)"), // todo: fix this
+			("pisin(x)", "π*sin(x)"),
 		]);
 
 		for (key, value) in values {
