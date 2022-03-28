@@ -446,10 +446,8 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
-				let func_hint_text = match functions_len {
-					1 => "x^2",
-					_ => "",
-				};
+
+				let mut gave_hint: bool = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
@@ -496,8 +494,12 @@ impl MathApp {
 
 						// Contains the function string in a text box that the user can edit
 						TextEdit::singleline(&mut self.func_strs[i])
-							.hint_text(func_hint_text)
+							.hint_text(if gave_hint { "" } else { "x^2" })
 							.ui(ui);
+
+						if self.func_strs[i].is_empty() {
+							gave_hint = true;
+						}
 					});
 
 					let proc_func_str = process_func_str(&self.func_strs[i]);
