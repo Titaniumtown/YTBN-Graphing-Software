@@ -525,7 +525,7 @@ impl MathApp {
 
 impl epi::App for MathApp {
 	// Called each time the UI needs repainting, which may be many times per second.
-	fn update(&mut self, ctx: &Context, _frame: &Frame) {
+	fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
 		let start = instant::Instant::now();
 
 		// Set dark/light mode depending on the variable `self.settings.dark_mode`
