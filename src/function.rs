@@ -456,23 +456,9 @@ mod tests {
 	}
 
 	#[test]
-	fn left_function_test() {
-		let area_target = 0.9600000000000001;
-
-		do_test(Riemann::Left, area_target);
-	}
-
-	#[test]
-	fn middle_function_test() {
-		let area_target = 0.92;
-
-		do_test(Riemann::Middle, area_target);
-	}
-
-	#[test]
-	fn right_function_test() {
-		let area_target = 0.8800000000000001;
-
-		do_test(Riemann::Right, area_target);
+	fn function_entry_test() {
+		do_test(Riemann::Left, 0.9600000000000001);
+		do_test(Riemann::Middle, 0.92);
+		do_test(Riemann::Right, 0.8800000000000001);
 	}
 }
