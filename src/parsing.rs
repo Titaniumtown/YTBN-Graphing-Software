@@ -109,7 +109,7 @@ pub fn process_func_str(function_in: &str) -> String {
 		if (prev_prev_prev_char == 'l')
 			&& (prev_prev_char == 'o')
 			&& (prev_char == 'g')
-			&& (c_is_number)
+			&& c_is_number
 		{
 			prev_chars.push(c);
 			output_string += &c.to_string();
