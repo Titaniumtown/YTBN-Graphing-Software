@@ -303,15 +303,12 @@ mod tests {
 			("pipipipipipi", "π*π*π*π*π*π"),
 			("10pi", "10*π"),
 			("pi10", "π*10"),
+			("emax(x)", "e*max(x)"),
+			// ("pisin(x)", "pi*sin(x)"),
 		]);
 
 		for (key, value) in values {
 			test_process_helper(key, value);
 		}
-
-		// Need to fix these checks, maybe I need to rewrite the whole asterisk
-		// adding system... (or just implement these changes into meval-rs, idk)
-		// test_process_helper("emax(x)", "e*max(x)");
-		// test_process_helper("pisin(x)", "pi*sin(x)");
 	}
 }
