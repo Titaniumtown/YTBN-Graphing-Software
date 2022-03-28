@@ -7,7 +7,7 @@ use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
 	Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily, Key,
-	RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
+	RichText, SidePanel, Slider, TextEdit, TopBottomPanel, Vec2, Visuals, Widget, Window,
 };
 use epi::Frame;
 use instant::Duration;
@@ -446,6 +446,10 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
+				let func_hint_text = match functions_len {
+					1 => "x^2",
+					_ => "",
+				};
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
@@ -491,7 +495,9 @@ impl MathApp {
 							.clicked();
 
 						// Contains the function string in a text box that the user can edit
-						ui.text_edit_singleline(&mut self.func_strs[i]);
+						TextEdit::singleline(&mut self.func_strs[i])
+							.hint_text(func_hint_text)
+							.ui(ui);
 					});
 
 					let proc_func_str = process_func_str(&self.func_strs[i]);
