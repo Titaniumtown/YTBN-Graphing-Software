@@ -243,10 +243,12 @@ pub struct AppSettings {
 	pub show_side_panel: bool,
 
 	/// Stores the type of Rienmann sum that should be calculated
-	pub sum: Riemann,
+	pub riemann_sum: Riemann,
 
 	/// Min and Max range for calculating an integral
 	pub integral_min_x: f64,
+
+	/// Max value for calculating an
 	pub integral_max_x: f64,
 
 	pub integral_changed: bool,
@@ -258,12 +260,13 @@ pub struct AppSettings {
 	pub dark_mode: bool,
 
 	/// Stores whether or not displaying extrema is enabled
-	pub extrema: bool,
+	pub do_extrema: bool,
 
 	/// Stores whether or not displaying roots is enabled
-	pub roots: bool,
+	pub do_roots: bool,
 
-	pub pixel_width: usize,
+	/// Stores current plot pixel width
+	pub plot_width: usize,
 }
 
 impl Default for AppSettings {
@@ -274,15 +277,15 @@ impl Default for AppSettings {
 			help_open: true,
 			info_open: false,
 			show_side_panel: true,
-			sum: DEFAULT_RIEMANN,
+			riemann_sum: DEFAULT_RIEMANN,
 			integral_min_x: DEFAULT_MIN_X,
 			integral_max_x: DEFAULT_MAX_X,
 			integral_changed: true,
 			integral_num: DEFAULT_INTEGRAL_NUM,
 			dark_mode: true,
-			extrema: true,
-			roots: true,
-			pixel_width: 0,
+			do_extrema: true,
+			do_roots: true,
+			plot_width: 0,
 		}
 	}
 }
@@ -349,16 +352,24 @@ impl MathApp {
 		SidePanel::left("side_panel")
 			.resizable(false)
 			.show(ctx, |ui| {
-				let prev_sum = self.settings.sum;
+				let prev_sum = self.settings.riemann_sum;
 				// ComboBox for selecting what Riemann sum type to use
 				ComboBox::from_label("Riemann Sum Type")
-					.selected_text(self.settings.sum.to_string())
+					.selected_text(self.settings.riemann_sum.to_string())
 					.show_ui(ui, |ui| {
-						ui.selectable_value(&mut self.settings.sum, Riemann::Left, "Left");
-						ui.selectable_value(&mut self.settings.sum, Riemann::Middle, "Middle");
-						ui.selectable_value(&mut self.settings.sum, Riemann::Right, "Right");
+						ui.selectable_value(&mut self.settings.riemann_sum, Riemann::Left, "Left");
+						ui.selectable_value(
+							&mut self.settings.riemann_sum,
+							Riemann::Middle,
+							"Middle",
+						);
+						ui.selectable_value(
+							&mut self.settings.riemann_sum,
+							Riemann::Right,
+							"Right",
+						);
 					});
-				let riemann_changed = prev_sum == self.settings.sum;
+				let riemann_changed = prev_sum == self.settings.riemann_sum;
 
 				// Config options for Extrema and roots
 				let mut extrema_toggled: bool = false;
@@ -366,7 +377,7 @@ impl MathApp {
 				ui.horizontal(|ui| {
 					extrema_toggled = ui
 						.add(Button::new("Extrema"))
-						.on_hover_text(match self.settings.extrema {
+						.on_hover_text(match self.settings.do_extrema {
 							true => "Disable Displaying Extrema",
 							false => "Display Extrema",
 						})
@@ -374,7 +385,7 @@ impl MathApp {
 
 					roots_toggled = ui
 						.add(Button::new("Roots"))
-						.on_hover_text(match self.settings.roots {
+						.on_hover_text(match self.settings.do_roots {
 							true => "Disable Displaying Roots",
 							false => "Display Roots",
 						})
@@ -382,8 +393,8 @@ impl MathApp {
 				});
 
 				// If options toggled, flip the boolean
-				self.settings.extrema.bitxor_assign(extrema_toggled);
-				self.settings.roots.bitxor_assign(roots_toggled);
+				self.settings.do_extrema.bitxor_assign(extrema_toggled);
+				self.settings.do_roots.bitxor_assign(roots_toggled);
 
 				let min_x_old = self.settings.integral_min_x;
 				let min_x_changed = ui
@@ -669,10 +680,10 @@ impl epi::App for MathApp {
 			}
 
 			let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
-			let width_changed = available_width != self.settings.pixel_width;
+			let width_changed = available_width != self.settings.plot_width;
 
 			if width_changed {
-				self.settings.pixel_width = available_width;
+				self.settings.plot_width = available_width;
 			}
 			let settings_copy = self.settings;
 

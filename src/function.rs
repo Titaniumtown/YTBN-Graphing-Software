@@ -166,8 +166,8 @@ impl FunctionEntry {
 	pub fn calculate(
 		&mut self, min_x: f64, max_x: f64, width_changed: bool, settings: AppSettings,
 	) {
-		let resolution: f64 = settings.pixel_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter = resolution_helper(settings.pixel_width + 1, min_x, resolution);
+		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
+		let resolution_iter = resolution_helper(settings.plot_width + 1, min_x, resolution);
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
@@ -203,7 +203,7 @@ impl FunctionEntry {
 					}
 				})
 				.collect();
-			assert_eq!(back_data.len(), settings.pixel_width + 1);
+			assert_eq!(back_data.len(), settings.plot_width + 1);
 			self.output.back = Some(back_data);
 
 			let derivative_cache = self.output.derivative.as_ref().unwrap();
@@ -217,7 +217,7 @@ impl FunctionEntry {
 				})
 				.collect();
 
-			assert_eq!(new_derivative_data.len(), settings.pixel_width + 1);
+			assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
 
 			self.output.derivative = Some(new_derivative_data);
 		} else {
@@ -236,7 +236,7 @@ impl FunctionEntry {
 					let data: Vec<Value> = dyn_iter(&resolution_iter)
 						.map(|x| Value::new(*x, self.function.get(*x)))
 						.collect();
-					assert_eq!(data.len(), settings.pixel_width + 1);
+					assert_eq!(data.len(), settings.plot_width + 1);
 
 					self.output.back = Some(data);
 				}
@@ -249,7 +249,7 @@ impl FunctionEntry {
 					let data: Vec<Value> = dyn_iter(&resolution_iter)
 						.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 						.collect();
-					assert_eq!(data.len(), settings.pixel_width + 1);
+					assert_eq!(data.len(), settings.plot_width + 1);
 					self.output.derivative = Some(data);
 				}
 
@@ -263,7 +263,7 @@ impl FunctionEntry {
 					let (data, area) = self.integral_rectangles(
 						settings.integral_min_x,
 						settings.integral_max_x,
-						settings.sum,
+						settings.riemann_sum,
 						settings.integral_num,
 					);
 					self.output.integral =
@@ -277,12 +277,12 @@ impl FunctionEntry {
 		};
 
 		// Calculates extrema
-		if settings.extrema && (min_max_changed | self.output.extrema.is_none()) {
+		if settings.do_extrema && (min_max_changed | self.output.extrema.is_none()) {
 			self.output.extrema = self.newtons_method_helper(threshold, 1);
 		}
 
 		// Calculates roots
-		if settings.roots && (min_max_changed | self.output.roots.is_none()) {
+		if settings.do_roots && (min_max_changed | self.output.roots.is_none()) {
 			self.output.roots = self.newtons_method_helper(threshold, 0);
 		}
 	}
@@ -314,7 +314,7 @@ impl FunctionEntry {
 		}
 
 		// Plot extrema points
-		if settings.extrema {
+		if settings.do_extrema {
 			if let Some(extrema_data) = self.output.extrema.clone() {
 				plot_ui.points(
 					vec_tuple_to_points(extrema_data)
@@ -326,7 +326,7 @@ impl FunctionEntry {
 		}
 
 		// Plot roots points
-		if settings.roots {
+		if settings.do_roots {
 			if let Some(roots_data) = self.output.roots.clone() {
 				plot_ui.points(
 					vec_tuple_to_points(roots_data)
@@ -363,15 +363,15 @@ impl FunctionEntry {
 			let back_target = back_target;
 			assert!(self.output.back.is_some());
 			let back_data = self.output.back.as_ref().unwrap().clone();
-			assert_eq!(back_data.len(), settings.pixel_width + 1);
+			assert_eq!(back_data.len(), settings.plot_width + 1);
 			let back_vec_tuple = back_data.to_tuple();
 			assert_eq!(back_vec_tuple, back_target);
 
 			assert!(self.integral);
 			assert!(self.derivative);
 
-			assert_eq!(self.output.roots.is_some(), settings.roots);
-			assert_eq!(self.output.extrema.is_some(), settings.extrema);
+			assert_eq!(self.output.roots.is_some(), settings.do_roots);
+			assert_eq!(self.output.extrema.is_some(), settings.do_extrema);
 			assert!(self.output.derivative.is_some());
 			assert!(self.output.integral.is_some());
 
@@ -397,15 +397,15 @@ mod tests {
 			help_open: false,
 			info_open: false,
 			show_side_panel: false,
-			sum,
+			riemann_sum: sum,
 			integral_min_x,
 			integral_max_x,
 			integral_changed: true,
 			integral_num,
 			dark_mode: false,
-			extrema: false,
-			roots: false,
-			pixel_width,
+			do_extrema: false,
+			do_roots: false,
+			plot_width: pixel_width,
 		}
 	}
 
