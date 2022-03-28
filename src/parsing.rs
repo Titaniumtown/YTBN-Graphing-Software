@@ -120,27 +120,22 @@ pub fn process_func_str(function_in: &str) -> String {
 		let prev_letters_var = prev_char_is_variable | LETTERS.contains(&prev_char);
 
 		if prev_char == ')' {
-			// cases like `)x` like `(2x+3)x`
-			if c_letters_var {
+			// cases like `)x`, `)2`, and `)(`
+			if c_letters_var | c_is_number | (c == '(') {
 				add_asterisk = true;
-			} else if c_is_number {
-				// cases like `(x+1)2`
-				add_asterisk = true;
-			} else if c == '(' {
-				// cases such as `)(` like `(x+1)(x-3)`
-				add_asterisk = true
 			}
 		} else if c == '(' {
-			if (prev_char_is_variable | (')' == prev_char) | prev_char_is_number)
-				&& !LETTERS.contains(&prev_prev_char)
-			{
+			// cases like `x(` and `2(`
+			if (prev_char_is_variable | prev_char_is_number) && !LETTERS.contains(&prev_prev_char) {
 				add_asterisk = true;
 			}
 		} else if prev_char_is_number {
-			if (c == '(') | c_letters_var {
+			// cases like `2x` and `2sin(x)`
+			if c_letters_var {
 				add_asterisk = true;
 			}
 		} else if c_is_letter {
+			// cases like `e2` and `xx`
 			if prev_char_is_number
 				| (prev_char_is_variable && c_is_variable)
 				| prev_char_is_variable
@@ -148,6 +143,7 @@ pub fn process_func_str(function_in: &str) -> String {
 				add_asterisk = true;
 			}
 		} else if (c_is_number | c_letters_var) && prev_letters_var {
+			// cases like `x2` and `xx`
 			add_asterisk = true;
 		}
 
