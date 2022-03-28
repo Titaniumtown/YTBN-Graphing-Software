@@ -1,5 +1,8 @@
 #![feature(const_mut_refs)]
 
+#[macro_use]
+extern crate static_assertions;
+
 mod consts;
 mod egui_app;
 mod function;

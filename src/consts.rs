@@ -24,6 +24,9 @@ pub const INTEGRAL_X_MIN: f64 = -1000.0;
 /// Maximum X value for calculating an Integral
 
 pub const INTEGRAL_X_MAX: f64 = 1000.0;
+
+const_assert!(INTEGRAL_X_MAX > INTEGRAL_X_MIN);
+
 /// Range of acceptable x coordinates for calculating an integral
 pub const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 
@@ -38,6 +41,8 @@ pub const DEFAULT_MIN_X: f64 = -10.0;
 /// Default Maxmimum X value to display
 
 pub const DEFAULT_MAX_X: f64 = 10.0;
+
+const_assert!(DEFAULT_MAX_X > DEFAULT_MIN_X);
 
 /// Default number of integral boxes
 pub const DEFAULT_INTEGRAL_NUM: usize = 100;
