@@ -48,7 +48,7 @@ where
 	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
 }
 
-/// `SteppedVector` is used in order to efficiently sort through an ordered
+/// [`SteppedVector`] is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
 /// index was calculated with `.iter().position(....` which was horribly
@@ -110,7 +110,7 @@ impl SteppedVector {
 	pub fn get_data(&self) -> Vec<f64> { self.data.clone() }
 }
 
-// Convert `Vec<f64>` into `SteppedVector`
+// Convert `Vec<f64>` into [`SteppedVector`]
 impl From<Vec<f64>> for SteppedVector {
 	fn from(input_data: Vec<f64>) -> SteppedVector {
 		let mut data = input_data;
@@ -318,8 +318,8 @@ mod tests {
 	use super::*;
 	use std::collections::HashMap;
 
-	/// Tests SteppedVector to ensure everything works properly (helped me find
-	/// a bunch of issues)
+	/// Tests [`SteppedVector`] to ensure everything works properly (helped me
+	/// find a bunch of issues)
 	#[test]
 	fn stepped_vector_test() {
 		let min: i32 = -10;
@@ -345,7 +345,7 @@ mod tests {
 		assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
 	}
 
-	/// Ensures decimal_round returns correct values
+	/// Ensures [`decimal_round`] returns correct values
 	#[test]
 	fn decimal_round_test() {
 		assert_eq!(decimal_round(0.00001, 1), 0.0);
@@ -364,7 +364,7 @@ mod tests {
 		assert_eq!(decimal_round(1.9, 1), 1.9);
 	}
 
-	/// Tests `resolution_helper` to make sure it returns expected output
+	/// Tests [`resolution_helper`] to make sure it returns expected output
 	#[test]
 	fn resolution_helper_test() {
 		assert_eq!(

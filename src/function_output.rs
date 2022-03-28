@@ -10,7 +10,7 @@ pub struct FunctionOutput {
 }
 
 impl FunctionOutput {
-	/// Creates empty instance of `FunctionOutput`
+	/// Creates empty instance of [`FunctionOutput`]
 	pub fn new_empty() -> Self {
 		Self {
 			back: None,
@@ -40,6 +40,8 @@ impl FunctionOutput {
 	pub fn invalidate_derivative(&mut self) { self.derivative = None; }
 }
 
+/// Tests to make sure invalidation and the default empty state works as
+/// expected
 #[test]
 fn function_output_test() {
 	let mut function_output = FunctionOutput::new_empty();

@@ -128,21 +128,23 @@ impl FunctionEntry {
 		(data2, area)
 	}
 
-	/// Returns `func_str`
+	/// Returns `self.func_str`
 	pub fn get_func_str(&self) -> &str { &self.func_str }
 
+	/// Helps with processing newton's method depending on level of derivative
 	fn newtons_method_helper(&self, threshold: f64, derivative_level: usize) -> Option<Vec<Value>> {
+		let range = self.min_x..self.max_x;
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
 				threshold,
-				self.min_x..self.max_x,
+				range,
 				self.output.back.to_owned().unwrap(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
 				threshold,
-				self.min_x..self.max_x,
+				range,
 				self.output.derivative.to_owned().unwrap(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
@@ -287,10 +289,9 @@ impl FunctionEntry {
 		}
 	}
 
-	/// Calculates and displays the function on PlotUI `plot_ui`
+	/// Displays the function's output on PlotUI `plot_ui` with settings
+	/// `settings`. Returns an `Option<f64>` of the calculated integral
 	pub fn display(&self, plot_ui: &mut PlotUi, settings: AppSettings) -> Option<f64> {
-		// self.calculate(min_x, max_x, width_changed, settings);
-
 		let func_str = self.get_func_str();
 		let derivative_str = self.function.get_derivative_str();
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
@@ -352,6 +353,7 @@ impl FunctionEntry {
 		}
 	}
 
+	/// Runs asserts to make sure everything is the expected value
 	#[cfg(test)]
 	pub fn tests(
 		&mut self, settings: AppSettings, back_target: Vec<(f64, f64)>,

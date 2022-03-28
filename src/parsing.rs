@@ -18,7 +18,7 @@ pub struct BackingFunction {
 }
 
 impl BackingFunction {
-	/// Create new BackingFunction instance
+	/// Create new [`BackingFunction`] instance
 	pub fn new(func_str: &str) -> Self {
 		let function = match func_str {
 			"" => EMPTY_FUNCTION.clone(),
@@ -213,11 +213,11 @@ mod tests {
 	use std::collections::HashMap;
 
 	/// returns if function with string `func_str` is valid after processing
-	/// through `process_func_str`
+	/// through [`process_func_str`]
 	fn func_is_valid(func_str: &str) -> bool { test_func(&process_func_str(func_str)).is_none() }
 
-	/// Used for testing: passes function to `add_asterisks` before running
-	/// `test_func`. if `expect_valid` == `true`, it expects no errors to be
+	/// Used for testing: passes function to [`process_func_str`] before running
+	/// [`test_func`]. if `expect_valid` == `true`, it expects no errors to be
 	/// created.
 	fn test_func_helper(func_str: &str, expect_valid: bool) {
 		let is_valid = func_is_valid(func_str);
@@ -273,7 +273,7 @@ mod tests {
 			test_func_helper(func_str, false);
 		}
 	}
-	/// Helps with tests of `process_func_str`
+	/// Helps with tests of [`process_func_str`]
 	#[cfg(test)]
 	fn test_process_helper(input: &str, expected: &str) {
 		assert_eq!(&process_func_str(input), expected);

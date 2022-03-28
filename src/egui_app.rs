@@ -229,7 +229,7 @@ cfg_if::cfg_if! {
 	}
 }
 
-/// Stores current settings/state of `MathApp`
+/// Stores current settings/state of [`MathApp`]
 // TODO: find a better name for this
 #[derive(Copy, Clone)]
 pub struct AppSettings {
@@ -251,6 +251,7 @@ pub struct AppSettings {
 	/// Max value for calculating an
 	pub integral_max_x: f64,
 
+	/// Stores whether or not integral settings have changed
 	pub integral_changed: bool,
 
 	/// Number of rectangles used to calculate integral
@@ -325,7 +326,7 @@ impl Default for MathApp {
 
 impl MathApp {
 	#[allow(dead_code)] // This is used lol
-	/// Create new instance of `MathApp` and return it
+	/// Create new instance of [`MathApp`] and return it
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
 		// Remove loading indicator on wasm
 		#[cfg(target_arch = "wasm32")]
