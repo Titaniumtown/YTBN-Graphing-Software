@@ -183,7 +183,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
 			if var_names != ["x"] {
 				let var_names_not_x: Vec<String> = var_names
 					.iter()
-					.filter(|ele| *ele != &"x".to_owned())
+					.filter(|ele| *ele != "x")
 					.cloned()
 					.collect::<Vec<String>>();
 
