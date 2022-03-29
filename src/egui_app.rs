@@ -457,18 +457,13 @@ impl MathApp {
 					ui.horizontal(|ui| {
 						ui.label("Function:");
 
-						if functions_len > 1 {
-							// There's more than 1 function! Functions can now be deleted
-							if ui
-								.add(Button::new("X"))
-								.on_hover_text("Delete Function")
-								.clicked()
-							{
-								remove_i = Some(i);
-							}
-						} else {
-							// Display greyed out "X" button if there's only one function added
-							ui.add_enabled(false, Button::new("X"));
+						// There's more than 1 function! Functions can now be deleted
+						if ui
+							.add_enabled(functions_len > 1, Button::new("X"))
+							.on_hover_text("Delete Function")
+							.clicked()
+						{
+							remove_i = Some(i);
 						}
 
 						// Toggle integral being enabled or not
@@ -546,8 +541,10 @@ impl MathApp {
 }
 
 impl epi::App for MathApp {
-	// Called each time the UI needs repainting, which may be many times per second.
+	/// Called each time the UI needs repainting, which may be many times per
+	/// second.
 	fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+		// start timer
 		let start = instant::Instant::now();
 
 		// Set dark/light mode depending on the variable `self.settings.dark_mode`
@@ -556,6 +553,7 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
+		// Toggle show_side_panel on `H` key press
 		self.settings
 			.show_side_panel
 			.bitxor_assign(ctx.input().key_down(Key::H));
@@ -710,7 +708,6 @@ impl epi::App for MathApp {
 					let maxx_bounds: f64 = bounds.max()[0];
 
 					dyn_mut_iter(&mut self.functions)
-						// .iter_mut()
 						.enumerate()
 						.filter(|(i, _)| !self.func_strs[*i].is_empty())
 						.for_each(|(_, function)| {
