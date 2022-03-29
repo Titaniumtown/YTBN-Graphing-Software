@@ -20,4 +20,4 @@
 	- Random default functions for demo purposes
 	- Syntax
 		- Parentheses (Done)
-		- Function names
+		- Function names (Done)
