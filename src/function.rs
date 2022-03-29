@@ -91,7 +91,7 @@ impl FunctionEntry {
 	/// Creates and does the math for creating all the rectangles under the
 	/// graph
 	fn integral_rectangles(
-		&self, integral_min_x: f64, integral_max_x: f64, sum: Riemann, integral_num: usize,
+		&self, integral_min_x: &f64, integral_max_x: &f64, sum: &Riemann, integral_num: &usize,
 	) -> (Vec<(f64, f64)>, f64) {
 		if integral_min_x.is_nan() {
 			panic!("integral_min_x is NaN")
@@ -99,9 +99,9 @@ impl FunctionEntry {
 			panic!("integral_max_x is NaN")
 		}
 
-		let step = (integral_min_x - integral_max_x).abs() / (integral_num as f64);
+		let step = (integral_min_x - integral_max_x).abs() / (*integral_num as f64);
 
-		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(integral_num, integral_min_x, step))
+		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(*integral_num, &integral_min_x, &step))
 			.map(|x| {
 				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
 				let x2: f64 = x + step_offset;
@@ -132,20 +132,22 @@ impl FunctionEntry {
 	pub fn get_func_str(&self) -> &str { &self.func_str }
 
 	/// Helps with processing newton's method depending on level of derivative
-	fn newtons_method_helper(&self, threshold: f64, derivative_level: usize) -> Option<Vec<Value>> {
+	fn newtons_method_helper(
+		&self, threshold: &f64, derivative_level: usize,
+	) -> Option<Vec<Value>> {
 		let range = self.min_x..self.max_x;
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
-				threshold,
-				range,
-				self.output.back.to_owned().unwrap(),
+				&threshold,
+				&range,
+				&self.output.back.to_owned().unwrap(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
-				threshold,
-				range,
-				self.output.derivative.to_owned().unwrap(),
+				&threshold,
+				&range,
+				&self.output.derivative.to_owned().unwrap(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
 			),
@@ -157,8 +159,7 @@ impl FunctionEntry {
 		} else {
 			Some(
 				dyn_iter(&newtons_method_output)
-					.map(|x| (*x, self.function.get(*x)))
-					.map(|(x, y)| Value::new(x, y))
+					.map(|x| Value::new(*x, self.function.get(*x)))
 					.collect(),
 			)
 		}
@@ -169,7 +170,7 @@ impl FunctionEntry {
 		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
 	) {
 		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter = resolution_helper(settings.plot_width + 1, *min_x, resolution);
+		let resolution_iter = resolution_helper(&settings.plot_width + 1, &min_x, &resolution);
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
@@ -179,11 +180,11 @@ impl FunctionEntry {
 		let mut partial_regen = false;
 		let min_max_changed = (min_x != &self.min_x) | (max_x != &self.max_x);
 
+		self.min_x = *min_x;
+		self.max_x = *max_x;
 		if width_changed {
 			self.output.invalidate_back();
 			self.output.invalidate_derivative();
-			self.min_x = *min_x;
-			self.max_x = *max_x;
 		} else if min_max_changed && self.output.back.is_some() {
 			partial_regen = true;
 
@@ -196,22 +197,21 @@ impl FunctionEntry {
 				.into();
 
 			let back_data: Vec<Value> = dyn_iter(&resolution_iter)
-				.cloned()
 				.map(|x| {
 					if let Some(i) = x_data.get_index(x) {
 						back_cache[i]
 					} else {
-						Value::new(x, self.function.get(x))
+						Value::new(*x, self.function.get(*x))
 					}
 				})
 				.collect();
-			assert_eq!(back_data.len(), settings.plot_width + 1);
+			// assert_eq!(back_data.len(), settings.plot_width + 1);
 			self.output.back = Some(back_data);
 
 			let derivative_cache = self.output.derivative.as_ref().unwrap();
 			let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
 				.map(|x| {
-					if let Some(i) = x_data.get_index(*x) {
+					if let Some(i) = x_data.get_index(x) {
 						derivative_cache[i]
 					} else {
 						Value::new(*x, self.function.get_derivative_1(*x))
@@ -219,7 +219,7 @@ impl FunctionEntry {
 				})
 				.collect();
 
-			assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
+			// assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
 
 			self.output.derivative = Some(new_derivative_data);
 		} else {
@@ -227,65 +227,50 @@ impl FunctionEntry {
 			self.output.invalidate_derivative();
 		}
 
-		self.min_x = *min_x;
-		self.max_x = *max_x;
-
 		let threshold: f64 = resolution / 2.0;
 
 		if !partial_regen {
-			self.output.back = Some({
-				if self.output.back.is_none() {
-					let data: Vec<Value> = dyn_iter(&resolution_iter)
-						.map(|x| Value::new(*x, self.function.get(*x)))
-						.collect();
-					assert_eq!(data.len(), settings.plot_width + 1);
+			if self.output.back.is_none() {
+				let data: Vec<Value> = dyn_iter(&resolution_iter)
+					.map(|x| Value::new(*x, self.function.get(*x)))
+					.collect();
+				assert_eq!(data.len(), settings.plot_width + 1);
 
-					self.output.back = Some(data);
-				}
+				self.output.back = Some(data);
+			}
 
-				self.output.back.as_ref().unwrap().clone()
-			});
-
-			self.output.derivative = {
-				if self.output.derivative.is_none() {
-					let data: Vec<Value> = dyn_iter(&resolution_iter)
-						.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
-						.collect();
-					assert_eq!(data.len(), settings.plot_width + 1);
-					self.output.derivative = Some(data);
-				}
-
-				Some(self.output.derivative.as_ref().unwrap().clone())
-			};
+			if self.output.derivative.is_none() {
+				let data: Vec<Value> = dyn_iter(&resolution_iter)
+					.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
+					.collect();
+				assert_eq!(data.len(), settings.plot_width + 1);
+				self.output.derivative = Some(data);
+			}
 		}
 
-		self.output.integral = match self.integral {
-			true => {
-				if self.output.integral.is_none() {
-					let (data, area) = self.integral_rectangles(
-						settings.integral_min_x,
-						settings.integral_max_x,
-						settings.riemann_sum,
-						settings.integral_num,
-					);
-					self.output.integral =
-						Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
-				}
-
-				let cache = self.output.integral.as_ref().unwrap();
-				Some((cache.0.clone(), cache.1))
+		if self.integral {
+			if self.output.integral.is_none() {
+				let (data, area) = self.integral_rectangles(
+					&settings.integral_min_x,
+					&settings.integral_max_x,
+					&settings.riemann_sum,
+					&settings.integral_num,
+				);
+				self.output.integral =
+					Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
 			}
-			false => None,
-		};
+		} else {
+			self.output.integral = None;
+		}
 
 		// Calculates extrema
 		if settings.do_extrema && (min_max_changed | self.output.extrema.is_none()) {
-			self.output.extrema = self.newtons_method_helper(threshold, 1);
+			self.output.extrema = self.newtons_method_helper(&threshold, 1);
 		}
 
 		// Calculates roots
 		if settings.do_roots && (min_max_changed | self.output.roots.is_none()) {
-			self.output.roots = self.newtons_method_helper(threshold, 0);
+			self.output.roots = self.newtons_method_helper(&threshold, 0);
 		}
 	}
 

@@ -71,18 +71,18 @@ pub struct SteppedVector {
 impl SteppedVector {
 	/// Returns `Option<usize>` with index of element with value `x`. and `None`
 	/// if `x` does not exist in `data`
-	pub fn get_index(&self, x: f64) -> Option<usize> {
+	pub fn get_index(&self, x: &f64) -> Option<usize> {
 		// if `x` is outside range, just go ahead and return `None` as it *shouldn't* be
 		// in `data`
-		if (x > self.max) | (self.min > x) {
+		if (x > &self.max) | (&self.min > x) {
 			return None;
 		}
 
-		if x == self.min {
+		if x == &self.min {
 			return Some(0);
 		}
 
-		if x == self.max {
+		if x == &self.max {
 			return Some(self.data.len() - 1);
 		}
 
@@ -91,7 +91,7 @@ impl SteppedVector {
 
 		// Make sure that the index is valid by checking the data returned vs the actual
 		// data (just in case)
-		if self.data[possible_i] == x {
+		if &self.data[possible_i] == x {
 			// It is valid!
 			Some(possible_i)
 		} else {
@@ -221,7 +221,7 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
-	threshold: f64, range: std::ops::Range<f64>, data: Vec<EguiValue>, f: &dyn Fn(f64) -> f64,
+	threshold: &f64, range: &std::ops::Range<f64>, data: &Vec<EguiValue>, f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	data.iter()
@@ -229,9 +229,7 @@ pub fn newtons_method_helper(
 		.filter(|(prev, curr)| !prev.y.is_nan() && !curr.y.is_nan())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
 		.map(|(prev, _)| prev.x)
-		.map(|start_x| {
-			newtons_method(f, f_1, start_x, range.clone(), threshold).unwrap_or(f64::NAN)
-		})
+		.map(|start_x| newtons_method(f, f_1, &start_x, &range, &threshold).unwrap_or(f64::NAN))
 		.filter(|x| !x.is_nan())
 		.collect()
 }
@@ -241,21 +239,21 @@ pub fn newtons_method_helper(
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns an `Option<f64>` of the x value at which a root occurs
 fn newtons_method(
-	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: f64, range: std::ops::Range<f64>,
-	threshold: f64,
+	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: &f64, range: &std::ops::Range<f64>,
+	threshold: &f64,
 ) -> Option<f64> {
-	let mut x1: f64 = start_x;
+	let mut x1: f64 = *start_x;
 	let mut x2: f64;
 	let mut fail: bool = false;
 	loop {
-		x2 = x1 - (f(x1) / f_1(x1));
+		x2 = &x1 - (f(x1) / f_1(x1));
 		if !range.contains(&x2) {
 			fail = true;
 			break;
 		}
 
 		// If below threshold, break
-		if (x2 - x1).abs() < threshold {
+		if (x2 - x1).abs() < *threshold {
 			break;
 		}
 
@@ -299,18 +297,16 @@ where
 }
 // Returns a vector of length `max_i` starting at value `min_x` with resolution
 // of `resolution`
-pub fn resolution_helper(max_i: usize, min_x: f64, resolution: f64) -> Vec<f64> {
+pub fn resolution_helper(max_i: usize, min_x: &f64, resolution: &f64) -> Vec<f64> {
 	(0..max_i)
-		.map(|x| (x as f64 / resolution as f64) + min_x)
+		.map(|x| (x as f64 / resolution) + min_x)
 		.collect()
 }
 
 // Returns a vector of length `max_i` starting at value `min_x` with step of
 // `step`
-pub fn step_helper(max_i: usize, min_x: f64, step: f64) -> Vec<f64> {
-	(0..max_i)
-		.map(|x| (x as f64 * step as f64) + min_x)
-		.collect()
+pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
+	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
 pub fn chars_take(chars: &[char], i: usize) -> String {
@@ -339,18 +335,18 @@ mod tests {
 		assert_eq!(stepped_vector.get_min(), min as f64);
 		assert_eq!(stepped_vector.get_max(), max as f64);
 
-		assert_eq!(stepped_vector.get_index(min as f64), Some(0));
-		assert_eq!(stepped_vector.get_index(max as f64), Some(len_data - 1));
+		assert_eq!(stepped_vector.get_index(&(min as f64)), Some(0));
+		assert_eq!(stepped_vector.get_index(&(max as f64)), Some(len_data - 1));
 
 		for i in min..=max {
 			assert_eq!(
-				stepped_vector.get_index(i as f64),
+				stepped_vector.get_index(&(i as f64)),
 				Some((i + min.abs()) as usize)
 			);
 		}
 
-		assert_eq!(stepped_vector.get_index((min - 1) as f64), None);
-		assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
+		assert_eq!(stepped_vector.get_index(&((min - 1) as f64)), None);
+		assert_eq!(stepped_vector.get_index(&((max + 1) as f64)), None);
 	}
 
 	/// Ensures [`decimal_round`] returns correct values
@@ -376,16 +372,16 @@ mod tests {
 	#[test]
 	fn resolution_helper_test() {
 		assert_eq!(
-			resolution_helper(10, 1.0, 1.0),
+			resolution_helper(10, &1.0, &1.0),
 			vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 		);
 
 		assert_eq!(
-			resolution_helper(5, -2.0, 1.0),
+			resolution_helper(5, &-2.0, &1.0),
 			vec![-2.0, -1.0, 0.0, 1.0, 2.0]
 		);
 
-		assert_eq!(resolution_helper(3, -2.0, 1.0), vec![-2.0, -1.0, 0.0]);
+		assert_eq!(resolution_helper(3, &-2.0, &1.0), vec![-2.0, -1.0, 0.0]);
 	}
 
 	/// Tests [`option_vec_printer`]
