@@ -286,7 +286,9 @@ pub struct MathApp {
 
 	/// Stores last error from parsing functions (used to display the same error
 	/// when side panel is minimized)
-	last_error: Vec<(usize, String)>,
+	func_errors: Vec<Option<(usize, String)>>,
+
+	exists_error: bool,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it
 	/// took for the last frame (the Duration). Stored in a Tuple.
@@ -316,7 +318,8 @@ impl Default for MathApp {
 		Self {
 			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
 			func_strs: vec![String::new()],
-			last_error: Vec::new(),
+			func_errors: vec![None],
+			exists_error: false,
 			last_info: (vec![None], Duration::ZERO),
 			help_open: true,
 			info_open: false,
@@ -451,6 +454,7 @@ impl MathApp {
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
 				self.text_boxes_focused = false;
+				self.exists_error = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
@@ -508,25 +512,25 @@ impl MathApp {
 						}
 					});
 
+					let func_failed = self.func_errors[i].is_some();
+					if func_failed {
+						self.exists_error = true;
+					}
+
 					let proc_func_str = process_func_str(&self.func_strs[i]);
 					if configs_changed
 						| integral_toggle | derivative_toggle
 						| (proc_func_str != function.get_func_str())
-						| self.last_error.iter().any(|ele| ele.0 == i)
+						| func_failed
 					{
 						integral_enabled.bitxor_assign(integral_toggle);
 						derivative_enabled.bitxor_assign(derivative_toggle);
 
 						if let Some(test_output_value) = test_func(&proc_func_str) {
-							self.last_error.push((i, test_output_value));
+							self.func_errors[i] = Some((i, test_output_value));
 						} else {
 							function.update(&proc_func_str, integral_enabled, derivative_enabled);
-							self.last_error = self
-								.last_error
-								.iter()
-								.filter(|(i_ele, _)| i_ele != &i)
-								.map(|(a, b)| (*a, b.clone()))
-								.collect();
+							self.func_errors[i] = None;
 						}
 					}
 				}
@@ -535,6 +539,7 @@ impl MathApp {
 				if let Some(remove_i_unwrap) = remove_i {
 					self.functions.remove(remove_i_unwrap);
 					self.func_strs.remove(remove_i_unwrap);
+					self.func_errors.remove(remove_i_unwrap);
 				}
 
 				// Open Source and Licensing information
@@ -591,6 +596,7 @@ impl epi::App for MathApp {
 				{
 					self.functions.push(DEFAULT_FUNCTION_ENTRY.clone());
 					self.func_strs.push(String::new());
+					self.func_errors.push(None);
 				}
 
 				// Toggles opening the Help window
@@ -690,11 +696,17 @@ impl epi::App for MathApp {
 		// parsing)
 		CentralPanel::default().show(ctx, |ui| {
 			// Display an error if it exists
-			if !self.last_error.is_empty() {
+			if self.exists_error {
 				ui.centered_and_justified(|ui| {
-					self.last_error.iter().for_each(|ele| {
-						ui.heading(&(&format!("(Function #{}) {}\n", ele.0, ele.1)).to_string());
-					})
+					self.func_errors
+						.iter()
+						.filter(|ele| ele.is_some())
+						.map(|ele| ele.as_ref().unwrap())
+						.for_each(|ele| {
+							ui.heading(
+								&(&format!("(Function #{}) {}\n", ele.0, ele.1)).to_string(),
+							);
+						})
 				});
 				return;
 			}
