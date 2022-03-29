@@ -262,6 +262,8 @@ pub fn generate_hint(input: &str) -> String {
 			"cbrt" => Some("("),
 			"floo" => Some("r("),
 
+			"frac" => Some("t("),
+
 			_ => None,
 		};
 
@@ -287,6 +289,10 @@ pub fn generate_hint(input: &str) -> String {
 			"asi" => Some("n("),
 			"aco" => Some("s("),
 			"ata" => Some("n("),
+			"exp" => Some("("),
+			"fra" => Some("ct("),
+			"cbr" => Some("t("),
+			"cei" => Some("l("),
 
 			_ => None,
 		};
@@ -308,6 +314,9 @@ pub fn generate_hint(input: &str) -> String {
 			"at" => Some("an("),
 			"ln" => Some("("),
 			"fl" => Some("oor("),
+			"sq" => Some("rt("),
+			"ex" => Some("p("),
+			"ce" => Some("il("),
 
 			_ => None,
 		};
