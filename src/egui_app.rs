@@ -1,8 +1,8 @@
+use crate::consts::*;
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
-use crate::parsing::{generate_hint, process_func_str, test_func};
-
-use crate::consts::*;
+use crate::parsing::{process_func_str, test_func};
+use crate::suggestions::generate_hint;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{

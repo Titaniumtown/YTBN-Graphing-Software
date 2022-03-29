@@ -9,6 +9,7 @@ mod function;
 mod function_output;
 mod misc;
 mod parsing;
+mod suggestions;
 
 // For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]

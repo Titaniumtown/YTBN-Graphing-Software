@@ -10,6 +10,7 @@ mod function;
 mod function_output;
 mod misc;
 mod parsing;
+mod suggestions;
 
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {

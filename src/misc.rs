@@ -313,6 +313,36 @@ pub fn step_helper(max_i: usize, min_x: f64, step: f64) -> Vec<f64> {
 		.collect()
 }
 
+pub fn common_substring<'a>(a: &'a str, b: &'a str) -> Option<String> {
+	let a_chars: Vec<char> = a.chars().collect();
+	let b_chars: Vec<char> = b.chars().collect();
+	if a_chars[0] != b_chars[0] {
+		return None;
+	}
+
+	let mut last_value: String = a_chars[0].to_string();
+	let max_common_i = std::cmp::min(a.len(), b.len()) - 1;
+	for i in 1..=max_common_i {
+		let a_i = a_chars[i];
+		let b_i = b_chars[i];
+		if a_i == b_i {
+			last_value += &a_i.to_string()
+		} else {
+			break;
+		}
+	}
+
+	Some(last_value)
+}
+
+pub fn chars_take(chars: &Vec<char>, i: usize) -> String {
+	if i > chars.len() {
+		panic!("chars_take: i is larget than chars.len()");
+	}
+
+	chars.iter().rev().take(i).rev().collect::<String>()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -380,6 +410,7 @@ mod tests {
 		assert_eq!(resolution_helper(3, -2.0, 1.0), vec![-2.0, -1.0, 0.0]);
 	}
 
+	/// Tests [`option_vec_printer`]
 	#[test]
 	fn option_vec_printer_test() {
 		let values_strings: HashMap<Vec<Option<&str>>, &str> = HashMap::from([
@@ -402,6 +433,33 @@ mod tests {
 
 		for (key, value) in values_nums {
 			assert_eq!(option_vec_printer(key), value);
+		}
+	}
+
+	/// Tests [`common_substring`]
+	#[test]
+	fn common_substring_test() {
+		let values = HashMap::from([
+			(("test", "text"), Some("te")),
+			(("lol", "text"), None),
+			(("sin(", "sinh("), Some("sin")),
+			(("aaa", "bbb"), None),
+		]);
+
+		for ((key_a, key_b), value) in values {
+			assert_eq!(common_substring(key_a, key_b), value.map(|e| e.to_owned()));
+		}
+	}
+
+	#[test]
+	fn chars_take_test() {
+		let values = HashMap::from([(("test", 2), "st"), (("cool text", 4), "text")]);
+
+		for ((in_str, i), value) in values {
+			assert_eq!(
+				chars_take(&in_str.chars().collect::<Vec<char>>(), i),
+				value.to_owned()
+			);
 		}
 	}
 }
