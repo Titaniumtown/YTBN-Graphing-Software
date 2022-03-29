@@ -490,7 +490,7 @@ impl MathApp {
 							.clicked();
 
 						// Contains the function string in a text box that the user can edit
-						let hint = generate_hint(&self.func_strs[i]);
+						let hint = generate_hint(&self.func_strs[i]).unwrap_or_default();
 
 						let func_edit_focus = TextEdit::singleline(&mut self.func_strs[i])
 							.hint_text(&hint, true)

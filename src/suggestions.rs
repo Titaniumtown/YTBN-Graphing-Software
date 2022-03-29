@@ -1,9 +1,9 @@
 use crate::misc::{chars_take, common_substring};
 use std::collections::{HashMap, HashSet};
 
-pub fn generate_hint(input: &str) -> String {
+pub fn generate_hint(input: &str) -> Option<String> {
 	if input.is_empty() {
-		return "x^2".to_owned();
+		return Some("x^2".to_owned());
 	}
 
 	let chars: Vec<char> = input.chars().collect();
@@ -17,50 +17,47 @@ pub fn generate_hint(input: &str) -> String {
 	});
 
 	if open_parens > closed_parens {
-		return ")".to_owned();
+		return Some(")".to_owned());
 	}
 
 	let len = chars.len();
 
 	if len >= 5 {
 		let result_five = get_completion(chars_take(&chars, 5));
-
-		if let Some(output) = result_five {
-			return output;
+		if result_five.is_some() {
+			return result_five;
 		}
 	}
 
 	if len >= 4 {
 		let result_four = get_completion(chars_take(&chars, 4));
-
-		if let Some(output) = result_four {
-			return output;
+		if result_four.is_some() {
+			return result_four;
 		}
 	}
 
 	if len >= 3 {
 		let result_three = get_completion(chars_take(&chars, 3));
-
-		if let Some(output) = result_three {
-			return output;
+		if result_three.is_some() {
+			return result_three;
 		}
 	}
 
 	if len >= 2 {
 		let result_two = get_completion(chars_take(&chars, 2));
-		if let Some(output) = result_two {
-			return output;
+		if result_two.is_some() {
+			return result_two;
 		}
 	}
 
-	String::new()
+	None
 }
 
 fn gen_completion_hashmap(input: Vec<String>) -> HashMap<String, String> {
 	let mut tuple_list: Vec<(String, String)> = Vec::new();
 
 	for entry in input {
-		for i in 1..=entry.len() {
+		for i in 1..entry.len() {
 			let (first, last) = entry.split_at(i);
 			tuple_list.push((first.to_string(), last.to_string()));
 		}
@@ -106,10 +103,11 @@ fn gen_completion_hashmap(input: Vec<String>) -> HashMap<String, String> {
 		}
 
 		if let Some(common_substr_unwrapped) = common_substr {
-			output.insert(key.clone(), common_substr_unwrapped.replace(&key, ""));
+			if !common_substr_unwrapped.is_empty() {
+				output.insert(key.clone(), common_substr_unwrapped.replace(&key, ""));
+			}
 		}
 	}
-	// println!("{:?}", output);
 
 	output
 }
@@ -153,8 +151,8 @@ mod tests {
 			("sin(x)", ""),
 			("x^x", ""),
 			("(x+1)(x-1", ")"),
-			// ("lo", "g("),
-			// ("log", "("),
+			("lo", "g"),
+			("log", ""), // because there are multiple log functions
 			("asi", "n("),
 			("asin", "("),
 			("fl", "oor("),
@@ -167,12 +165,31 @@ mod tests {
 
 		for (key, value) in values {
 			println!("{} + {}", key, value);
-			assert_eq!(generate_hint(key), value.to_owned());
+			assert_eq!(
+				generate_hint(key).unwrap_or_default(),
+				value.to_owned()
+			);
 		}
 	}
 
 	#[test]
 	fn completion_hashmap_test() {
+		let values = hashmap_test_gen();
+		for (key, value) in values {
+			println!(
+				"{} + {}",
+				key,
+				match value.clone() {
+					Some(x) => x.clone(),
+					None => "(No completion)".to_string(),
+				}
+			);
+
+			assert_eq!(get_completion(key.to_string()), value);
+		}
+	}
+
+	fn hashmap_test_gen() -> HashMap<String, Option<String>> {
 		let mut values: HashMap<String, Option<String>> = HashMap::new();
 
 		let processed_func: Vec<String> = SUPPORTED_FUNCTIONS
@@ -213,18 +230,6 @@ mod tests {
 		for (key, value) in manual_values {
 			values.insert(key.to_string(), value.map(|x| x.to_string()));
 		}
-
-		for (key, value) in values {
-			println!(
-				"{} + {}",
-				key,
-				match value.clone() {
-					Some(x) => x.clone(),
-					None => "(No completion)".to_string(),
-				}
-			);
-
-			assert_eq!(get_completion(key.to_string()), value);
-		}
+		values
 	}
 }
