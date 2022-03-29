@@ -211,10 +211,15 @@ pub fn generate_hint(input: &str) -> String {
 
 	let chars: Vec<char> = input.chars().collect();
 
-	let open_parens = chars.iter().filter(|c| **c == '(').count();
-	let closed_parents = chars.iter().filter(|c| **c == ')').count();
+	let mut open_parens: usize = 0;
+	let mut closed_parens: usize = 0;
+	chars.iter().for_each(|chr| match *chr {
+		'(' => open_parens += 1,
+		')' => closed_parens += 1,
+		_ => {}
+	});
 
-	if open_parens > closed_parents {
+	if open_parens > closed_parens {
 		return ")".to_owned();
 	}
 
