@@ -220,6 +220,27 @@ pub fn generate_hint(input: &str) -> String {
 
 	let len = chars.len();
 
+	if chars.len() >= 5 {
+		let result_two = match (chars[len - 5].to_string()
+			+ &chars[len - 4].to_string()
+			+ &chars[len - 3].to_string()
+			+ &chars[len - 2].to_string()
+			+ &chars[len - 1].to_string())
+			.as_str()
+		{
+			"round" => Some("("),
+			"fract" => Some("("),
+			"trunc" => Some("("),
+			"floor" => Some("("),
+
+			_ => None,
+		};
+
+		if let Some(output) = result_two {
+			return output.to_owned();
+		}
+	}
+
 	if chars.len() >= 4 {
 		let result_two = match (chars[len - 4].to_string()
 			+ &chars[len - 3].to_string()
@@ -228,6 +249,18 @@ pub fn generate_hint(input: &str) -> String {
 			.as_str()
 		{
 			"asin" => Some("("),
+			"acos" => Some("("),
+			"atan" => Some("("),
+
+			"sinh" => Some("("),
+			"cosh" => Some("("),
+			"tanh" => Some("("),
+
+			"ceil" => Some("("),
+			"roun" => Some("d("),
+			"sqrt" => Some("("),
+			"cbrt" => Some("("),
+			"floo" => Some("r("),
 
 			_ => None,
 		};
@@ -243,12 +276,17 @@ pub fn generate_hint(input: &str) -> String {
 			+ &chars[len - 1].to_string())
 			.as_str()
 		{
+			"flo" => Some("or("),
 			"log" => Some("("),
-			"sin" => Some("("),
 			"abs" => Some("("),
+
+			"sin" => Some("("),
 			"cos" => Some("("),
 			"tan" => Some("("),
+
 			"asi" => Some("n("),
+			"aco" => Some("s("),
+			"ata" => Some("n("),
 
 			_ => None,
 		};
@@ -266,6 +304,10 @@ pub fn generate_hint(input: &str) -> String {
 			"co" => Some("s("),
 			"ta" => Some("n("),
 			"as" => Some("in("),
+			"ac" => Some("os("),
+			"at" => Some("an("),
+			"ln" => Some("("),
+			"fl" => Some("oor("),
 
 			_ => None,
 		};
@@ -401,6 +443,12 @@ mod tests {
 			("asi", "n("),
 			("si", "n("),
 			("asin", "("),
+			("fl", "oor("),
+			("ata", "n("),
+			("at", "an("),
+			("roun", "d("),
+			("floo", "r("),
+			("flo", "or("),
 		]);
 
 		for (key, value) in values {
