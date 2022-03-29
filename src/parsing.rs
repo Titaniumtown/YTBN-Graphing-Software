@@ -204,6 +204,23 @@ pub fn test_func(function_string: &str) -> Option<String> {
 	}
 }
 
+pub fn generate_hint(input: &str) -> String {
+	if input.is_empty() {
+		return "x^2".to_owned();
+	}
+
+	let chars: Vec<char> = input.chars().collect();
+
+	let open_parens = chars.iter().filter(|c| **c == '(').count();
+	let closed_parents = chars.iter().filter(|c| **c == ')').count();
+
+	if open_parens > closed_parents {
+		return ")".to_owned();
+	}
+
+	String::new()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

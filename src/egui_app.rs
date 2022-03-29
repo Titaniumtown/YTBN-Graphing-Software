@@ -1,6 +1,6 @@
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
-use crate::parsing::{process_func_str, test_func};
+use crate::parsing::{generate_hint, process_func_str, test_func};
 
 use crate::consts::*;
 use eframe::{egui, epi};
@@ -446,8 +446,6 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
-
-				let mut gave_hint: bool = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
@@ -493,13 +491,11 @@ impl MathApp {
 							.clicked();
 
 						// Contains the function string in a text box that the user can edit
-						TextEdit::singleline(&mut self.func_strs[i])
-							.hint_text(if gave_hint { "" } else { "x^2" })
-							.ui(ui);
+						let hint = generate_hint(&self.func_strs[i]);
 
-						if self.func_strs[i].is_empty() {
-							gave_hint = true;
-						}
+						TextEdit::singleline(&mut self.func_strs[i])
+							.hint_text(hint, true)
+							.ui(ui);
 					});
 
 					let proc_func_str = process_func_str(&self.func_strs[i]);

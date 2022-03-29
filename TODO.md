@@ -17,7 +17,7 @@
 10. Look into other, better methods of compression that would be faster
 11. Better handling of panics and errors to display to the user
 12. Hints for functions
-	- Random default functions
+	- Random default functions for demo purposes
 	- Syntax
-		- Parentheses
+		- Parentheses (Done)
 		- Function names
