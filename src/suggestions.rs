@@ -1,5 +1,4 @@
-use crate::misc::{chars_take, common_substring};
-use std::collections::{HashMap, HashSet};
+use crate::misc::chars_take;
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
 pub fn generate_hint(input: &str) -> Option<String> {
@@ -54,75 +53,7 @@ pub fn generate_hint(input: &str) -> Option<String> {
 	None
 }
 
-/// Creates hashmap used for function name completion
-fn gen_completion_hashmap(input: Vec<String>) -> HashMap<String, String> {
-	let mut tuple_list: Vec<(String, String)> = Vec::new();
-
-	for entry in input {
-		for i in 1..entry.len() {
-			let (first, last) = entry.split_at(i);
-			tuple_list.push((first.to_string(), last.to_string()));
-		}
-	}
-
-	let mut output: HashMap<String, String> = HashMap::new();
-
-	let key_list: Vec<String> = tuple_list.iter().map(|(key, _)| key.clone()).collect();
-
-	let mut seen = HashSet::new();
-	for (key, value) in tuple_list.clone() {
-		if seen.contains(&key) {
-			continue;
-		}
-
-		seen.insert(key.clone());
-
-		let duplicate_num = key_list.iter().filter(|ele| **ele == key).count();
-		if 1 == duplicate_num {
-			output.insert(key, value);
-			continue;
-		}
-
-		let same_keys_merged: Vec<String> = tuple_list
-			.iter()
-			.filter(|(a, _)| **a == key)
-			.map(|(a, b)| a.clone() + b)
-			.collect();
-
-		let merged_key_value = key.clone() + &value;
-
-		let mut common_substr: Option<String> = None;
-		for same_key in same_keys_merged {
-			if let Some(common_substr_unwrapped) = common_substr {
-				common_substr = common_substring(&common_substr_unwrapped, &same_key);
-			} else {
-				common_substr = common_substring(&same_key, &merged_key_value)
-			}
-
-			if common_substr.is_none() {
-				break;
-			}
-		}
-
-		if let Some(common_substr_unwrapped) = common_substr {
-			if !common_substr_unwrapped.is_empty() {
-				output.insert(key.clone(), common_substr_unwrapped.replace(&key, ""));
-			}
-		}
-	}
-
-	output
-}
-
-/// List of supported functions from exmex
-const SUPPORTED_FUNCTIONS: [&str; 22] = [
-	"abs", "signum", "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "floor",
-	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
-];
-
-lazy_static::lazy_static! {
-	static ref COMPLETION_HASHMAP: HashMap<String, String> = gen_completion_hashmap(SUPPORTED_FUNCTIONS.to_vec().iter().map(|ele| ele.to_string() + "(").collect());
-}
+include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 /// Gets completion from `COMPLETION_HASHMAP`
 pub fn get_completion(key: String) -> Option<String> {
@@ -135,7 +66,7 @@ pub fn get_completion(key: String) -> Option<String> {
 			if data_x.is_empty() {
 				None
 			} else {
-				Some(data_x.clone())
+				Some(data_x.to_string())
 			}
 		}
 		None => None,
@@ -144,6 +75,8 @@ pub fn get_completion(key: String) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+	use std::collections::HashMap;
+
 	use super::*;
 
 	/// Tests to make sure hints are properly outputed based on input
@@ -193,10 +126,14 @@ mod tests {
 	fn hashmap_test_gen() -> HashMap<String, Option<String>> {
 		let mut values: HashMap<String, Option<String>> = HashMap::new();
 
-		let processed_func: Vec<String> = SUPPORTED_FUNCTIONS
-			.iter()
-			.map(|ele| ele.to_string() + "(")
-			.collect();
+		let processed_func: Vec<String> = [
+			"abs", "signum", "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh",
+			"floor", "round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2",
+			"log10",
+		]
+		.iter()
+		.map(|ele| ele.to_string() + "(")
+		.collect();
 
 		let mut data_tuple: Vec<(String, Option<String>)> = Vec::new();
 		for func in processed_func.iter() {
