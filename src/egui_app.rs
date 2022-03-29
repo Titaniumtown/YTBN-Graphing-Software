@@ -489,7 +489,7 @@ impl MathApp {
 						let hint = generate_hint(&self.func_strs[i]);
 
 						let func_edit_focus = TextEdit::singleline(&mut self.func_strs[i])
-							.hint_text(hint.clone(), true)
+							.hint_text(&hint, true)
 							.ui(ui)
 							.has_focus();
 
