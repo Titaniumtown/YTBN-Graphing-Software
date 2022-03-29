@@ -335,7 +335,7 @@ pub fn common_substring<'a>(a: &'a str, b: &'a str) -> Option<String> {
 	Some(last_value)
 }
 
-pub fn chars_take(chars: &Vec<char>, i: usize) -> String {
+pub fn chars_take(chars: &[char], i: usize) -> String {
 	if i > chars.len() {
 		panic!("chars_take: i is larget than chars.len()");
 	}

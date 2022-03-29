@@ -26,7 +26,7 @@ pub fn generate_hint(input: &str) -> String {
 		let result_five = get_completion(chars_take(&chars, 5));
 
 		if let Some(output) = result_five {
-			return output.to_owned();
+			return output;
 		}
 	}
 
@@ -34,7 +34,7 @@ pub fn generate_hint(input: &str) -> String {
 		let result_four = get_completion(chars_take(&chars, 4));
 
 		if let Some(output) = result_four {
-			return output.to_owned();
+			return output;
 		}
 	}
 
@@ -42,14 +42,14 @@ pub fn generate_hint(input: &str) -> String {
 		let result_three = get_completion(chars_take(&chars, 3));
 
 		if let Some(output) = result_three {
-			return output.to_owned();
+			return output;
 		}
 	}
 
 	if len >= 2 {
 		let result_two = get_completion(chars_take(&chars, 2));
 		if let Some(output) = result_two {
-			return output.to_owned();
+			return output;
 		}
 	}
 
@@ -214,10 +214,7 @@ mod tests {
 		for (key, value) in manual_values {
 			values.insert(
 				key.to_string(),
-				match value {
-					Some(x) => Some(x.to_string()),
-					None => None,
-				},
+				value.map(|x| x.to_string()),
 			);
 		}
 
