@@ -494,6 +494,7 @@ impl MathApp {
 							.has_focus();
 
 						// If in focus and right arrow key was pressed, apply hint
+						// TODO: change position of cursor
 						if func_edit_focus && ui.input().key_down(Key::ArrowRight) {
 							self.func_strs[i] += &hint;
 						}
