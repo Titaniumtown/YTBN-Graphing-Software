@@ -493,9 +493,15 @@ impl MathApp {
 						// Contains the function string in a text box that the user can edit
 						let hint = generate_hint(&self.func_strs[i]);
 
-						TextEdit::singleline(&mut self.func_strs[i])
-							.hint_text(hint, true)
-							.ui(ui);
+						let func_edit_focus = TextEdit::singleline(&mut self.func_strs[i])
+							.hint_text(hint.clone(), true)
+							.ui(ui)
+							.has_focus();
+
+						// If in focus and right arrow key was pressed, apply hint
+						if func_edit_focus && ui.input().key_down(Key::ArrowRight) {
+							self.func_strs[i] += &hint;
+						}
 					});
 
 					let proc_func_str = process_func_str(&self.func_strs[i]);

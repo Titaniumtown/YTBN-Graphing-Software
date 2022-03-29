@@ -218,6 +218,63 @@ pub fn generate_hint(input: &str) -> String {
 		return ")".to_owned();
 	}
 
+	let len = chars.len();
+
+	if chars.len() >= 4 {
+		let result_two = match (chars[len - 4].to_string()
+			+ &chars[len - 3].to_string()
+			+ &chars[len - 2].to_string()
+			+ &chars[len - 1].to_string())
+			.as_str()
+		{
+			"asin" => Some("("),
+
+			_ => None,
+		};
+
+		if let Some(output) = result_two {
+			return output.to_owned();
+		}
+	}
+
+	if chars.len() >= 3 {
+		let result_two = match (chars[len - 3].to_string()
+			+ &chars[len - 2].to_string()
+			+ &chars[len - 1].to_string())
+			.as_str()
+		{
+			"log" => Some("("),
+			"sin" => Some("("),
+			"abs" => Some("("),
+			"cos" => Some("("),
+			"tan" => Some("("),
+			"asi" => Some("n("),
+
+			_ => None,
+		};
+
+		if let Some(output) = result_two {
+			return output.to_owned();
+		}
+	}
+
+	if chars.len() >= 2 {
+		let result_two = match (chars[len - 2].to_string() + &chars[len - 1].to_string()).as_str() {
+			"lo" => Some("g("),
+			"si" => Some("n("),
+			"ab" => Some("s("),
+			"co" => Some("s("),
+			"ta" => Some("n("),
+			"as" => Some("in("),
+
+			_ => None,
+		};
+
+		if let Some(output) = result_two {
+			return output.to_owned();
+		}
+	}
+
 	String::new()
 }
 
@@ -327,6 +384,27 @@ mod tests {
 
 		for (key, value) in values {
 			test_process_helper(key, value);
+		}
+	}
+
+	/// Tests to make sure hints are properly outputed based on input
+	#[test]
+	fn hint_test() {
+		let values = HashMap::from([
+			("", "x^2"),
+			("sin(x", ")"),
+			("sin(x)", ""),
+			("x^x", ""),
+			("(x+1)(x-1", ")"),
+			("lo", "g("),
+			("log", "("),
+			("asi", "n("),
+			("si", "n("),
+			("asin", "("),
+		]);
+
+		for (key, value) in values {
+			assert_eq!(generate_hint(key), value.to_owned());
 		}
 	}
 }
