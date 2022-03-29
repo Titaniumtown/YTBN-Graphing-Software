@@ -4,7 +4,8 @@ lazy_static::lazy_static! {
 	/// Function returns `f64::NaN` at every x value, which is not displayed.
 	static ref EMPTY_FUNCTION: FlatEx<f64> = exmex::parse::<f64>("0/0").unwrap();
 }
-
+/// Function that includes f(x), f'(x), f'(x)'s string representation, and
+/// f''(x)
 #[derive(Clone)]
 pub struct BackingFunction {
 	/// f(x)

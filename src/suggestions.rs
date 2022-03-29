@@ -1,6 +1,7 @@
 use crate::misc::{chars_take, common_substring};
 use std::collections::{HashMap, HashSet};
 
+/// Generate a hint based on the input `input`, returns an `Option<String>`
 pub fn generate_hint(input: &str) -> Option<String> {
 	if input.is_empty() {
 		return Some("x^2".to_owned());
@@ -53,6 +54,7 @@ pub fn generate_hint(input: &str) -> Option<String> {
 	None
 }
 
+/// Creates hashmap used for function name completion
 fn gen_completion_hashmap(input: Vec<String>) -> HashMap<String, String> {
 	let mut tuple_list: Vec<(String, String)> = Vec::new();
 
@@ -112,6 +114,7 @@ fn gen_completion_hashmap(input: Vec<String>) -> HashMap<String, String> {
 	output
 }
 
+/// List of supported functions from exmex
 const SUPPORTED_FUNCTIONS: [&str; 22] = [
 	"abs", "signum", "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "floor",
 	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
@@ -121,6 +124,7 @@ lazy_static::lazy_static! {
 	static ref COMPLETION_HASHMAP: HashMap<String, String> = gen_completion_hashmap(SUPPORTED_FUNCTIONS.to_vec().iter().map(|ele| ele.to_string() + "(").collect());
 }
 
+/// Gets completion from `COMPLETION_HASHMAP`
 pub fn get_completion(key: String) -> Option<String> {
 	if key.is_empty() {
 		return None;
@@ -165,10 +169,7 @@ mod tests {
 
 		for (key, value) in values {
 			println!("{} + {}", key, value);
-			assert_eq!(
-				generate_hint(key).unwrap_or_default(),
-				value.to_owned()
-			);
+			assert_eq!(generate_hint(key).unwrap_or_default(), value.to_owned());
 		}
 	}
 

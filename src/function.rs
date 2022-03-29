@@ -166,7 +166,7 @@ impl FunctionEntry {
 
 	/// Does the calculations and stores results in `self.output`
 	pub fn calculate(
-		&mut self, min_x: f64, max_x: f64, width_changed: bool, settings: AppSettings,
+		&mut self, min_x: f64, max_x: f64, width_changed: bool, settings: &AppSettings,
 	) {
 		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
 		let resolution_iter = resolution_helper(settings.plot_width + 1, min_x, resolution);
@@ -291,7 +291,7 @@ impl FunctionEntry {
 
 	/// Displays the function's output on PlotUI `plot_ui` with settings
 	/// `settings`. Returns an `Option<f64>` of the calculated integral
-	pub fn display(&self, plot_ui: &mut PlotUi, settings: AppSettings) -> Option<f64> {
+	pub fn display(&self, plot_ui: &mut PlotUi, settings: &AppSettings) -> Option<f64> {
 		let func_str = self.get_func_str();
 		let derivative_str = self.function.get_derivative_str();
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
@@ -360,7 +360,7 @@ impl FunctionEntry {
 		derivative_target: Vec<(f64, f64)>, area_target: f64, min_x: f64, max_x: f64,
 	) {
 		{
-			self.calculate(min_x, max_x, true, settings);
+			self.calculate(min_x, max_x, true, &settings);
 			let settings = settings;
 			let back_target = back_target;
 			assert!(self.output.back.is_some());
@@ -396,19 +396,15 @@ mod tests {
 		integral_num: usize,
 	) -> AppSettings {
 		crate::egui_app::AppSettings {
-			help_open: false,
-			info_open: false,
-			show_side_panel: false,
 			riemann_sum: sum,
 			integral_min_x,
 			integral_max_x,
 			integral_changed: true,
 			integral_num,
-			dark_mode: false,
 			do_extrema: false,
 			do_roots: false,
 			plot_width: pixel_width,
-			text_boxes_focused: false,
+			..crate::egui_app::AppSettings::default()
 		}
 	}
 

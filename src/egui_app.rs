@@ -233,15 +233,6 @@ cfg_if::cfg_if! {
 // TODO: find a better name for this
 #[derive(Copy, Clone)]
 pub struct AppSettings {
-	/// Stores whether or not the Help window is open
-	pub help_open: bool,
-
-	/// Stores whether or not the Info window is open
-	pub info_open: bool,
-
-	/// Stores whether or not the side panel is shown or not
-	pub show_side_panel: bool,
-
 	/// Stores the type of Rienmann sum that should be calculated
 	pub riemann_sum: Riemann,
 
@@ -257,9 +248,6 @@ pub struct AppSettings {
 	/// Number of rectangles used to calculate integral
 	pub integral_num: usize,
 
-	/// Stores whether or not dark mode is enabled
-	pub dark_mode: bool,
-
 	/// Stores whether or not displaying extrema is enabled
 	pub do_extrema: bool,
 
@@ -268,8 +256,6 @@ pub struct AppSettings {
 
 	/// Stores current plot pixel width
 	pub plot_width: usize,
-
-	pub text_boxes_focused: bool,
 }
 
 impl Default for AppSettings {
@@ -277,19 +263,14 @@ impl Default for AppSettings {
 	/// starts up
 	fn default() -> Self {
 		Self {
-			help_open: true,
-			info_open: false,
-			show_side_panel: true,
 			riemann_sum: DEFAULT_RIEMANN,
 			integral_min_x: DEFAULT_MIN_X,
 			integral_max_x: DEFAULT_MAX_X,
 			integral_changed: true,
 			integral_num: DEFAULT_INTEGRAL_NUM,
-			dark_mode: true,
 			do_extrema: true,
 			do_roots: true,
 			plot_width: 0,
-			text_boxes_focused: false,
 		}
 	}
 }
@@ -311,6 +292,21 @@ pub struct MathApp {
 	/// took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Duration),
 
+	/// Stores whether or not the Help window is open
+	help_open: bool,
+
+	/// Stores whether or not the Info window is open
+	info_open: bool,
+
+	/// Stores whether or not dark mode is enabled
+	dark_mode: bool,
+
+	/// Stores whether or not the text boxes are focused
+	text_boxes_focused: bool,
+
+	/// Stores whether or not the side panel is shown or not
+	show_side_panel: bool,
+
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
 }
@@ -322,6 +318,11 @@ impl Default for MathApp {
 			func_strs: vec![String::new()],
 			last_error: Vec::new(),
 			last_info: (vec![None], Duration::ZERO),
+			help_open: true,
+			info_open: false,
+			dark_mode: true,
+			text_boxes_focused: false,
+			show_side_panel: true,
 			settings: AppSettings::default(),
 		}
 	}
@@ -449,7 +450,7 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
-				self.settings.text_boxes_focused = false;
+				self.text_boxes_focused = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
@@ -500,7 +501,7 @@ impl MathApp {
 						// If in focus and right arrow key was pressed, apply hint
 						// TODO: change position of cursor
 						if func_edit_focus {
-							self.settings.text_boxes_focused = true;
+							self.text_boxes_focused = true;
 							if ui.input().key_down(Key::ArrowRight) {
 								self.func_strs[i] += &hint;
 							}
@@ -555,15 +556,14 @@ impl epi::App for MathApp {
 		// start timer
 		let start = instant::Instant::now();
 
-		// Set dark/light mode depending on the variable `self.settings.dark_mode`
-		ctx.set_visuals(match self.settings.dark_mode {
+		// Set dark/light mode depending on the variable `self.dark_mode`
+		ctx.set_visuals(match self.dark_mode {
 			true => Visuals::dark(),
 			false => Visuals::light(),
 		});
 
-		if !self.settings.text_boxes_focused {
-			self.settings
-				.show_side_panel
+		if !self.text_boxes_focused {
+			self.show_side_panel
 				.bitxor_assign(ctx.input().key_down(Key::H));
 		}
 
@@ -574,9 +574,9 @@ impl epi::App for MathApp {
 		TopBottomPanel::top("top_bar").show(ctx, |ui| {
 			ui.horizontal(|ui| {
 				// Button in top bar to toggle showing the side panel
-				self.settings.show_side_panel.bitxor_assign(
+				self.show_side_panel.bitxor_assign(
 					ui.add(Button::new("Panel"))
-						.on_hover_text(match self.settings.show_side_panel {
+						.on_hover_text(match self.show_side_panel {
 							true => "Hide Side Panel",
 							false => "Show Side Panel",
 						})
@@ -594,9 +594,9 @@ impl epi::App for MathApp {
 				}
 
 				// Toggles opening the Help window
-				self.settings.help_open.bitxor_assign(
+				self.help_open.bitxor_assign(
 					ui.add(Button::new("Help"))
-						.on_hover_text(match self.settings.help_open {
+						.on_hover_text(match self.help_open {
 							true => "Close Help Window",
 							false => "Open Help Window",
 						})
@@ -604,9 +604,9 @@ impl epi::App for MathApp {
 				);
 
 				// Toggles opening the Info window
-				self.settings.info_open.bitxor_assign(
+				self.info_open.bitxor_assign(
 					ui.add(Button::new("Info"))
-						.on_hover_text(match self.settings.info_open {
+						.on_hover_text(match self.info_open {
 							true => "Close Info Window",
 							false => "Open Info Window",
 						})
@@ -614,12 +614,12 @@ impl epi::App for MathApp {
 				);
 
 				// Toggles dark/light mode
-				self.settings.dark_mode.bitxor_assign(
-					ui.add(Button::new(match self.settings.dark_mode {
+				self.dark_mode.bitxor_assign(
+					ui.add(Button::new(match self.dark_mode {
 						true => "🌞",
 						false => "🌙",
 					}))
-					.on_hover_text(match self.settings.dark_mode {
+					.on_hover_text(match self.dark_mode {
 						true => "Turn the Lights on!",
 						false => "Turn the Lights off.",
 					})
@@ -638,7 +638,7 @@ impl epi::App for MathApp {
 		// Help window with information for users
 		Window::new("Help")
 			.default_pos([200.0, 200.0])
-			.open(&mut self.settings.help_open)
+			.open(&mut self.help_open)
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
@@ -668,7 +668,7 @@ impl epi::App for MathApp {
 		// Window with information about the build and current commit
 		Window::new("Info")
 			.default_pos([200.0, 200.0])
-			.open(&mut self.settings.info_open)
+			.open(&mut self.info_open)
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
@@ -676,8 +676,10 @@ impl epi::App for MathApp {
 			});
 
 		// If side panel is enabled, show it.
-		if self.settings.show_side_panel {
+		if self.show_side_panel {
 			self.side_panel(ctx);
+		} else {
+			self.text_boxes_focused = false;
 		}
 
 		// Referenced in plotting code, but needs to be here so it can be later
@@ -703,7 +705,6 @@ impl epi::App for MathApp {
 			if width_changed {
 				self.settings.plot_width = available_width;
 			}
-			let settings_copy = self.settings;
 
 			// Create and setup plot
 			Plot::new("plot")
@@ -724,7 +725,7 @@ impl epi::App for MathApp {
 								minx_bounds,
 								maxx_bounds,
 								width_changed,
-								settings_copy,
+								&self.settings,
 							)
 						});
 
@@ -733,7 +734,7 @@ impl epi::App for MathApp {
 						.iter()
 						.enumerate()
 						.filter(|(i, _)| !self.func_strs[*i].is_empty())
-						.map(|(_, function)| function.display(plot_ui, settings_copy))
+						.map(|(_, function)| function.display(plot_ui, &self.settings))
 						.collect();
 				});
 		});
