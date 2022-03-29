@@ -268,6 +268,8 @@ pub struct AppSettings {
 
 	/// Stores current plot pixel width
 	pub plot_width: usize,
+
+	pub text_boxes_focused: bool,
 }
 
 impl Default for AppSettings {
@@ -287,6 +289,7 @@ impl Default for AppSettings {
 			do_extrema: true,
 			do_roots: true,
 			plot_width: 0,
+			text_boxes_focused: false,
 		}
 	}
 }
@@ -446,6 +449,7 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
+				self.settings.text_boxes_focused = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
@@ -495,8 +499,11 @@ impl MathApp {
 
 						// If in focus and right arrow key was pressed, apply hint
 						// TODO: change position of cursor
-						if func_edit_focus && ui.input().key_down(Key::ArrowRight) {
-							self.func_strs[i] += &hint;
+						if func_edit_focus {
+							self.settings.text_boxes_focused = true;
+							if ui.input().key_down(Key::ArrowRight) {
+								self.func_strs[i] += &hint;
+							}
 						}
 					});
 
@@ -554,10 +561,11 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
-		// Toggle show_side_panel on `H` key press
-		self.settings
-			.show_side_panel
-			.bitxor_assign(ctx.input().key_down(Key::H));
+		if !self.settings.text_boxes_focused {
+			self.settings
+				.show_side_panel
+				.bitxor_assign(ctx.input().key_down(Key::H));
+		}
 
 		// Initialize fonts
 		ctx.set_fonts(ASSETS.fonts.clone());

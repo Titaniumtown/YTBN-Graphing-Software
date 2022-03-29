@@ -106,7 +106,6 @@ fn gen_completion_hashmap(input: Vec<String>) -> HashMap<String, String> {
 		}
 
 		if let Some(common_substr_unwrapped) = common_substr {
-			println!("{}", common_substr_unwrapped);
 			output.insert(key.clone(), common_substr_unwrapped.replace(&key, ""));
 		}
 	}
@@ -212,10 +211,7 @@ mod tests {
 			vec![("sin", None), ("cos", None), ("tan", None)];
 
 		for (key, value) in manual_values {
-			values.insert(
-				key.to_string(),
-				value.map(|x| x.to_string()),
-			);
+			values.insert(key.to_string(), value.map(|x| x.to_string()));
 		}
 
 		for (key, value) in values {
