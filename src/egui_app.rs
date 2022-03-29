@@ -722,8 +722,8 @@ impl epi::App for MathApp {
 						.filter(|(i, _)| !self.func_strs[*i].is_empty())
 						.for_each(|(_, function)| {
 							function.calculate(
-								minx_bounds,
-								maxx_bounds,
+								&minx_bounds,
+								&maxx_bounds,
 								width_changed,
 								&self.settings,
 							)

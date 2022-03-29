@@ -166,10 +166,10 @@ impl FunctionEntry {
 
 	/// Does the calculations and stores results in `self.output`
 	pub fn calculate(
-		&mut self, min_x: f64, max_x: f64, width_changed: bool, settings: &AppSettings,
+		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
 	) {
 		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter = resolution_helper(settings.plot_width + 1, min_x, resolution);
+		let resolution_iter = resolution_helper(settings.plot_width + 1, *min_x, resolution);
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
@@ -177,13 +177,13 @@ impl FunctionEntry {
 		}
 
 		let mut partial_regen = false;
-		let min_max_changed = (min_x != self.min_x) | (max_x != self.max_x);
+		let min_max_changed = (min_x != &self.min_x) | (max_x != &self.max_x);
 
 		if width_changed {
 			self.output.invalidate_back();
 			self.output.invalidate_derivative();
-			self.min_x = min_x;
-			self.max_x = max_x;
+			self.min_x = *min_x;
+			self.max_x = *max_x;
 		} else if min_max_changed && self.output.back.is_some() {
 			partial_regen = true;
 
@@ -227,8 +227,8 @@ impl FunctionEntry {
 			self.output.invalidate_derivative();
 		}
 
-		self.min_x = min_x;
-		self.max_x = max_x;
+		self.min_x = *min_x;
+		self.max_x = *max_x;
 
 		let threshold: f64 = resolution / 2.0;
 
@@ -360,7 +360,7 @@ impl FunctionEntry {
 		derivative_target: Vec<(f64, f64)>, area_target: f64, min_x: f64, max_x: f64,
 	) {
 		{
-			self.calculate(min_x, max_x, true, &settings);
+			self.calculate(&min_x, &max_x, true, &settings);
 			let settings = settings;
 			let back_target = back_target;
 			assert!(self.output.back.is_some());
