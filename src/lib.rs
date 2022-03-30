@@ -7,7 +7,6 @@ extern crate static_assertions;
 mod consts;
 mod egui_app;
 mod function;
-mod function_output;
 mod misc;
 mod parsing;
 mod suggestions;

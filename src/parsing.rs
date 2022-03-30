@@ -188,13 +188,7 @@ pub fn test_func(function_string: &str) -> Option<String> {
 				return match var_names_not_x.len() {
 					1 => {
 						let var_name = &var_names_not_x[0];
-						if var_name == "e" {
-							Some(String::from(
-								"If trying to use Euler's number, please use an uppercase E",
-							))
-						} else {
-							Some(format!("Error: invalid variable: {}", var_name))
-						}
+						Some(format!("Error: invalid variable: {}", var_name))
 					}
 					_ => Some(format!("Error: invalid variables: {:?}", var_names_not_x)),
 				};

@@ -15,7 +15,7 @@
 		"- floor, ceil, round, signum"
 	],
 	"help_vars": [
-		"- Euler's number is supported via 'E' (note it being uppercase)",
+		"- Euler's number is supported via 'e' or 'E'",
 		"- PI is available through 'pi' or 'π'"
 	],
 	"help_panel": [

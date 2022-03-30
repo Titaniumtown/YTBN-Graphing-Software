@@ -704,7 +704,7 @@ impl epi::App for MathApp {
 						.map(|ele| ele.as_ref().unwrap())
 						.for_each(|ele| {
 							ui.heading(
-								&(&format!("(Function #{}) {}\n", ele.0, ele.1)).to_string(),
+								format!("(Function #{}) {}\n", ele.0, ele.1),
 							);
 						})
 				});

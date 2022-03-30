@@ -1,7 +1,6 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
 use crate::egui_app::AppSettings;
-use crate::function_output::FunctionOutput;
 use crate::misc::*;
 use crate::parsing::BackingFunction;
 use eframe::{egui, epaint};
@@ -48,15 +47,18 @@ pub struct FunctionEntry {
 	min_x: f64,
 	max_x: f64,
 
-	/// output/cached data
-	output: FunctionOutput,
-
 	/// If calculating/displayingintegrals are enabled
 	pub integral: bool,
 
 	/// If displaying derivatives are enabled (note, they are still calculated
 	/// for other purposes)
 	pub derivative: bool,
+
+	back_data: Option<Vec<Value>>,
+	integral_data: Option<(Vec<Bar>, f64)>,
+	derivative_data: Option<Vec<Value>>,
+	extrema_data: Option<Vec<Value>>,
+	roots_data: Option<Vec<Value>>,
 }
 
 impl Default for FunctionEntry {
@@ -67,9 +69,13 @@ impl Default for FunctionEntry {
 			func_str: String::new(),
 			min_x: -1.0,
 			max_x: 1.0,
-			output: FunctionOutput::new_empty(),
 			integral: false,
 			derivative: false,
+			back_data: None,
+			integral_data: None,
+			derivative_data: None,
+			extrema_data: None,
+			roots_data: None,
 		}
 	}
 }
@@ -81,7 +87,7 @@ impl FunctionEntry {
 		if func_str != self.func_str {
 			self.func_str = func_str.to_string();
 			self.function = BackingFunction::new(func_str);
-			self.output.invalidate_whole();
+			self.invalidate_whole();
 		}
 
 		self.derivative = derivative;
@@ -140,14 +146,14 @@ impl FunctionEntry {
 			0 => newtons_method_helper(
 				&threshold,
 				&range,
-				&self.output.back.as_ref().unwrap(),
+				&self.back_data.as_ref().unwrap(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
 				&threshold,
 				&range,
-				&self.output.derivative.as_ref().unwrap(),
+				&self.derivative_data.as_ref().unwrap(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
 			),
@@ -165,7 +171,7 @@ impl FunctionEntry {
 		}
 	}
 
-	/// Does the calculations and stores results in `self.output`
+	/// Does the calculations and stores results in `self`
 	pub fn calculate(
 		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
 	) {
@@ -174,7 +180,7 @@ impl FunctionEntry {
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
-			self.output.invalidate_integral();
+			self.invalidate_integral();
 		}
 
 		let mut partial_regen = false;
@@ -183,12 +189,12 @@ impl FunctionEntry {
 		self.min_x = *min_x;
 		self.max_x = *max_x;
 		if width_changed {
-			self.output.invalidate_back();
-			self.output.invalidate_derivative();
-		} else if min_max_changed && self.output.back.is_some() {
+			self.invalidate_back();
+			self.invalidate_derivative();
+		} else if min_max_changed && self.back_data.is_some() {
 			partial_regen = true;
 
-			let back_cache = self.output.back.as_ref().unwrap();
+			let back_cache = self.back_data.as_ref().unwrap();
 
 			let x_data: SteppedVector = back_cache
 				.iter()
@@ -206,9 +212,9 @@ impl FunctionEntry {
 				})
 				.collect();
 			// assert_eq!(back_data.len(), settings.plot_width + 1);
-			self.output.back = Some(back_data);
+			self.back_data = Some(back_data);
 
-			let derivative_cache = self.output.derivative.as_ref().unwrap();
+			let derivative_cache = self.derivative_data.as_ref().unwrap();
 			let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
 				.map(|x| {
 					if let Some(i) = x_data.get_index(x) {
@@ -221,56 +227,56 @@ impl FunctionEntry {
 
 			// assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
 
-			self.output.derivative = Some(new_derivative_data);
+			self.derivative_data = Some(new_derivative_data);
 		} else {
-			self.output.invalidate_back();
-			self.output.invalidate_derivative();
+			self.invalidate_back();
+			self.invalidate_derivative();
 		}
 
 		let threshold: f64 = resolution / 2.0;
 
 		if !partial_regen {
-			if self.output.back.is_none() {
+			if self.back_data.is_none() {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get(*x)))
 					.collect();
 				assert_eq!(data.len(), settings.plot_width + 1);
 
-				self.output.back = Some(data);
+				self.back_data = Some(data);
 			}
 
-			if self.output.derivative.is_none() {
+			if self.derivative_data.is_none() {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 					.collect();
 				assert_eq!(data.len(), settings.plot_width + 1);
-				self.output.derivative = Some(data);
+				self.derivative_data = Some(data);
 			}
 		}
 
 		if self.integral {
-			if self.output.integral.is_none() {
+			if self.integral_data.is_none() {
 				let (data, area) = self.integral_rectangles(
 					&settings.integral_min_x,
 					&settings.integral_max_x,
 					&settings.riemann_sum,
 					&settings.integral_num,
 				);
-				self.output.integral =
+				self.integral_data =
 					Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
 			}
 		} else {
-			self.output.integral = None;
+			self.invalidate_integral();
 		}
 
 		// Calculates extrema
-		if settings.do_extrema && (min_max_changed | self.output.extrema.is_none()) {
-			self.output.extrema = self.newtons_method_helper(&threshold, 1);
+		if settings.do_extrema && (min_max_changed | self.extrema_data.is_none()) {
+			self.extrema_data = self.newtons_method_helper(&threshold, 1);
 		}
 
 		// Calculates roots
-		if settings.do_roots && (min_max_changed | self.output.roots.is_none()) {
-			self.output.roots = self.newtons_method_helper(&threshold, 0);
+		if settings.do_roots && (min_max_changed | self.roots_data.is_none()) {
+			self.roots_data = self.newtons_method_helper(&threshold, 0);
 		}
 	}
 
@@ -283,14 +289,14 @@ impl FunctionEntry {
 			/ (settings.integral_num as f64);
 		// Plot back data
 		plot_ui.line(
-			vec_tuple_to_line(self.output.back.clone().unwrap())
+			vec_tuple_to_line(self.back_data.clone().unwrap())
 				.color(Color32::RED)
 				.name(func_str),
 		);
 
 		// Plot derivative data
 		if self.derivative {
-			if let Some(derivative_data) = self.output.derivative.clone() {
+			if let Some(derivative_data) = self.derivative_data.clone() {
 				plot_ui.line(
 					vec_tuple_to_line(derivative_data)
 						.color(Color32::GREEN)
@@ -301,9 +307,9 @@ impl FunctionEntry {
 
 		// Plot extrema points
 		if settings.do_extrema {
-			if let Some(extrema_data) = self.output.extrema.clone() {
+			if let Some(extrema_data) = &self.extrema_data {
 				plot_ui.points(
-					vec_tuple_to_points(extrema_data)
+					vec_tuple_to_points(extrema_data.clone())
 						.color(Color32::YELLOW)
 						.name("Extrema")
 						.radius(5.0), // Radius of points of Extrema
@@ -313,9 +319,9 @@ impl FunctionEntry {
 
 		// Plot roots points
 		if settings.do_roots {
-			if let Some(roots_data) = self.output.roots.clone() {
+			if let Some(roots_data) = &self.roots_data {
 				plot_ui.points(
-					vec_tuple_to_points(roots_data)
+					vec_tuple_to_points(roots_data.clone())
 						.color(Color32::LIGHT_BLUE)
 						.name("Root")
 						.radius(5.0), // Radius of points of Roots
@@ -324,9 +330,9 @@ impl FunctionEntry {
 		}
 
 		// Plot integral data
-		if let Some(integral_data) = self.output.integral.clone() {
+		if let Some(integral_data) = &self.integral_data {
 			plot_ui.bar_chart(
-				BarChart::new(integral_data.0)
+				BarChart::new(integral_data.clone().0)
 					.color(Color32::BLUE)
 					.width(step),
 			);
@@ -338,6 +344,23 @@ impl FunctionEntry {
 		}
 	}
 
+	pub fn invalidate_whole(&mut self) {
+		self.back_data = None;
+		self.integral_data = None;
+		self.derivative_data = None;
+		self.extrema_data = None;
+		self.roots_data = None;
+	}
+
+	/// Invalidate `back` data
+	pub fn invalidate_back(&mut self) { self.back_data = None; }
+
+	/// Invalidate Integral data
+	pub fn invalidate_integral(&mut self) { self.integral_data = None; }
+
+	/// Invalidate Derivative data
+	pub fn invalidate_derivative(&mut self) { self.derivative_data = None; }
+
 	/// Runs asserts to make sure everything is the expected value
 	#[cfg(test)]
 	pub fn tests(
@@ -348,8 +371,8 @@ impl FunctionEntry {
 			self.calculate(&min_x, &max_x, true, &settings);
 			let settings = settings;
 			let back_target = back_target;
-			assert!(self.output.back.is_some());
-			let back_data = self.output.back.as_ref().unwrap().clone();
+			assert!(self.back_data.is_some());
+			let back_data = self.back_data.as_ref().unwrap().clone();
 			assert_eq!(back_data.len(), settings.plot_width + 1);
 			let back_vec_tuple = back_data.to_tuple();
 			assert_eq!(back_vec_tuple, back_target);
@@ -357,17 +380,17 @@ impl FunctionEntry {
 			assert!(self.integral);
 			assert!(self.derivative);
 
-			assert_eq!(self.output.roots.is_some(), settings.do_roots);
-			assert_eq!(self.output.extrema.is_some(), settings.do_extrema);
-			assert!(self.output.derivative.is_some());
-			assert!(self.output.integral.is_some());
+			assert_eq!(self.roots_data.is_some(), settings.do_roots);
+			assert_eq!(self.extrema_data.is_some(), settings.do_extrema);
+			assert!(self.derivative_data.is_some());
+			assert!(self.integral_data.is_some());
 
 			assert_eq!(
-				self.output.derivative.as_ref().unwrap().to_tuple(),
+				self.derivative_data.as_ref().unwrap().to_tuple(),
 				derivative_target
 			);
 
-			assert_eq!(self.output.integral.clone().unwrap().1, area_target);
+			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
 		}
 	}
 }
