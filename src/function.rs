@@ -140,14 +140,14 @@ impl FunctionEntry {
 			0 => newtons_method_helper(
 				&threshold,
 				&range,
-				&self.output.back.to_owned().unwrap(),
+				&self.output.back.as_ref().unwrap(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
 				&threshold,
 				&range,
-				&self.output.derivative.to_owned().unwrap(),
+				&self.output.derivative.as_ref().unwrap(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
 			),
