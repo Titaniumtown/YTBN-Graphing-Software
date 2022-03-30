@@ -239,8 +239,9 @@ impl SerdeValueHelper {
 /// Rounds f64 to `n` decimal places
 pub fn decimal_round(x: f64, n: usize) -> f64 {
 	let large_number: f64 = 10.0_f64.powf(n as f64); // 10^n
-	(x * large_number).round() / large_number // round and devide in order to cut
-	                                      // off after the `n`th decimal place
+
+	// round and devide in order to cutoff after the `n`th decimal place
+	(x * large_number).round() / large_number
 }
 
 /// Helper that assists with using newton's method of finding roots, iterating
