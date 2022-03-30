@@ -20,3 +20,4 @@
 	- Syntax
 		- Parentheses (Done)
 		- Function names (Done)
+12. Turn Dynamic Iterator functions into traits
