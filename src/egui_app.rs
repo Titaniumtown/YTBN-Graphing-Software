@@ -340,6 +340,12 @@ impl MathApp {
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
 
+		#[cfg(threading)]
+		tracing::info!("Threading Feature Enabled");
+
+		#[cfg(not(threading))]
+		tracing::info!("Threading Feature Disabled");
+
 		tracing::info!(
 			"Integration name: {} Url: {:?}",
 			cc.integration_info.name,
