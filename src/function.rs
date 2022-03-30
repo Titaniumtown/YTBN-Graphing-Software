@@ -11,7 +11,7 @@ use egui::{
 use epaint::Color32;
 use std::fmt::{self, Debug};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(threading)]
 use rayon::iter::ParallelIterator;
 
 /// Represents the possible variations of Riemann Sums
@@ -94,6 +94,20 @@ impl FunctionEntry {
 		self.integral = integral;
 	}
 
+	fn get_sum_func(&self, sum: Riemann) -> FunctionHelper {
+		match sum {
+			Riemann::Left => {
+				FunctionHelper::new(|left_x: f64, _: f64| -> f64 { self.function.get(left_x) })
+			}
+			Riemann::Right => {
+				FunctionHelper::new(|_: f64, right_x: f64| -> f64 { self.function.get(right_x) })
+			}
+			Riemann::Middle => FunctionHelper::new(|left_x: f64, right_x: f64| -> f64 {
+				(self.function.get(left_x) + self.function.get(right_x)) / 2.0
+			}),
+		}
+	}
+
 	/// Creates and does the math for creating all the rectangles under the
 	/// graph
 	fn integral_rectangles(
@@ -107,6 +121,8 @@ impl FunctionEntry {
 
 		let step = (integral_min_x - integral_max_x).abs() / (*integral_num as f64);
 
+		let sum_func = self.get_sum_func(*sum);
+
 		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(*integral_num, &integral_min_x, &step))
 			.map(|x| {
 				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
@@ -117,18 +133,13 @@ impl FunctionEntry {
 					false => (x2, *x),
 				};
 
-				let y = match sum {
-					Riemann::Left => self.function.get(left_x),
-					Riemann::Right => self.function.get(right_x),
-					Riemann::Middle => {
-						(self.function.get(left_x) + self.function.get(right_x)) / 2.0
-					}
-				};
+				let y = sum_func.get(left_x, right_x);
 
 				(x + (step_offset / 2.0), y)
 			})
 			.filter(|(_, y)| !y.is_nan())
 			.collect();
+
 		let area = data2.iter().map(|(_, y)| y * step).sum();
 
 		(data2, area)

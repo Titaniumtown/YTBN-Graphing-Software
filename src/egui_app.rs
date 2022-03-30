@@ -13,7 +13,7 @@ use epi::Frame;
 use instant::Duration;
 use std::{collections::BTreeMap, io::Read, ops::BitXorAssign, str};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(threading)]
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
 
 // Stores data loaded from files
