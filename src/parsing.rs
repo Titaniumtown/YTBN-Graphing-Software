@@ -227,14 +227,17 @@ mod tests {
 			"log10(x)",
 			"xxxxx", // test variables side-by-side
 			"sin(x)",
-			"xsin(x)",
-			"sin(x)cos(x)",
-			"x/0",        // always returns NaN
-			"(x+1)(x-3)", // tests 2 parentheses in `)(` pattern
+			"xsin(x)",      // Tests `x{letter}` pattern
+			"sin(x)cos(x)", // Tests `){letter}` pattern
+			"x/0",          // always returns NaN
+			"(x+1)(x-3)",   // tests 2 parentheses in `)(` pattern
 			"(2x+1)x",
 			"(2x+1)pi",
 			"pi(2x+1)",
 			"pipipipipipix",
+			"e^sin(x)",
+			"E^sin(x)",
+			"e^x",
 		];
 
 		for func_str in functions.iter().cloned() {
@@ -253,7 +256,7 @@ mod tests {
 			"log10(x",      // unclosed bracket
 			"x^a",          // Invalid variable
 			"sin(cos(x)))", // extra bracket
-			"((())",
+			"((())",        // extra opening bracket
 			"0/0",
 		];
 
@@ -297,6 +300,7 @@ mod tests {
 			("pi10", "π*10"),
 			("emax(x)", "e*max(x)"),
 			("pisin(x)", "π*sin(x)"),
+			("e^sin(x)", "e^sin(x)"),
 		]);
 
 		for (key, value) in values {
