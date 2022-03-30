@@ -186,6 +186,8 @@ impl FunctionEntry {
 		let mut partial_regen = false;
 		let min_max_changed = (min_x != &self.min_x) | (max_x != &self.max_x);
 
+		let derivative_required = settings.do_extrema | self.derivative;
+
 		self.min_x = *min_x;
 		self.max_x = *max_x;
 		if width_changed {
@@ -214,20 +216,24 @@ impl FunctionEntry {
 			// assert_eq!(back_data.len(), settings.plot_width + 1);
 			self.back_data = Some(back_data);
 
-			let derivative_cache = self.derivative_data.as_ref().unwrap();
-			let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
-				.map(|x| {
-					if let Some(i) = x_data.get_index(x) {
-						derivative_cache[i]
-					} else {
-						Value::new(*x, self.function.get_derivative_1(*x))
-					}
-				})
-				.collect();
+			if derivative_required {
+				let derivative_cache = self.derivative_data.as_ref().unwrap();
+				let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
+					.map(|x| {
+						if let Some(i) = x_data.get_index(x) {
+							derivative_cache[i]
+						} else {
+							Value::new(*x, self.function.get_derivative_1(*x))
+						}
+					})
+					.collect();
 
-			// assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
+				// assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
 
-			self.derivative_data = Some(new_derivative_data);
+				self.derivative_data = Some(new_derivative_data);
+			} else {
+				self.derivative_data = None;
+			}
 		} else {
 			self.invalidate_back();
 			self.invalidate_derivative();
@@ -245,7 +251,7 @@ impl FunctionEntry {
 				self.back_data = Some(data);
 			}
 
-			if self.derivative_data.is_none() {
+			if derivative_required && self.derivative_data.is_none() {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 					.collect();
@@ -344,6 +350,7 @@ impl FunctionEntry {
 		}
 	}
 
+	/// Invalidate entire cache
 	pub fn invalidate_whole(&mut self) {
 		self.back_data = None;
 		self.integral_data = None;
@@ -391,6 +398,26 @@ impl FunctionEntry {
 			);
 
 			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
+		}
+
+		{
+			self.update("x^3", false, false);
+			assert!(!self.integral);
+			assert!(!self.derivative);
+
+			assert!(self.back_data.is_none());
+			assert!(self.integral_data.is_none());
+			assert!(self.roots_data.is_none());
+			assert!(self.extrema_data.is_none());
+			assert!(self.derivative_data.is_none());
+
+			self.calculate(&min_x, &max_x, true, &settings);
+
+			assert!(self.back_data.is_some());
+			assert!(self.integral_data.is_none());
+			assert!(self.roots_data.is_none());
+			assert!(self.extrema_data.is_none());
+			assert!(self.derivative_data.is_none());
 		}
 	}
 }
