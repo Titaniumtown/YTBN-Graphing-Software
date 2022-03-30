@@ -288,6 +288,7 @@ pub struct MathApp {
 	/// when side panel is minimized)
 	func_errors: Vec<Option<(usize, String)>>,
 
+	/// Stores whether or not an error is stored in `self.func_errors`
 	exists_error: bool,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it
@@ -703,9 +704,7 @@ impl epi::App for MathApp {
 						.filter(|ele| ele.is_some())
 						.map(|ele| ele.as_ref().unwrap())
 						.for_each(|ele| {
-							ui.heading(
-								format!("(Function #{}) {}\n", ele.0, ele.1),
-							);
+							ui.heading(format!("(Function #{}) {}\n", ele.0, ele.1));
 						})
 				});
 				return;
