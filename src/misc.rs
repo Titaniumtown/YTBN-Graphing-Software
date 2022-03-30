@@ -53,11 +53,10 @@ impl<'a> FunctionHelper<'a> {
 		}
 	}
 
+	#[cfg(not(threading))]
 	pub fn new(f: impl Fn(f64, f64) -> f64 + 'a) -> FunctionHelper<'a> {
 		FunctionHelper { f: Box::new(f) }
 	}
-
-	// pub fn get(&self, x: f64, x1: f64) -> f64 { (self.f.lock())(x, x1) }
 
 	#[cfg(threading)]
 	pub async fn get(&self, x: f64, x1: f64) -> f64 { (self.f.lock().await)(x, x1) }
