@@ -485,7 +485,7 @@ impl MathApp {
 							})
 							.clicked();
 
-						// Toggle showing the derivative (even though it's already calculated, this
+						// Toggle showing the derivative (even though it's already calculated this
 						// option just toggles if it's displayed or not)
 						derivative_toggle = ui
 							.add(Button::new("d/dx"))
