@@ -504,7 +504,8 @@ impl MathApp {
 						let hint = generate_hint(&self.func_strs[i]).unwrap_or_default();
 
 						let func_edit_focus = TextEdit::singleline(&mut self.func_strs[i])
-							.hint_text(&hint, true)
+							.hint_text(&hint)
+							.hint_forward(true)
 							.ui(ui)
 							.has_focus();
 
