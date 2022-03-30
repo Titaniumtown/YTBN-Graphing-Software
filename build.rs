@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::HashSet;
 use std::env;
 use std::fs::File;
@@ -23,7 +24,7 @@ fn generate_hashmap() {
 
 	write!(
 		&mut file,
-		"static COMPLETION_HASHMAP: phf::Map<&'static str, &'static str> = {}",
+		"static COMPLETION_HASHMAP: phf::Map<&'static str, HintEnum> = {}",
 		compile_hashmap().build()
 	)
 	.unwrap();
@@ -36,69 +37,70 @@ const SUPPORTED_FUNCTIONS: [&str; 22] = [
 	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
 ];
 
-const QUOTE: char = '"';
-fn compile_hashmap() -> phf_codegen::Map<String> {
-	let mut tuple_list: Vec<(String, String)> = Vec::new();
+const CONST: char = '"';
 
-	for entry in SUPPORTED_FUNCTIONS
+fn compile_hashmap() -> phf_codegen::Map<String> {
+	let functions_processed: Vec<String> = SUPPORTED_FUNCTIONS
 		.iter()
-		.map(|entry| format!("{}(", entry))
-		.collect::<Vec<String>>()
-	{
-		for i in 1..entry.len() {
-			let (first, last) = entry.split_at(i);
-			tuple_list.push((first.to_string(), last.to_string()));
+		.map(|e| e.to_string() + "(")
+		.collect();
+
+	let mut seen = HashSet::new();
+
+	let powerset = functions_processed
+		.into_iter()
+		.map(|func| func.chars().collect::<Vec<char>>())
+		.powerset()
+		.flatten()
+		.filter(|e| e.len() > 1)
+		.filter(|ele| {
+			if seen.contains(ele) {
+				return false;
+			} else {
+				seen.insert(ele.clone());
+				return true;
+			}
+		})
+		.collect::<Vec<Vec<char>>>();
+
+	let mut tuple_list_1: Vec<(String, String)> = Vec::new();
+
+	let mut seen_2: HashSet<(String, String)> = HashSet::new();
+	for ele in powerset {
+		for i in 1..ele.len() {
+			let string = ele.clone().into_iter().collect::<String>();
+			let (first, last) = string.split_at(i);
+			let data = (first.to_string(), last.to_string());
+			if seen_2.contains(&data) {
+				continue;
+			}
+			seen_2.insert(data.clone());
+			tuple_list_1.push(data)
 		}
 	}
 
-	let mut output: phf_codegen::Map<String> = phf_codegen::Map::new();
+	let keys: Vec<&String> = tuple_list_1.iter().map(|(a, _)| a).collect();
+	let mut output = phf_codegen::Map::new();
+	let mut seen_3: HashSet<String> = HashSet::new();
 
-	let key_list: Vec<String> = tuple_list.iter().map(|(key, _)| key.clone()).collect();
-
-	let mut seen = HashSet::new();
-	for (key, value) in tuple_list.clone() {
-		if seen.contains(&key) {
+	for (key, value) in tuple_list_1.iter() {
+		if seen_3.contains(&*key) {
 			continue;
 		}
 
-		seen.insert(key.clone());
-
-		let duplicate_num = key_list.iter().filter(|ele| **ele == key).count();
-		if 1 == duplicate_num {
-			output.entry(key, &(QUOTE.to_string() + &value + &QUOTE.to_string()));
-			continue;
-		}
-
-		let same_keys_merged: Vec<String> = tuple_list
-			.iter()
-			.filter(|(a, _)| **a == key)
-			.map(|(a, b)| a.clone() + b)
-			.collect();
-
-		let merged_key_value = key.clone() + &value;
-
-		let mut common_substr: Option<String> = None;
-		for same_key in same_keys_merged {
-			if let Some(common_substr_unwrapped) = common_substr {
-				common_substr = common_substring(&common_substr_unwrapped, &same_key);
-			} else {
-				common_substr = common_substring(&same_key, &merged_key_value)
-			}
-
-			if common_substr.is_none() {
-				break;
-			}
-		}
-
-		if let Some(common_substr_unwrapped) = common_substr {
-			if !common_substr_unwrapped.is_empty() {
-				output.entry(
-					key.clone(),
-					&(QUOTE.to_string()
-						+ &common_substr_unwrapped.replace(&key, "")
-						+ &QUOTE.to_string()),
-				);
-			}
+		seen_3.insert(key.clone());
+		if keys.iter().filter(|a| a == &&key).count() == 1 {
+			output.entry(
+				key.clone(),
+				&format!("HintEnum::Single({}{}{})", CONST, value, CONST),
+			);
+		} else {
+			let multi_data = tuple_list_1
+				.iter()
+				.filter(|(a, _)| a == key)
+				.map(|(_, b)| b)
+				.collect::<Vec<&String>>();
+			output.entry(key.clone(), &format!("HintEnum::Many(&{:?})", multi_data));
 		}
 	}
 

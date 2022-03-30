@@ -2,14 +2,12 @@ use crate::consts::*;
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
-use crate::suggestions::generate_hint;
+use crate::suggestions::auto_complete;
 use eframe::{egui, epi};
-use egui::epaint::text::cursor::{PCursor, RCursor};
 use egui::plot::Plot;
 use egui::{
-	text::CCursor, text_edit::CursorRange, Button, CentralPanel, Color32, ComboBox, Context,
-	FontData, FontDefinitions, FontFamily, Key, RichText, SidePanel, Slider, TextEdit,
-	TopBottomPanel, Vec2, Visuals, Widget, Window,
+	Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily, Key,
+	RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use epi::Frame;
 use instant::Duration;
@@ -503,40 +501,8 @@ impl MathApp {
 							.clicked();
 
 						// Contains the function string in a text box that the user can edit
-						let hint = generate_hint(&self.func_strs[i]).unwrap_or_default();
-
-						let te_id = ui.make_persistent_id("text_edit_ac".to_string());
-
-						let func_edit_focus = TextEdit::singleline(&mut self.func_strs[i])
-							.hint_text(&hint)
-							.hint_forward(true)
-							.id(te_id)
-							.ui(ui)
-							.has_focus();
-
-						// If in focus and right arrow key was pressed, apply hint
-						// TODO: change position of cursor
-						if func_edit_focus {
+						if function.auto_complete(ui, &mut self.func_strs[i]) {
 							self.text_boxes_focused = true;
-							if ui.input().key_down(Key::ArrowRight) {
-								self.func_strs[i] += &hint;
-								let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-								state.set_cursor_range(Some(CursorRange::one(
-									egui::epaint::text::cursor::Cursor {
-										ccursor: CCursor {
-											index: 0,
-											prefer_next_row: false,
-										},
-										rcursor: RCursor { row: 0, column: 0 },
-										pcursor: PCursor {
-											paragraph: 0,
-											offset: 10000,
-											prefer_next_row: false,
-										},
-									},
-								)));
-								TextEdit::store_state(ui.ctx(), te_id, state);
-							}
 						}
 					});
 

@@ -3,11 +3,16 @@
 use crate::egui_app::AppSettings;
 use crate::misc::*;
 use crate::parsing::BackingFunction;
-use eframe::{egui, epaint};
+use crate::suggestions::generate_hint;
+use eframe::{egui, epaint, epaint};
+use egui::{
+	epaint::text::cursor::Cursor, text::CCursor, text_edit::CursorRange, Key, TextEdit, Widget,
+};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
 	widgets::plot::Bar,
 };
+use epaint::text::cursor::{PCursor, RCursor};
 use epaint::Color32;
 use std::fmt::{self, Debug};
 
@@ -59,6 +64,8 @@ pub struct FunctionEntry {
 	derivative_data: Option<Vec<Value>>,
 	extrema_data: Option<Vec<Value>>,
 	roots_data: Option<Vec<Value>>,
+
+	auto_complete_i: Option<usize>,
 }
 
 impl Default for FunctionEntry {
@@ -76,6 +83,7 @@ impl Default for FunctionEntry {
 			derivative_data: None,
 			extrema_data: None,
 			roots_data: None,
+			auto_complete_i: None,
 		}
 	}
 }
@@ -106,6 +114,42 @@ impl FunctionEntry {
 				(self.function.get(left_x) + self.function.get(right_x)) / 2.0
 			}),
 		}
+	}
+
+	pub fn auto_complete(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
+		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
+
+		let hint = generate_hint(&string).unwrap_or_default();
+
+		let func_edit_focus = egui::TextEdit::singleline(string)
+			.hint_text(&hint)
+			.hint_forward(true)
+			.id(te_id)
+			.ui(ui)
+			.has_focus();
+
+		// If in focus and right arrow key was pressed, apply hint
+		if func_edit_focus {
+			if ui.input().key_down(Key::ArrowRight) {
+				*string = string.clone() + &hint;
+				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
+				state.set_cursor_range(Some(CursorRange::one(Cursor {
+					ccursor: CCursor {
+						index: 0,
+						prefer_next_row: false,
+					},
+					rcursor: RCursor { row: 0, column: 0 },
+					pcursor: PCursor {
+						paragraph: 0,
+						offset: 10000,
+						prefer_next_row: false,
+					},
+				})));
+				TextEdit::store_state(ui.ctx(), te_id, state);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/// Creates and does the math for creating all the rectangles under the

@@ -48,6 +48,7 @@ phf = "0.10.1"
 shadow-rs = "0.11.0"
 command-run = "1.1.1"
 phf_codegen = "0.10.0"
+itertools = "0.10.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = { version = "0.1.12" }
