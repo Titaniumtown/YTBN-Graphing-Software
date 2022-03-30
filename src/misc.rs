@@ -65,17 +65,6 @@ impl<'a> FunctionHelper<'a> {
 	pub fn get(&self, x: f64, x1: f64) -> f64 { (self.f)(x, x1) }
 }
 
-pub trait VecValueToTuple {
-	fn to_tuple(&self) -> Vec<(f64, f64)>;
-}
-
-impl VecValueToTuple for Vec<EguiValue>
-where
-	Self: IntoIterator,
-{
-	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
-}
-
 /// [`SteppedVector`] is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
@@ -184,12 +173,17 @@ pub trait EguiHelper {
 
 	/// Converts to `egui::plot::Points`
 	fn to_points(&self) -> Points;
+
+	/// Converts Vector of Values into vector of tuples
+	fn to_tuple(&self) -> Vec<(f64, f64)>;
 }
 
 impl EguiHelper for Vec<EguiValue> {
 	fn to_line(&self) -> Line { Line::new(Values::from_values(self.clone())) }
 
 	fn to_points(&self) -> Points { Points::new(Values::from_values(self.clone())) }
+
+	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
 }
 
 #[derive(PartialEq, Debug)]
