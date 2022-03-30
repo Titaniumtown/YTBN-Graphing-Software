@@ -350,9 +350,9 @@ impl MathApp {
 			"Integration name: {} Url: {:?}",
 			cc.integration_info.name,
 			if let Some(url) = &cc.integration_info.web_info {
-				url.location.url.clone()
+				&url.location.url
 			} else {
-				"N/A".to_owned()
+				"N/A"
 			}
 		);
 
