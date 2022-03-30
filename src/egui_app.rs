@@ -341,10 +341,10 @@ impl MathApp {
 		stop_loading();
 
 		#[cfg(threading)]
-		tracing::info!("Threading Feature Enabled");
+		tracing::info!("Threading: Enabled");
 
 		#[cfg(not(threading))]
-		tracing::info!("Threading Feature Disabled");
+		tracing::info!("Threading: Disabled");
 
 		tracing::info!(
 			"Integration name: {} Url: {:?}",
