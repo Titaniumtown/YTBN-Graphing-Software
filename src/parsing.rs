@@ -264,6 +264,7 @@ mod tests {
 			test_func_helper(func_str, false);
 		}
 	}
+
 	/// Helps with tests of [`process_func_str`]
 	#[cfg(test)]
 	fn test_process_helper(input: &str, expected: &str) {

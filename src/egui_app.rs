@@ -446,7 +446,6 @@ impl MathApp {
 					max_x_changed | min_x_changed | integral_num_changed | riemann_changed;
 
 				// Stores whether global config options changed
-				// TODO: only take into account integral settings if integral is enabled (maybe)
 				let configs_changed = max_x_changed
 					| min_x_changed | integral_num_changed
 					| roots_toggled | extrema_toggled
