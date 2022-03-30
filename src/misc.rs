@@ -177,13 +177,21 @@ impl From<Vec<f64>> for SteppedVector {
 	}
 }
 
-/// Converts Vector of egui `Value` into `Points`
-pub fn vec_tuple_to_points(data: Vec<EguiValue>) -> Points {
-	Points::new(Values::from_values(data))
+/// Implements traits that are useful when dealing with Vectors of egui's
+/// `Value`
+pub trait EguiHelper {
+	/// Converts to `egui::plot::Line`
+	fn to_line(&self) -> Line;
+
+	/// Converts to `egui::plot::Points`
+	fn to_points(&self) -> Points;
 }
 
-/// Converts Vector of egui `Value` into `Line`
-pub fn vec_tuple_to_line(data: Vec<EguiValue>) -> Line { Line::new(Values::from_values(data)) }
+impl EguiHelper for Vec<EguiValue> {
+	fn to_line(&self) -> Line { Line::new(Values::from_values(self.clone())) }
+
+	fn to_points(&self) -> Points { Points::new(Values::from_values(self.clone())) }
+}
 
 #[derive(PartialEq, Debug)]
 pub struct JsonFileOutput {
@@ -298,7 +306,7 @@ fn newtons_method(
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty
 /// representation of the Vector
-pub fn option_vec_printer<T: ToString>(data: Vec<Option<T>>) -> String
+pub fn option_vec_printer<T: ToString>(data: &Vec<Option<T>>) -> String
 where
 	T: ToString,
 	T: Clone,
@@ -424,7 +432,7 @@ mod tests {
 		]);
 
 		for (key, value) in values_strings {
-			assert_eq!(option_vec_printer(key), value);
+			assert_eq!(option_vec_printer(&key), value);
 		}
 
 		let values_nums = HashMap::from([
@@ -435,7 +443,7 @@ mod tests {
 		]);
 
 		for (key, value) in values_nums {
-			assert_eq!(option_vec_printer(key), value);
+			assert_eq!(option_vec_printer(&key), value);
 		}
 	}
 

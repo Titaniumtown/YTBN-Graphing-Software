@@ -305,17 +305,23 @@ impl FunctionEntry {
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
 			/ (settings.integral_num as f64);
 		// Plot back data
-		plot_ui.line(
-			vec_tuple_to_line(self.back_data.clone().unwrap())
-				.color(Color32::RED)
-				.name(func_str),
-		);
+		if let Some(back_data) = &self.back_data {
+			plot_ui.line(
+				back_data
+					.clone()
+					.to_line()
+					.color(Color32::RED)
+					.name(func_str),
+			);
+		}
 
 		// Plot derivative data
 		if self.derivative {
-			if let Some(derivative_data) = self.derivative_data.clone() {
+			if let Some(derivative_data) = &self.derivative_data {
 				plot_ui.line(
-					vec_tuple_to_line(derivative_data)
+					derivative_data
+						.clone()
+						.to_line()
 						.color(Color32::GREEN)
 						.name(derivative_str),
 				);
@@ -326,7 +332,9 @@ impl FunctionEntry {
 		if settings.do_extrema {
 			if let Some(extrema_data) = &self.extrema_data {
 				plot_ui.points(
-					vec_tuple_to_points(extrema_data.clone())
+					extrema_data
+						.clone()
+						.to_points()
 						.color(Color32::YELLOW)
 						.name("Extrema")
 						.radius(5.0), // Radius of points of Extrema
@@ -338,7 +346,9 @@ impl FunctionEntry {
 		if settings.do_roots {
 			if let Some(roots_data) = &self.roots_data {
 				plot_ui.points(
-					vec_tuple_to_points(roots_data.clone())
+					roots_data
+						.clone()
+						.to_points()
 						.color(Color32::LIGHT_BLUE)
 						.name("Root")
 						.radius(5.0), // Radius of points of Roots
@@ -349,7 +359,7 @@ impl FunctionEntry {
 		// Plot integral data
 		if let Some(integral_data) = &self.integral_data {
 			plot_ui.bar_chart(
-				BarChart::new(integral_data.clone().0)
+				BarChart::new(integral_data.0.clone())
 					.color(Color32::BLUE)
 					.width(step),
 			);

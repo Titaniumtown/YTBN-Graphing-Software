@@ -641,7 +641,7 @@ impl epi::App for MathApp {
 				// Display Area and time of last frame
 				ui.label(format!(
 					"Area: {} Took: {:?}",
-					option_vec_printer(self.last_info.0.clone()),
+					option_vec_printer(&self.last_info.0),
 					self.last_info.1
 				));
 			});
