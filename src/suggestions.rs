@@ -173,6 +173,7 @@ pub fn get_completion(key: String) -> Option<HintEnum<'static>> {
 	}
 }
 
+/*
 #[cfg(test)]
 mod tests {
 	use std::collections::HashMap;
@@ -278,3 +279,4 @@ mod tests {
 	}
 	*/
 }
+*/
