@@ -15,9 +15,5 @@
 8. Fix integral display
 9. Look into other, better methods of compression that would be faster
 10. Better handling of panics and errors to display to the user
-11. Hints for functions
-	- Random default functions for demo purposes
-	- Syntax
-		- Parentheses (Done)
-		- Function names (Done)
-12. Turn Dynamic Iterator functions into traits
+11. Turn Dynamic Iterator functions into traits
+12. __Update tests__
