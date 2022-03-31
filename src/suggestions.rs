@@ -113,6 +113,8 @@ mod tests {
 			("si", HintEnum::Many(&["gnum(", "n(", "nh("])),
 			("log", HintEnum::Many(&["2(", "10("])),
 			("cos", HintEnum::Many(&["(", "h("])),
+			("sin(", HintEnum::Single(")")),
+			("sqrt", HintEnum::Single("(")),
 		]);
 
 		for (key, value) in values {
