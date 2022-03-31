@@ -368,7 +368,7 @@ impl FunctionEntry {
 					}
 				})
 				.collect();
-			// assert_eq!(back_data.len(), settings.plot_width + 1);
+			debug_assert_eq!(back_data.len(), settings.plot_width + 1);
 			self.back_data = Some(back_data);
 
 			if derivative_required {
@@ -383,7 +383,7 @@ impl FunctionEntry {
 					})
 					.collect();
 
-				// assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
+				debug_assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
 
 				self.derivative_data = Some(new_derivative_data);
 			} else {
@@ -401,7 +401,7 @@ impl FunctionEntry {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get(*x)))
 					.collect();
-				assert_eq!(data.len(), settings.plot_width + 1);
+				debug_assert_eq!(data.len(), settings.plot_width + 1);
 
 				self.back_data = Some(data);
 			}
@@ -410,7 +410,7 @@ impl FunctionEntry {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 					.collect();
-				assert_eq!(data.len(), settings.plot_width + 1);
+				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.derivative_data = Some(data);
 			}
 		}

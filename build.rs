@@ -24,6 +24,13 @@ fn main() {
 fn generate_hashmap() {
 	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 	let mut file = BufWriter::new(File::create(&path).unwrap());
+	let max_len: usize = SUPPORTED_FUNCTIONS
+		.to_vec()
+		.iter()
+		.map(|func| func.len())
+		.max()
+		.unwrap();
+
 	let string_hashmap = compile_hashmap(
 		SUPPORTED_FUNCTIONS
 			.to_vec()
@@ -45,6 +52,8 @@ fn generate_hashmap() {
 	)
 	.unwrap();
 	writeln!(&mut file, ";").unwrap();
+
+	write!(&mut file, "const MAX_FUNC_LEN: usize = {};", max_len).unwrap();
 }
 
 include!(concat!(
