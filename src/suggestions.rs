@@ -111,11 +111,13 @@ mod tests {
 		let values = HashMap::from([
 			("", HintEnum::Single("x^2")),
 			("si", HintEnum::Many(&["gnum(", "n(", "nh("])),
+			("log", HintEnum::Many(&["2(", "10("])),
+			("cos", HintEnum::Many(&["(", "h("])),
 		]);
 
 		for (key, value) in values {
 			println!("{} + {:?}", key, value);
-			assert_eq!(generate_hint(key.to_string()), value.to_owned());
+			assert_eq!(generate_hint(key.to_string()), value);
 		}
 	}
 }
