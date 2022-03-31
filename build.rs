@@ -1,12 +1,12 @@
-use itertools::Itertools;
-use std::collections::HashSet;
 use std::env;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
-/// Should build.rs generate the autocomplete hashmap to codegen.rs?
-const DO_HASHMAP_GEN: bool = false;
+const SUPPORTED_FUNCTIONS: [&str; 22] = [
+	"abs", "signum", "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "floor",
+	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
+];
 
 fn main() {
 	// rebuild if new commit or contents of `assets` folder changed
@@ -18,96 +18,36 @@ fn main() {
 		.run();
 	shadow_rs::new().unwrap();
 
-	if DO_HASHMAP_GEN {
-		generate_hashmap();
-	}
+	generate_hashmap();
 }
 
 fn generate_hashmap() {
 	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 	let mut file = BufWriter::new(File::create(&path).unwrap());
+	let string_hashmap = compile_hashmap(
+		SUPPORTED_FUNCTIONS
+			.to_vec()
+			.iter()
+			.map(|a| a.to_string())
+			.collect(),
+	);
+
+	let mut hashmap = phf_codegen::Map::new();
+
+	for (key, value) in string_hashmap.iter() {
+		hashmap.entry(key, value);
+	}
 
 	write!(
 		&mut file,
 		"static COMPLETION_HASHMAP: phf::Map<&'static str, HintEnum> = {}",
-		compile_hashmap().build()
+		hashmap.build()
 	)
 	.unwrap();
 	writeln!(&mut file, ";").unwrap();
 }
 
-/// List of supported functions from exmex
-const SUPPORTED_FUNCTIONS: [&str; 22] = [
-	"abs", "signum", "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "floor",
-	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
-];
-
-const QUOTE: char = '"';
-
-fn compile_hashmap() -> phf_codegen::Map<String> {
-	let functions_processed: Vec<String> = SUPPORTED_FUNCTIONS
-		.iter()
-		.map(|e| e.to_string() + "(")
-		.collect();
-
-	let mut seen = HashSet::new();
-
-	let powerset = functions_processed
-		.into_iter()
-		.map(|func| func.chars().collect::<Vec<char>>())
-		.powerset()
-		.flatten()
-		.filter(|e| e.len() > 1)
-		.filter(|ele| {
-			if seen.contains(ele) {
-				false
-			} else {
-				seen.insert(ele.clone());
-				true
-			}
-		})
-		.collect::<Vec<Vec<char>>>();
-
-	let mut tuple_list_1: Vec<(String, String)> = Vec::new();
-
-	let mut seen_2: HashSet<(String, String)> = HashSet::new();
-	for ele in powerset {
-		for i in 1..ele.len() {
-			let string = ele.clone().into_iter().collect::<String>();
-			let (first, last) = string.split_at(i);
-			let data = (first.to_string(), last.to_string());
-			if seen_2.contains(&data) {
-				continue;
-			}
-			seen_2.insert(data.clone());
-			tuple_list_1.push(data)
-		}
-	}
-
-	let keys: Vec<&String> = tuple_list_1.iter().map(|(a, _)| a).collect();
-	let mut output = phf_codegen::Map::new();
-	let mut seen_3: HashSet<String> = HashSet::new();
-
-	for (key, value) in tuple_list_1.iter() {
-		if seen_3.contains(&*key) {
-			continue;
-		}
-
-		seen_3.insert(key.clone());
-		if keys.iter().filter(|a| a == &&key).count() == 1 {
-			output.entry(
-				key.clone(),
-				&format!("HintEnum::Single({}{}{})", QUOTE, value, QUOTE),
-			);
-		} else {
-			let multi_data = tuple_list_1
-				.iter()
-				.filter(|(a, _)| a == key)
-				.map(|(_, b)| b)
-				.collect::<Vec<&String>>();
-			output.entry(key.clone(), &format!("HintEnum::Many(&{:?})", multi_data));
-		}
-	}
-
-	output
-}
+include!(concat!(
+	env!("CARGO_MANIFEST_DIR"),
+	"/src/hashmap_helper.rs"
+));
