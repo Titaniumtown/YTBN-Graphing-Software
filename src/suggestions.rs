@@ -52,7 +52,7 @@ impl ToString for HintEnum<'static> {
 				.iter()
 				.map(|a| a.to_string())
 				.collect::<String>()
-				.to_string(),
+				,
 			HintEnum::None => String::new(),
 		}
 	}
@@ -196,10 +196,7 @@ pub fn get_completion(key: String) -> Option<HintEnum<'static>> {
 		return None;
 	}
 
-	match COMPLETION_HASHMAP.get(&key) {
-		Some(data_x) => Some(data_x.clone()),
-		None => None,
-	}
+	COMPLETION_HASHMAP.get(&key).cloned()
 }
 
 /*

@@ -33,7 +33,7 @@ fn generate_hashmap() {
 		compile_hashmap().build()
 	)
 	.unwrap();
-	write!(&mut file, ";\n").unwrap();
+	writeln!(&mut file, ";").unwrap();
 }
 
 /// List of supported functions from exmex
@@ -60,10 +60,10 @@ fn compile_hashmap() -> phf_codegen::Map<String> {
 		.filter(|e| e.len() > 1)
 		.filter(|ele| {
 			if seen.contains(ele) {
-				return false;
+				false
 			} else {
 				seen.insert(ele.clone());
-				return true;
+				true
 			}
 		})
 		.collect::<Vec<Vec<char>>>();

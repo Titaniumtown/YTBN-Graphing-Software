@@ -260,7 +260,7 @@ pub fn newtons_method_helper(
 		.filter(|(prev, curr)| !prev.y.is_nan() && !curr.y.is_nan())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
 		.map(|(prev, _)| prev.x)
-		.map(|start_x| newtons_method(f, f_1, &start_x, &range, &threshold).unwrap_or(f64::NAN))
+		.map(|start_x| newtons_method(f, f_1, &start_x, range, threshold).unwrap_or(f64::NAN))
 		.filter(|x| !x.is_nan())
 		.collect()
 }

@@ -224,7 +224,7 @@ impl FunctionEntry {
 				});
 
 				if apply_key | clicked {
-					*string = string.clone() + &selections[self.autocomplete.i];
+					*string = string.clone() + selections[self.autocomplete.i];
 					push_cursor = true;
 				} else {
 					ui.memory().open_popup(popup_id);
@@ -249,7 +249,7 @@ impl FunctionEntry {
 				TextEdit::store_state(ui.ctx(), te_id, state);
 			}
 		}
-		return func_edit_focus;
+		func_edit_focus
 	}
 
 	/// Creates and does the math for creating all the rectangles under the
@@ -267,7 +267,7 @@ impl FunctionEntry {
 
 		let sum_func = self.get_sum_func(*sum);
 
-		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(*integral_num, &integral_min_x, &step))
+		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(*integral_num, integral_min_x, &step))
 			.map(|x| {
 				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
 				let x2: f64 = x + step_offset;
@@ -299,16 +299,16 @@ impl FunctionEntry {
 		let range = self.min_x..self.max_x;
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
-				&threshold,
+				threshold,
 				&range,
-				&self.back_data.as_ref().unwrap(),
+				self.back_data.as_ref().unwrap(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
-				&threshold,
+				threshold,
 				&range,
-				&self.derivative_data.as_ref().unwrap(),
+				self.derivative_data.as_ref().unwrap(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
 			),
@@ -331,7 +331,7 @@ impl FunctionEntry {
 		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
 	) {
 		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter = resolution_helper(&settings.plot_width + 1, &min_x, &resolution);
+		let resolution_iter = resolution_helper(&settings.plot_width + 1, min_x, &resolution);
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
