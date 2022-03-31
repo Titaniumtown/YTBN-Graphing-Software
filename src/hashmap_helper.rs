@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+/// Generates hashmap (well really a vector of tuple of strings that are then
+/// turned into a hashmap by phf)
 #[allow(dead_code)]
 pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 	let start = std::time::Instant::now();
@@ -42,6 +44,7 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 	output
 }
 
+/// Returns a vector of all possible splitting combinations of a strings
 #[allow(dead_code)]
 fn all_possible_splits(
 	func: String, seen: &mut HashSet<(String, String)>,
