@@ -604,7 +604,6 @@ mod tests {
 			do_extrema: false,
 			do_roots: false,
 			plot_width: pixel_width,
-			..crate::egui_app::AppSettings::default()
 		}
 	}
 

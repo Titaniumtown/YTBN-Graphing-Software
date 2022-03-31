@@ -5,14 +5,12 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 	let start = std::time::Instant::now();
 	println!("compile_hashmap");
 
-	let functions_processed: Vec<String> = data.iter().map(|e| e.to_string() + "(").collect();
-
 	let mut seen = HashSet::new();
 
-	let tuple_list_1: Vec<(String, String)> = functions_processed
-		.into_iter()
-		.map(|func| all_possible_splits(func, &mut seen))
-		.flatten()
+	let tuple_list_1: Vec<(String, String)> = data
+		.iter()
+		.map(|e| e.to_string() + "(")
+		.flat_map(|func| all_possible_splits(func, &mut seen))
 		.collect();
 
 	let keys: Vec<&String> = tuple_list_1.iter().map(|(a, _)| a).collect();
@@ -48,22 +46,20 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 fn all_possible_splits(
 	func: String, seen: &mut HashSet<(String, String)>,
 ) -> Vec<(String, String)> {
-	return (1..func.len())
+	(1..func.len())
 		.map(|i| {
 			let (first, last) = func.split_at(i);
-			return (first.to_string(), last.to_string());
+			(first.to_string(), last.to_string())
 		})
-		.map(|(first, last)| {
+		.flat_map(|(first, last)| {
 			if seen.contains(&(first.clone(), last.clone())) {
 				return None;
 			}
 			seen.insert((first.to_string(), last.to_string()));
 
-			return Some((first.to_string(), last.to_string()));
+			Some((first, last))
 		})
-		.filter(|a| a.is_some())
-		.map(|a| a.unwrap())
-		.collect::<Vec<(String, String)>>();
+		.collect::<Vec<(String, String)>>()
 }
 
 #[cfg(test)]

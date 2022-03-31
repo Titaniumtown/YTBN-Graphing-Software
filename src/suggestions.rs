@@ -64,12 +64,7 @@ impl HintEnum<'static> {
 		}
 	}
 
-	pub fn is_multi(&self) -> bool {
-		match self {
-			HintEnum::Many(_) => true,
-			_ => false,
-		}
-	}
+	pub fn is_multi(&self) -> bool { matches!(self, HintEnum::Many(_)) }
 
 	pub fn ensure_many(&self) -> &[&str] {
 		match self {
@@ -77,12 +72,7 @@ impl HintEnum<'static> {
 			_ => panic!("ensure_many called on non-Many value"),
 		}
 	}
-	pub fn is_some(&self) -> bool {
-		match self {
-			HintEnum::None => false,
-			_ => true,
-		}
-	}
+	pub fn is_some(&self) -> bool { !matches!(self, HintEnum::None) }
 
 	pub fn is_none(&self) -> bool { !self.is_some() }
 

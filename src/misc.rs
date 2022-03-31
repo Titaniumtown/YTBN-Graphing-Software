@@ -6,7 +6,7 @@ use serde_json::Value as JsonValue;
 use rayon::prelude::*;
 
 #[cfg(not(threading))]
-pub fn dyn_iter<'a, T>(input: &'a Vec<T>) -> impl Iterator<Item = &'a T>
+pub fn dyn_iter<'a, T>(input: &'a [T]) -> impl Iterator<Item = &'a T>
 where
 	&'a [T]: IntoIterator,
 {
@@ -22,7 +22,7 @@ where
 }
 
 #[cfg(not(threading))]
-pub fn dyn_mut_iter<'a, T>(input: &'a mut Vec<T>) -> impl Iterator<Item = &'a mut T>
+pub fn dyn_mut_iter<'a, T>(input: &'a mut [T]) -> impl Iterator<Item = &'a mut T>
 where
 	&'a mut [T]: IntoIterator,
 {
@@ -252,7 +252,7 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
-	threshold: &f64, range: &std::ops::Range<f64>, data: &Vec<EguiValue>, f: &dyn Fn(f64) -> f64,
+	threshold: &f64, range: &std::ops::Range<f64>, data: &[EguiValue], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	data.iter()
@@ -277,7 +277,7 @@ fn newtons_method(
 	let mut x2: f64;
 	let mut fail: bool = false;
 	loop {
-		x2 = &x1 - (f(x1) / f_1(x1));
+		x2 = x1 - (f(x1) / f_1(x1));
 		if !range.contains(&x2) {
 			fail = true;
 			break;
