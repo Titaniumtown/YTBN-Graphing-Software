@@ -1,4 +1,5 @@
 #![feature(const_mut_refs)]
+#![feature(let_chains)]
 
 #[macro_use]
 extern crate static_assertions;

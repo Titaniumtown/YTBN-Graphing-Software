@@ -560,6 +560,9 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
+		// if text boxes aren't in focus, allow H keybind to toggle side panel.
+		// this is behind this check as if it wasn't, it would trigger if the user
+		// presses the h key in a text box as well
 		if !self.text_boxes_focused {
 			self.show_side_panel
 				.bitxor_assign(ctx.input().key_down(Key::H));

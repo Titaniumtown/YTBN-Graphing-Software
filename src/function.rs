@@ -36,6 +36,37 @@ lazy_static::lazy_static! {
 	pub static ref DEFAULT_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::default();
 }
 
+#[derive(Clone)]
+struct AutoComplete {
+	pub i: usize,
+	pub hint: HintEnum<'static>,
+	pub func_str: Option<String>,
+	pub changed: bool,
+}
+
+impl Default for AutoComplete {
+	fn default() -> AutoComplete {
+		AutoComplete {
+			i: 0,
+			hint: HintEnum::None,
+			func_str: None,
+			changed: true,
+		}
+	}
+}
+
+impl AutoComplete {
+	fn changed(&mut self, string: String) {
+		if self.func_str != Some(string.clone()) {
+			self.changed = true;
+			self.func_str = Some(string.clone());
+			self.hint = generate_hint(string);
+		} else {
+			self.changed = false;
+		}
+	}
+}
+
 /// `FunctionEntry` is a function that can calculate values, integrals,
 /// derivatives, etc etc
 #[derive(Clone)]
@@ -65,7 +96,7 @@ pub struct FunctionEntry {
 	extrema_data: Option<Vec<Value>>,
 	roots_data: Option<Vec<Value>>,
 
-	auto_complete_i: usize,
+	autocomplete: AutoComplete,
 }
 
 impl Default for FunctionEntry {
@@ -83,7 +114,7 @@ impl Default for FunctionEntry {
 			derivative_data: None,
 			extrema_data: None,
 			roots_data: None,
-			auto_complete_i: 0,
+			autocomplete: AutoComplete::default(),
 		}
 	}
 }
@@ -116,18 +147,32 @@ impl FunctionEntry {
 		}
 	}
 
-	/// Returns whether or not the hint was applied
+	/// Creates and manages text box and autocompletion of function input
+	/// Returns whether or not the function text box is in focus
 	pub fn auto_complete(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
+		// Put here so these key presses don't interact with other elements
+		let consumables_pressed = ui
+			.input_mut()
+			.consume_key(egui::Modifiers::NONE, Key::Enter)
+			| ui.input_mut().consume_key(egui::Modifiers::NONE, Key::Tab);
+
 		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
 
-		let hint = generate_hint(string.clone());
+		// update self.autocomplete
+		self.autocomplete.changed(string.clone());
 
-		let mut func_edit = egui::TextEdit::singleline(string).hint_forward(true);
+		let mut func_edit = egui::TextEdit::singleline(string)
+			.hint_forward(true)
+			.lock_focus(true);
 
-		let hint_text = hint.get_single().unwrap_or_default();
-		if !hint_text.is_empty() {
+		if self.autocomplete.hint.is_none() {
+			func_edit.id(te_id).ui(ui);
+			return false;
+		}
+
+		if let Some(single_hint) = self.autocomplete.hint.get_single() {
 			let func_edit_2 = func_edit;
-			func_edit = func_edit_2.hint_text(&hint_text);
+			func_edit = func_edit_2.hint_text(&single_hint);
 		}
 
 		let re = func_edit.id(te_id).ui(ui);
@@ -137,61 +182,56 @@ impl FunctionEntry {
 		// If in focus and right arrow key was pressed, apply hint
 		if func_edit_focus {
 			let mut push_cursor: bool = false;
-			let right_arrow = ui.input().key_pressed(Key::ArrowRight);
+			let apply_key = ui.input().key_pressed(Key::ArrowRight) | consumables_pressed;
 
-			if !hint_text.is_empty() && right_arrow {
+			if apply_key && let Some(single_hint) = self.autocomplete.hint.get_single() {
 				push_cursor = true;
-				*string = string.clone() + &hint_text;
-			} else if hint.is_multi() {
-				let selections = match hint {
-					HintEnum::Many(selections) => selections,
-					_ => unimplemented!(),
-				};
+				*string = string.clone() + &single_hint;
+			} else if self.autocomplete.hint.is_multi() {
+				let selections = self.autocomplete.hint.ensure_many();
 
 				let max_i = selections.len() as i16 - 1;
 
-				let mut i = self.auto_complete_i as i16;
+				let mut i = self.autocomplete.i as i16;
 
 				if ui.input().key_pressed(Key::ArrowDown) {
-					if i + 1 > max_i {
+					i += 1;
+					if i > max_i {
 						i = 0;
-					} else {
-						i += 1;
 					}
 				} else if ui.input().key_pressed(Key::ArrowUp) {
-					if 0 > i - 1 {
-						i = max_i;
-					} else {
-						i -= 1;
+					i -= 1;
+					if 0 > i {
+						i = max_i
 					}
 				}
 
-				self.auto_complete_i = i as usize;
+				self.autocomplete.i = i as usize;
 
 				let popup_id = ui.make_persistent_id("autocomplete_popup");
 
 				let mut clicked = false;
 				egui::popup_below_widget(ui, popup_id, &re, |ui| {
-					re.request_focus();
 					for (i, candidate) in selections.iter().enumerate() {
 						if ui
-							.selectable_label(i == self.auto_complete_i, *candidate)
+							.selectable_label(i == self.autocomplete.i, *candidate)
 							.clicked()
 						{
 							clicked = true;
-							self.auto_complete_i = i;
+							self.autocomplete.i = i;
 						}
 					}
 				});
 
-				if right_arrow | clicked {
-					*string = string.clone() + &selections[self.auto_complete_i];
+				if apply_key | clicked {
+					*string = string.clone() + &selections[self.autocomplete.i];
 					push_cursor = true;
 				} else {
 					ui.memory().open_popup(popup_id);
 				}
 			}
 
+			// Push cursor to end if needed
 			if push_cursor {
 				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
 				state.set_cursor_range(Some(CursorRange::one(Cursor {
@@ -209,7 +249,6 @@ impl FunctionEntry {
 				TextEdit::store_state(ui.ctx(), te_id, state);
 			}
 		}
-
 		return func_edit_focus;
 	}
 

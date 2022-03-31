@@ -5,6 +5,9 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
+/// Should build.rs generate the autocomplete hashmap to codegen.rs?
+const DO_HASHMAP_GEN: bool = false;
+
 fn main() {
 	// rebuild if new commit or contents of `assets` folder changed
 	println!("cargo:rerun-if-changed=.git/logs/HEAD");
@@ -15,7 +18,9 @@ fn main() {
 		.run();
 	shadow_rs::new().unwrap();
 
-	// generate_hashmap();
+	if DO_HASHMAP_GEN {
+		generate_hashmap();
+	}
 }
 
 fn generate_hashmap() {

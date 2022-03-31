@@ -1,5 +1,5 @@
-#![allow(clippy::unused_unit)] // Fixes clippy keep complaining about wasm_bindgen
 #![feature(const_mut_refs)]
+#![feature(let_chains)]
 
 #[macro_use]
 extern crate static_assertions;
