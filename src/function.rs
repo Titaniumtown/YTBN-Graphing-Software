@@ -151,10 +151,10 @@ impl FunctionEntry {
 	/// Returns whether or not the function text box is in focus
 	pub fn auto_complete(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
 		// Put here so these key presses don't interact with other elements
-		let consumables_pressed = ui
+		let enter_pressed = ui
 			.input_mut()
-			.consume_key(egui::Modifiers::NONE, Key::Enter)
-			| ui.input_mut().consume_key(egui::Modifiers::NONE, Key::Tab);
+			.consume_key(egui::Modifiers::NONE, Key::Enter);
+		let tab_pressed = ui.input_mut().consume_key(egui::Modifiers::NONE, Key::Tab);
 
 		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
 
@@ -182,7 +182,7 @@ impl FunctionEntry {
 		// If in focus and right arrow key was pressed, apply hint
 		if func_edit_focus {
 			let mut push_cursor: bool = false;
-			let apply_key = ui.input().key_pressed(Key::ArrowRight) | consumables_pressed;
+			let apply_key = ui.input().key_pressed(Key::ArrowRight) | enter_pressed | tab_pressed;
 
 			if apply_key && let Some(single_hint) = self.autocomplete.hint.get_single() {
 				push_cursor = true;
