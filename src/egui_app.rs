@@ -2,7 +2,6 @@ use crate::consts::*;
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use crate::parsing::{process_func_str, test_func};
-use crate::suggestions::auto_complete;
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{

@@ -3,8 +3,8 @@
 use crate::egui_app::AppSettings;
 use crate::misc::*;
 use crate::parsing::BackingFunction;
-use crate::suggestions::generate_hint;
-use eframe::{egui, epaint, epaint};
+use crate::suggestions::{generate_hint, HintEnum};
+use eframe::{egui, epaint};
 use egui::{
 	epaint::text::cursor::Cursor, text::CCursor, text_edit::CursorRange, Key, TextEdit, Widget,
 };
@@ -65,7 +65,7 @@ pub struct FunctionEntry {
 	extrema_data: Option<Vec<Value>>,
 	roots_data: Option<Vec<Value>>,
 
-	auto_complete_i: Option<usize>,
+	auto_complete_i: usize,
 }
 
 impl Default for FunctionEntry {
@@ -83,7 +83,7 @@ impl Default for FunctionEntry {
 			derivative_data: None,
 			extrema_data: None,
 			roots_data: None,
-			auto_complete_i: None,
+			auto_complete_i: 0,
 		}
 	}
 }
@@ -116,22 +116,83 @@ impl FunctionEntry {
 		}
 	}
 
+	/// Returns whether or not the hint was applied
 	pub fn auto_complete(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
 		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
 
-		let hint = generate_hint(&string).unwrap_or_default();
+		let hint = generate_hint(string.clone());
 
-		let func_edit_focus = egui::TextEdit::singleline(string)
-			.hint_text(&hint)
-			.hint_forward(true)
-			.id(te_id)
-			.ui(ui)
-			.has_focus();
+		let mut func_edit = egui::TextEdit::singleline(string).hint_forward(true);
+
+		let hint_text = hint.get_single().unwrap_or_default();
+		if !hint_text.is_empty() {
+			let func_edit_2 = func_edit;
+			func_edit = func_edit_2.hint_text(&hint_text);
+		}
+
+		let re = func_edit.id(te_id).ui(ui);
+
+		let func_edit_focus = re.has_focus();
 
 		// If in focus and right arrow key was pressed, apply hint
 		if func_edit_focus {
-			if ui.input().key_down(Key::ArrowRight) {
-				*string = string.clone() + &hint;
+			let mut push_cursor: bool = false;
+			let right_arrow = ui.input().key_pressed(Key::ArrowRight);
+
+			if !hint_text.is_empty() && right_arrow {
+				push_cursor = true;
+				*string = string.clone() + &hint_text;
+			} else if hint.is_multi() {
+				let selections = match hint {
+					HintEnum::Many(selections) => selections,
+					_ => unimplemented!(),
+				};
+
+				let max_i = selections.len() as i16 - 1;
+
+				let mut i = self.auto_complete_i as i16;
+
+				if ui.input().key_pressed(Key::ArrowDown) {
+					if i + 1 > max_i {
+						i = 0;
+					} else {
+						i += 1;
+					}
+				} else if ui.input().key_pressed(Key::ArrowUp) {
+					if 0 > i - 1 {
+						i = max_i;
+					} else {
+						i -= 1;
+					}
+				}
+
+				self.auto_complete_i = i as usize;
+
+				let popup_id = ui.make_persistent_id("autocomplete_popup");
+
+				let mut clicked = false;
+				egui::popup_below_widget(ui, popup_id, &re, |ui| {
+					re.request_focus();
+					for (i, candidate) in selections.iter().enumerate() {
+						if ui
+							.selectable_label(i == self.auto_complete_i, *candidate)
+							.clicked()
+						{
+							clicked = true;
+							self.auto_complete_i = i;
+						}
+					}
+				});
+
+				if right_arrow | clicked {
+					*string = string.clone() + &selections[self.auto_complete_i];
+					push_cursor = true;
+				} else {
+					ui.memory().open_popup(popup_id);
+				}
+			}
+
+			if push_cursor {
 				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
 				state.set_cursor_range(Some(CursorRange::one(Cursor {
 					ccursor: CCursor {
@@ -147,9 +208,9 @@ impl FunctionEntry {
 				})));
 				TextEdit::store_state(ui.ctx(), te_id, state);
 			}
-			return true;
 		}
-		return false;
+
+		return func_edit_focus;
 	}
 
 	/// Creates and does the math for creating all the rectangles under the

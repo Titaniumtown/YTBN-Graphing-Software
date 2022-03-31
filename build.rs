@@ -15,7 +15,7 @@ fn main() {
 		.run();
 	shadow_rs::new().unwrap();
 
-	generate_hashmap();
+	// generate_hashmap();
 }
 
 fn generate_hashmap() {
@@ -37,7 +37,7 @@ const SUPPORTED_FUNCTIONS: [&str; 22] = [
 	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
 ];
 
-const CONST: char = '"';
+const QUOTE: char = '"';
 
 fn compile_hashmap() -> phf_codegen::Map<String> {
 	let functions_processed: Vec<String> = SUPPORTED_FUNCTIONS
@@ -92,7 +92,7 @@ fn compile_hashmap() -> phf_codegen::Map<String> {
 		if keys.iter().filter(|a| a == &&key).count() == 1 {
 			output.entry(
 				key.clone(),
-				&format!("HintEnum::Single({}{}{})", CONST, value, CONST),
+				&format!("HintEnum::Single({}{}{})", QUOTE, value, QUOTE),
 			);
 		} else {
 			let multi_data = tuple_list_1
@@ -105,26 +105,4 @@ fn compile_hashmap() -> phf_codegen::Map<String> {
 	}
 
 	output
-}
-
-fn common_substring<'a>(a: &'a str, b: &'a str) -> Option<String> {
-	let a_chars: Vec<char> = a.chars().collect();
-	let b_chars: Vec<char> = b.chars().collect();
-	if a_chars[0] != b_chars[0] {
-		return None;
-	}
-
-	let mut last_value: String = a_chars[0].to_string();
-	let max_common_i = std::cmp::min(a.len(), b.len()) - 1;
-	for i in 1..=max_common_i {
-		let a_i = a_chars[i];
-		let b_i = b_chars[i];
-		if a_i == b_i {
-			last_value += &a_i.to_string()
-		} else {
-			break;
-		}
-	}
-
-	Some(last_value)
 }

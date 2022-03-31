@@ -1,9 +1,9 @@
 use crate::misc::chars_take;
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
-pub fn generate_hint(input: &str) -> Option<HintEnum> {
+pub fn generate_hint(input: String) -> HintEnum<'static> {
 	if input.is_empty() {
-		return Some(HintEnum::Single("x^2"));
+		return HintEnum::Single("x^2");
 	}
 
 	let chars: Vec<char> = input.chars().collect();
@@ -17,46 +17,25 @@ pub fn generate_hint(input: &str) -> Option<HintEnum> {
 	});
 
 	if open_parens > closed_parens {
-		return Some(HintEnum::Single(")"));
+		return HintEnum::Single(")");
 	}
 
 	let len = chars.len();
 
-	if len >= 5 {
-		let result_five = get_completion(chars_take(&chars, 5));
-		if result_five.is_some() {
-			return result_five;
+	for i in (2..=5).rev().filter(|i| len >= *i) {
+		if let Some(output) = get_completion(chars_take(&chars, i)) {
+			return output;
 		}
 	}
 
-	if len >= 4 {
-		let result_four = get_completion(chars_take(&chars, 4));
-		if result_four.is_some() {
-			return result_four;
-		}
-	}
-
-	if len >= 3 {
-		let result_three = get_completion(chars_take(&chars, 3));
-		if result_three.is_some() {
-			return result_three;
-		}
-	}
-
-	if len >= 2 {
-		let result_two = get_completion(chars_take(&chars, 2));
-		if result_two.is_some() {
-			return result_two;
-		}
-	}
-
-	None
+	HintEnum::None
 }
 
 #[derive(Clone, PartialEq)]
 pub enum HintEnum<'a> {
 	Single(&'static str),
 	Many(&'a [&'static str]),
+	None,
 }
 
 impl std::fmt::Debug for HintEnum<'static> {
@@ -74,20 +53,114 @@ impl ToString for HintEnum<'static> {
 				.map(|a| a.to_string())
 				.collect::<String>()
 				.to_string(),
+			HintEnum::None => String::new(),
 		}
 	}
 }
 
 impl HintEnum<'static> {
-	pub fn ensure_single(&self) -> String {
+	pub fn get_single(&self) -> Option<String> {
 		match self {
-			HintEnum::Single(single_data) => single_data.to_string(),
-			HintEnum::Many(_) => String::new(),
+			HintEnum::Single(x) => Some(x.to_string()),
+			_ => None,
+		}
+	}
+
+	pub fn is_multi(&self) -> bool {
+		match self {
+			HintEnum::Many(_) => true,
+			_ => false,
 		}
 	}
 }
 
-include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+// include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+static COMPLETION_HASHMAP: phf::Map<&'static str, HintEnum> = ::phf::Map {
+	key: 2980949210194914378,
+	disps: &[
+		(0, 5),
+		(0, 24),
+		(1, 0),
+		(3, 14),
+		(51, 0),
+		(0, 11),
+		(2, 0),
+		(0, 29),
+		(3, 23),
+		(23, 59),
+		(0, 5),
+		(0, 7),
+		(39, 43),
+	],
+	entries: &[
+		("co", HintEnum::Many(&["s(", "sh("])),
+		("c", HintEnum::Many(&["os(", "osh(", "eil(", "brt("])),
+		("frac", HintEnum::Single("t(")),
+		("fl", HintEnum::Single("oor(")),
+		("sq", HintEnum::Single("rt(")),
+		("fr", HintEnum::Single("act(")),
+		("sig", HintEnum::Single("num(")),
+		("ac", HintEnum::Single("os(")),
+		("signum", HintEnum::Single("(")),
+		("ln", HintEnum::Single("(")),
+		("aco", HintEnum::Single("s(")),
+		("fra", HintEnum::Single("ct(")),
+		("round", HintEnum::Single("(")),
+		("t", HintEnum::Many(&["an(", "anh(", "runc("])),
+		("s", HintEnum::Many(&["ignum(", "in(", "inh(", "qrt("])),
+		("acos", HintEnum::Single("(")),
+		("exp", HintEnum::Single("(")),
+		("tanh", HintEnum::Single("(")),
+		("lo", HintEnum::Many(&["g2(", "g10("])),
+		("log10", HintEnum::Single("(")),
+		("fract", HintEnum::Single("(")),
+		("trun", HintEnum::Single("c(")),
+		("log1", HintEnum::Single("0(")),
+		("at", HintEnum::Single("an(")),
+		("tr", HintEnum::Single("unc(")),
+		("floor", HintEnum::Single("(")),
+		("ab", HintEnum::Single("s(")),
+		("si", HintEnum::Many(&["gnum(", "n(", "nh("])),
+		("asi", HintEnum::Single("n(")),
+		("sin", HintEnum::Many(&["(", "h("])),
+		("e", HintEnum::Single("xp(")),
+		("flo", HintEnum::Single("or(")),
+		("ex", HintEnum::Single("p(")),
+		("sqr", HintEnum::Single("t(")),
+		("log2", HintEnum::Single("(")),
+		("atan", HintEnum::Single("(")),
+		("sinh", HintEnum::Single("(")),
+		("tru", HintEnum::Single("nc(")),
+		("cei", HintEnum::Single("l(")),
+		("l", HintEnum::Many(&["n(", "og2(", "og10("])),
+		("asin", HintEnum::Single("(")),
+		("tan", HintEnum::Many(&["(", "h("])),
+		("cos", HintEnum::Many(&["(", "h("])),
+		("roun", HintEnum::Single("d(")),
+		("as", HintEnum::Single("in(")),
+		("r", HintEnum::Single("ound(")),
+		("log", HintEnum::Many(&["2(", "10("])),
+		("ta", HintEnum::Many(&["n(", "nh("])),
+		("floo", HintEnum::Single("r(")),
+		("cbrt", HintEnum::Single("(")),
+		("ata", HintEnum::Single("n(")),
+		("ce", HintEnum::Single("il(")),
+		("abs", HintEnum::Single("(")),
+		("cosh", HintEnum::Single("(")),
+		("cbr", HintEnum::Single("t(")),
+		("rou", HintEnum::Single("nd(")),
+		("signu", HintEnum::Single("m(")),
+		("a", HintEnum::Many(&["bs(", "sin(", "cos(", "tan("])),
+		("sqrt", HintEnum::Single("(")),
+		("ceil", HintEnum::Single("(")),
+		("ro", HintEnum::Single("und(")),
+		("f", HintEnum::Many(&["loor(", "ract("])),
+		("sign", HintEnum::Single("um(")),
+		("trunc", HintEnum::Single("(")),
+		("cb", HintEnum::Single("rt(")),
+	],
+};
+
 /// Gets completion from `COMPLETION_HASHMAP`
 pub fn get_completion(key: String) -> Option<HintEnum<'static>> {
 	if key.is_empty() {
