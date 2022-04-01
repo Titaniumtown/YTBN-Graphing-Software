@@ -58,5 +58,5 @@ fn generate_hashmap() {
 
 include!(concat!(
 	env!("CARGO_MANIFEST_DIR"),
-	"/src/hashmap_helper.rs"
+	"/src/autocomplete_helper.rs"
 ));
