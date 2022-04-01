@@ -5,9 +5,9 @@
 extern crate static_assertions;
 
 mod consts;
-mod egui_app;
 mod function;
 mod hashmap_helper;
+mod math_app;
 mod misc;
 mod parsing;
 mod suggestions;
@@ -32,7 +32,7 @@ cfg_if::cfg_if! {
 			tracing::info!("Finished initializing!");
 
 			tracing::info!("Starting App...");
-			eframe::start_web("canvas", Box::new(|cc| Box::new(egui_app::MathApp::new(cc))))
+			eframe::start_web("canvas", Box::new(|cc| Box::new(math_app::MathApp::new(cc))))
 		}
 	}
 }

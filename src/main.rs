@@ -5,9 +5,9 @@
 extern crate static_assertions;
 
 mod consts;
-mod egui_app;
 mod function;
 mod hashmap_helper;
+mod math_app;
 mod misc;
 mod parsing;
 mod suggestions;
@@ -24,6 +24,6 @@ fn main() {
 	eframe::run_native(
 		"(Yet-to-be-named) Graphing Software",
 		eframe::NativeOptions::default(),
-		Box::new(|cc| Box::new(egui_app::MathApp::new(cc))),
+		Box::new(|cc| Box::new(math_app::MathApp::new(cc))),
 	);
 }

@@ -1,7 +1,6 @@
 use crate::consts::*;
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
-use crate::parsing::{process_func_str, test_func};
 use eframe::{egui, epi};
 use egui::plot::Plot;
 use egui::{
@@ -450,12 +449,6 @@ impl MathApp {
 				self.settings.integral_changed =
 					max_x_changed | min_x_changed | integral_num_changed | riemann_changed;
 
-				// Stores whether global config options changed
-				let configs_changed = max_x_changed
-					| min_x_changed | integral_num_changed
-					| roots_toggled | extrema_toggled
-					| riemann_changed;
-
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
 				self.text_boxes_focused = false;
@@ -510,22 +503,12 @@ impl MathApp {
 						self.exists_error = true;
 					}
 
-					let proc_func_str = process_func_str(&self.func_strs[i]);
-					if configs_changed
-						| integral_toggle | derivative_toggle
-						| (proc_func_str != function.get_func_str())
-						| func_failed
-					{
-						integral_enabled.bitxor_assign(integral_toggle);
-						derivative_enabled.bitxor_assign(derivative_toggle);
+					integral_enabled.bitxor_assign(integral_toggle);
+					derivative_enabled.bitxor_assign(derivative_toggle);
 
-						if let Some(test_output_value) = test_func(&proc_func_str) {
-							self.func_errors[i] = Some((i, test_output_value));
-						} else {
-							function.update(&proc_func_str, integral_enabled, derivative_enabled);
-							self.func_errors[i] = None;
-						}
-					}
+					self.func_errors[i] = function
+						.update(&self.func_strs[i], integral_enabled, derivative_enabled)
+						.map(|error| (i, error));
 				}
 
 				// Remove function if the user requests it
@@ -535,12 +518,13 @@ impl MathApp {
 					self.func_errors.remove(remove_i_unwrap);
 				}
 
-				// Open Source and Licensing information
+				// Hyperlink to project's github
 				ui.hyperlink_to(
 					"I'm Open Source!",
 					"https://github.com/Titaniumtown/YTBN-Graphing-Software",
 				);
 
+				// Licensing information
 				ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
 					.on_hover_text(&ASSETS.text_license_info);
 			});
