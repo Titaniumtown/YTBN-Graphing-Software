@@ -4,9 +4,9 @@
 #[macro_use]
 extern crate static_assertions;
 
+mod autocomplete_helper;
 mod consts;
 mod function;
-mod hashmap_helper;
 mod math_app;
 mod misc;
 mod parsing;

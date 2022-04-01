@@ -49,7 +49,9 @@ impl AutoComplete {
 			.lock_focus(true);
 
 		if self.hint.is_none() {
-			return (string, func_edit.id(te_id).ui(ui).has_focus());
+			let re = func_edit.id(te_id).ui(ui);
+			let return_string = (&new_string).to_string();
+			return (return_string, re.has_focus());
 		}
 
 		if let Some(single_hint) = self.hint.get_single() {
@@ -137,6 +139,6 @@ impl AutoComplete {
 			}
 			return (new_string, true);
 		}
-		(string, false)
+		(new_string, false)
 	}
 }
