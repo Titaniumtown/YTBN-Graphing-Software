@@ -238,7 +238,7 @@ impl FunctionEntry {
 			self.update_string(&*string);
 		}
 
-		return (func_edit_focus, changed, self.get_test_result());
+		(func_edit_focus, changed, self.get_test_result())
 	}
 
 	pub fn get_test_result(&self) -> Option<String> { self.test_result.clone() }
@@ -248,7 +248,7 @@ impl FunctionEntry {
 		let output = crate::parsing::test_func(&processed_func);
 		self.raw_func_str = raw_func_str.to_string();
 		if output.is_some() {
-			self.test_result = output.clone();
+			self.test_result = output;
 			return;
 		} else {
 			self.test_result = None;
@@ -266,9 +266,9 @@ impl FunctionEntry {
 		self.integral = integral;
 		if raw_func_str != self.get_func_raw() {
 			self.update_string(raw_func_str);
-			return self.get_test_result();
+			self.get_test_result()
 		} else {
-			return None;
+			None
 		}
 	}
 
