@@ -7,6 +7,7 @@ use egui::{
 	FontFamily, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use instant::Duration;
+use std::collections::HashMap;
 use std::{collections::BTreeMap, io::Read, ops::BitXorAssign, str};
 
 #[cfg(threading)]
@@ -291,20 +292,14 @@ pub struct MathApp {
 	/// took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Duration),
 
-	/// Stores whether or not the Help window is open
-	help_open: bool,
-
-	/// Stores whether or not the Info window is open
-	info_open: bool,
-
 	/// Stores whether or not dark mode is enabled
 	dark_mode: bool,
 
 	/// Stores whether or not the text boxes are focused
 	text_boxes_focused: bool,
 
-	/// Stores whether or not the side panel is shown or not
-	show_side_panel: bool,
+	/// Stores opened windows/elements for later reference
+	opened: HashMap<&'static str, bool>,
 
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
@@ -318,11 +313,9 @@ impl Default for MathApp {
 			func_errors: vec![None],
 			exists_error: false,
 			last_info: (vec![None], Duration::ZERO),
-			help_open: true,
-			info_open: false,
 			dark_mode: true,
 			text_boxes_focused: false,
-			show_side_panel: true,
+			opened: HashMap::from([("help", true), ("info", false), ("side_panel", true)]),
 			settings: AppSettings::default(),
 		}
 	}
@@ -355,6 +348,10 @@ impl MathApp {
 		tracing::info!("egui app initialized.");
 		Self::default() // initialize `MathApp`
 	}
+
+	fn get_opened_mut(&mut self, id: &str) -> &mut bool { self.opened.get_mut(id).unwrap() }
+
+	fn get_opened(&self, id: &str) -> bool { *self.opened.get(id).unwrap() }
 
 	/// Creates SidePanel which contains configuration options
 	fn side_panel(&mut self, ctx: &Context) {
@@ -555,7 +552,7 @@ impl epi::App for MathApp {
 		// this is behind this check as if it wasn't, it would trigger if the user
 		// presses the h key in a text box as well
 		if !self.text_boxes_focused {
-			self.show_side_panel
+			self.get_opened_mut("side_panel")
 				.bitxor_assign(ctx.input().key_down(Key::H));
 		}
 
@@ -566,9 +563,10 @@ impl epi::App for MathApp {
 		TopBottomPanel::top("top_bar").show(ctx, |ui| {
 			ui.horizontal(|ui| {
 				// Button in top bar to toggle showing the side panel
-				self.show_side_panel.bitxor_assign(
+				let side_curr_open = self.get_opened("help");
+				self.get_opened_mut("side_panel").bitxor_assign(
 					ui.add(Button::new("Panel"))
-						.on_hover_text(match self.show_side_panel {
+						.on_hover_text(match side_curr_open {
 							true => "Hide Side Panel",
 							false => "Show Side Panel",
 						})
@@ -587,9 +585,10 @@ impl epi::App for MathApp {
 				}
 
 				// Toggles opening the Help window
-				self.help_open.bitxor_assign(
+				let help_curr_open = self.get_opened("help");
+				self.get_opened_mut("help").bitxor_assign(
 					ui.add(Button::new("Help"))
-						.on_hover_text(match self.help_open {
+						.on_hover_text(match help_curr_open {
 							true => "Close Help Window",
 							false => "Open Help Window",
 						})
@@ -597,9 +596,10 @@ impl epi::App for MathApp {
 				);
 
 				// Toggles opening the Info window
-				self.info_open.bitxor_assign(
+				let info_curr_open = self.get_opened("info");
+				self.get_opened_mut("info").bitxor_assign(
 					ui.add(Button::new("Info"))
-						.on_hover_text(match self.info_open {
+						.on_hover_text(match info_curr_open {
 							true => "Close Info Window",
 							false => "Open Info Window",
 						})
@@ -631,7 +631,7 @@ impl epi::App for MathApp {
 		// Help window with information for users
 		Window::new("Help")
 			.default_pos([200.0, 200.0])
-			.open(&mut self.help_open)
+			.open(self.get_opened_mut("help"))
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
@@ -661,7 +661,7 @@ impl epi::App for MathApp {
 		// Window with information about the build and current commit
 		Window::new("Info")
 			.default_pos([200.0, 200.0])
-			.open(&mut self.info_open)
+			.open(self.get_opened_mut("info"))
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
@@ -669,7 +669,7 @@ impl epi::App for MathApp {
 			});
 
 		// If side panel is enabled, show it.
-		if self.show_side_panel {
+		if self.get_opened("side_panel") {
 			self.side_panel(ctx);
 		} else {
 			self.text_boxes_focused = false;

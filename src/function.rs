@@ -3,19 +3,13 @@
 use crate::math_app::AppSettings;
 use crate::misc::*;
 use crate::parsing::{process_func_str, BackingFunction};
-use crate::suggestions::{generate_hint, HintEnum};
+use crate::widgets::AutoComplete;
 use eframe::{egui, epaint};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
-	text::CCursor,
-	text_edit::CursorRange,
 	widgets::plot::Bar,
-	Key, TextEdit, Widget,
 };
-use epaint::{
-	text::cursor::{Cursor, PCursor, RCursor},
-	Color32,
-};
+use epaint::Color32;
 use std::fmt::{self, Debug};
 
 #[cfg(threading)]
@@ -36,37 +30,6 @@ impl fmt::Display for Riemann {
 lazy_static::lazy_static! {
 	/// Represents a "default" instance of `FunctionEntry`
 	pub static ref DEFAULT_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::default();
-}
-
-#[derive(Clone)]
-struct AutoComplete {
-	pub i: usize,
-	pub hint: HintEnum<'static>,
-	pub func_str: Option<String>,
-	pub changed: bool,
-}
-
-impl Default for AutoComplete {
-	fn default() -> AutoComplete {
-		AutoComplete {
-			i: 0,
-			hint: HintEnum::None,
-			func_str: None,
-			changed: true,
-		}
-	}
-}
-
-impl AutoComplete {
-	fn changed(&mut self, string: String) {
-		if self.func_str != Some(string.clone()) {
-			self.changed = true;
-			self.func_str = Some(string.clone());
-			self.hint = generate_hint(string);
-		} else {
-			self.changed = false;
-		}
-	}
 }
 
 /// `FunctionEntry` is a function that can calculate values, integrals,
@@ -130,117 +93,15 @@ impl FunctionEntry {
 	pub fn auto_complete(
 		&mut self, ui: &mut egui::Ui, string: &mut String,
 	) -> (bool, bool, Option<String>) {
-		// Put here so these key presses don't interact with other elements
-		let enter_pressed = ui
-			.input_mut()
-			.consume_key(egui::Modifiers::NONE, Key::Enter);
-		let tab_pressed = ui.input_mut().consume_key(egui::Modifiers::NONE, Key::Tab);
+		let (output_string, in_focus) = self.autocomplete.ui(ui, string.to_string());
 
-		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
-
-		// update self.autocomplete
-		self.autocomplete.changed(string.clone());
-
-		let mut func_edit = egui::TextEdit::singleline(string)
-			.hint_forward(true)
-			.lock_focus(true);
-
-		if self.autocomplete.hint.is_none() {
-			func_edit.id(te_id).ui(ui);
-			return (false, false, self.get_test_result());
-		}
-
-		if let Some(single_hint) = self.autocomplete.hint.get_single() {
-			let func_edit_2 = func_edit;
-			func_edit = func_edit_2.hint_text(&single_hint);
-		}
-
-		let re = func_edit.id(te_id).ui(ui);
-
-		let func_edit_focus = re.has_focus();
-
-		// If in focus and right arrow key was pressed, apply hint
-		if func_edit_focus {
-			let mut push_cursor: bool = false;
-			let apply_key = ui.input().key_pressed(Key::ArrowRight) | enter_pressed | tab_pressed;
-
-			if apply_key && let Some(single_hint) = self.autocomplete.hint.get_single() {
-					push_cursor = true;
-					*string = string.clone() + &single_hint;
-			} else if self.autocomplete.hint.is_multi() {
-				let selections = self.autocomplete.hint.ensure_many();
-
-				let max_i = selections.len() as i16 - 1;
-
-				let mut i = self.autocomplete.i as i16;
-
-				if ui.input().key_pressed(Key::ArrowDown) {
-					i += 1;
-					if i > max_i {
-						i = 0;
-					}
-				} else if ui.input().key_pressed(Key::ArrowUp) {
-					i -= 1;
-					if 0 > i {
-						i = max_i
-					}
-				}
-
-				self.autocomplete.i = i as usize;
-
-				let popup_id = ui.make_persistent_id("autocomplete_popup");
-
-				let mut clicked = false;
-
-				egui::popup_below_widget(ui, popup_id, &re, |ui| {
-					for (i, candidate) in selections.iter().enumerate() {
-						if ui
-							.selectable_label(i == self.autocomplete.i, *candidate)
-							.clicked()
-						{
-							clicked = true;
-							self.autocomplete.i = i;
-						}
-					}
-				});
-
-				if clicked | apply_key {
-					*string += selections[self.autocomplete.i];
-					push_cursor = true;
-
-
-					// don't need this here as it simply won't be display next frame in `math_app.rs`
-					// ui.memory().close_popup();
-				} else {
-					ui.memory().open_popup(popup_id);
-				}
-			}
-
-			// Push cursor to end if needed
-			if push_cursor {
-				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-				state.set_cursor_range(Some(CursorRange::one(Cursor {
-					ccursor: CCursor {
-						index: 0,
-						prefer_next_row: false,
-					},
-					rcursor: RCursor { row: 0, column: 0 },
-					pcursor: PCursor {
-						paragraph: 0,
-						offset: 10000,
-						prefer_next_row: false,
-					},
-				})));
-				TextEdit::store_state(ui.ctx(), te_id, state);
-			}
-		}
-
-		let changed = *string != self.get_func_raw();
+		let changed = output_string != *string;
 		if changed {
-			self.update_string(&*string);
+			*string = output_string.clone();
+			self.update_string(&output_string);
 		}
 
-		(func_edit_focus, changed, self.get_test_result())
+		(in_focus, changed, self.get_test_result())
 	}
 
 	pub fn get_test_result(&self) -> Option<String> { self.test_result.clone() }

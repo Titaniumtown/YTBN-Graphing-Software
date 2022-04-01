@@ -11,6 +11,7 @@ mod math_app;
 mod misc;
 mod parsing;
 mod suggestions;
+mod widgets;
 
 // For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]

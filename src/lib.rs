@@ -11,6 +11,7 @@ mod math_app;
 mod misc;
 mod parsing;
 mod suggestions;
+mod widgets;
 
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
