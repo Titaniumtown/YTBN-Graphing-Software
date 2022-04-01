@@ -2,12 +2,10 @@ use crate::consts::*;
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use eframe::{egui, epi};
-use egui::plot::Plot;
 use egui::{
-	Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions, FontFamily, Key,
-	RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
+	plot::Plot, Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions,
+	FontFamily, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
-use epi::Frame;
 use instant::Duration;
 use std::{collections::BTreeMap, io::Read, ops::BitXorAssign, str};
 
@@ -543,7 +541,7 @@ impl MathApp {
 impl epi::App for MathApp {
 	/// Called each time the UI needs repainting, which may be many times per
 	/// second.
-	fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+	fn update(&mut self, ctx: &Context, _frame: &mut epi::Frame) {
 		// start timer
 		let start = instant::Instant::now();
 

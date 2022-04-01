@@ -6,14 +6,16 @@ use crate::parsing::{process_func_str, BackingFunction};
 use crate::suggestions::{generate_hint, HintEnum};
 use eframe::{egui, epaint};
 use egui::{
-	epaint::text::cursor::Cursor, text::CCursor, text_edit::CursorRange, Key, TextEdit, Widget,
-};
-use egui::{
 	plot::{BarChart, PlotUi, Value},
+	text::CCursor,
+	text_edit::CursorRange,
 	widgets::plot::Bar,
+	Key, TextEdit, Widget,
 };
-use epaint::text::cursor::{PCursor, RCursor};
-use epaint::Color32;
+use epaint::{
+	text::cursor::{Cursor, PCursor, RCursor},
+	Color32,
+};
 use std::fmt::{self, Debug};
 
 #[cfg(threading)]
