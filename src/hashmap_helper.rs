@@ -26,10 +26,7 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 
 		seen_3.insert(key.clone());
 		if keys.iter().filter(|a| a == &&key).count() == 1 {
-			output.push((
-				key.clone(),
-				format!("HintEnum::Single({}{}{})", '"', value, '"'),
-			));
+			output.push((key.clone(), format!(r#"HintEnum::Single("{}")"#, value)));
 		} else {
 			let multi_data = tuple_list_1
 				.iter()
