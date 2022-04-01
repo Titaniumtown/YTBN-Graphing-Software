@@ -506,9 +506,15 @@ impl MathApp {
 					integral_enabled.bitxor_assign(integral_toggle);
 					derivative_enabled.bitxor_assign(derivative_toggle);
 
-					self.func_errors[i] = function
+					let update_result = function
 						.update(&self.func_strs[i], integral_enabled, derivative_enabled)
 						.map(|error| (i, error));
+
+					if update_result.is_some() {
+						self.exists_error = true;
+					}
+
+					self.func_errors[i] = update_result
 				}
 
 				// Remove function if the user requests it
@@ -709,7 +715,6 @@ impl epi::App for MathApp {
 
 					dyn_mut_iter(&mut self.functions)
 						.enumerate()
-						.filter(|(i, _)| !self.func_strs[*i].is_empty())
 						.for_each(|(_, function)| {
 							function.calculate(
 								&minx_bounds,
@@ -723,7 +728,6 @@ impl epi::App for MathApp {
 						.functions
 						.iter()
 						.enumerate()
-						.filter(|(i, _)| !self.func_strs[*i].is_empty())
 						.map(|(_, function)| function.display(plot_ui, &self.settings))
 						.collect();
 				});

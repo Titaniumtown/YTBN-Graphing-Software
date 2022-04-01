@@ -207,6 +207,10 @@ pub struct FunctionEntry {
 	roots_data: Option<Vec<Value>>,
 
 	autocomplete: AutoComplete,
+
+	invalid: bool,
+
+	test_result: Option<String>,
 }
 
 impl Default for FunctionEntry {
@@ -225,6 +229,8 @@ impl Default for FunctionEntry {
 			extrema_data: None,
 			roots_data: None,
 			autocomplete: AutoComplete::default(),
+			invalid: true,
+			test_result: None,
 		}
 	}
 }
@@ -235,6 +241,7 @@ impl FunctionEntry {
 	pub fn auto_complete(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
 		self.autocomplete.ui(ui, string)
 	}
+
 	/// Update function settings
 	pub fn update(
 		&mut self, raw_func_str: &str, integral: bool, derivative: bool,
@@ -244,11 +251,18 @@ impl FunctionEntry {
 			let output = crate::parsing::test_func(&processed_func);
 			self.raw_func_str = raw_func_str.to_string();
 			if output.is_some() {
+				self.test_result = output.clone();
+				self.invalid = true;
 				return output;
 			}
+			self.invalid = false;
 
 			self.function = BackingFunction::new(&processed_func);
 			self.invalidate_whole();
+		}
+
+		if self.invalid {
+			return self.test_result.clone();
 		}
 
 		self.derivative = derivative;
@@ -345,6 +359,10 @@ impl FunctionEntry {
 	pub fn calculate(
 		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
 	) {
+		if self.invalid {
+			return;
+		}
+
 		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
 		let resolution_iter = resolution_helper(&settings.plot_width + 1, min_x, &resolution);
 
@@ -459,6 +477,10 @@ impl FunctionEntry {
 	/// Displays the function's output on PlotUI `plot_ui` with settings
 	/// `settings`. Returns an `Option<f64>` of the calculated integral
 	pub fn display(&self, plot_ui: &mut PlotUi, settings: &AppSettings) -> Option<f64> {
+		if self.invalid {
+			return None;
+		}
+
 		let derivative_str = self.function.get_derivative_str();
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
 			/ (settings.integral_num as f64);
