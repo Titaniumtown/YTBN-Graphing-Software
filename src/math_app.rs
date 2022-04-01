@@ -457,9 +457,6 @@ impl MathApp {
 					let mut integral_enabled = function.integral;
 					let mut derivative_enabled = function.derivative;
 
-					let mut derivative_toggle: bool = false;
-					let mut integral_toggle: bool = false;
-
 					// Entry for a function
 					ui.horizontal(|ui| {
 						ui.label("Function:");
@@ -474,23 +471,25 @@ impl MathApp {
 						}
 
 						// Toggle integral being enabled or not
-						integral_toggle = ui
-							.add(Button::new("∫"))
-							.on_hover_text(match integral_enabled {
-								true => "Don't integrate",
-								false => "Integrate",
-							})
-							.clicked();
+						integral_enabled.bitxor_assign(
+							ui.add(Button::new("∫"))
+								.on_hover_text(match integral_enabled {
+									true => "Don't integrate",
+									false => "Integrate",
+								})
+								.clicked(),
+						);
 
 						// Toggle showing the derivative (even though it's already calculated this
 						// option just toggles if it's displayed or not)
-						derivative_toggle = ui
-							.add(Button::new("d/dx"))
-							.on_hover_text(match derivative_enabled {
-								true => "Don't Differentiate",
-								false => "Differentiate",
-							})
-							.clicked();
+						derivative_enabled.bitxor_assign(
+							ui.add(Button::new("d/dx"))
+								.on_hover_text(match derivative_enabled {
+									true => "Don't Differentiate",
+									false => "Differentiate",
+								})
+								.clicked(),
+						);
 
 						// Contains the function string in a text box that the user can edit
 						if function.auto_complete(ui, &mut self.func_strs[i]) {
@@ -502,9 +501,6 @@ impl MathApp {
 					if func_failed {
 						self.exists_error = true;
 					}
-
-					integral_enabled.bitxor_assign(integral_toggle);
-					derivative_enabled.bitxor_assign(derivative_toggle);
 
 					let update_result = function
 						.update(&self.func_strs[i], integral_enabled, derivative_enabled)
