@@ -258,20 +258,6 @@ impl FunctionEntry {
 		self.invalidate_whole();
 	}
 
-	/// Update function settings
-	pub fn update(
-		&mut self, raw_func_str: &str, integral: bool, derivative: bool,
-	) -> Option<String> {
-		self.derivative = derivative;
-		self.integral = integral;
-		if raw_func_str != self.get_func_raw() {
-			self.update_string(raw_func_str);
-			self.get_test_result()
-		} else {
-			None
-		}
-	}
-
 	fn get_sum_func(&self, sum: Riemann) -> FunctionHelper {
 		match sum {
 			Riemann::Left => {
@@ -570,6 +556,21 @@ impl FunctionEntry {
 
 	/// Invalidate Derivative data
 	pub fn invalidate_derivative(&mut self) { self.derivative_data = None; }
+
+	/// Depreciated, but still used for tests
+	#[cfg(test)]
+	pub fn update(
+		&mut self, raw_func_str: &str, integral: bool, derivative: bool,
+	) -> Option<String> {
+		self.derivative = derivative;
+		self.integral = integral;
+		if raw_func_str != self.get_func_raw() {
+			self.update_string(raw_func_str);
+			self.get_test_result()
+		} else {
+			None
+		}
+	}
 
 	/// Runs asserts to make sure everything is the expected value
 	#[cfg(test)]
