@@ -65,116 +65,6 @@ impl AutoComplete {
 			self.changed = false;
 		}
 	}
-
-	/// Creates and manages text box and autocompletion of function input
-	/// Returns whether or not the function text box is in focus
-	fn ui(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
-		// Put here so these key presses don't interact with other elements
-		let enter_pressed = ui
-			.input_mut()
-			.consume_key(egui::Modifiers::NONE, Key::Enter);
-		let tab_pressed = ui.input_mut().consume_key(egui::Modifiers::NONE, Key::Tab);
-
-		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
-
-		// update self.autocomplete
-		self.changed(string.clone());
-
-		let mut func_edit = egui::TextEdit::singleline(string)
-			.hint_forward(true)
-			.lock_focus(true);
-
-		if self.hint.is_none() {
-			func_edit.id(te_id).ui(ui);
-			return false;
-		}
-
-		if let Some(single_hint) = self.hint.get_single() {
-			let func_edit_2 = func_edit;
-			func_edit = func_edit_2.hint_text(&single_hint);
-		}
-
-		let re = func_edit.id(te_id).ui(ui);
-
-		let func_edit_focus = re.has_focus();
-
-		// If in focus and right arrow key was pressed, apply hint
-		if func_edit_focus {
-			let mut push_cursor: bool = false;
-			let apply_key = ui.input().key_pressed(Key::ArrowRight) | enter_pressed | tab_pressed;
-
-			if apply_key && let Some(single_hint) = self.hint.get_single() {
-				push_cursor = true;
-				*string = string.clone() + &single_hint;
-			} else if self.hint.is_multi() {
-				let selections = self.hint.ensure_many();
-
-				let max_i = selections.len() as i16 - 1;
-
-				let mut i = self.i as i16;
-
-				if ui.input().key_pressed(Key::ArrowDown) {
-					i += 1;
-					if i > max_i {
-						i = 0;
-					}
-				} else if ui.input().key_pressed(Key::ArrowUp) {
-					i -= 1;
-					if 0 > i {
-						i = max_i
-					}
-				}
-
-				self.i = i as usize;
-
-				let popup_id = ui.make_persistent_id("autocomplete_popup");
-
-				let mut clicked = false;
-
-				egui::popup_below_widget(ui, popup_id, &re, |ui| {
-					for (i, candidate) in selections.iter().enumerate() {
-						if ui
-							.selectable_label(i == self.i, *candidate)
-							.clicked()
-						{
-							clicked = true;
-							self.i = i;
-						}
-					}
-				});
-
-				if clicked | apply_key {
-					*string += selections[self.i];
-					push_cursor = true;
-
-
-					// don't need this here as it simply won't be display next frame in `math_app.rs`
-					// ui.memory().close_popup();
-				} else {
-					ui.memory().open_popup(popup_id);
-				}
-			}
-
-			// Push cursor to end if needed
-			if push_cursor {
-				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-				state.set_cursor_range(Some(CursorRange::one(Cursor {
-					ccursor: CCursor {
-						index: 0,
-						prefer_next_row: false,
-					},
-					rcursor: RCursor { row: 0, column: 0 },
-					pcursor: PCursor {
-						paragraph: 0,
-						offset: 10000,
-						prefer_next_row: false,
-					},
-				})));
-				TextEdit::store_state(ui.ctx(), te_id, state);
-			}
-		}
-		func_edit_focus
-	}
 }
 
 /// `FunctionEntry` is a function that can calculate values, integrals,
@@ -208,8 +98,6 @@ pub struct FunctionEntry {
 
 	autocomplete: AutoComplete,
 
-	invalid: bool,
-
 	test_result: Option<String>,
 }
 
@@ -229,7 +117,6 @@ impl Default for FunctionEntry {
 			extrema_data: None,
 			roots_data: None,
 			autocomplete: AutoComplete::default(),
-			invalid: true,
 			test_result: None,
 		}
 	}
@@ -238,36 +125,151 @@ impl Default for FunctionEntry {
 impl FunctionEntry {
 	pub fn get_func_raw(&self) -> String { self.raw_func_str.to_string() }
 
-	pub fn auto_complete(&mut self, ui: &mut egui::Ui, string: &mut String) -> bool {
-		self.autocomplete.ui(ui, string)
+	pub fn auto_complete(
+		&mut self, ui: &mut egui::Ui, string: &mut String,
+	) -> (bool, bool, Option<String>) {
+		// Put here so these key presses don't interact with other elements
+		let enter_pressed = ui
+			.input_mut()
+			.consume_key(egui::Modifiers::NONE, Key::Enter);
+		let tab_pressed = ui.input_mut().consume_key(egui::Modifiers::NONE, Key::Tab);
+
+		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
+
+		// update self.autocomplete
+		self.autocomplete.changed(string.clone());
+
+		let mut func_edit = egui::TextEdit::singleline(string)
+			.hint_forward(true)
+			.lock_focus(true);
+
+		if self.autocomplete.hint.is_none() {
+			func_edit.id(te_id).ui(ui);
+			return (false, false, self.get_test_result());
+		}
+
+		if let Some(single_hint) = self.autocomplete.hint.get_single() {
+			let func_edit_2 = func_edit;
+			func_edit = func_edit_2.hint_text(&single_hint);
+		}
+
+		let re = func_edit.id(te_id).ui(ui);
+
+		let func_edit_focus = re.has_focus();
+
+		// If in focus and right arrow key was pressed, apply hint
+		if func_edit_focus {
+			let mut push_cursor: bool = false;
+			let apply_key = ui.input().key_pressed(Key::ArrowRight) | enter_pressed | tab_pressed;
+
+			if apply_key && let Some(single_hint) = self.autocomplete.hint.get_single() {
+					push_cursor = true;
+					*string = string.clone() + &single_hint;
+			} else if self.autocomplete.hint.is_multi() {
+				let selections = self.autocomplete.hint.ensure_many();
+
+				let max_i = selections.len() as i16 - 1;
+
+				let mut i = self.autocomplete.i as i16;
+
+				if ui.input().key_pressed(Key::ArrowDown) {
+					i += 1;
+					if i > max_i {
+						i = 0;
+					}
+				} else if ui.input().key_pressed(Key::ArrowUp) {
+					i -= 1;
+					if 0 > i {
+						i = max_i
+					}
+				}
+
+				self.autocomplete.i = i as usize;
+
+				let popup_id = ui.make_persistent_id("autocomplete_popup");
+
+				let mut clicked = false;
+
+				egui::popup_below_widget(ui, popup_id, &re, |ui| {
+					for (i, candidate) in selections.iter().enumerate() {
+						if ui
+							.selectable_label(i == self.autocomplete.i, *candidate)
+							.clicked()
+						{
+							clicked = true;
+							self.autocomplete.i = i;
+						}
+					}
+				});
+
+				if clicked | apply_key {
+					*string += selections[self.autocomplete.i];
+					push_cursor = true;
+
+
+					// don't need this here as it simply won't be display next frame in `math_app.rs`
+					// ui.memory().close_popup();
+				} else {
+					ui.memory().open_popup(popup_id);
+				}
+			}
+
+			// Push cursor to end if needed
+			if push_cursor {
+				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
+				state.set_cursor_range(Some(CursorRange::one(Cursor {
+					ccursor: CCursor {
+						index: 0,
+						prefer_next_row: false,
+					},
+					rcursor: RCursor { row: 0, column: 0 },
+					pcursor: PCursor {
+						paragraph: 0,
+						offset: 10000,
+						prefer_next_row: false,
+					},
+				})));
+				TextEdit::store_state(ui.ctx(), te_id, state);
+			}
+		}
+
+		let changed = *string != self.get_func_raw();
+		if changed {
+			self.update_string(&*string);
+		}
+
+		return (func_edit_focus, changed, self.get_test_result());
+	}
+
+	pub fn get_test_result(&self) -> Option<String> { self.test_result.clone() }
+
+	fn update_string(&mut self, raw_func_str: &str) {
+		let processed_func = process_func_str(raw_func_str);
+		let output = crate::parsing::test_func(&processed_func);
+		self.raw_func_str = raw_func_str.to_string();
+		if output.is_some() {
+			self.test_result = output.clone();
+			return;
+		} else {
+			self.test_result = None;
+		}
+
+		self.function = BackingFunction::new(&processed_func);
+		self.invalidate_whole();
 	}
 
 	/// Update function settings
 	pub fn update(
 		&mut self, raw_func_str: &str, integral: bool, derivative: bool,
 	) -> Option<String> {
-		if raw_func_str != self.get_func_raw() {
-			let processed_func = process_func_str(raw_func_str);
-			let output = crate::parsing::test_func(&processed_func);
-			self.raw_func_str = raw_func_str.to_string();
-			if output.is_some() {
-				self.test_result = output.clone();
-				self.invalid = true;
-				return output;
-			}
-			self.invalid = false;
-
-			self.function = BackingFunction::new(&processed_func);
-			self.invalidate_whole();
-		}
-
-		if self.invalid {
-			return self.test_result.clone();
-		}
-
 		self.derivative = derivative;
 		self.integral = integral;
-		return None;
+		if raw_func_str != self.get_func_raw() {
+			self.update_string(raw_func_str);
+			return self.get_test_result();
+		} else {
+			return None;
+		}
 	}
 
 	fn get_sum_func(&self, sum: Riemann) -> FunctionHelper {
@@ -359,7 +361,7 @@ impl FunctionEntry {
 	pub fn calculate(
 		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
 	) {
-		if self.invalid {
+		if self.test_result.is_some() {
 			return;
 		}
 
@@ -477,7 +479,7 @@ impl FunctionEntry {
 	/// Displays the function's output on PlotUI `plot_ui` with settings
 	/// `settings`. Returns an `Option<f64>` of the calculated integral
 	pub fn display(&self, plot_ui: &mut PlotUi, settings: &AppSettings) -> Option<f64> {
-		if self.invalid {
+		if self.test_result.is_some() {
 			return None;
 		}
 

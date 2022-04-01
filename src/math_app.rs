@@ -454,9 +454,6 @@ impl MathApp {
 				self.text_boxes_focused = false;
 				self.exists_error = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
-					let mut integral_enabled = function.integral;
-					let mut derivative_enabled = function.derivative;
-
 					// Entry for a function
 					ui.horizontal(|ui| {
 						ui.label("Function:");
@@ -471,9 +468,9 @@ impl MathApp {
 						}
 
 						// Toggle integral being enabled or not
-						integral_enabled.bitxor_assign(
+						function.integral.bitxor_assign(
 							ui.add(Button::new("∫"))
-								.on_hover_text(match integral_enabled {
+								.on_hover_text(match function.integral {
 									true => "Don't integrate",
 									false => "Integrate",
 								})
@@ -482,9 +479,9 @@ impl MathApp {
 
 						// Toggle showing the derivative (even though it's already calculated this
 						// option just toggles if it's displayed or not)
-						derivative_enabled.bitxor_assign(
+						function.derivative.bitxor_assign(
 							ui.add(Button::new("d/dx"))
-								.on_hover_text(match derivative_enabled {
+								.on_hover_text(match function.derivative {
 									true => "Don't Differentiate",
 									false => "Differentiate",
 								})
@@ -492,25 +489,35 @@ impl MathApp {
 						);
 
 						// Contains the function string in a text box that the user can edit
-						if function.auto_complete(ui, &mut self.func_strs[i]) {
+						let (focused, changed, error) =
+							function.auto_complete(ui, &mut self.func_strs[i]);
+						if focused {
 							self.text_boxes_focused = true;
+						}
+
+						if error.is_some() {
+							self.exists_error = true;
+							if changed {
+								self.func_errors[i] =
+									function.get_test_result().map(|error| (i, error));
+							}
 						}
 					});
 
-					let func_failed = self.func_errors[i].is_some();
-					if func_failed {
-						self.exists_error = true;
-					}
+					// let func_failed = self.func_errors[i].is_some();
+					// if func_failed {
+					//
+					// }
 
-					let update_result = function
-						.update(&self.func_strs[i], integral_enabled, derivative_enabled)
-						.map(|error| (i, error));
+					// let update_result = function
+					// 	.update(&self.func_strs[i], integral_enabled,
+					// derivative_enabled) 	.map(|error| (i, error));
 
-					if update_result.is_some() {
-						self.exists_error = true;
-					}
+					// if update_result.is_some() {
+					// 	self.exists_error = true;
+					// }
 
-					self.func_errors[i] = update_result
+					// self.func_errors[i] = update_result
 				}
 
 				// Remove function if the user requests it
