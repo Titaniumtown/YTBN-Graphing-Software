@@ -33,13 +33,13 @@ impl AutoComplete {
 		}
 	}
 
-	pub fn ui(&mut self, ui: &mut egui::Ui, string: String) -> (String, bool) {
+	pub fn ui(&mut self, ui: &mut egui::Ui, string: String, func_i: i32) -> (String, bool) {
 		let mut new_string = string.clone();
 		// Put here so these key presses don't interact with other elements
 		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
 		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 
-		let te_id = ui.make_persistent_id("text_edit_ac".to_string());
+		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
 		// update self
 		self.changed(string.clone());

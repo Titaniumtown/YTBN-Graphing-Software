@@ -91,9 +91,9 @@ impl FunctionEntry {
 	pub fn get_func_raw(&self) -> String { self.raw_func_str.to_string() }
 
 	pub fn auto_complete(
-		&mut self, ui: &mut egui::Ui, string: &mut String,
+		&mut self, ui: &mut egui::Ui, string: &mut String, i: i32,
 	) -> (bool, bool, Option<String>) {
-		let (output_string, in_focus) = self.autocomplete.ui(ui, string.to_string());
+		let (output_string, in_focus) = self.autocomplete.ui(ui, string.to_string(), i);
 
 		let changed = output_string != *string;
 		if changed {

@@ -485,7 +485,7 @@ impl MathApp {
 
 						// Contains the function string in a text box that the user can edit
 						let (focused, changed, error) =
-							function.auto_complete(ui, &mut self.func_strs[i]);
+							function.auto_complete(ui, &mut self.func_strs[i], i as i32);
 						if focused {
 							self.text_boxes_focused = true;
 						}
