@@ -1,7 +1,7 @@
 use crate::misc::chars_take;
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
-pub fn generate_hint(input: String) -> HintEnum<'static> {
+pub fn generate_hint(input: &str) -> HintEnum<'static> {
 	if input.is_empty() {
 		return HintEnum::Single("x^2");
 	}
@@ -119,7 +119,7 @@ mod tests {
 
 		for (key, value) in values {
 			println!("{} + {:?}", key, value);
-			assert_eq!(generate_hint(key.to_string()), value);
+			assert_eq!(generate_hint(key), value);
 		}
 	}
 }

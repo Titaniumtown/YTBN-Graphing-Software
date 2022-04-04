@@ -23,10 +23,10 @@ impl Default for AutoComplete {
 }
 
 impl AutoComplete {
-	fn changed(&mut self, string: String) {
-		if self.func_str != Some(string.clone()) {
+	fn changed(&mut self, string: &str) {
+		if self.func_str != Some(string.to_string()) {
 			self.changed = true;
-			self.func_str = Some(string.clone());
+			self.func_str = Some(string.to_string());
 			self.hint = generate_hint(string);
 		} else {
 			self.changed = false;
@@ -42,7 +42,7 @@ impl AutoComplete {
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
 		// update self
-		self.changed(string.clone());
+		self.changed(&string);
 
 		let mut func_edit = egui::TextEdit::singleline(&mut new_string)
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
