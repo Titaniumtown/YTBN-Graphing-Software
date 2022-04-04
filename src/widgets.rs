@@ -66,61 +66,65 @@ impl AutoComplete {
 
 		// If in focus and right arrow key was pressed, apply hint
 		if func_edit_focus {
-			let mut push_cursor: bool = false;
 			let apply_key = ui.input().key_pressed(Key::ArrowRight) | enter_pressed | tab_pressed;
 
-			if apply_key && let Some(single_hint) = self.hint.get_single() {
-					push_cursor = true;
-					new_string = string + &single_hint;
-			} else if self.hint.is_multi() {
-				let selections = self.hint.ensure_many();
-
-				let max_i = selections.len() as i16 - 1;
-
-				let mut i = self.i as i16;
-
-				if ui.input().key_pressed(Key::ArrowDown) {
-					i += 1;
-					if i > max_i {
-						i = 0;
-					}
-				} else if ui.input().key_pressed(Key::ArrowUp) {
-					i -= 1;
-					if 0 > i {
-						i = max_i
+			let push_cursor: bool = match self.hint {
+				HintEnum::Single(hint) => {
+					if apply_key {
+						new_string = string + &hint;
+						true
+					} else {
+						false
 					}
 				}
+				HintEnum::Many(hints) => {
+					let max_i = hints.len() as i16 - 1;
 
-				self.i = i as usize;
+					let mut i = self.i as i16;
 
-				// Doesn't need to have a number in id as there should only be 1 autocomplete popup in entire gui
-				let popup_id = ui.make_persistent_id("autocomplete_popup");
-
-				let mut clicked = false;
-
-				egui::popup_below_widget(ui, popup_id, &re, |ui| {
-					for (i, candidate) in selections.iter().enumerate() {
-						if ui
-							.selectable_label(i == self.i, *candidate)
-							.clicked()
-						{
-							clicked = true;
-							self.i = i;
+					if ui.input().key_pressed(Key::ArrowDown) {
+						i += 1;
+						if i > max_i {
+							i = 0;
+						}
+					} else if ui.input().key_pressed(Key::ArrowUp) {
+						i -= 1;
+						if 0 > i {
+							i = max_i
 						}
 					}
-				});
 
-				if clicked | apply_key {
-					new_string += selections[self.i];
-					push_cursor = true;
+					self.i = i as usize;
 
+					// Doesn't need to have a number in id as there should only be 1 autocomplete
+					// popup in entire gui
+					let popup_id = ui.make_persistent_id("autocomplete_popup");
 
-					// don't need this here as it simply won't be display next frame in `math_app.rs`
-					// ui.memory().close_popup();
-				} else {
-					ui.memory().open_popup(popup_id);
+					let mut clicked = false;
+
+					egui::popup_below_widget(ui, popup_id, &re, |ui| {
+						for (i, candidate) in hints.iter().enumerate() {
+							if ui.selectable_label(i == self.i, *candidate).clicked() {
+								clicked = true;
+								self.i = i;
+							}
+						}
+					});
+
+					if clicked | apply_key {
+						new_string += hints[self.i];
+
+						// don't need this here as it simply won't be display next
+						// frame in `math_app.rs` ui.memory().close_popup();
+
+						true
+					} else {
+						ui.memory().open_popup(popup_id);
+						false
+					}
 				}
-			}
+				_ => false,
+			};
 
 			// Push cursor to end if needed
 			if push_cursor {

@@ -79,28 +79,9 @@ impl HintEnum<'static> {
 		}
 	}
 
-	pub fn is_multi(&self) -> bool { matches!(self, HintEnum::Many(_)) }
-
-	pub fn ensure_many(&self) -> &[&str] {
-		match self {
-			HintEnum::Many(data) => data,
-			_ => panic!("ensure_many called on non-Many value"),
-		}
-	}
 	pub fn is_some(&self) -> bool { !matches!(self, HintEnum::None) }
 
 	pub fn is_none(&self) -> bool { !self.is_some() }
-
-	#[allow(dead_code)]
-	pub fn ensure_single(&self) -> &&str {
-		match self {
-			HintEnum::Single(data) => data,
-			_ => panic!("ensure_single called on non-Single value"),
-		}
-	}
-
-	#[allow(dead_code)]
-	pub fn is_single(&self) -> bool { !self.is_multi() }
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
