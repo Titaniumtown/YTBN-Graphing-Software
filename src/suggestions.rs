@@ -49,7 +49,22 @@ impl ToString for HintEnum<'static> {
 		match self {
 			HintEnum::Single(single_data) => single_data.to_string(),
 			HintEnum::Many(multi_data) => {
-				multi_data.iter().map(|a| a.to_string()).collect::<String>()
+				let max_i: i32 = (multi_data.len() as i32) - 1;
+
+				"[".to_owned()
+					+ &multi_data
+						.iter()
+						.enumerate()
+						.map(|(i, x)| {
+							let mut tmp = r#"""#.to_string() + x + r#"""#;
+							// Add comma and space if needed
+							if max_i > i as i32 {
+								tmp += ", ";
+							}
+							tmp
+						})
+						.collect::<Vec<String>>()
+						.concat() + "]"
 			}
 			HintEnum::None => String::new(),
 		}
@@ -110,7 +125,7 @@ mod tests {
 	fn hint_test() {
 		let values = HashMap::from([
 			("", HintEnum::Single("x^2")),
-			("si", HintEnum::Many(&["gnum(", "n(", "nh("])),
+			("si", HintEnum::Many(&["n(", "nh(", "gnum("])),
 			("log", HintEnum::Many(&["2(", "10("])),
 			("cos", HintEnum::Many(&["(", "h("])),
 			("sin(", HintEnum::Single(")")),
