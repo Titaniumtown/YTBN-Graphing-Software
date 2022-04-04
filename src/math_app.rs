@@ -286,7 +286,7 @@ struct Opened {
 impl Default for Opened {
 	fn default() -> Opened {
 		Self {
-			help: true,
+			help: false,
 			info: false,
 			side_panel: true,
 			welcome: true,
