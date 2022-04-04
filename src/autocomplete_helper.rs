@@ -1,4 +1,16 @@
+use core::cmp::Ordering;
 use std::collections::HashSet;
+
+/// https://www.dotnetperls.com/sort-rust
+fn compare_len_reverse_alpha(a: &String, b: &String) -> Ordering {
+	// Sort by length from short to long first.
+	let length_test = a.len().cmp(&b.len());
+	if length_test == Ordering::Equal {
+		// If same length, sort in reverse alphabetical order.
+		return b.cmp(&a);
+	}
+	return length_test;
+}
 
 /// Generates hashmap (well really a vector of tuple of strings that are then
 /// turned into a hashmap by phf)
@@ -28,11 +40,12 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 		if keys.iter().filter(|a| a == &&key).count() == 1 {
 			output.push((key.clone(), format!(r#"HintEnum::Single("{}")"#, value)));
 		} else {
-			let multi_data = tuple_list_1
+			let mut multi_data = tuple_list_1
 				.iter()
 				.filter(|(a, _)| a == key)
 				.map(|(_, b)| b)
 				.collect::<Vec<&String>>();
+			multi_data.sort_unstable_by(|a, b| compare_len_reverse_alpha(a, b));
 			output.push((key.clone(), format!("HintEnum::Many(&{:?})", multi_data)));
 		}
 	}
