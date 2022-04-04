@@ -45,7 +45,7 @@ impl AutoComplete {
 		self.changed(string.clone());
 
 		let mut func_edit = egui::TextEdit::singleline(&mut new_string)
-			.hint_forward(true)
+			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true);
 
 		if self.hint.is_none() {
@@ -92,6 +92,7 @@ impl AutoComplete {
 
 				self.i = i as usize;
 
+				// Doesn't need to have a number in id as there should only be 1 autocomplete popup in entire gui
 				let popup_id = ui.make_persistent_id("autocomplete_popup");
 
 				let mut clicked = false;
@@ -137,8 +138,7 @@ impl AutoComplete {
 				})));
 				TextEdit::store_state(ui.ctx(), te_id, state);
 			}
-			return (new_string, true);
 		}
-		(new_string, false)
+		(new_string, func_edit_focus)
 	}
 }
