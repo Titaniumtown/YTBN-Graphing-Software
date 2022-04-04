@@ -7,8 +7,8 @@ use egui::{
 	FontFamily, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use instant::Duration;
-use std::collections::{BTreeMap, HashMap};
-use std::{collections::BTreeSet, io::Read, ops::BitXorAssign, str};
+use std::collections::BTreeMap;
+use std::{io::Read, ops::BitXorAssign, str};
 
 #[cfg(threading)]
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
@@ -24,6 +24,7 @@ struct Assets {
 	pub text_help_panel: String,
 	pub text_help_function: String,
 	pub text_help_other: String,
+	pub text_welcome: String,
 
 	// Explanation of license
 	pub text_license_info: String,
@@ -39,6 +40,7 @@ impl Assets {
 			text_help_function: json.help_function,
 			text_help_other: json.help_other,
 			text_license_info: json.license_info,
+			text_welcome: json.welcome_text,
 		}
 	}
 
@@ -51,6 +53,7 @@ impl Assets {
 			help_function: self.text_help_function.clone(),
 			help_other: self.text_help_other.clone(),
 			license_info: self.text_license_info.clone(),
+			welcome_text: self.text_welcome.clone(),
 		}
 	}
 }
@@ -276,14 +279,16 @@ struct Opened {
 	pub help: bool,
 	pub info: bool,
 	pub side_panel: bool,
+	pub welcome: bool,
 }
 
 impl Default for Opened {
 	fn default() -> Opened {
 		Self {
 			help: true,
-			info: true,
+			info: false,
 			side_panel: true,
+			welcome: true,
 		}
 	}
 }
@@ -560,6 +565,8 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
+		let center_pos = ctx.available_rect().center();
+
 		// if text boxes aren't in focus, allow H keybind to toggle side panel.
 		// this is behind this check as if it wasn't, it would trigger if the user
 		// presses the h key in a text box as well
@@ -666,6 +673,16 @@ impl epi::App for MathApp {
 				ui.collapsing("Other", |ui| {
 					ui.label(&ASSETS.text_help_other);
 				});
+			});
+
+		// Window with information about the build and current commit
+		Window::new("Welcome!")
+			.default_pos(center_pos)
+			.open(&mut self.opened.welcome)
+			.resizable(false)
+			.collapsible(false)
+			.show(ctx, |ui| {
+				ui.label(&*ASSETS.text_welcome);
 			});
 
 		// Window with information about the build and current commit
