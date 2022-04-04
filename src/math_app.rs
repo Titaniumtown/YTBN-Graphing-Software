@@ -1,11 +1,12 @@
 use crate::consts::*;
 use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
-use eframe::{egui, epi};
+use eframe::{egui, emath, epi};
 use egui::{
-	plot::Plot, Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions,
+	plot::Plot, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions,
 	FontFamily, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
+use emath::Align2;
 use instant::Duration;
 use std::collections::BTreeMap;
 use std::{io::Read, ops::BitXorAssign, str};
@@ -565,8 +566,6 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
-		let center_pos = ctx.available_rect().center();
-
 		// if text boxes aren't in focus, allow H keybind to toggle side panel.
 		// this is behind this check as if it wasn't, it would trigger if the user
 		// presses the h key in a text box as well
@@ -647,8 +646,8 @@ impl epi::App for MathApp {
 
 		// Help window with information for users
 		Window::new("Help")
-			.default_pos([200.0, 200.0])
 			.open(&mut self.opened.help)
+			.default_pos([200.0, 200.0])
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
@@ -677,8 +676,8 @@ impl epi::App for MathApp {
 
 		// Welcome window
 		Window::new("Welcome!")
-			.default_pos(center_pos)
 			.open(&mut self.opened.welcome)
+			.anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
@@ -687,8 +686,8 @@ impl epi::App for MathApp {
 
 		// Window with information about the build and current commit
 		Window::new("Info")
-			.default_pos([200.0, 200.0])
 			.open(&mut self.opened.info)
+			.default_pos([200.0, 200.0])
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
