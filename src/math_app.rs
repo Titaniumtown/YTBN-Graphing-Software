@@ -675,7 +675,7 @@ impl epi::App for MathApp {
 				});
 			});
 
-		// Window with information about the build and current commit
+		// Welcome window
 		Window::new("Welcome!")
 			.default_pos(center_pos)
 			.open(&mut self.opened.welcome)
