@@ -39,14 +39,14 @@ impl AutoComplete {
 		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
 		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 
-		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
-
 		// update self
 		self.changed(&string);
 
 		let mut func_edit = egui::TextEdit::singleline(&mut new_string)
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true);
+
+		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
 		if self.hint.is_none() {
 			let re = func_edit.id(te_id).ui(ui);
