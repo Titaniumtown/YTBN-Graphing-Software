@@ -593,7 +593,7 @@ impl epi::App for MathApp {
 
 				// Button to add a new function
 				if ui
-					.add(Button::new("Add Function"))
+					.add_enabled(14 > self.func_strs.len(), Button::new("Add Function"))
 					.on_hover_text("Create and graph new function")
 					.clicked()
 				{
@@ -755,7 +755,7 @@ impl epi::App for MathApp {
 						.functions
 						.iter()
 						.enumerate()
-						.map(|(_, function)| function.display(plot_ui, &self.settings))
+						.map(|(i, function)| function.display(plot_ui, &self.settings, COLORS[i]))
 						.collect();
 				});
 		});

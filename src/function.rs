@@ -327,7 +327,9 @@ impl FunctionEntry {
 
 	/// Displays the function's output on PlotUI `plot_ui` with settings
 	/// `settings`. Returns an `Option<f64>` of the calculated integral
-	pub fn display(&self, plot_ui: &mut PlotUi, settings: &AppSettings) -> Option<f64> {
+	pub fn display(
+		&self, plot_ui: &mut PlotUi, settings: &AppSettings, main_plot_color: Color32,
+	) -> Option<f64> {
 		if self.test_result.is_some() {
 			return None;
 		}
@@ -341,7 +343,7 @@ impl FunctionEntry {
 				back_data
 					.clone()
 					.to_line()
-					.color(Color32::RED)
+					.color(main_plot_color)
 					.name(self.get_func_raw()),
 			);
 		}

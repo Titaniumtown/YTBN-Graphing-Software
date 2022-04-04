@@ -2,6 +2,7 @@ use crate::function::Riemann;
 use std::ops::RangeInclusive;
 
 use const_format::formatc;
+use eframe::epaint::Color32;
 use shadow_rs::shadow;
 shadow!(build);
 
@@ -46,3 +47,24 @@ const_assert!(DEFAULT_MAX_X > DEFAULT_MIN_X);
 
 /// Default number of integral boxes
 pub const DEFAULT_INTEGRAL_NUM: usize = 100;
+
+pub const COLORS: &'static [Color32; 14] = &[
+	Color32::RED,
+	// Color32::GREEN,
+	// Color32::YELLOW,
+	// Color32::BLUE,
+	Color32::BROWN,
+	Color32::GOLD,
+	Color32::GRAY,
+	Color32::WHITE,
+	Color32::LIGHT_YELLOW,
+	Color32::LIGHT_GREEN,
+	// Color32::LIGHT_BLUE,
+	Color32::LIGHT_GRAY,
+	Color32::LIGHT_RED,
+	Color32::DARK_GRAY,
+	Color32::DARK_RED,
+	Color32::KHAKI,
+	Color32::DARK_GREEN,
+	Color32::DARK_BLUE,
+];
