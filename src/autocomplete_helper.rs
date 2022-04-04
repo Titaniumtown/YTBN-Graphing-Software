@@ -7,9 +7,9 @@ fn compare_len_reverse_alpha(a: &String, b: &String) -> Ordering {
 	let length_test = a.len().cmp(&b.len());
 	if length_test == Ordering::Equal {
 		// If same length, sort in reverse alphabetical order.
-		return b.cmp(&a);
+		return b.cmp(a);
 	}
-	return length_test;
+	length_test
 }
 
 /// Generates hashmap (well really a vector of tuple of strings that are then
