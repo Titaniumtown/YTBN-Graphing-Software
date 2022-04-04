@@ -35,9 +35,6 @@ impl AutoComplete {
 
 	pub fn ui(&mut self, ui: &mut egui::Ui, string: String, func_i: i32) -> (String, bool) {
 		let mut new_string = string.clone();
-		// Put here so these key presses don't interact with other elements
-		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 
 		// update self
 		self.changed(&string);
@@ -53,6 +50,10 @@ impl AutoComplete {
 			let return_string = (&new_string).to_string();
 			return (return_string, re.has_focus());
 		}
+
+		// Put here so these key presses don't interact with other elements
+		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
+		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 
 		if let Some(single_hint) = self.hint.get_single() {
 			let func_edit_2 = func_edit;
