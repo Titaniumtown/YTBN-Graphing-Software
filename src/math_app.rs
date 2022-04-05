@@ -276,6 +276,7 @@ impl Default for AppSettings {
 	}
 }
 
+/// Used to store the opened of windows/widgets
 struct Opened {
 	pub help: bool,
 	pub info: bool,
@@ -299,13 +300,9 @@ pub struct MathApp {
 	/// Stores vector of functions
 	functions: Vec<FunctionEntry>,
 
-	/// Stores vector containing the string representation of the functions.
-	/// This is used because of hacky reasons
-	func_strs: Vec<String>,
-
 	/// Stores last error from parsing functions (used to display the same error
 	/// when side panel is minimized)
-	func_errors: Vec<Option<(usize, String)>>,
+	func_errors: Vec<Option<String>>,
 
 	/// Stores whether or not an error is stored in `self.func_errors`
 	exists_error: bool,
@@ -331,7 +328,6 @@ impl Default for MathApp {
 	fn default() -> Self {
 		Self {
 			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
-			func_strs: vec![String::new()],
 			func_errors: vec![None],
 			exists_error: false,
 			last_info: (vec![None], Duration::ZERO),
@@ -502,41 +498,24 @@ impl MathApp {
 						);
 
 						// Contains the function string in a text box that the user can edit
-						let (focused, changed, error) =
-							function.auto_complete(ui, &mut self.func_strs[i], i as i32);
+						let (focused, changed, error) = function.auto_complete(ui, i as i32);
+
 						if focused {
 							self.text_boxes_focused = true;
 						}
 
-						if error.is_some() {
+						if let Some(error_string) = error {
 							self.exists_error = true;
 							if changed {
-								self.func_errors[i] =
-									function.get_test_result().map(|error| (i, error));
+								self.func_errors[i] = Some(error_string);
 							}
 						}
 					});
-
-					// let func_failed = self.func_errors[i].is_some();
-					// if func_failed {
-					//
-					// }
-
-					// let update_result = function
-					// 	.update(&self.func_strs[i], integral_enabled,
-					// derivative_enabled) 	.map(|error| (i, error));
-
-					// if update_result.is_some() {
-					// 	self.exists_error = true;
-					// }
-
-					// self.func_errors[i] = update_result
 				}
 
 				// Remove function if the user requests it
 				if let Some(remove_i_unwrap) = remove_i {
 					self.functions.remove(remove_i_unwrap);
-					self.func_strs.remove(remove_i_unwrap);
 					self.func_errors.remove(remove_i_unwrap);
 				}
 
@@ -593,12 +572,14 @@ impl epi::App for MathApp {
 
 				// Button to add a new function
 				if ui
-					.add_enabled(14 > self.func_strs.len(), Button::new("Add Function"))
+					.add_enabled(
+						COLORS.len() > self.functions.len(),
+						Button::new("Add Function"),
+					)
 					.on_hover_text("Create and graph new function")
 					.clicked()
 				{
 					self.functions.push(DEFAULT_FUNCTION_ENTRY.clone());
-					self.func_strs.push(String::new());
 					self.func_errors.push(None);
 				}
 
@@ -713,10 +694,11 @@ impl epi::App for MathApp {
 				ui.centered_and_justified(|ui| {
 					self.func_errors
 						.iter()
-						.filter(|ele| ele.is_some())
-						.map(|ele| ele.as_ref().unwrap())
-						.for_each(|ele| {
-							ui.heading(format!("(Function #{}) {}\n", ele.0, ele.1));
+						.enumerate()
+						.filter(|(_, error)| error.is_some())
+						.map(|(i, error)| (i, error.as_ref().unwrap()))
+						.for_each(|(i, error)| {
+							ui.heading(format!("(Function #{}) {}\n", i, error));
 						})
 				});
 				return;

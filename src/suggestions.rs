@@ -6,7 +6,7 @@ pub fn generate_hint(input: &str) -> HintEnum<'static> {
 		return HintEnum::Single("x^2");
 	}
 
-	let chars: Vec<char> = input.chars().collect();
+	let chars: Vec<char> = input.chars().collect::<Vec<char>>();
 
 	let mut open_parens: usize = 0;
 	let mut closed_parens: usize = 0;
@@ -22,8 +22,8 @@ pub fn generate_hint(input: &str) -> HintEnum<'static> {
 
 	let len = chars.len();
 
-	for i in (1..=MAX_FUNC_LEN).rev().filter(|i| len >= *i) {
-		if let Some(output) = get_completion(chars_take(&chars, i)) {
+	for i in (1..=MAX_COMPLETION_LEN).rev().filter(|i| len >= *i) {
+		if let Some(output) = get_completion(&chars_take(&chars, i)) {
 			return output;
 		}
 	}
@@ -72,13 +72,6 @@ impl ToString for HintEnum<'static> {
 }
 
 impl HintEnum<'static> {
-	pub fn get_single(&self) -> Option<String> {
-		match self {
-			HintEnum::Single(x) => Some(x.to_string()),
-			_ => None,
-		}
-	}
-
 	pub fn is_some(&self) -> bool { !matches!(self, HintEnum::None) }
 
 	pub fn is_none(&self) -> bool { !self.is_some() }
@@ -87,12 +80,14 @@ impl HintEnum<'static> {
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 /// Gets completion from `COMPLETION_HASHMAP`
-pub fn get_completion(key: String) -> Option<HintEnum<'static>> {
+pub fn get_completion(key: &str) -> Option<HintEnum<'static>> {
+	// If key is empty, just return None
 	if key.is_empty() {
 		return None;
 	}
 
-	COMPLETION_HASHMAP.get(&key).cloned()
+	// Get and clone the recieved data
+	COMPLETION_HASHMAP.get(key).cloned()
 }
 
 #[cfg(test)]

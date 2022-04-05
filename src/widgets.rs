@@ -55,9 +55,9 @@ impl AutoComplete {
 		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
 		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 
-		if let Some(single_hint) = self.hint.get_single() {
+		if let HintEnum::Single(single_hint) = self.hint {
 			let func_edit_2 = func_edit;
-			func_edit = func_edit_2.hint_text(&single_hint);
+			func_edit = func_edit_2.hint_text(single_hint);
 		}
 
 		let re = func_edit.id(te_id).ui(ui);
@@ -71,7 +71,7 @@ impl AutoComplete {
 			let push_cursor: bool = match self.hint {
 				HintEnum::Single(hint) => {
 					if apply_key {
-						new_string = string + &hint;
+						new_string += hint;
 						true
 					} else {
 						false

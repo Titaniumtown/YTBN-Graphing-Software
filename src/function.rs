@@ -90,14 +90,11 @@ impl Default for FunctionEntry {
 impl FunctionEntry {
 	pub fn get_func_raw(&self) -> String { self.raw_func_str.to_string() }
 
-	pub fn auto_complete(
-		&mut self, ui: &mut egui::Ui, string: &mut String, i: i32,
-	) -> (bool, bool, Option<String>) {
-		let (output_string, in_focus) = self.autocomplete.ui(ui, string.to_string(), i);
+	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: i32) -> (bool, bool, Option<String>) {
+		let (output_string, in_focus) = self.autocomplete.ui(ui, self.raw_func_str.clone(), i);
 
-		let changed = output_string != *string;
+		let changed = output_string != self.raw_func_str;
 		if changed {
-			*string = output_string.clone();
 			self.update_string(&output_string);
 		}
 
@@ -390,17 +387,18 @@ impl FunctionEntry {
 		}
 
 		// Plot integral data
-		if let Some(integral_data) = &self.integral_data {
-			plot_ui.bar_chart(
-				BarChart::new(integral_data.0.clone())
-					.color(Color32::BLUE)
-					.width(step),
-			);
+		match &self.integral_data {
+			Some(integral_data) => {
+				plot_ui.bar_chart(
+					BarChart::new(integral_data.0.clone())
+						.color(Color32::BLUE)
+						.width(step),
+				);
 
-			// return value rounded to 8 decimal places
-			Some(crate::misc::decimal_round(integral_data.1, 8))
-		} else {
-			None
+				// return value rounded to 8 decimal places
+				Some(crate::misc::decimal_round(integral_data.1, 8))
+			}
+			_ => None,
 		}
 	}
 

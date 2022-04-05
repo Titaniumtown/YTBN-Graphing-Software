@@ -342,12 +342,18 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
-pub fn chars_take(chars: &[char], i: usize) -> String {
-	if i > chars.len() {
-		panic!("chars_take: i is larget than chars.len()");
+pub fn chars_take(chars: &[char], take: usize) -> String {
+	let len = chars.len();
+	assert!(len >= take);
+	if take == len {
+		// return `chars` turned into a string if `take == len`
+		return chars.iter().collect::<String>();
+	} else if take == 0 {
+		// return empty string if `take == 0`
+		return String::new();
 	}
 
-	chars.iter().rev().take(i).rev().collect::<String>()
+	chars.iter().rev().take(take).rev().collect::<String>()
 }
 
 #[cfg(test)]
