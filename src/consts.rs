@@ -49,8 +49,7 @@ const_assert!(DEFAULT_MAX_X > DEFAULT_MIN_X);
 pub const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 /// Colors used for plotting
-// Colors commented out are used elsewhere and are not included here for better
-// user experience
+// Colors commented out are used elsewhere and are not included here for better user experience
 pub const COLORS: &[Color32; 14] = &[
 	Color32::RED,
 	// Color32::GREEN,

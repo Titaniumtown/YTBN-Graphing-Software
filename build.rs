@@ -53,7 +53,20 @@ fn generate_hashmap() {
 	.unwrap();
 	writeln!(&mut file, ";").unwrap();
 
-	write!(&mut file, "const MAX_COMPLETION_LEN: usize = {};", max_len).unwrap();
+	write!(
+		&mut file,
+		"const MAX_COMPLETION_LEN: usize = {};\n",
+		max_len
+	)
+	.unwrap();
+
+	write!(
+		&mut file,
+		"#[allow(dead_code)] pub const SUPPORTED_FUNCTIONS: [&str; {}] = {:?};",
+		SUPPORTED_FUNCTIONS.len(),
+		SUPPORTED_FUNCTIONS.to_vec()
+	)
+	.unwrap();
 }
 
 include!(concat!(

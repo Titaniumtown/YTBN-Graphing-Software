@@ -74,28 +74,29 @@ One limitation though, variables with multiple characters like `pi` cannot be mu
 In the future I may want to completely rewrite this or implement this natively in exmex.
 */
 pub fn process_func_str(function_in: &str) -> String {
-	let function = function_in.replace("log10(", "log(").replace("pi", "π"); // pi -> π and log10 -> log
+	let function = function_in
+		.replace("log10(", "log(") // log10 -> log
+		.replace("pi", "π") // pi -> π
+		.replace("exp", "\u{1fc93}"); // replace 'exp' with this random unicode character because it can't be parsed correctly
 	let function_chars: Vec<char> = function.chars().collect();
 	let mut output_string: String = String::new();
-	let mut prev_chars: Vec<char> = Vec::new();
-	for c in function_chars {
+	for (i, c) in function_chars.iter().enumerate() {
 		let mut add_asterisk: bool = false;
-		let prev_chars_len = prev_chars.len();
 
-		let prev_prev_prev_char = if prev_chars_len >= 3 {
-			*prev_chars.get(prev_chars_len - 3).unwrap()
+		let prev_prev_prev_char = if i > 2 {
+			*function_chars.get(i - 3).unwrap()
 		} else {
 			' '
 		};
 
-		let prev_prev_char = if prev_chars_len >= 2 {
-			*prev_chars.get(prev_chars_len - 2).unwrap()
+		let prev_prev_char = if i > 1 {
+			*function_chars.get(i - 2).unwrap()
 		} else {
 			' '
 		};
 
-		let prev_char = if prev_chars_len >= 1 {
-			*prev_chars.get(prev_chars_len - 1).unwrap()
+		let prev_char = if i > 0 {
+			*function_chars.get(i - 1).unwrap()
 		} else {
 			' '
 		};
@@ -107,12 +108,12 @@ pub fn process_func_str(function_in: &str) -> String {
 		let prev_char_is_number = NUMBERS.contains(&prev_char);
 
 		// makes special case for log with base of a 1-2 digit number
-		if (prev_prev_prev_char == 'l')
+		if ((prev_prev_prev_char == 'l')
 			&& (prev_prev_char == 'o')
 			&& (prev_char == 'g')
-			&& c_is_number
+			&& c_is_number)
+			| ((prev_prev_char == 'c') && (prev_char == 'e') && (*c == 'i'))
 		{
-			prev_chars.push(c);
 			output_string += &c.to_string();
 			continue;
 		}
@@ -122,10 +123,10 @@ pub fn process_func_str(function_in: &str) -> String {
 
 		if prev_char == ')' {
 			// cases like `)x`, `)2`, and `)(`
-			if c_letters_var | c_is_number | (c == '(') {
+			if c_letters_var | c_is_number | (*c == '(') {
 				add_asterisk = true;
 			}
-		} else if c == '(' {
+		} else if *c == '(' {
 			// cases like `x(` and `2(`
 			if (prev_char_is_variable | prev_char_is_number) && !LETTERS.contains(&prev_prev_char) {
 				add_asterisk = true;
@@ -151,21 +152,20 @@ pub fn process_func_str(function_in: &str) -> String {
 
 		// if add_asterisk is true, add the asterisk
 		if add_asterisk {
+			println!("a");
 			output_string += "*";
 		}
-
-		// puch current char to vector of previously parsed chars
-		prev_chars.push(c);
 
 		// push current char to `output_string` (which is eventually returned)
 		output_string += &c.to_string();
 	}
 
-	output_string.replace("log(", "log10(")
+	output_string
+		.replace("log(", "log10(")
+		.replace('\u{1fc93}', "exp")
 }
 
-/// Tests function to make sure it's able to be parsed. Returns the string of
-/// the Error produced, or an empty string if it runs successfully.
+/// Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
 pub fn test_func(function_string: &str) -> Option<String> {
 	if function_string.is_empty() {
 		return None;
@@ -198,15 +198,13 @@ pub fn test_func(function_string: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::suggestions::SUPPORTED_FUNCTIONS;
 	use std::collections::HashMap;
 
-	/// returns if function with string `func_str` is valid after processing
-	/// through [`process_func_str`]
+	/// returns if function with string `func_str` is valid after processing through [`process_func_str`]
 	fn func_is_valid(func_str: &str) -> bool { test_func(&process_func_str(func_str)).is_none() }
 
-	/// Used for testing: passes function to [`process_func_str`] before running
-	/// [`test_func`]. if `expect_valid` == `true`, it expects no errors to be
-	/// created.
+	/// Used for testing: passes function to [`process_func_str`] before running [`test_func`]. if `expect_valid` == `true`, it expects no errors to be created.
 	fn test_func_helper(func_str: &str, expect_valid: bool) {
 		let is_valid = func_is_valid(func_str);
 		println!(
@@ -274,6 +272,7 @@ mod tests {
 	/// Tests to make sure my cursed function works as intended
 	#[test]
 	fn func_process_test() {
+		/*
 		let values = HashMap::from([
 			("2x", "2*x"),
 			("x2", "x*2"),
@@ -303,9 +302,28 @@ mod tests {
 			("pisin(x)", "π*sin(x)"),
 			("e^sin(x)", "e^sin(x)"),
 		]);
+		*/
+		let values = HashMap::from([
+			("2x", "2*x"),
+			(")(", ")*("),
+			("(2", "(2"),
+			("log10(x)", "log10(x)"),
+			("log2(x)", "log2(x)"),
+			("pipipipipipi", "π*π*π*π*π*π"),
+			("10pi", "10*π"),
+			("pi10", "π*10"),
+			("emax(x)", "e*max(x)"),
+			("pisin(x)", "π*sin(x)"),
+			("e^sin(x)", "e^sin(x)"),
+		]);
 
 		for (key, value) in values {
 			test_process_helper(key, value);
+		}
+
+		for func in SUPPORTED_FUNCTIONS.iter() {
+			let func_new = format!("{}(x)", func);
+			test_process_helper(&func_new, &func_new);
 		}
 	}
 }
