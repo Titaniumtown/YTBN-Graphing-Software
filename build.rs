@@ -53,9 +53,9 @@ fn generate_hashmap() {
 	.unwrap();
 	writeln!(&mut file, ";").unwrap();
 
-	write!(
+	writeln!(
 		&mut file,
-		"const MAX_COMPLETION_LEN: usize = {};\n",
+		"const MAX_COMPLETION_LEN: usize = {};",
 		max_len
 	)
 	.unwrap();

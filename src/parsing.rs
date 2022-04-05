@@ -101,9 +101,9 @@ pub fn process_func_str(function_in: &str) -> String {
 			' '
 		};
 
-		let c_is_number = NUMBERS.contains(&c);
-		let c_is_letter = LETTERS.contains(&c);
-		let c_is_variable = VALID_VARIABLES.contains(&c);
+		let c_is_number = NUMBERS.contains(c);
+		let c_is_letter = LETTERS.contains(c);
+		let c_is_variable = VALID_VARIABLES.contains(c);
 		let prev_char_is_variable = VALID_VARIABLES.contains(&prev_char);
 		let prev_char_is_number = NUMBERS.contains(&prev_char);
 
