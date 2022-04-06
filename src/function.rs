@@ -52,11 +52,11 @@ pub struct FunctionEntry {
 	/// If displaying derivatives are enabled (note, they are still calculated for other purposes)
 	pub derivative: bool,
 
-	back_data: Option<Vec<Value>>,
+	back_data: Vec<Value>,
 	integral_data: Option<(Vec<Bar>, f64)>,
-	derivative_data: Option<Vec<Value>>,
-	extrema_data: Option<Vec<Value>>,
-	roots_data: Option<Vec<Value>>,
+	derivative_data: Vec<Value>,
+	extrema_data: Vec<Value>,
+	roots_data: Vec<Value>,
 
 	autocomplete: AutoComplete,
 
@@ -73,11 +73,11 @@ impl Default for FunctionEntry {
 			max_x: 1.0,
 			integral: false,
 			derivative: false,
-			back_data: None,
+			back_data: Vec::new(),
 			integral_data: None,
-			derivative_data: None,
-			extrema_data: None,
-			roots_data: None,
+			derivative_data: Vec::new(),
+			extrema_data: Vec::new(),
+			roots_data: Vec::new(),
 			autocomplete: AutoComplete::default(),
 			test_result: None,
 		}
@@ -168,37 +168,29 @@ impl FunctionEntry {
 	}
 
 	/// Helps with processing newton's method depending on level of derivative
-	fn newtons_method_helper(
-		&self, threshold: &f64, derivative_level: usize,
-	) -> Option<Vec<Value>> {
+	fn newtons_method_helper(&self, threshold: &f64, derivative_level: usize) -> Vec<Value> {
 		let range = self.min_x..self.max_x;
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
 				threshold,
 				&range,
-				self.back_data.as_ref().unwrap(),
+				self.back_data.as_slice(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
 				threshold,
 				&range,
-				self.derivative_data.as_ref().unwrap(),
+				self.derivative_data.as_slice(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
 			),
 			_ => unreachable!(),
 		};
 
-		if newtons_method_output.is_empty() {
-			None
-		} else {
-			Some(
-				dyn_iter(&newtons_method_output)
-					.map(|x| Value::new(*x, self.function.get(*x)))
-					.collect(),
-			)
-		}
+		dyn_iter(&newtons_method_output)
+			.map(|x| Value::new(*x, self.function.get(*x)))
+			.collect()
 	}
 
 	/// Does the calculations and stores results in `self`
@@ -227,12 +219,11 @@ impl FunctionEntry {
 		if width_changed {
 			self.invalidate_back();
 			self.invalidate_derivative();
-		} else if min_max_changed && self.back_data.is_some() {
+		} else if min_max_changed && !self.back_data.is_empty() {
 			partial_regen = true;
 
-			let back_cache = self.back_data.as_ref().unwrap();
-
-			let x_data: SteppedVector = back_cache
+			let x_data: SteppedVector = self
+				.back_data
 				.iter()
 				.map(|ele| ele.x)
 				.collect::<Vec<f64>>()
@@ -241,7 +232,7 @@ impl FunctionEntry {
 			let back_data: Vec<Value> = dyn_iter(&resolution_iter)
 				.map(|x| {
 					if let Some(i) = x_data.get_index(x) {
-						back_cache[i]
+						self.back_data[i]
 					} else {
 						Value::new(*x, self.function.get(*x))
 					}
@@ -250,14 +241,13 @@ impl FunctionEntry {
 
 			debug_assert_eq!(back_data.len(), settings.plot_width + 1);
 
-			self.back_data = Some(back_data);
+			self.back_data = back_data;
 
 			if derivative_required {
-				let derivative_cache = self.derivative_data.as_ref().unwrap();
 				let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| {
 						if let Some(i) = x_data.get_index(x) {
-							derivative_cache[i]
+							self.derivative_data[i]
 						} else {
 							Value::new(*x, self.function.get_derivative_1(*x))
 						}
@@ -266,9 +256,9 @@ impl FunctionEntry {
 
 				debug_assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
 
-				self.derivative_data = Some(new_derivative_data);
+				self.derivative_data = new_derivative_data;
 			} else {
-				self.derivative_data = None;
+				self.invalidate_derivative();
 			}
 		} else {
 			self.invalidate_back();
@@ -278,21 +268,21 @@ impl FunctionEntry {
 		let threshold: f64 = resolution / 2.0;
 
 		if !partial_regen {
-			if self.back_data.is_none() {
+			if self.back_data.is_empty() {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get(*x)))
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 
-				self.back_data = Some(data);
+				self.back_data = data;
 			}
 
-			if derivative_required && self.derivative_data.is_none() {
+			if derivative_required && self.derivative_data.is_empty() {
 				let data: Vec<Value> = dyn_iter(&resolution_iter)
 					.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
-				self.derivative_data = Some(data);
+				self.derivative_data = data;
 			}
 		}
 
@@ -312,12 +302,12 @@ impl FunctionEntry {
 		}
 
 		// Calculates extrema
-		if settings.do_extrema && (min_max_changed | self.extrema_data.is_none()) {
+		if settings.do_extrema && (min_max_changed | self.extrema_data.is_empty()) {
 			self.extrema_data = self.newtons_method_helper(&threshold, 1);
 		}
 
 		// Calculates roots
-		if settings.do_roots && (min_max_changed | self.roots_data.is_none()) {
+		if settings.do_roots && (min_max_changed | self.roots_data.is_empty()) {
 			self.roots_data = self.newtons_method_helper(&threshold, 0);
 		}
 	}
@@ -334,11 +324,11 @@ impl FunctionEntry {
 		let derivative_str = self.function.get_derivative_str();
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
 			/ (settings.integral_num as f64);
+
 		// Plot back data
-		if let Some(back_data) = &self.back_data {
+		if !self.back_data.is_empty() {
 			plot_ui.line(
-				back_data
-					.clone()
+				self.back_data
 					.to_line()
 					.color(main_plot_color)
 					.name(&self.raw_func_str),
@@ -347,10 +337,9 @@ impl FunctionEntry {
 
 		// Plot derivative data
 		if self.derivative {
-			if let Some(derivative_data) = &self.derivative_data {
+			if !self.derivative_data.is_empty() {
 				plot_ui.line(
-					derivative_data
-						.clone()
+					self.derivative_data
 						.to_line()
 						.color(Color32::GREEN)
 						.name(derivative_str),
@@ -360,30 +349,24 @@ impl FunctionEntry {
 
 		// Plot extrema points
 		if settings.do_extrema {
-			if let Some(extrema_data) = &self.extrema_data {
-				plot_ui.points(
-					extrema_data
-						.clone()
-						.to_points()
-						.color(Color32::YELLOW)
-						.name("Extrema")
-						.radius(5.0), // Radius of points of Extrema
-				);
-			}
+			plot_ui.points(
+				self.extrema_data
+					.to_points()
+					.color(Color32::YELLOW)
+					.name("Extrema")
+					.radius(5.0), // Radius of points of Extrema
+			);
 		}
 
 		// Plot roots points
 		if settings.do_roots {
-			if let Some(roots_data) = &self.roots_data {
-				plot_ui.points(
-					roots_data
-						.clone()
-						.to_points()
-						.color(Color32::LIGHT_BLUE)
-						.name("Root")
-						.radius(5.0), // Radius of points of Roots
-				);
-			}
+			plot_ui.points(
+				self.roots_data
+					.to_points()
+					.color(Color32::LIGHT_BLUE)
+					.name("Root")
+					.radius(5.0), // Radius of points of Roots
+			);
 		}
 
 		// Plot integral data
@@ -404,21 +387,21 @@ impl FunctionEntry {
 
 	/// Invalidate entire cache
 	pub fn invalidate_whole(&mut self) {
-		self.back_data = None;
-		self.integral_data = None;
-		self.derivative_data = None;
-		self.extrema_data = None;
-		self.roots_data = None;
+		self.invalidate_back();
+		self.invalidate_integral();
+		self.invalidate_derivative();
+		self.extrema_data.clear();
+		self.roots_data.clear();
 	}
 
 	/// Invalidate `back` data
-	pub fn invalidate_back(&mut self) { self.back_data = None; }
+	pub fn invalidate_back(&mut self) { self.back_data.clear(); }
 
 	/// Invalidate Integral data
 	pub fn invalidate_integral(&mut self) { self.integral_data = None; }
 
 	/// Invalidate Derivative data
-	pub fn invalidate_derivative(&mut self) { self.derivative_data = None; }
+	pub fn invalidate_derivative(&mut self) { self.derivative_data.clear(); }
 
 	/// Runs asserts to make sure everything is the expected value
 	#[cfg(test)]
@@ -428,33 +411,29 @@ impl FunctionEntry {
 	) {
 		{
 			self.calculate(&min_x, &max_x, true, &settings);
-			let settings = settings;
 			let back_target = back_target;
-			assert!(self.back_data.is_some());
-			let back_data = self.back_data.as_ref().unwrap().clone();
-			assert_eq!(back_data.len(), settings.plot_width + 1);
-			let back_vec_tuple = back_data.to_tuple();
+			assert!(!self.back_data.is_empty());
+			assert_eq!(self.back_data.len(), settings.plot_width + 1);
+			let back_vec_tuple = self.back_data.to_tuple();
 			assert_eq!(back_vec_tuple, back_target);
 
 			assert!(self.integral);
 			assert!(self.derivative);
 
-			assert_eq!(self.roots_data.is_some(), settings.do_roots);
-			assert_eq!(self.extrema_data.is_some(), settings.do_extrema);
-			assert!(self.derivative_data.is_some());
+			assert_eq!(!self.roots_data.is_empty(), settings.do_roots);
+			assert_eq!(!self.extrema_data.is_empty(), settings.do_extrema);
+			assert!(!self.derivative_data.is_empty());
 			assert!(self.integral_data.is_some());
 
-			assert_eq!(
-				self.derivative_data.as_ref().unwrap().to_tuple(),
-				derivative_target
-			);
+			assert_eq!(self.derivative_data.to_tuple(), derivative_target);
 
 			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
 		}
 
 		{
-			self.update_string("x^3");
-			assert_eq!(&self.raw_func_str, "x^3");
+			self.update_string("sin(x)");
+			assert!(self.get_test_result().is_none());
+			assert_eq!(&self.raw_func_str, "sin(x)");
 
 			self.integral = false;
 			self.derivative = false;
@@ -462,19 +441,19 @@ impl FunctionEntry {
 			assert!(!self.integral);
 			assert!(!self.derivative);
 
-			assert!(self.back_data.is_none());
+			assert!(self.back_data.is_empty());
 			assert!(self.integral_data.is_none());
-			assert!(self.roots_data.is_none());
-			assert!(self.extrema_data.is_none());
-			assert!(self.derivative_data.is_none());
+			assert!(self.roots_data.is_empty());
+			assert!(self.extrema_data.is_empty());
+			assert!(self.derivative_data.is_empty());
 
 			self.calculate(&min_x, &max_x, true, &settings);
 
-			assert!(self.back_data.is_some());
+			assert!(!self.back_data.is_empty());
 			assert!(self.integral_data.is_none());
-			assert!(self.roots_data.is_none());
-			assert!(self.extrema_data.is_none());
-			assert!(self.derivative_data.is_none());
+			assert!(self.roots_data.is_empty());
+			assert!(self.extrema_data.is_empty());
+			assert!(self.derivative_data.is_empty());
 		}
 	}
 }
