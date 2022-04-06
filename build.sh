@@ -13,13 +13,13 @@ wasm_opt() {
 }
 
 if test "$1" == "" || test "$1" == "release"; then
-	wasm-pack build --target web --release --no-typescript
+	RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --target web --release --no-typescript
 	echo "Binary size (pre-wasm_opt): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
 	wasm_opt #apply wasm optimizations
 	echo "Binary size (pre-strip): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
 	llvm-strip --strip-all pkg/ytbn_graphing_software_bg.wasm
 elif test "$1" == "debug"; then
-	wasm-pack build --target web --debug --no-typescript
+	RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --target web --debug --no-typescript
 else
 	echo "ERROR: build.sh, argument invalid"
 	exit 1

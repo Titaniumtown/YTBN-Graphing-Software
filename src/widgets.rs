@@ -114,8 +114,8 @@ impl AutoComplete {
 					if clicked | apply_key {
 						new_string += hints[self.i];
 
-						// don't need this here as it simply won't be display next
-						// frame in `math_app.rs` ui.memory().close_popup();
+						// don't need this here as it simply won't be display next frame in `math_app.rs`
+						// ui.memory().close_popup();
 
 						true
 					} else {

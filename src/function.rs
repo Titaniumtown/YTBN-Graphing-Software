@@ -36,12 +36,10 @@ lazy_static::lazy_static! {
 /// derivatives, etc etc
 #[derive(Clone)]
 pub struct FunctionEntry {
-	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`,
-	/// and `f''(x)`
+	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
 	function: BackingFunction,
 
-	/// Stores a function string (that hasn't been processed via
-	/// `process_func_str`) to display to the user
+	/// Stores a function string (that hasn't been processed via `process_func_str`) to display to the user
 	raw_func_str: String,
 
 	/// Minimum and Maximum values of what do display
@@ -51,8 +49,7 @@ pub struct FunctionEntry {
 	/// If calculating/displayingintegrals are enabled
 	pub integral: bool,
 
-	/// If displaying derivatives are enabled (note, they are still calculated
-	/// for other purposes)
+	/// If displaying derivatives are enabled (note, they are still calculated for other purposes)
 	pub derivative: bool,
 
 	back_data: Option<Vec<Value>>,
@@ -88,8 +85,7 @@ impl Default for FunctionEntry {
 }
 
 impl FunctionEntry {
-	pub fn get_func_raw(&self) -> String { self.raw_func_str.to_string() }
-
+	/// Create autocomplete ui and handle user input
 	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: i32) -> (bool, bool, Option<String>) {
 		let (output_string, in_focus) = self.autocomplete.ui(ui, self.raw_func_str.clone(), i);
 
@@ -101,8 +97,10 @@ impl FunctionEntry {
 		(in_focus, changed, self.get_test_result())
 	}
 
+	/// Get function's cached test result
 	pub fn get_test_result(&self) -> Option<String> { self.test_result.clone() }
 
+	/// Update function string and test it
 	fn update_string(&mut self, raw_func_str: &str) {
 		let processed_func = process_func_str(raw_func_str);
 		let output = crate::parsing::test_func(&processed_func);
@@ -118,6 +116,7 @@ impl FunctionEntry {
 		self.invalidate_whole();
 	}
 
+	/// Get function that can be used to calculate integral based on Riemann Sum type
 	fn get_sum_func(&self, sum: Riemann) -> FunctionHelper {
 		match sum {
 			Riemann::Left => {
@@ -132,8 +131,7 @@ impl FunctionEntry {
 		}
 	}
 
-	/// Creates and does the math for creating all the rectangles under the
-	/// graph
+	/// Creates and does the math for creating all the rectangles under the graph
 	fn integral_rectangles(
 		&self, integral_min_x: &f64, integral_max_x: &f64, sum: &Riemann, integral_num: &usize,
 	) -> (Vec<(f64, f64)>, f64) {
@@ -249,7 +247,9 @@ impl FunctionEntry {
 					}
 				})
 				.collect();
+
 			debug_assert_eq!(back_data.len(), settings.plot_width + 1);
+
 			self.back_data = Some(back_data);
 
 			if derivative_required {
@@ -322,8 +322,8 @@ impl FunctionEntry {
 		}
 	}
 
-	/// Displays the function's output on PlotUI `plot_ui` with settings
-	/// `settings`. Returns an `Option<f64>` of the calculated integral
+	/// Displays the function's output on PlotUI `plot_ui` with settings `settings`.
+	/// Returns an `Option<f64>` of the calculated integral.
 	pub fn display(
 		&self, plot_ui: &mut PlotUi, settings: &AppSettings, main_plot_color: Color32,
 	) -> Option<f64> {
@@ -341,7 +341,7 @@ impl FunctionEntry {
 					.clone()
 					.to_line()
 					.color(main_plot_color)
-					.name(self.get_func_raw()),
+					.name(&self.raw_func_str),
 			);
 		}
 
@@ -420,21 +420,6 @@ impl FunctionEntry {
 	/// Invalidate Derivative data
 	pub fn invalidate_derivative(&mut self) { self.derivative_data = None; }
 
-	/// Depreciated, but still used for tests
-	#[cfg(test)]
-	pub fn update(
-		&mut self, raw_func_str: &str, integral: bool, derivative: bool,
-	) -> Option<String> {
-		self.derivative = derivative;
-		self.integral = integral;
-		if raw_func_str != self.get_func_raw() {
-			self.update_string(raw_func_str);
-			self.get_test_result()
-		} else {
-			None
-		}
-	}
-
 	/// Runs asserts to make sure everything is the expected value
 	#[cfg(test)]
 	pub fn tests(
@@ -468,7 +453,12 @@ impl FunctionEntry {
 		}
 
 		{
-			self.update("x^3", false, false);
+			self.update_string("x^3");
+			assert_eq!(&self.raw_func_str, "x^3");
+
+			self.integral = false;
+			self.derivative = false;
+
 			assert!(!self.integral);
 			assert!(!self.derivative);
 
@@ -541,7 +531,9 @@ mod tests {
 		let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10);
 
 		let mut function = FunctionEntry::default();
-		function.update("x^2", true, true);
+		function.update_string("x^2");
+		function.integral = true;
+		function.derivative = true;
 
 		function.tests(
 			settings,
