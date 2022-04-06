@@ -343,15 +343,25 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 pub fn chars_take(chars: &[char], take: usize) -> String {
 	let len = chars.len();
 	assert!(len >= take);
-	if take == len {
-		// return `chars` turned into a string if `take == len`
-		return chars.iter().collect::<String>();
-	} else if take == 0 {
-		// return empty string if `take == 0`
-		return String::new();
-	}
 
-	chars.iter().rev().take(take).rev().collect::<String>()
+	match take {
+		0 => {
+			// return empty string if `take == 0`
+			return String::new();
+		}
+		1 => {
+			// return last character as a string if take == 1
+			return chars[len].to_string();
+		}
+		_ if take == len => {
+			// return `chars` turned into a string if `take == len`
+			return chars.iter().collect::<String>();
+		}
+		_ => {
+			// actually do the thing
+			return chars.iter().rev().take(take).rev().collect::<String>();
+		}
+	}
 }
 
 #[cfg(test)]
