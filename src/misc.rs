@@ -246,11 +246,10 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 	(x * large_number).round() / large_number
 }
 
-/// Helper that assists with using newton's method of finding roots, iterating
-/// over data `data` `threshold` is the target accuracy threshold
-/// `range` is the range of valid x values (used to stop calculation when the
-/// point won't display anyways) `data` is the data to iterate over (a Vector of
-/// egui's `Value` struct) `f` is f(x)
+/// Helper that assists with using newton's method of finding roots, iterating over data `data`
+/// `threshold` is the target accuracy threshold
+/// `range` is the range of valid x values (used to stop calculation when the point won't display anyways) `data` is the data to iterate over (a Vector of egui's `Value` struct)
+/// `f` is f(x)
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
@@ -267,7 +266,7 @@ pub fn newtons_method_helper(
 		.collect()
 }
 
-/// `range` is the range of valid x values (used to stop calculation when the
+/// `range` is the range of valid x values (used to stop calculation when
 /// `f` is f(x)
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns an `Option<f64>` of the x value at which a root occurs
@@ -300,8 +299,7 @@ fn newtons_method(
 	}
 }
 
-/// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty
-/// representation of the Vector
+/// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
 pub fn option_vec_printer<T: ToString>(data: &Vec<Option<T>>) -> String
 where
 	T: ToString,
@@ -328,20 +326,20 @@ where
 			.concat()
 		+ "]"
 }
-// Returns a vector of length `max_i` starting at value `min_x` with resolution
-// of `resolution`
+
+/// Returns a vector of length `max_i` starting at value `min_x` with resolution of `resolution`
 pub fn resolution_helper(max_i: usize, min_x: &f64, resolution: &f64) -> Vec<f64> {
 	(0..max_i)
 		.map(|x| (x as f64 / resolution) + min_x)
 		.collect()
 }
 
-// Returns a vector of length `max_i` starting at value `min_x` with step of
-// `step`
+/// Returns a vector of length `max_i` starting at value `min_x` with step of `step`
 pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
+/// Takes `take` number of chars from the end of `chars` and returns a string
 pub fn chars_take(chars: &[char], take: usize) -> String {
 	let len = chars.len();
 	assert!(len >= take);
