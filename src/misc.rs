@@ -303,24 +303,24 @@ fn newtons_method(
 pub fn option_vec_printer<T: ToString>(data: &Vec<Option<T>>) -> String
 where
 	T: ToString,
-	T: Clone,
 {
 	let max_i: i32 = (data.len() as i32) - 1;
 	"[".to_owned()
 		+ &data
 			.iter()
+			.map(|x| {
+				x.as_ref()
+					.map(|x_1| x_1.to_string())
+					.unwrap_or("None".to_string())
+			})
 			.enumerate()
 			.map(|(i, x)| {
-				let mut tmp = match x {
-					Some(inner) => inner.to_string(),
-					_ => "None".to_string(),
-				};
-
 				// Add comma and space if needed
 				if max_i > i as i32 {
-					tmp += ", ";
+					return x + ", ";
+				} else {
+					return x;
 				}
-				tmp
 			})
 			.collect::<Vec<String>>()
 			.concat()
@@ -351,7 +351,7 @@ pub fn chars_take(chars: &[char], take: usize) -> String {
 		}
 		1 => {
 			// return last character as a string if take == 1
-			return chars[len].to_string();
+			return chars[len - 1].to_string();
 		}
 		_ if take == len => {
 			// return `chars` turned into a string if `take == len`
@@ -459,7 +459,12 @@ mod tests {
 
 	#[test]
 	fn chars_take_test() {
-		let values = HashMap::from([(("test", 2), "st"), (("cool text", 4), "text")]);
+		let values = HashMap::from([
+			(("test", 2), "st"),
+			(("cool text", 4), "text"),
+			(("aaa", 0), ""),
+			(("aaab", 1), "b"),
+		]);
 
 		for ((in_str, i), value) in values {
 			assert_eq!(
