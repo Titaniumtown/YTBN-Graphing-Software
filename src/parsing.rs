@@ -271,37 +271,6 @@ mod tests {
 	/// Tests to make sure my cursed function works as intended
 	#[test]
 	fn func_process_test() {
-		/*
-		let values = HashMap::from([
-			("2x", "2*x"),
-			("x2", "x*2"),
-			("x(1+3)", "x*(1+3)"),
-			("(1+3)x", "(1+3)*x"),
-			("sin(x)", "sin(x)"),
-			("2sin(x)", "2*sin(x)"),
-			("max(x)", "max(x)"),
-			("2e^x", "2*e^x"),
-			("2max(x)", "2*max(x)"),
-			("cos(sin(x))", "cos(sin(x))"),
-			("x^(1+2x)", "x^(1+2*x)"),
-			("(x+2)x(1+3)", "(x+2)*x*(1+3)"),
-			("(x+2)(1+3)", "(x+2)*(1+3)"),
-			("xxx", "x*x*x"),
-			("eee", "e*e*e"),
-			("pi(x+2)", "π*(x+2)"),
-			("(x)pi", "(x)*π"),
-			("2e", "2*e"),
-			("2log10(x)", "2*log10(x)"),
-			("2log(x)", "2*log10(x)"),
-			("x!", "x!"),
-			("pipipipipipi", "π*π*π*π*π*π"),
-			("10pi", "10*π"),
-			("pi10", "π*10"),
-			("emax(x)", "e*max(x)"),
-			("pisin(x)", "π*sin(x)"),
-			("e^sin(x)", "e^sin(x)"),
-		]);
-		*/
 		let values = HashMap::from([
 			("2x", "2*x"),
 			(")(", ")*("),
