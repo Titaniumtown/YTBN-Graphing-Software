@@ -152,7 +152,6 @@ pub fn process_func_str(function_in: &str) -> String {
 
 		// if add_asterisk is true, add the asterisk
 		if add_asterisk {
-			println!("a");
 			output_string += "*";
 		}
 
