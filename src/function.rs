@@ -336,15 +336,13 @@ impl FunctionEntry {
 		}
 
 		// Plot derivative data
-		if self.derivative {
-			if !self.derivative_data.is_empty() {
-				plot_ui.line(
-					self.derivative_data
-						.to_line()
-						.color(Color32::GREEN)
-						.name(derivative_str),
-				);
-			}
+		if self.derivative && !self.derivative_data.is_empty() {
+			plot_ui.line(
+				self.derivative_data
+					.to_line()
+					.color(Color32::GREEN)
+					.name(derivative_str),
+			);
 		}
 
 		// Plot extrema points
