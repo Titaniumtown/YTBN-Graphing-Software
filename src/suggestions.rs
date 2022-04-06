@@ -54,14 +54,15 @@ impl ToString for HintEnum<'static> {
 				"[".to_owned()
 					+ &multi_data
 						.iter()
+						.map(|x| r#"""#.to_string() + x + r#"""#)
 						.enumerate()
 						.map(|(i, x)| {
-							let mut tmp = r#"""#.to_string() + x + r#"""#;
 							// Add comma and space if needed
 							if max_i > i as i32 {
-								tmp += ", ";
+								return x + ", ";
+							} else {
+								return x;
 							}
-							tmp
 						})
 						.collect::<Vec<String>>()
 						.concat() + "]"
