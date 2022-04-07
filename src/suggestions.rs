@@ -24,7 +24,7 @@ pub fn generate_hint(input: &str) -> HintEnum<'static> {
 
 	for i in (1..=MAX_COMPLETION_LEN).rev().filter(|i| len >= *i) {
 		if let Some(output) = get_completion(&chars_take(&chars, i)) {
-			return output;
+			return output.clone();
 		}
 	}
 
@@ -67,14 +67,14 @@ impl HintEnum<'static> {
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 /// Gets completion from `COMPLETION_HASHMAP`
-pub fn get_completion(key: &str) -> Option<HintEnum<'static>> {
+pub fn get_completion(key: &str) -> Option<&HintEnum<'static>> {
 	// If key is empty, just return None
 	if key.is_empty() {
 		return None;
 	}
 
 	// Get and clone the recieved data
-	COMPLETION_HASHMAP.get(key).cloned()
+	COMPLETION_HASHMAP.get(key)
 }
 
 #[cfg(test)]
