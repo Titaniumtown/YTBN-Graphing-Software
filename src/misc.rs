@@ -300,7 +300,7 @@ fn newtons_method(
 }
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
-pub fn option_vec_printer<T: ToString>(data: &Vec<Option<T>>) -> String
+pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String
 where
 	T: ToString,
 {
