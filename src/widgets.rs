@@ -81,7 +81,7 @@ impl<'a> AutoComplete<'a> {
 		}
 	}
 
-	pub fn ui(&mut self, ui: &mut egui::Ui, string: String, func_i: i32) -> (String, bool) {
+	pub fn ui(&mut self, ui: &mut egui::Ui, string: String, func_i: i32) -> String {
 		let mut new_string = string.clone();
 
 		let mut movement: Movement = Movement::None;
@@ -97,9 +97,9 @@ impl<'a> AutoComplete<'a> {
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
 		if self.hint.is_none() {
-			let re = func_edit.id(te_id).ui(ui);
+			let _ = func_edit.id(te_id).ui(ui);
 			let return_string = (&new_string).to_string();
-			return (return_string, re.has_focus());
+			return return_string;
 		}
 
 		// Put here so these key presses don't interact with other elements
@@ -116,17 +116,11 @@ impl<'a> AutoComplete<'a> {
 
 		let re = func_edit.id(te_id).ui(ui);
 
-		let func_edit_focus = re.has_focus();
-
 		if ui.input().key_pressed(Key::ArrowDown) {
 			movement = Movement::Down;
 		} else if ui.input().key_pressed(Key::ArrowUp) {
 			movement = Movement::Up;
 		}
-
-		// if movement != Movement::None {
-		// 	println!("{:?}", movement);
-		// }
 
 		self.interact_back(&mut new_string, &movement);
 
@@ -173,7 +167,7 @@ impl<'a> AutoComplete<'a> {
 			})));
 			TextEdit::store_state(ui.ctx(), te_id, state);
 		}
-		(new_string, func_edit_focus)
+		new_string
 	}
 }
 

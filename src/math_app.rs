@@ -314,9 +314,6 @@ pub struct MathApp {
 	/// Stores whether or not dark mode is enabled
 	dark_mode: bool,
 
-	/// Stores whether or not the text boxes are focused
-	text_boxes_focused: bool,
-
 	/// Stores opened windows/elements for later reference
 	opened: Opened,
 
@@ -332,7 +329,6 @@ impl Default for MathApp {
 			exists_error: false,
 			last_info: (vec![None], Duration::ZERO),
 			dark_mode: true,
-			text_boxes_focused: false,
 			opened: Opened::default(),
 			settings: AppSettings::default(),
 		}
@@ -460,7 +456,6 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
-				self.text_boxes_focused = false;
 				self.exists_error = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					// Entry for a function
@@ -498,11 +493,7 @@ impl MathApp {
 						);
 
 						// Contains the function string in a text box that the user can edit
-						let (focused, changed, error) = function.auto_complete(ui, i as i32);
-
-						if focused {
-							self.text_boxes_focused = true;
-						}
+						let (changed, error) = function.auto_complete(ui, i as i32);
 
 						if let Some(error_string) = error {
 							self.exists_error = true;
@@ -548,10 +539,10 @@ impl epi::App for MathApp {
 		// if text boxes aren't in focus, allow H keybind to toggle side panel.
 		// this is behind this check as if it wasn't, it would trigger if the user
 		// presses the h key in a text box as well
-		if !self.text_boxes_focused {
+		if !ctx.wants_keyboard_input() {
 			self.opened
 				.side_panel
-				.bitxor_assign(ctx.input().key_down(Key::H));
+				.bitxor_assign(ctx.input_mut().consume_key(egui::Modifiers::NONE, Key::H));
 		}
 
 		// Initialize fonts
@@ -678,8 +669,6 @@ impl epi::App for MathApp {
 		// If side panel is enabled, show it.
 		if self.opened.side_panel {
 			self.side_panel(ctx);
-		} else {
-			self.text_boxes_focused = false;
 		}
 
 		// Referenced in plotting code, but needs to be here so it can be later
