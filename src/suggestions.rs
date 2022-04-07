@@ -41,16 +41,16 @@ pub fn generate_hint<'a>(input: &str) -> &'a HintEnum<'a> {
 
 #[derive(Clone, PartialEq)]
 pub enum HintEnum<'a> {
-	Single(&'static str),
-	Many(&'a [&'static str]),
+	Single(&'a str),
+	Many(&'a [&'a str]),
 	None,
 }
 
-impl std::fmt::Debug for HintEnum<'static> {
+impl<'a> std::fmt::Debug for HintEnum<'a> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self) }
 }
 
-impl std::fmt::Display for HintEnum<'static> {
+impl<'a> std::fmt::Display for HintEnum<'a> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
 			HintEnum::Single(single_data) => {
@@ -66,7 +66,7 @@ impl std::fmt::Display for HintEnum<'static> {
 	}
 }
 
-impl HintEnum<'static> {
+impl<'a> HintEnum<'a> {
 	pub fn is_some(&self) -> bool { !matches!(self, HintEnum::None) }
 
 	pub fn is_none(&self) -> bool { !self.is_some() }
