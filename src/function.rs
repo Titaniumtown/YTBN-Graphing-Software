@@ -56,7 +56,7 @@ pub struct FunctionEntry {
 	integral_data: Option<(Vec<Bar>, f64)>,
 	derivative_data: Vec<Value>,
 	extrema_data: Vec<Value>,
-	roots_data: Vec<Value>,
+	root_data: Vec<Value>,
 
 	autocomplete: AutoComplete<'static>,
 
@@ -77,7 +77,7 @@ impl Default for FunctionEntry {
 			integral_data: None,
 			derivative_data: Vec::new(),
 			extrema_data: Vec::new(),
-			roots_data: Vec::new(),
+			root_data: Vec::new(),
 			autocomplete: AutoComplete::default(),
 			test_result: None,
 		}
@@ -307,8 +307,8 @@ impl FunctionEntry {
 		}
 
 		// Calculates roots
-		if settings.do_roots && (min_max_changed | self.roots_data.is_empty()) {
-			self.roots_data = self.newtons_method_helper(&threshold, 0);
+		if settings.do_roots && (min_max_changed | self.root_data.is_empty()) {
+			self.root_data = self.newtons_method_helper(&threshold, 0);
 		}
 	}
 
@@ -346,7 +346,7 @@ impl FunctionEntry {
 		}
 
 		// Plot extrema points
-		if settings.do_extrema {
+		if settings.do_extrema && !self.extrema_data.is_empty() {
 			plot_ui.points(
 				self.extrema_data
 					.to_points()
@@ -357,9 +357,9 @@ impl FunctionEntry {
 		}
 
 		// Plot roots points
-		if settings.do_roots {
+		if settings.do_roots && !self.root_data.is_empty() {
 			plot_ui.points(
-				self.roots_data
+				self.root_data
 					.to_points()
 					.color(Color32::LIGHT_BLUE)
 					.name("Root")
@@ -389,7 +389,7 @@ impl FunctionEntry {
 		self.invalidate_integral();
 		self.invalidate_derivative();
 		self.extrema_data.clear();
-		self.roots_data.clear();
+		self.root_data.clear();
 	}
 
 	/// Invalidate `back` data
@@ -418,7 +418,7 @@ impl FunctionEntry {
 			assert!(self.integral);
 			assert!(self.derivative);
 
-			assert_eq!(!self.roots_data.is_empty(), settings.do_roots);
+			assert_eq!(!self.root_data.is_empty(), settings.do_roots);
 			assert_eq!(!self.extrema_data.is_empty(), settings.do_extrema);
 			assert!(!self.derivative_data.is_empty());
 			assert!(self.integral_data.is_some());
@@ -441,7 +441,7 @@ impl FunctionEntry {
 
 			assert!(self.back_data.is_empty());
 			assert!(self.integral_data.is_none());
-			assert!(self.roots_data.is_empty());
+			assert!(self.root_data.is_empty());
 			assert!(self.extrema_data.is_empty());
 			assert!(self.derivative_data.is_empty());
 
@@ -449,7 +449,7 @@ impl FunctionEntry {
 
 			assert!(!self.back_data.is_empty());
 			assert!(self.integral_data.is_none());
-			assert!(self.roots_data.is_empty());
+			assert!(self.root_data.is_empty());
 			assert!(self.extrema_data.is_empty());
 			assert!(self.derivative_data.is_empty());
 		}
