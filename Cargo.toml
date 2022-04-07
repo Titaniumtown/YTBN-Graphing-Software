@@ -59,6 +59,6 @@ async-lock = { git = "https://github.com/smol-rs/async-lock.git", optional = tru
 instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 console_error_panic_hook = "0.1.7"
 wee_alloc = "0.4.5"
-wasm-bindgen = { version = "0.2.79", default-features = false, features = ["std"] }
-web-sys = "0.3.56"
+wasm-bindgen = { version = "0.2.80", default-features = false, features = ["std"] }
+web-sys = "0.3.57"
 tracing-wasm = "0.2.1"
