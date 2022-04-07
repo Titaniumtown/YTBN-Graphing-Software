@@ -16,14 +16,15 @@ fn main() {
 	let _ = command_run::Command::with_args("./pack_assets.sh", &[""])
 		.enable_capture()
 		.run();
-	shadow_rs::new().unwrap();
+
+	shadow_rs::new().expect("Could not initialize shadow_rs");
 
 	generate_hashmap();
 }
 
 fn generate_hashmap() {
 	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
-	let mut file = BufWriter::new(File::create(&path).unwrap());
+	let mut file = BufWriter::new(File::create(&path).expect("Could not create file"));
 	let max_len: usize = SUPPORTED_FUNCTIONS
 		.to_vec()
 		.iter()
@@ -47,13 +48,13 @@ fn generate_hashmap() {
 
 	write!(
 		&mut file,
-		"static COMPLETION_HASHMAP: phf::Map<&'static str, HintEnum> = {}",
+		"static COMPLETION_HASHMAP: phf::Map<&'static str, HintEnum> = {};",
 		hashmap.build()
 	)
-	.unwrap();
-	writeln!(&mut file, ";").unwrap();
+	.expect("Could not write to file");
 
-	writeln!(&mut file, "const MAX_COMPLETION_LEN: usize = {};", max_len).unwrap();
+	writeln!(&mut file, "const MAX_COMPLETION_LEN: usize = {};", max_len)
+		.expect("Could not write to file");
 
 	write!(
 		&mut file,
@@ -61,7 +62,7 @@ fn generate_hashmap() {
 		SUPPORTED_FUNCTIONS.len(),
 		SUPPORTED_FUNCTIONS.to_vec()
 	)
-	.unwrap();
+	.expect("Could not write to file");
 }
 
 include!(concat!(
