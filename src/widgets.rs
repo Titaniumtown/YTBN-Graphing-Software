@@ -1,6 +1,6 @@
 use crate::suggestions::{generate_hint, HintEnum};
 use eframe::{egui, epaint};
-use egui::{text::CCursor, text_edit::CursorRange, Key, Label, Modifiers, TextEdit, Widget};
+use egui::{text::CCursor, text_edit::CursorRange, Key, Modifiers, TextEdit, Widget};
 use epaint::text::cursor::{Cursor, PCursor, RCursor};
 
 #[derive(Clone)]
@@ -72,12 +72,11 @@ impl<'a> AutoComplete<'a> {
 				}
 				self.i = i as usize;
 			}
-			HintEnum::Single(hint) => match movement {
-				Movement::Complete => {
+			HintEnum::Single(hint) => {
+				if movement == &Movement::Complete {
 					*new_string += hint;
 				}
-				_ => {}
-			},
+			}
 			HintEnum::None => {}
 		}
 	}
@@ -94,6 +93,7 @@ impl<'a> AutoComplete<'a> {
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true);
 
+		let popup_id = ui.make_persistent_id("autocomplete_popup");
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
 		if self.hint.is_none() {
@@ -118,73 +118,60 @@ impl<'a> AutoComplete<'a> {
 
 		let func_edit_focus = re.has_focus();
 
-		// If in focus and right arrow key was pressed, apply hint
-		if func_edit_focus {
-			if ui.input().key_pressed(Key::ArrowDown) {
-				movement = Movement::Down;
-			} else if ui.input().key_pressed(Key::ArrowUp) {
-				movement = Movement::Up;
-			}
+		if ui.input().key_pressed(Key::ArrowDown) {
+			movement = Movement::Down;
+		} else if ui.input().key_pressed(Key::ArrowUp) {
+			movement = Movement::Up;
+		}
 
-			// if movement != Movement::None {
-			// 	println!("{:?}", movement);
-			// }
+		// if movement != Movement::None {
+		// 	println!("{:?}", movement);
+		// }
 
-			self.interact_back(&mut new_string, &movement);
+		self.interact_back(&mut new_string, &movement);
 
-			// TODO: fix clicking on labels (no clue why it doesn't work, time to take a walk)
-			if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
-				// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
-				let popup_id = ui.make_persistent_id("autocomplete_popup");
+		// TODO: fix clicking on labels (no clue why it doesn't work, time to take a walk)
+		if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
+			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
+			let mut clicked = false;
 
-				// let mut clicked = false;
-
-				egui::popup_below_widget(ui, popup_id, &re, |ui| {
-					hints.iter().enumerate().for_each(|(i, candidate)| {
-						/*
-						if ui.selectable_label(i == self.i, *candidate).clicked() {
-							clicked = true;
-							self.i = i;
-						}
-						*/
-
-						// placeholder for now
-						ui.add_enabled(i == self.i, Label::new(*candidate));
-					});
+			egui::popup_below_widget(ui, popup_id, &re, |ui| {
+				hints.iter().enumerate().for_each(|(i, candidate)| {
+					if ui.selectable_label(i == self.i, *candidate).clicked() {
+						clicked = true;
+						self.i = i;
+					}
 				});
+			});
 
-				ui.memory().open_popup(popup_id)
-				/*
-				if clicked {
-					new_string += hints[self.i];
+			if clicked {
+				new_string += hints[self.i];
 
-					// don't need this here as it simply won't be display next frame in `math_app.rs`
-					// ui.memory().close_popup();
+				// don't need this here as it simply won't be display next frame
+				// ui.memory().close_popup();
 
-					movement = Movement::Complete;
-				} else {
-					ui.memory().open_popup(popup_id);
-				}
-				*/
+				movement = Movement::Complete;
+			} else {
+				ui.memory().open_popup(popup_id);
 			}
+		}
 
-			// Push cursor to end if needed
-			if movement == Movement::Complete {
-				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-				state.set_cursor_range(Some(CursorRange::one(Cursor {
-					ccursor: CCursor {
-						index: 0,
-						prefer_next_row: false,
-					},
-					rcursor: RCursor { row: 0, column: 0 },
-					pcursor: PCursor {
-						paragraph: 0,
-						offset: 10000,
-						prefer_next_row: false,
-					},
-				})));
-				TextEdit::store_state(ui.ctx(), te_id, state);
-			}
+		// Push cursor to end if needed
+		if movement == Movement::Complete {
+			let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
+			state.set_cursor_range(Some(CursorRange::one(Cursor {
+				ccursor: CCursor {
+					index: 0,
+					prefer_next_row: false,
+				},
+				rcursor: RCursor { row: 0, column: 0 },
+				pcursor: PCursor {
+					paragraph: 0,
+					offset: 10000,
+					prefer_next_row: false,
+				},
+			})));
+			TextEdit::store_state(ui.ctx(), te_id, state);
 		}
 		(new_string, func_edit_focus)
 	}
