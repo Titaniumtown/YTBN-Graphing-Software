@@ -58,7 +58,7 @@ pub struct FunctionEntry {
 	extrema_data: Vec<Value>,
 	roots_data: Vec<Value>,
 
-	autocomplete: AutoComplete,
+	autocomplete: AutoComplete<'static>,
 
 	test_result: Option<String>,
 }

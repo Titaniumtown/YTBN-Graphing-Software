@@ -4,25 +4,25 @@ use egui::{text::CCursor, text_edit::CursorRange, Key, Modifiers, TextEdit, Widg
 use epaint::text::cursor::{Cursor, PCursor, RCursor};
 
 #[derive(Clone)]
-pub struct AutoComplete {
+pub struct AutoComplete<'a> {
 	pub i: usize,
-	pub hint: HintEnum<'static>,
+	pub hint: &'a HintEnum<'static>,
 	pub func_str: Option<String>,
 	pub changed: bool,
 }
 
-impl Default for AutoComplete {
-	fn default() -> AutoComplete {
+impl Default for AutoComplete<'static> {
+	fn default() -> AutoComplete<'static> {
 		AutoComplete {
 			i: 0,
-			hint: HintEnum::None,
+			hint: &HintEnum::None,
 			func_str: None,
 			changed: true,
 		}
 	}
 }
 
-impl AutoComplete {
+impl<'a> AutoComplete<'a> {
 	fn changed(&mut self, string: &str) {
 		if self.func_str != Some(string.to_string()) {
 			self.changed = true;
@@ -57,7 +57,7 @@ impl AutoComplete {
 
 		if let HintEnum::Single(single_hint) = self.hint {
 			let func_edit_2 = func_edit;
-			func_edit = func_edit_2.hint_text(single_hint);
+			func_edit = func_edit_2.hint_text(*single_hint);
 		}
 
 		let re = func_edit.id(te_id).ui(ui);

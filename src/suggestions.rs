@@ -1,9 +1,12 @@
 use crate::misc::chars_take;
 
+const HINTENUM_EMPTY: HintEnum = HintEnum::Single("x^2");
+const HINTENUM_CLOSED_PARENS: HintEnum = HintEnum::Single(")");
+
 /// Generate a hint based on the input `input`, returns an `Option<String>`
-pub fn generate_hint(input: &str) -> HintEnum<'static> {
+pub fn generate_hint<'a>(input: &str) -> &'a HintEnum<'a> {
 	if input.is_empty() {
-		return HintEnum::Single("x^2");
+		return &HINTENUM_EMPTY;
 	}
 
 	let chars: Vec<char> = input.chars().collect::<Vec<char>>();
@@ -17,18 +20,23 @@ pub fn generate_hint(input: &str) -> HintEnum<'static> {
 	});
 
 	if open_parens > closed_parens {
-		return HintEnum::Single(")");
+		return &HINTENUM_CLOSED_PARENS;
 	}
 
 	let len = chars.len();
 
-	for i in (1..=MAX_COMPLETION_LEN).rev().filter(|i| len >= *i) {
-		if let Some(output) = get_completion(&chars_take(&chars, i)) {
-			return output.clone();
+	for key in (1..=MAX_COMPLETION_LEN)
+		.rev()
+		.filter(|i| len >= *i)
+		.map(|i| chars_take(&chars, i))
+		.filter(|cut_string| !cut_string.is_empty())
+	{
+		if let Some(output) = COMPLETION_HASHMAP.get(&key) {
+			return output;
 		}
 	}
 
-	HintEnum::None
+	&HintEnum::None
 }
 
 #[derive(Clone, PartialEq)]
@@ -66,17 +74,6 @@ impl HintEnum<'static> {
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
-/// Gets completion from `COMPLETION_HASHMAP`
-pub fn get_completion(key: &str) -> Option<&HintEnum<'static>> {
-	// If key is empty, just return None
-	if key.is_empty() {
-		return None;
-	}
-
-	// Get and clone the recieved data
-	COMPLETION_HASHMAP.get(key)
-}
-
 #[cfg(test)]
 mod tests {
 	use std::collections::HashMap;
@@ -97,7 +94,7 @@ mod tests {
 
 		for (key, value) in values {
 			println!("{} + {:?}", key, value);
-			assert_eq!(generate_hint(key), value);
+			assert_eq!(generate_hint(key), &value);
 		}
 	}
 
