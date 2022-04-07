@@ -39,20 +39,21 @@ pub enum HintEnum<'a> {
 }
 
 impl std::fmt::Debug for HintEnum<'static> {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", self.to_string())
-	}
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self) }
 }
 
-// TODO: implement `core::fmt::Display` instead
-impl ToString for HintEnum<'static> {
-	fn to_string(&self) -> String {
+impl std::fmt::Display for HintEnum<'static> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
-			HintEnum::Single(single_data) => single_data.to_string(),
-			HintEnum::Many(multi_data) => {
-				format!("{:?}", multi_data)
+			HintEnum::Single(single_data) => {
+				return write!(f, "{}", single_data);
 			}
-			HintEnum::None => String::from("None"),
+			HintEnum::Many(multi_data) => {
+				return write!(f, "{:?}", multi_data);
+			}
+			HintEnum::None => {
+				return write!(f, "None");
+			}
 		}
 	}
 }
