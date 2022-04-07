@@ -311,15 +311,14 @@ where
 			.map(|x| {
 				x.as_ref()
 					.map(|x_1| x_1.to_string())
-					.unwrap_or("None".to_string())
+					.unwrap_or_else(|| "None".to_string())
 			})
 			.enumerate()
 			.map(|(i, x)| {
 				// Add comma and space if needed
-				if max_i > i as i32 {
-					return x + ", ";
-				} else {
-					return x;
+				match max_i > i as i32 {
+					true => x + ", ",
+					false => x,
 				}
 			})
 			.collect::<Vec<String>>()
@@ -347,11 +346,11 @@ pub fn chars_take(chars: &[char], take: usize) -> String {
 	match take {
 		0 => {
 			// return empty string if `take == 0`
-			return String::new();
+			String::new()
 		}
 		1 => {
 			// return last character as a string if take == 1
-			return chars[len - 1].to_string();
+			chars[len - 1].to_string()
 		}
 		_ if take == len => {
 			// return `chars` turned into a string if `take == len`

@@ -44,30 +44,15 @@ impl std::fmt::Debug for HintEnum<'static> {
 	}
 }
 
+// TODO: implement `core::fmt::Display` instead
 impl ToString for HintEnum<'static> {
 	fn to_string(&self) -> String {
 		match self {
 			HintEnum::Single(single_data) => single_data.to_string(),
 			HintEnum::Many(multi_data) => {
-				let max_i: i32 = (multi_data.len() as i32) - 1;
-
-				"[".to_owned()
-					+ &multi_data
-						.iter()
-						.map(|x| r#"""#.to_string() + x + r#"""#)
-						.enumerate()
-						.map(|(i, x)| {
-							// Add comma and space if needed
-							if max_i > i as i32 {
-								return x + ", ";
-							} else {
-								return x;
-							}
-						})
-						.collect::<Vec<String>>()
-						.concat() + "]"
+				format!("{:?}", multi_data)
 			}
-			HintEnum::None => String::new(),
+			HintEnum::None => String::from("None"),
 		}
 	}
 }
@@ -112,6 +97,23 @@ mod tests {
 		for (key, value) in values {
 			println!("{} + {:?}", key, value);
 			assert_eq!(generate_hint(key), value);
+		}
+	}
+
+	#[test]
+	fn hint_to_string_test() {
+		let values = HashMap::from([
+			("x^2", HintEnum::Single("x^2")),
+			(
+				r#"["n(", "nh(", "gnum("]"#,
+				HintEnum::Many(&["n(", "nh(", "gnum("]),
+			),
+			(r#"["n("]"#, HintEnum::Many(&["n("])),
+			("None", HintEnum::None),
+		]);
+
+		for (key, value) in values {
+			assert_eq!(value.to_string(), key);
 		}
 	}
 }
