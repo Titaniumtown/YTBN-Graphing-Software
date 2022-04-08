@@ -67,9 +67,10 @@ impl<'a> std::fmt::Display for HintEnum<'a> {
 }
 
 impl<'a> HintEnum<'a> {
-	pub fn is_some(&self) -> bool { !matches!(self, HintEnum::None) }
+	pub fn is_none(&self) -> bool { matches!(self, HintEnum::None) }
 
-	pub fn is_none(&self) -> bool { !self.is_some() }
+	#[allow(dead_code)]
+	pub fn is_some(&self) -> bool { !self.is_none() }
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
