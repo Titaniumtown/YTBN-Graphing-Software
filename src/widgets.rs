@@ -124,7 +124,6 @@ impl<'a> AutoComplete<'a> {
 
 		self.interact_back(&mut new_string, &movement);
 
-		// TODO: fix clicking on labels (no clue why it doesn't work, time to take a walk)
 		if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
 			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
 			let mut clicked = false;
