@@ -15,7 +15,7 @@ enum Movement {
 pub struct AutoComplete<'a> {
 	pub i: usize,
 	pub hint: &'a HintEnum<'a>,
-	pub func_str: Option<String>,
+	pub string: Option<String>,
 }
 
 impl Default for Movement {
@@ -27,44 +27,52 @@ impl<'a> Default for AutoComplete<'a> {
 		AutoComplete {
 			i: 0,
 			hint: &HintEnum::None,
-			func_str: None,
+			string: None,
 		}
 	}
 }
 
 impl<'a> AutoComplete<'a> {
 	fn changed(&mut self, string: &str) {
-		let new_func_str = Some(string.to_string());
-		if self.func_str != new_func_str {
-			self.func_str = new_func_str;
+		let new_func_option = Some(string.to_string());
+		if self.string != new_func_option {
+			self.string = new_func_option.clone();
 			self.hint = generate_hint(string);
 		}
 	}
 
-	fn interact_back(&mut self, new_string: &mut String, movement: &Movement) {
+	fn interact_back(&mut self, movement: &Movement) {
 		if movement == &Movement::None {
 			return;
 		}
+		assert!(self.string.is_some());
 
 		match self.hint {
 			HintEnum::Many(hints) => {
 				if movement == &Movement::Complete {
-					*new_string += hints[self.i];
+					*self.string.as_mut().unwrap() += hints[self.i];
 					return;
 				}
 
-				let max_i = hints.len() as i16 - 1;
+				// maximum i value
+				let max_i = hints.len() - 1;
 
-				self.i = match movement {
-					Movement::Up => self.i as i16 - 1,
-					Movement::Down => self.i as i16 + 1,
-					_ => self.i as i16,
+				match movement {
+					Movement::Up => {
+						self.i = self.i.checked_sub(1).unwrap_or(max_i);
+					}
+					Movement::Down => {
+						self.i += 1;
+						if self.i > max_i {
+							self.i = 0;
+						}
+					}
+					_ => unreachable!(),
 				}
-				.clamp(0, max_i) as usize;
 			}
 			HintEnum::Single(hint) => {
 				if movement == &Movement::Complete {
-					*new_string += hint;
+					*self.string.as_mut().unwrap() += hint;
 				}
 			}
 			HintEnum::None => {}
@@ -108,7 +116,7 @@ impl<'a> AutoComplete<'a> {
 			movement = Movement::Up;
 		}
 
-		self.interact_back(string, &movement);
+		self.interact_back(&movement);
 
 		if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
 			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
@@ -164,10 +172,10 @@ mod tests {
 	fn auto_complete_helper(string: &str, movement: Movement) -> (AutoComplete, String) {
 		let mut auto_complete = AutoComplete::default();
 		auto_complete.changed(string);
-		let mut string_1 = String::from(string);
-		auto_complete.interact_back(&mut string_1, &movement);
+		auto_complete.interact_back(&movement);
 
-		(auto_complete, string_1)
+		let output_string = auto_complete.clone().string;
+		(auto_complete, output_string.unwrap_or_default())
 	}
 
 	#[test]
@@ -196,6 +204,14 @@ mod tests {
 		let (_, string) = auto_complete_helper("", Movement::Up);
 
 		assert_eq!(&*string, "");
+	}
+
+	#[test]
+	fn auto_complete_multi_up() {
+		let (auto_complete, string) = auto_complete_helper("s", Movement::Up);
+
+		assert!(auto_complete.i > 0);
+		assert_eq!(&*string, "s");
 	}
 
 	#[test]
