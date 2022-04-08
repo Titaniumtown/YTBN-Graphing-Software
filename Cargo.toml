@@ -28,7 +28,9 @@ lto = false
 [dependencies]
 eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 shadow-rs = { version = "0.11.0", default-features = false }
-const_format = { version = "0.2.22", default-features = false, features = ["fmt"] }
+const_format = { version = "0.2.22", default-features = false, features = [
+    "fmt",
+] }
 cfg-if = "1.0.0"
 exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", features = [
     "partial",
@@ -59,6 +61,8 @@ async-lock = { git = "https://github.com/smol-rs/async-lock.git", optional = tru
 instant = { version = "0.1.12", features = ["wasm-bindgen"] }
 console_error_panic_hook = "0.1.7"
 wee_alloc = "0.4.5"
-wasm-bindgen = { version = "0.2.80", default-features = false, features = ["std"] }
+wasm-bindgen = { version = "0.2.80", default-features = false, features = [
+    "std",
+] }
 web-sys = "0.3.57"
 tracing-wasm = "0.2.1"

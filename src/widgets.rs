@@ -54,24 +54,13 @@ impl<'a> AutoComplete<'a> {
 				}
 
 				let max_i = hints.len() as i16 - 1;
-				let mut i = self.i as i16;
 
-				match movement {
-					Movement::Up => {
-						i -= 1;
-						if 0 > i {
-							i = max_i
-						}
-					}
-					Movement::Down => {
-						i += 1;
-						if i > max_i {
-							i = 0;
-						}
-					}
-					_ => {}
+				self.i = match movement {
+					Movement::Up => self.i as i16 - 1,
+					Movement::Down => self.i as i16 + 1,
+					_ => self.i as i16,
 				}
-				self.i = i as usize;
+				.clamp(0, max_i) as usize;
 			}
 			HintEnum::Single(hint) => {
 				if movement == &Movement::Complete {
