@@ -19,6 +19,10 @@ enum Movement {
 	None,
 }
 
+impl Default for Movement {
+	fn default() -> Movement { Movement::None }
+}
+
 impl<'a> Default for AutoComplete<'a> {
 	fn default() -> AutoComplete<'a> {
 		AutoComplete {
@@ -84,7 +88,7 @@ impl<'a> AutoComplete<'a> {
 	}
 
 	pub fn ui(&mut self, ui: &mut egui::Ui, string: &mut String, func_i: i32) {
-		let mut movement: Movement = Movement::None;
+		let mut movement: Movement = Movement::default();
 
 		// update self
 		self.changed(string);
