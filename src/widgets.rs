@@ -43,12 +43,14 @@ impl<'a> AutoComplete<'a> {
 	}
 
 	fn interact_back(&mut self, new_string: &mut String, movement: &Movement) {
+		if movement == &Movement::None {
+			return;
+		}
+
 		match self.hint {
 			HintEnum::Many(hints) => {
 				if movement == &Movement::Complete {
 					*new_string += hints[self.i];
-					return;
-				} else if movement == &Movement::None {
 					return;
 				}
 
