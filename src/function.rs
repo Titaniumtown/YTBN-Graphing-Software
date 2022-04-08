@@ -87,7 +87,8 @@ impl Default for FunctionEntry {
 impl FunctionEntry {
 	/// Create autocomplete ui and handle user input
 	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: i32) -> (bool, Option<String>) {
-		let output_string = self.autocomplete.ui(ui, self.raw_func_str.clone(), i);
+		let mut output_string: String = self.raw_func_str.clone();
+		self.autocomplete.ui(ui, &mut output_string, i);
 
 		let changed = output_string != self.raw_func_str;
 		if changed {

@@ -83,15 +83,13 @@ impl<'a> AutoComplete<'a> {
 		}
 	}
 
-	pub fn ui(&mut self, ui: &mut egui::Ui, string: String, func_i: i32) -> String {
-		let mut new_string = string.clone();
-
+	pub fn ui(&mut self, ui: &mut egui::Ui, string: &mut String, func_i: i32) {
 		let mut movement: Movement = Movement::None;
 
 		// update self
-		self.changed(&string);
+		self.changed(string);
 
-		let mut func_edit = egui::TextEdit::singleline(&mut new_string)
+		let mut func_edit = egui::TextEdit::singleline(string)
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true);
 
@@ -100,8 +98,7 @@ impl<'a> AutoComplete<'a> {
 
 		if self.hint.is_none() {
 			let _ = func_edit.id(te_id).ui(ui);
-			let return_string = (&new_string).to_string();
-			return return_string;
+			return;
 		}
 
 		// Put here so these key presses don't interact with other elements
@@ -124,7 +121,7 @@ impl<'a> AutoComplete<'a> {
 			movement = Movement::Up;
 		}
 
-		self.interact_back(&mut new_string, &movement);
+		self.interact_back(string, &movement);
 
 		if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
 			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
@@ -140,7 +137,7 @@ impl<'a> AutoComplete<'a> {
 			});
 
 			if clicked {
-				new_string += hints[self.i];
+				*string += hints[self.i];
 
 				// don't need this here as it simply won't be display next frame
 				// ui.memory().close_popup();
@@ -168,7 +165,6 @@ impl<'a> AutoComplete<'a> {
 			})));
 			TextEdit::store_state(ui.ctx(), te_id, state);
 		}
-		new_string
 	}
 }
 
