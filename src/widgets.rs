@@ -3,20 +3,19 @@ use eframe::{egui, epaint};
 use egui::{text::CCursor, text_edit::CursorRange, Key, Modifiers, TextEdit, Widget};
 use epaint::text::cursor::{Cursor, PCursor, RCursor};
 
-#[derive(Clone)]
-pub struct AutoComplete<'a> {
-	pub i: usize,
-	pub hint: &'a HintEnum<'a>,
-	pub func_str: Option<String>,
-	pub changed: bool,
-}
-
 #[derive(PartialEq, Debug)]
 enum Movement {
 	Complete,
 	Down,
 	Up,
 	None,
+}
+
+#[derive(Clone)]
+pub struct AutoComplete<'a> {
+	pub i: usize,
+	pub hint: &'a HintEnum<'a>,
+	pub func_str: Option<String>,
 }
 
 impl Default for Movement {
@@ -29,7 +28,6 @@ impl<'a> Default for AutoComplete<'a> {
 			i: 0,
 			hint: &HintEnum::None,
 			func_str: None,
-			changed: true,
 		}
 	}
 }
@@ -38,11 +36,8 @@ impl<'a> AutoComplete<'a> {
 	fn changed(&mut self, string: &str) {
 		let new_func_str = Some(string.to_string());
 		if self.func_str != new_func_str {
-			self.changed = true;
 			self.func_str = new_func_str;
 			self.hint = generate_hint(string);
-		} else {
-			self.changed = false;
 		}
 	}
 
