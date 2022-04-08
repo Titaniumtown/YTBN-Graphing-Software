@@ -92,7 +92,6 @@ impl<'a> AutoComplete<'a> {
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true);
 
-		let popup_id = ui.make_persistent_id("autocomplete_popup");
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
 		if self.hint.is_none() {
@@ -124,6 +123,8 @@ impl<'a> AutoComplete<'a> {
 
 		if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
 			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
+			let popup_id = ui.make_persistent_id("autocomplete_popup");
+
 			let mut clicked = false;
 
 			egui::popup_below_widget(ui, popup_id, &re, |ui| {
