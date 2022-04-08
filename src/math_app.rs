@@ -108,17 +108,8 @@ lazy_static::lazy_static! {
 						panic!("Font File {} not expected!", path_string);
 					}
 				}
-			} else if path_string.ends_with(".json") {
-				// Parse json file
-				let string_data = str::from_utf8(&data).unwrap().to_string();
-				match path_string.as_ref() {
-					"text.json" => {
-						text_data = Some(SerdeValueHelper::new(&string_data).parse_values());
-					},
-					_ => {
-						panic!("Json file {} not expected!", path_string);
-					}
-				}
+			} else if path_string == "text.json" {
+				text_data = Some(SerdeValueHelper::new(str::from_utf8(&data).expect("unable to read text.json")).parse_values());
 			} else {
 				panic!("Other file {} not expected!", path_string);
 			}
