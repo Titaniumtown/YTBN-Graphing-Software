@@ -36,7 +36,7 @@ impl<'a> AutoComplete<'a> {
 	fn changed(&mut self, string: &str) {
 		let new_func_option = Some(string.to_string());
 		if self.string != new_func_option {
-			self.string = new_func_option.clone();
+			self.string = new_func_option;
 			self.hint = generate_hint(string);
 		}
 	}
