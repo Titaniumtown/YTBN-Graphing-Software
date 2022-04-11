@@ -86,20 +86,17 @@ impl Default for FunctionEntry {
 
 impl FunctionEntry {
 	/// Create autocomplete ui and handle user input
-	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: i32) -> (bool, Option<String>) {
+	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: i32) {
 		let mut output_string: String = self.raw_func_str.clone();
 		self.autocomplete.ui(ui, &mut output_string, i);
 
-		let changed = output_string != self.raw_func_str;
-		if changed {
+		if output_string != self.raw_func_str {
 			self.update_string(&output_string);
 		}
-
-		(changed, self.get_test_result())
 	}
 
 	/// Get function's cached test result
-	pub fn get_test_result(&self) -> Option<String> { self.test_result.clone() }
+	pub fn get_test_result(&self) -> &Option<String> { &self.test_result }
 
 	/// Update function string and test it
 	fn update_string(&mut self, raw_func_str: &str) {

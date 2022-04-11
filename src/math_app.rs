@@ -286,13 +286,6 @@ pub struct MathApp {
 	/// Stores vector of functions
 	functions: Vec<FunctionEntry>,
 
-	/// Stores last error from parsing functions (used to display the same error
-	/// when side panel is minimized)
-	func_errors: Vec<Option<String>>,
-
-	/// Stores whether or not an error is stored in `self.func_errors`
-	exists_error: bool,
-
 	/// Contains the list of Areas calculated (the vector of f64) and time it
 	/// took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Duration),
@@ -311,8 +304,6 @@ impl Default for MathApp {
 	fn default() -> Self {
 		Self {
 			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
-			func_errors: vec![None],
-			exists_error: false,
 			last_info: (vec![None], Duration::ZERO),
 			dark_mode: true,
 			opened: Opened::default(),
@@ -442,7 +433,6 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
-				self.exists_error = false;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					// Entry for a function
 					ui.horizontal(|ui| {
@@ -479,21 +469,13 @@ impl MathApp {
 						);
 
 						// Contains the function string in a text box that the user can edit
-						let (changed, error) = function.auto_complete(ui, i as i32);
-
-						if let Some(error_string) = error {
-							self.exists_error = true;
-							if changed {
-								self.func_errors[i] = Some(error_string);
-							}
-						}
+						function.auto_complete(ui, i as i32)
 					});
 				}
 
 				// Remove function if the user requests it
 				if let Some(remove_i_unwrap) = remove_i {
 					self.functions.remove(remove_i_unwrap);
-					self.func_errors.remove(remove_i_unwrap);
 				}
 
 				// Hyperlink to project's github
@@ -557,7 +539,6 @@ impl epi::App for MathApp {
 					.clicked()
 				{
 					self.functions.push(DEFAULT_FUNCTION_ENTRY.clone());
-					self.func_errors.push(None);
 				}
 
 				// Toggles opening the Help window
@@ -665,16 +646,20 @@ impl epi::App for MathApp {
 		// parsing)
 		CentralPanel::default().show(ctx, |ui| {
 			// Display an error if it exists
-			if self.exists_error {
+			let errors_formatted: Vec<String> = self
+				.functions
+				.iter()
+				.map(|func| func.get_test_result())
+				.enumerate()
+				.filter(|(_, error)| error.is_some())
+				.map(|(i, error)| format!("(Function #{}) {}\n", i, error.as_ref().unwrap()))
+				.collect();
+
+			if errors_formatted.len() > 0 {
 				ui.centered_and_justified(|ui| {
-					self.func_errors
-						.iter()
-						.enumerate()
-						.filter(|(_, error)| error.is_some())
-						.map(|(i, error)| (i, error.as_ref().unwrap()))
-						.for_each(|(i, error)| {
-							ui.heading(format!("(Function #{}) {}\n", i, error));
-						})
+					errors_formatted.iter().for_each(|string| {
+						ui.heading(string);
+					})
 				});
 				return;
 			}
