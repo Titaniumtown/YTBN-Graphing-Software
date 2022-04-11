@@ -111,7 +111,7 @@ lazy_static::lazy_static! {
 			} else if path_string == "text.json" {
 				text_data = Some(SerdeValueHelper::new(str::from_utf8(&data).expect("unable to read text.json")).parse_values());
 			} else {
-				panic!("Other file {} not expected!", path_string);
+				panic!("File {} not expected!", path_string);
 			}
 		}
 
