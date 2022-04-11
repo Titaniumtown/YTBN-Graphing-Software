@@ -117,26 +117,21 @@ lazy_static::lazy_static! {
 
 		tracing::info!("Done loading assets! Took: {:?}", start.elapsed());
 
-		let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
-		let mut families = BTreeMap::new();
-
-		font_data.insert("Hack".to_owned(), font_hack.expect("Hack font not found!"));
-		font_data.insert("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu Light font not found!"));
-		font_data.insert("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("Noto Emoji font not found!"));
-
-		families.insert(
-			FontFamily::Monospace,
-			vec![
-				"Hack".to_owned(),
-				"Ubuntu-Light".to_owned(),
-				"NotoEmoji-Regular".to_owned(),
-			],
-		);
-
-		families.insert(
-			FontFamily::Proportional,
-			vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
-		);
+		let font_data: BTreeMap<String, FontData> = BTreeMap::from([
+			("Hack".to_owned(), font_hack.expect("Hack font not found!")),
+			("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu Light font not found!")),
+			("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("Noto Emoji font not found!"))
+		]);
+		let families = BTreeMap::from([
+			(FontFamily::Monospace,
+				vec![
+					"Hack".to_owned(),
+					"Ubuntu-Light".to_owned(),
+					"NotoEmoji-Regular".to_owned(),
+				]),
+				(FontFamily::Proportional,
+					vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()])
+		]);
 
 		let fonts = FontDefinitions {
 			font_data,
@@ -153,35 +148,35 @@ lazy_static::lazy_static! {
 /// Tests to make sure archived (and compressed) assets match expected data
 #[test]
 fn test_file_data() {
-	let mut font_data: BTreeMap<String, FontData> = BTreeMap::new();
-	let mut families = BTreeMap::new();
-
-	font_data.insert(
-		"Hack".to_owned(),
-		FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec()),
-	);
-	font_data.insert(
-		"Ubuntu-Light".to_owned(),
-		FontData::from_owned(include_bytes!("../assets/Ubuntu-Light.ttf").to_vec()),
-	);
-	font_data.insert(
-		"NotoEmoji-Regular".to_owned(),
-		FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec()),
-	);
-
-	families.insert(
-		FontFamily::Monospace,
-		vec![
+	let font_data: BTreeMap<String, FontData> = BTreeMap::from([
+		(
 			"Hack".to_owned(),
+			FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec()),
+		),
+		(
 			"Ubuntu-Light".to_owned(),
+			FontData::from_owned(include_bytes!("../assets/Ubuntu-Light.ttf").to_vec()),
+		),
+		(
 			"NotoEmoji-Regular".to_owned(),
-		],
-	);
+			FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec()),
+		),
+	]);
 
-	families.insert(
-		FontFamily::Proportional,
-		vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
-	);
+	let families = BTreeMap::from([
+		(
+			FontFamily::Monospace,
+			vec![
+				"Hack".to_owned(),
+				"Ubuntu-Light".to_owned(),
+				"NotoEmoji-Regular".to_owned(),
+			],
+		),
+		(
+			FontFamily::Proportional,
+			vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+		),
+	]);
 
 	let fonts = FontDefinitions {
 		font_data,
