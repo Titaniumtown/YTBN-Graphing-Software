@@ -1,6 +1,6 @@
 use crate::misc::chars_take;
 
-const HINTENUM_EMPTY: HintEnum = HintEnum::Single("x^2");
+pub const HINTENUM_EMPTY: HintEnum = HintEnum::Single("x^2");
 const HINTENUM_CLOSED_PARENS: HintEnum = HintEnum::Single(")");
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
@@ -39,7 +39,7 @@ pub fn generate_hint<'a>(input: &str) -> &'a HintEnum<'a> {
 	&HintEnum::None
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(PartialEq)]
 pub enum HintEnum<'a> {
 	Single(&'a str),
 	Many(&'a [&'a str]),

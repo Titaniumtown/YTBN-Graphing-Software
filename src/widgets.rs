@@ -16,30 +16,27 @@ pub struct AutoComplete<'a> {
 	pub i: usize,
 	pub hint: &'a HintEnum<'a>,
 	pub string: String,
-	pub first: bool,
 }
 
 impl Default for Movement {
-	fn default() -> Movement { Movement::None }
+	fn default() -> Self { Self::None }
 }
 
 impl<'a> Default for AutoComplete<'a> {
 	fn default() -> AutoComplete<'a> {
 		AutoComplete {
 			i: 0,
-			hint: &HintEnum::None,
+			hint: &crate::suggestions::HINTENUM_EMPTY,
 			string: String::new(),
-			first: true,
 		}
 	}
 }
 
 impl<'a> AutoComplete<'a> {
-	fn update(&mut self, string: &str) {
-		if (&self.string != string) | self.first {
+	pub fn update(&mut self, string: &str) {
+		if &self.string != string {
 			self.string = string.to_string();
 			self.hint = generate_hint(string);
-			self.first = false;
 		}
 	}
 
@@ -51,12 +48,11 @@ impl<'a> AutoComplete<'a> {
 		match self.hint {
 			HintEnum::Many(hints) => {
 				if movement == &Movement::Complete {
-					println!("applying multicomplete");
 					self.string += hints[self.i];
 					return;
 				}
 
-				// maximum i value
+				// maximum index value
 				let max_i = hints.len() - 1;
 
 				match movement {
@@ -83,13 +79,10 @@ impl<'a> AutoComplete<'a> {
 		}
 	}
 
-	pub fn ui(&mut self, ui: &mut egui::Ui, string: &mut String, func_i: i32) {
+	pub fn ui(&mut self, ui: &mut egui::Ui, func_i: i32) {
 		let mut movement: Movement = Movement::default();
 
-		// update self
-		self.update(string);
-
-		let mut func_edit = egui::TextEdit::singleline(string)
+		let mut func_edit = egui::TextEdit::singleline(&mut self.string)
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true);
 
@@ -166,7 +159,6 @@ impl<'a> AutoComplete<'a> {
 				},
 			})));
 			TextEdit::store_state(ui.ctx(), te_id, state);
-			*string = self.string.clone();
 		}
 	}
 }
