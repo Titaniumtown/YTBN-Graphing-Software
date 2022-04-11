@@ -15,7 +15,8 @@ enum Movement {
 pub struct AutoComplete<'a> {
 	pub i: usize,
 	pub hint: &'a HintEnum<'a>,
-	pub string: Option<String>,
+	pub string: String,
+	pub first: bool,
 }
 
 impl Default for Movement {
@@ -27,17 +28,18 @@ impl<'a> Default for AutoComplete<'a> {
 		AutoComplete {
 			i: 0,
 			hint: &HintEnum::None,
-			string: None,
+			string: String::new(),
+			first: true,
 		}
 	}
 }
 
 impl<'a> AutoComplete<'a> {
 	fn update(&mut self, string: &str) {
-		let new_func_option = Some(string.to_string());
-		if self.string != new_func_option {
-			self.string = new_func_option;
+		if (&self.string != string) | self.first {
+			self.string = string.to_string();
 			self.hint = generate_hint(string);
+			self.first = false;
 		}
 	}
 
@@ -46,16 +48,11 @@ impl<'a> AutoComplete<'a> {
 			return;
 		}
 
-		// self.string needs to be Some for this to work __DO NOT REMOVE THIS ASSERT__
-		assert!(self.string.is_some());
-
 		match self.hint {
 			HintEnum::Many(hints) => {
 				if movement == &Movement::Complete {
-					// use unwrap_unchecked as self.string is already asserted as Some
-					unsafe {
-						*self.string.as_mut().unwrap_unchecked() += hints[self.i];
-					}
+					println!("applying multicomplete");
+					self.string += hints[self.i];
 					return;
 				}
 
@@ -79,10 +76,7 @@ impl<'a> AutoComplete<'a> {
 			}
 			HintEnum::Single(hint) => {
 				if movement == &Movement::Complete {
-					// use unwrap_unchecked as self.string is already asserted as Some
-					unsafe {
-						*self.string.as_mut().unwrap_unchecked() += hint;
-					}
+					self.string += hint;
 				}
 			}
 			HintEnum::None => {}
@@ -110,7 +104,6 @@ impl<'a> AutoComplete<'a> {
 		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
 		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 		if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
-			println!("complete");
 			movement = Movement::Complete;
 		}
 
@@ -120,10 +113,12 @@ impl<'a> AutoComplete<'a> {
 
 		let re = func_edit.id(te_id).ui(ui);
 
-		if ui.input().key_pressed(Key::ArrowDown) {
-			movement = Movement::Down;
-		} else if ui.input().key_pressed(Key::ArrowUp) {
-			movement = Movement::Up;
+		if !self.hint.is_single() {
+			if ui.input().key_pressed(Key::ArrowDown) {
+				movement = Movement::Down;
+			} else if ui.input().key_pressed(Key::ArrowUp) {
+				movement = Movement::Up;
+			}
 		}
 
 		self.interact_back(&movement);
@@ -144,7 +139,7 @@ impl<'a> AutoComplete<'a> {
 			});
 
 			if clicked {
-				*string += hints[self.i];
+				self.string += hints[self.i];
 
 				// don't need this here as it simply won't be display next frame
 				// ui.memory().close_popup();
@@ -171,6 +166,7 @@ impl<'a> AutoComplete<'a> {
 				},
 			})));
 			TextEdit::store_state(ui.ctx(), te_id, state);
+			*string = self.string.clone();
 		}
 	}
 }
@@ -185,7 +181,7 @@ mod tests {
 		auto_complete.interact_back(&movement);
 
 		let output_string = auto_complete.clone().string;
-		(auto_complete, output_string.unwrap_or_default())
+		(auto_complete, output_string)
 	}
 
 	#[test]
