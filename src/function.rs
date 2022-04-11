@@ -67,7 +67,7 @@ impl Default for FunctionEntry {
 	/// Creates default FunctionEntry instance (which is empty)
 	fn default() -> FunctionEntry {
 		FunctionEntry {
-			function: BackingFunction::new(""),
+			function: BackingFunction::new("").unwrap(),
 			raw_func_str: String::new(),
 			min_x: -1.0,
 			max_x: 1.0,
@@ -90,9 +90,7 @@ impl FunctionEntry {
 		let mut output_string: String = self.raw_func_str.clone();
 		self.autocomplete.ui(ui, &mut output_string, i);
 
-		if output_string != self.raw_func_str {
-			self.update_string(&output_string);
-		}
+		self.update_string(output_string.as_str());
 	}
 
 	/// Get function's cached test result
@@ -100,18 +98,24 @@ impl FunctionEntry {
 
 	/// Update function string and test it
 	fn update_string(&mut self, raw_func_str: &str) {
-		let processed_func = process_func_str(raw_func_str);
-		let output = crate::parsing::test_func(&processed_func);
-		self.raw_func_str = raw_func_str.to_string();
-		if output.is_some() {
-			self.test_result = output;
+		if raw_func_str == self.raw_func_str {
 			return;
-		} else {
-			self.test_result = None;
 		}
 
-		self.function = BackingFunction::new(&processed_func);
-		self.invalidate_whole();
+		self.raw_func_str = raw_func_str.to_string();
+		let processed_func = process_func_str(raw_func_str);
+		let new_func_result = BackingFunction::new(&processed_func);
+
+		match new_func_result {
+			Ok(new_function) => {
+				self.test_result = None;
+				self.function = new_function;
+				self.invalidate_whole();
+			}
+			Err(error) => {
+				self.test_result = Some(error);
+			}
+		}
 	}
 
 	/// Get function that can be used to calculate integral based on Riemann Sum type

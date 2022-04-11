@@ -364,7 +364,7 @@ impl MathApp {
 							"Right",
 						);
 					});
-				let riemann_changed = prev_sum == self.settings.riemann_sum;
+				let riemann_changed = prev_sum != self.settings.riemann_sum;
 
 				// Config options for Extrema and roots
 				let mut extrema_toggled: bool = false;
@@ -646,20 +646,21 @@ impl epi::App for MathApp {
 		// parsing)
 		CentralPanel::default().show(ctx, |ui| {
 			// Display an error if it exists
-			let errors_formatted: Vec<String> = self
+			let errors_formatted: String = self
 				.functions
 				.iter()
 				.map(|func| func.get_test_result())
 				.enumerate()
 				.filter(|(_, error)| error.is_some())
-				.map(|(i, error)| format!("(Function #{}) {}\n", i, error.as_ref().unwrap()))
-				.collect();
+				.map(|(i, error)| {
+					// use unwrap_unchecked as None Errors are already filtered out
+					unsafe { format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked()) }
+				})
+				.collect::<String>();
 
-			if errors_formatted.len() > 0 {
+			if !errors_formatted.is_empty() {
 				ui.centered_and_justified(|ui| {
-					errors_formatted.iter().for_each(|string| {
-						ui.heading(string);
-					})
+					ui.heading(errors_formatted);
 				});
 				return;
 			}

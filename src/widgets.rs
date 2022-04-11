@@ -33,7 +33,7 @@ impl<'a> Default for AutoComplete<'a> {
 }
 
 impl<'a> AutoComplete<'a> {
-	fn changed(&mut self, string: &str) {
+	fn update(&mut self, string: &str) {
 		let new_func_option = Some(string.to_string());
 		if self.string != new_func_option {
 			self.string = new_func_option;
@@ -45,12 +45,17 @@ impl<'a> AutoComplete<'a> {
 		if movement == &Movement::None {
 			return;
 		}
+
+		// self.string needs to be Some for this to work __DO NOT REMOVE THIS ASSERT__
 		assert!(self.string.is_some());
 
 		match self.hint {
 			HintEnum::Many(hints) => {
 				if movement == &Movement::Complete {
-					*self.string.as_mut().unwrap() += hints[self.i];
+					// use unwrap_unchecked as self.string is already asserted as Some
+					unsafe {
+						*self.string.as_mut().unwrap_unchecked() += hints[self.i];
+					}
 					return;
 				}
 
@@ -59,9 +64,11 @@ impl<'a> AutoComplete<'a> {
 
 				match movement {
 					Movement::Up => {
+						// subtract one, if fail, set to max_i value.
 						self.i = self.i.checked_sub(1).unwrap_or(max_i);
 					}
 					Movement::Down => {
+						// add one, if resulting value is above maximum i value, set i to 0
 						self.i += 1;
 						if self.i > max_i {
 							self.i = 0;
@@ -72,7 +79,10 @@ impl<'a> AutoComplete<'a> {
 			}
 			HintEnum::Single(hint) => {
 				if movement == &Movement::Complete {
-					*self.string.as_mut().unwrap() += hint;
+					// use unwrap_unchecked as self.string is already asserted as Some
+					unsafe {
+						*self.string.as_mut().unwrap_unchecked() += hint;
+					}
 				}
 			}
 			HintEnum::None => {}
@@ -83,7 +93,7 @@ impl<'a> AutoComplete<'a> {
 		let mut movement: Movement = Movement::default();
 
 		// update self
-		self.changed(string);
+		self.update(string);
 
 		let mut func_edit = egui::TextEdit::singleline(string)
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
@@ -100,12 +110,12 @@ impl<'a> AutoComplete<'a> {
 		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
 		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 		if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
+			println!("complete");
 			movement = Movement::Complete;
 		}
 
 		if let HintEnum::Single(single_hint) = self.hint {
-			let func_edit_2 = func_edit;
-			func_edit = func_edit_2.hint_text(*single_hint);
+			func_edit = func_edit.hint_text(*single_hint);
 		}
 
 		let re = func_edit.id(te_id).ui(ui);
@@ -171,7 +181,7 @@ mod tests {
 
 	fn auto_complete_helper(string: &str, movement: Movement) -> (AutoComplete, String) {
 		let mut auto_complete = AutoComplete::default();
-		auto_complete.changed(string);
+		auto_complete.update(string);
 		auto_complete.interact_back(&movement);
 
 		let output_string = auto_complete.clone().string;

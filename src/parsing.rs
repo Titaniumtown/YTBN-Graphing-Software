@@ -20,10 +20,36 @@ pub struct BackingFunction {
 
 impl BackingFunction {
 	/// Create new [`BackingFunction`] instance
-	pub fn new(func_str: &str) -> Self {
+	pub fn new(func_str: &str) -> Result<Self, String> {
 		let function = match func_str {
 			"" => EMPTY_FUNCTION.clone(),
-			_ => exmex::parse::<f64>(func_str).unwrap(),
+			_ => {
+				let parse_result = exmex::parse::<f64>(func_str);
+
+				match &parse_result {
+					Err(e) => return Err(e.to_string()),
+					Ok(_) => {
+						let var_names = parse_result.as_ref().unwrap().var_names().to_vec();
+
+						if var_names != ["x"] {
+							let var_names_not_x: Vec<&String> = var_names
+								.iter()
+								.filter(|ele| ele != &"x")
+								.collect::<Vec<&String>>();
+
+							return Err(match var_names_not_x.len() {
+								1 => {
+									format!("Error: invalid variable: {}", var_names_not_x[0])
+								}
+								_ => {
+									format!("Error: invalid variables: {:?}", var_names_not_x)
+								}
+							});
+						}
+					}
+				}
+				parse_result.unwrap()
+			}
 		};
 
 		let derivative_1 = function
@@ -35,12 +61,12 @@ impl BackingFunction {
 			.partial_iter([0, 0].iter())
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
 
-		Self {
+		Ok(Self {
 			function,
 			derivative_1,
 			derivative_1_str,
 			derivative_2,
-		}
+		})
 	}
 
 	/// Returns Mathematical representation of the function's derivative
@@ -164,36 +190,6 @@ pub fn process_func_str(function_in: &str) -> String {
 		.replace('\u{1fc93}', "exp")
 }
 
-/// Tests function to make sure it's able to be parsed. Returns the string of the Error produced, or an empty string if it runs successfully.
-pub fn test_func(function_string: &str) -> Option<String> {
-	if function_string.is_empty() {
-		return None;
-	}
-
-	let parse_result = exmex::parse::<f64>(function_string);
-
-	match parse_result {
-		Err(e) => Some(e.to_string()),
-		Ok(_) => {
-			let var_names = parse_result.unwrap().var_names().to_vec();
-
-			if var_names != ["x"] {
-				let var_names_not_x: Vec<&String> = var_names
-					.iter()
-					.filter(|ele| ele != &"x")
-					.collect::<Vec<&String>>();
-
-				return match var_names_not_x.len() {
-					1 => Some(format!("Error: invalid variable: {}", var_names_not_x[0])),
-					_ => Some(format!("Error: invalid variables: {:?}", var_names_not_x)),
-				};
-			}
-
-			None
-		}
-	}
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -201,7 +197,9 @@ mod tests {
 	use std::collections::HashMap;
 
 	/// returns if function with string `func_str` is valid after processing through [`process_func_str`]
-	fn func_is_valid(func_str: &str) -> bool { test_func(&process_func_str(func_str)).is_none() }
+	fn func_is_valid(func_str: &str) -> bool {
+		BackingFunction::new(&process_func_str(func_str)).is_ok()
+	}
 
 	/// Used for testing: passes function to [`process_func_str`] before running [`test_func`]. if `expect_valid` == `true`, it expects no errors to be created.
 	fn test_func_helper(func_str: &str, expect_valid: bool) {
