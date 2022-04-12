@@ -112,19 +112,16 @@ impl<'a> AutoComplete<'a> {
 
 		if let HintEnum::Single(single_hint) = self.hint {
 			func_edit = func_edit.hint_text(*single_hint);
-		}
-
-		let re = func_edit.ui(ui);
-
-		self.update(&new_string);
-
-		if !self.hint.is_single() {
 			if ui.input().key_pressed(Key::ArrowDown) {
 				movement = Movement::Down;
 			} else if ui.input().key_pressed(Key::ArrowUp) {
 				movement = Movement::Up;
 			}
 		}
+
+		let re = func_edit.ui(ui);
+
+		self.update(&new_string);
 
 		self.interact_back(&movement);
 

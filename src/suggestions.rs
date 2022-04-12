@@ -72,6 +72,7 @@ impl<'a> HintEnum<'a> {
 	#[allow(dead_code)]
 	pub fn is_some(&self) -> bool { !self.is_none() }
 
+	#[allow(dead_code)]
 	pub fn is_single(&self) -> bool {
 		match self {
 			HintEnum::Single(_) => true,
