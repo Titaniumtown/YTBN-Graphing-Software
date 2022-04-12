@@ -177,7 +177,7 @@ mod autocomplete_tests {
 	use super::*;
 
 	enum Action<'a> {
-		AssertI(usize),
+		AssertIndex(usize),
 		AssertString(&'a str),
 		AssertHint(&'a str),
 		SetString(&'a str),
@@ -188,10 +188,10 @@ mod autocomplete_tests {
 		let mut ac = AutoComplete::default();
 		for action in actions.iter() {
 			match action {
-				Action::AssertI(target_i) => {
+				Action::AssertIndex(target_i) => {
 					if &ac.i != target_i {
 						panic!(
-							"AssertI failed: Current: '{}' Expected: '{}'",
+							"AssertIndex failed: Current: '{}' Expected: '{}'",
 							ac.i, target_i
 						)
 					}
@@ -247,17 +247,17 @@ mod autocomplete_tests {
 			Action::SetString(""),
 			Action::AssertHint("x^2"),
 			Action::Move(Movement::Up),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 			Action::AssertString(""),
 			Action::AssertHint("x^2"),
 			Action::Move(Movement::Down),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 			Action::AssertString(""),
 			Action::AssertHint("x^2"),
 			Action::Move(Movement::Complete),
 			Action::AssertString("x^2"),
 			Action::AssertHint(""),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 		]);
 	}
 
@@ -267,25 +267,25 @@ mod autocomplete_tests {
 			Action::SetString("s"),
 			Action::AssertHint("in("),
 			Action::Move(Movement::Up),
-			Action::AssertI(3),
+			Action::AssertIndex(3),
 			Action::AssertString("s"),
 			Action::AssertHint("ignum("),
 			Action::Move(Movement::Down),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 			Action::AssertString("s"),
 			Action::AssertHint("in("),
 			Action::Move(Movement::Down),
-			Action::AssertI(1),
+			Action::AssertIndex(1),
 			Action::AssertString("s"),
 			Action::AssertHint("qrt("),
 			Action::Move(Movement::Up),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 			Action::AssertString("s"),
 			Action::AssertHint("in("),
 			Action::Move(Movement::Complete),
 			Action::AssertString("sin("),
 			Action::AssertHint(")"),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 		]);
 	}
 
@@ -295,17 +295,17 @@ mod autocomplete_tests {
 			Action::SetString("sin(x"),
 			Action::AssertHint(")"),
 			Action::Move(Movement::Up),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 			Action::AssertString("sin(x"),
 			Action::AssertHint(")"),
 			Action::Move(Movement::Down),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 			Action::AssertString("sin(x"),
 			Action::AssertHint(")"),
 			Action::Move(Movement::Complete),
 			Action::AssertString("sin(x)"),
 			Action::AssertHint(""),
-			Action::AssertI(0),
+			Action::AssertIndex(0),
 		]);
 	}
 }
