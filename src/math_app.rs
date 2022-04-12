@@ -465,7 +465,7 @@ impl MathApp {
 						);
 
 						function.settings_opened.bitxor_assign(
-							ui.add(Button::new("⚙"))
+							ui.add(Button::new("⚙")) // fix gear icon
 								.on_hover_text(match function.settings_opened {
 									true => "Close Settings",
 									false => "Open Settings",
