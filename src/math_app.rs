@@ -178,7 +178,13 @@ fn test_file_data() {
 		),
 		(
 			"emoji-icon-font".to_owned(),
-			FontData::from_owned(include_bytes!("../assets/emoji-icon-font.ttf").to_vec()),
+			FontData::from_owned(include_bytes!("../assets/emoji-icon-font.ttf").to_vec()).tweak(
+				egui::FontTweak {
+					scale: 0.8,
+					y_offset_factor: 0.07,
+					y_offset: 0.0,
+				},
+			),
 		),
 	]);
 
