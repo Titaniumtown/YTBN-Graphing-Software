@@ -8,6 +8,7 @@ use eframe::{egui, epaint};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
 	widgets::plot::Bar,
+	Checkbox, Context,
 };
 use epaint::Color32;
 use std::fmt::{self, Debug};
@@ -52,15 +53,21 @@ pub struct FunctionEntry {
 	/// If displaying derivatives are enabled (note, they are still calculated for other purposes)
 	pub derivative: bool,
 
+	pub nth_derviative: bool,
+
 	back_data: Vec<Value>,
 	integral_data: Option<(Vec<Bar>, f64)>,
 	derivative_data: Vec<Value>,
 	extrema_data: Vec<Value>,
 	root_data: Vec<Value>,
+	nth_derivative_data: Option<Vec<Value>>,
 
 	autocomplete: AutoComplete<'static>,
 
 	test_result: Option<String>,
+	curr_nth: usize,
+
+	pub settings_opened: bool,
 }
 
 impl Default for FunctionEntry {
@@ -73,13 +80,17 @@ impl Default for FunctionEntry {
 			max_x: 1.0,
 			integral: false,
 			derivative: false,
+			nth_derviative: false,
 			back_data: Vec::new(),
 			integral_data: None,
 			derivative_data: Vec::new(),
 			extrema_data: Vec::new(),
 			root_data: Vec::new(),
+			nth_derivative_data: None,
 			autocomplete: AutoComplete::default(),
 			test_result: None,
+			curr_nth: 3,
+			settings_opened: false,
 		}
 	}
 }
@@ -92,6 +103,32 @@ impl FunctionEntry {
 
 		let output_string = self.autocomplete.string.clone();
 		self.update_string(&output_string);
+	}
+
+	pub fn settings(&mut self, ctx: &Context) {
+		let mut invalidate_nth = false;
+		egui::Window::new(format!("Settings: {}", self.raw_func_str))
+			.open(&mut self.settings_opened)
+			.default_pos([200.0, 200.0])
+			.resizable(false)
+			.collapsible(false)
+			.show(ctx, |ui| {
+				ui.add(Checkbox::new(
+					&mut self.nth_derviative,
+					"Display Nth Derivative",
+				));
+
+				if ui
+					.add(egui::Slider::new(&mut self.curr_nth, 3..=5).text("Nth Derivative"))
+					.changed()
+				{
+					invalidate_nth = true;
+				}
+			});
+
+		if invalidate_nth {
+			self.invalidate_nth();
+		}
 	}
 
 	/// Get function's cached test result
@@ -263,6 +300,24 @@ impl FunctionEntry {
 			} else {
 				self.invalidate_derivative();
 			}
+
+			if self.nth_derviative && let Some(nth_derivative_data) = &self.nth_derivative_data {
+					let new_nth_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
+						.map(|x| {
+							if let Some(i) = x_data.get_index(x) {
+								(*nth_derivative_data)[i]
+							} else {
+								Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
+							}
+						})
+						.collect();
+
+					debug_assert_eq!(new_nth_derivative_data.len(), settings.plot_width + 1);
+
+					self.nth_derivative_data = Some(new_nth_derivative_data);
+			} else {
+				self.invalidate_nth();
+			}
 		} else {
 			self.invalidate_back();
 			self.invalidate_derivative();
@@ -286,6 +341,14 @@ impl FunctionEntry {
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.derivative_data = data;
+			}
+
+			if self.nth_derviative && self.nth_derivative_data.is_none() {
+				let data: Vec<Value> = dyn_iter(&resolution_iter)
+					.map(|x| Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x)))
+					.collect();
+				debug_assert_eq!(data.len(), settings.plot_width + 1);
+				self.nth_derivative_data = Some(data);
 			}
 		}
 
@@ -370,6 +433,15 @@ impl FunctionEntry {
 			);
 		}
 
+		if self.nth_derviative && let Some(nth_derviative) = &self.nth_derivative_data {
+			plot_ui.line(
+				(*nth_derviative)
+					.to_line()
+					.color(Color32::DARK_RED)
+					.name(self.function.get_nth_derivative_str()),
+			);
+		}
+
 		// Plot integral data
 		match &self.integral_data {
 			Some(integral_data) => {
@@ -391,6 +463,7 @@ impl FunctionEntry {
 		self.invalidate_back();
 		self.invalidate_integral();
 		self.invalidate_derivative();
+		self.invalidate_nth();
 		self.extrema_data.clear();
 		self.root_data.clear();
 	}
@@ -403,6 +476,8 @@ impl FunctionEntry {
 
 	/// Invalidate Derivative data
 	pub fn invalidate_derivative(&mut self) { self.derivative_data.clear(); }
+
+	pub fn invalidate_nth(&mut self) { self.nth_derivative_data = None }
 
 	/// Runs asserts to make sure everything is the expected value
 	#[cfg(test)]

@@ -50,7 +50,7 @@ pub const DEFAULT_INTEGRAL_NUM: usize = 100;
 
 /// Colors used for plotting
 // Colors commented out are used elsewhere and are not included here for better user experience
-pub const COLORS: &[Color32; 14] = &[
+pub const COLORS: &[Color32; 13] = &[
 	Color32::RED,
 	// Color32::GREEN,
 	// Color32::YELLOW,
@@ -65,7 +65,7 @@ pub const COLORS: &[Color32; 14] = &[
 	Color32::LIGHT_GRAY,
 	Color32::LIGHT_RED,
 	Color32::DARK_GRAY,
-	Color32::DARK_RED,
+	// Color32::DARK_RED,
 	Color32::KHAKI,
 	Color32::DARK_GREEN,
 	Color32::DARK_BLUE,

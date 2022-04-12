@@ -16,6 +16,8 @@ pub struct BackingFunction {
 	derivative_1_str: String,
 	/// f''(x)
 	derivative_2: FlatEx<f64>,
+
+	nth_derivative: Option<(usize, FlatEx<f64>, String)>,
 }
 
 impl BackingFunction {
@@ -66,6 +68,7 @@ impl BackingFunction {
 			derivative_1,
 			derivative_1_str,
 			derivative_2,
+			nth_derivative: None,
 		})
 	}
 
@@ -83,6 +86,34 @@ impl BackingFunction {
 	/// Calculate f''(x)
 	pub fn get_derivative_2(&self, x: f64) -> f64 {
 		self.derivative_2.eval(&[x]).unwrap_or(f64::NAN)
+	}
+
+	pub fn get_nth_derivative_str(&self) -> &str { &self.nth_derivative.as_ref().unwrap().2 }
+
+	pub fn get_nth_derivative(&mut self, n: usize, x: f64) -> f64 {
+		match n {
+			0 => self.get(x),
+			1 => self.get_derivative_1(x),
+			2 => self.get_derivative_2(x),
+			_ => {
+				if let Some((curr_n, curr_n_func, _)) = &self.nth_derivative {
+					if curr_n == &n {
+						return curr_n_func.eval(&[x]).unwrap_or(f64::NAN);
+					}
+				}
+				let new_func = self
+					.function
+					.partial_iter((1..=n).map(|_| 0).collect::<Vec<usize>>().iter())
+					.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
+
+				self.nth_derivative = Some((
+					n,
+					new_func.clone(),
+					new_func.unparse().to_owned().replace("{x}", "x"),
+				));
+				return new_func.eval(&[x]).unwrap_or(f64::NAN);
+			}
+		}
 	}
 }
 

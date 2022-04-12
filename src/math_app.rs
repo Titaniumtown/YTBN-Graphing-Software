@@ -464,9 +464,19 @@ impl MathApp {
 								.clicked(),
 						);
 
+						function.settings_opened.bitxor_assign(
+							ui.add(Button::new("⚙"))
+								.on_hover_text(match function.settings_opened {
+									true => "Close Settings",
+									false => "Open Settings",
+								})
+								.clicked(),
+						);
+
 						// Contains the function string in a text box that the user can edit
 						function.auto_complete(ui, i as i32)
 					});
+					function.settings(ctx);
 				}
 
 				// Remove function if the user requests it
