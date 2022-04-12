@@ -57,7 +57,8 @@ impl BackingFunction {
 		let derivative_1 = function
 			.partial(0)
 			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
-		let derivative_1_str = derivative_1.unparse().to_owned().replace("{x}", "x");
+
+		let derivative_1_str = prettyify_function_str(derivative_1.unparse());
 
 		let derivative_2 = function
 			.partial_iter([0, 0].iter())
@@ -109,11 +110,21 @@ impl BackingFunction {
 				self.nth_derivative = Some((
 					n,
 					new_func.clone(),
-					new_func.unparse().to_owned().replace("{x}", "x"),
+					prettyify_function_str(new_func.unparse()),
 				));
-				return new_func.eval(&[x]).unwrap_or(f64::NAN);
+				new_func.eval(&[x]).unwrap_or(f64::NAN)
 			}
 		}
+	}
+}
+
+fn prettyify_function_str(func: &str) -> String {
+	let new_str = func.to_owned().replace("{x}", "x");
+
+	if &new_str == "0/0" {
+		"Undefined".to_owned()
+	} else {
+		new_str
 	}
 }
 
