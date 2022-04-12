@@ -326,15 +326,11 @@ impl MathApp {
 		#[cfg(not(threading))]
 		tracing::info!("Threading: Disabled");
 
-		tracing::info!(
-			"Integration name: {} Url: {:?}",
-			cc.integration_info.name,
-			if let Some(url) = &cc.integration_info.web_info {
-				&url.location.url
-			} else {
-				"N/A"
-			}
-		);
+		tracing::info!("Integration name: {}", cc.integration_info.name);
+
+		if let Some(url) = &cc.integration_info.web_info {
+			tracing::info!("Url: {:?}", url);
+		}
 
 		tracing::info!("egui app initialized.");
 		Self::default() // initialize `MathApp`

@@ -98,6 +98,7 @@ mod tests {
 			("cos", HintEnum::Many(&["(", "h("])),
 			("sin(", HintEnum::Single(")")),
 			("sqrt", HintEnum::Single("(")),
+			("ln(x)", HintEnum::None),
 		]);
 
 		for (key, value) in values {

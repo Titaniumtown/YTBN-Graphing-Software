@@ -91,7 +91,7 @@ impl FunctionEntry {
 		self.autocomplete.ui(ui, i);
 
 		let output_string = self.autocomplete.string.clone();
-		self.update_string(output_string.as_str());
+		self.update_string(&output_string);
 	}
 
 	/// Get function's cached test result

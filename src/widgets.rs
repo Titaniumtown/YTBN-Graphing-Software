@@ -35,6 +35,7 @@ impl<'a> Default for AutoComplete<'a> {
 impl<'a> AutoComplete<'a> {
 	pub fn update(&mut self, string: &str) {
 		if &self.string != string {
+			self.i = 0;
 			self.string = string.to_string();
 			self.hint = generate_hint(string);
 		}
@@ -48,7 +49,7 @@ impl<'a> AutoComplete<'a> {
 		match self.hint {
 			HintEnum::Many(hints) => {
 				if movement == &Movement::Complete {
-					self.string += hints[self.i];
+					self.apply_hint(hints[self.i]);
 					return;
 				}
 
@@ -72,24 +73,33 @@ impl<'a> AutoComplete<'a> {
 			}
 			HintEnum::Single(hint) => {
 				if movement == &Movement::Complete {
-					self.string += hint;
+					self.apply_hint(hint);
 				}
 			}
 			HintEnum::None => {}
 		}
 	}
 
+	fn apply_hint(&mut self, hint: &str) {
+		let new_string = self.string.clone() + hint;
+		self.update(&new_string);
+	}
+
 	pub fn ui(&mut self, ui: &mut egui::Ui, func_i: i32) {
 		let mut movement: Movement = Movement::default();
 
-		let mut func_edit = egui::TextEdit::singleline(&mut self.string)
-			.hint_forward(true) // Make the hint appear after the last text in the textbox
-			.lock_focus(true);
+		let mut new_string = self.string.clone();
 
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
+		let mut func_edit = egui::TextEdit::singleline(&mut new_string)
+			.hint_forward(true) // Make the hint appear after the last text in the textbox
+			.lock_focus(true)
+			.id(te_id);
+
 		if self.hint.is_none() {
-			let _ = func_edit.id(te_id).ui(ui);
+			let _ = func_edit.ui(ui);
+			self.update(&new_string);
 			return;
 		}
 
@@ -104,7 +114,9 @@ impl<'a> AutoComplete<'a> {
 			func_edit = func_edit.hint_text(*single_hint);
 		}
 
-		let re = func_edit.id(te_id).ui(ui);
+		let re = func_edit.ui(ui);
+
+		self.update(&new_string);
 
 		if !self.hint.is_single() {
 			if ui.input().key_pressed(Key::ArrowDown) {
@@ -132,7 +144,7 @@ impl<'a> AutoComplete<'a> {
 			});
 
 			if clicked {
-				self.string += hints[self.i];
+				self.apply_hint(hints[self.i]);
 
 				// don't need this here as it simply won't be display next frame
 				// ui.memory().close_popup();
@@ -164,67 +176,139 @@ impl<'a> AutoComplete<'a> {
 }
 
 #[cfg(test)]
-mod tests {
+mod autocomplete_tests {
 	use super::*;
 
-	fn auto_complete_helper(string: &str, movement: Movement) -> (AutoComplete, String) {
-		let mut auto_complete = AutoComplete::default();
-		auto_complete.update(string);
-		auto_complete.interact_back(&movement);
+	enum Action<'a> {
+		AssertI(usize),
+		AssertString(&'a str),
+		AssertHint(&'a str),
+		SetString(&'a str),
+		Move(Movement),
+	}
 
-		let output_string = auto_complete.clone().string;
-		(auto_complete, output_string)
+	fn ac_tester(actions: &[Action]) {
+		let mut ac = AutoComplete::default();
+		for action in actions.iter() {
+			match action {
+				Action::AssertI(target_i) => {
+					if &ac.i != target_i {
+						panic!(
+							"AssertI failed: Current: '{}' Expected: '{}'",
+							ac.i, target_i
+						)
+					}
+				}
+				Action::AssertString(target_string) => {
+					if &ac.string != target_string {
+						panic!(
+							"AssertString failed: Current: '{}' Expected: '{}'",
+							ac.string, target_string
+						)
+					}
+				}
+				Action::AssertHint(target_hint) => match ac.hint {
+					HintEnum::None => {
+						if !target_hint.is_empty() {
+							panic!(
+								"AssertHint failed on `HintEnum::None`: Expected: {}",
+								target_hint
+							);
+						}
+					}
+					HintEnum::Many(hints) => {
+						let hint = hints[ac.i];
+						if &hint != target_hint {
+							panic!(
+								"AssertHint failed on `HintEnum::Many`: Current: '{}' (index: {}) Expected: '{}'",
+								hint, ac.i, target_hint
+							)
+						}
+					}
+					HintEnum::Single(hint) => {
+						if hint != target_hint {
+							panic!(
+								"AssertHint failed on `HintEnum::Single`: Current: '{}' Expected: '{}'",
+								hint, target_hint
+							)
+						}
+					}
+				},
+				Action::SetString(target_string) => {
+					ac.update(target_string);
+				}
+				Action::Move(target_movement) => {
+					ac.interact_back(target_movement);
+				}
+			}
+		}
 	}
 
 	#[test]
-	fn auto_complete_single_still() {
-		let (_, string) = auto_complete_helper("", Movement::None);
-
-		assert_eq!(&*string, "");
+	fn single() {
+		ac_tester(&[
+			Action::SetString(""),
+			Action::AssertHint("x^2"),
+			Action::Move(Movement::Up),
+			Action::AssertI(0),
+			Action::AssertString(""),
+			Action::AssertHint("x^2"),
+			Action::Move(Movement::Down),
+			Action::AssertI(0),
+			Action::AssertString(""),
+			Action::AssertHint("x^2"),
+			Action::Move(Movement::Complete),
+			Action::AssertString("x^2"),
+			Action::AssertHint(""),
+			Action::AssertI(0),
+		]);
 	}
 
 	#[test]
-	fn auto_complete_single_complete() {
-		let (_, string) = auto_complete_helper("", Movement::Complete);
-
-		assert_eq!(&*string, "x^2");
+	fn multi() {
+		ac_tester(&[
+			Action::SetString("s"),
+			Action::AssertHint("in("),
+			Action::Move(Movement::Up),
+			Action::AssertI(3),
+			Action::AssertString("s"),
+			Action::AssertHint("ignum("),
+			Action::Move(Movement::Down),
+			Action::AssertI(0),
+			Action::AssertString("s"),
+			Action::AssertHint("in("),
+			Action::Move(Movement::Down),
+			Action::AssertI(1),
+			Action::AssertString("s"),
+			Action::AssertHint("qrt("),
+			Action::Move(Movement::Up),
+			Action::AssertI(0),
+			Action::AssertString("s"),
+			Action::AssertHint("in("),
+			Action::Move(Movement::Complete),
+			Action::AssertString("sin("),
+			Action::AssertHint(")"),
+			Action::AssertI(0),
+		]);
 	}
 
 	#[test]
-	fn auto_complete_single_down() {
-		let (_, string) = auto_complete_helper("", Movement::Down);
-
-		assert_eq!(&*string, "");
-	}
-
-	#[test]
-	fn auto_complete_single_up() {
-		let (_, string) = auto_complete_helper("", Movement::Up);
-
-		assert_eq!(&*string, "");
-	}
-
-	#[test]
-	fn auto_complete_multi_up() {
-		let (auto_complete, string) = auto_complete_helper("s", Movement::Up);
-
-		assert!(auto_complete.i > 0);
-		assert_eq!(&*string, "s");
-	}
-
-	#[test]
-	fn auto_complete_multi_down() {
-		let (auto_complete, string) = auto_complete_helper("s", Movement::Down);
-
-		assert_eq!(auto_complete.i, 1);
-		assert_eq!(&*string, "s");
-	}
-
-	#[test]
-	fn auto_complete_multi_complete() {
-		let (auto_complete, string) = auto_complete_helper("s", Movement::Complete);
-
-		assert_eq!(auto_complete.i, 0);
-		assert_eq!(&*string, "sin(");
+	fn parens() {
+		ac_tester(&[
+			Action::SetString("sin(x"),
+			Action::AssertHint(")"),
+			Action::Move(Movement::Up),
+			Action::AssertI(0),
+			Action::AssertString("sin(x"),
+			Action::AssertHint(")"),
+			Action::Move(Movement::Down),
+			Action::AssertI(0),
+			Action::AssertString("sin(x"),
+			Action::AssertHint(")"),
+			Action::Move(Movement::Complete),
+			Action::AssertString("sin(x)"),
+			Action::AssertHint(""),
+			Action::AssertI(0),
+		]);
 	}
 }
