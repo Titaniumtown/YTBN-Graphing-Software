@@ -429,11 +429,10 @@ impl MathApp {
 
 				let functions_len = self.functions.len();
 				let mut remove_i: Option<usize> = None;
+				ui.label("Functions:");
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					// Entry for a function
 					ui.horizontal(|ui| {
-						ui.label("Function:");
-
 						// There's more than 1 function! Functions can now be deleted
 						if ui
 							.add_enabled(functions_len > 1, Button::new("X"))
@@ -476,7 +475,7 @@ impl MathApp {
 						// Contains the function string in a text box that the user can edit
 						function.auto_complete(ui, i)
 					});
-					function.settings(ctx);
+					function.settings_window(ctx);
 				}
 
 				// Remove function if the user requests it
@@ -484,15 +483,21 @@ impl MathApp {
 					self.functions.remove(remove_i_unwrap);
 				}
 
-				// Hyperlink to project's github
-				ui.hyperlink_to(
-					"I'm Open Source!",
-					"https://github.com/Titaniumtown/YTBN-Graphing-Software",
-				);
+				ui.with_layout(egui::Layout::bottom_up(emath::Align::Min), |ui| {
+					// Contents put in reverse order from bottom to top
 
-				// Licensing information
-				ui.label(RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY))
+					// Licensing information
+					ui.label(
+						RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
+					)
 					.on_hover_text(&ASSETS.text_license_info);
+
+					// Hyperlink to project's github
+					ui.hyperlink_to(
+						"I'm Open Source!",
+						"https://github.com/Titaniumtown/YTBN-Graphing-Software",
+					);
+				});
 			});
 	}
 }

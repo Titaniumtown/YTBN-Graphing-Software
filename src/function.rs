@@ -105,7 +105,7 @@ impl FunctionEntry {
 		self.update_string(&output_string);
 	}
 
-	pub fn settings(&mut self, ctx: &Context) {
+	pub fn settings_window(&mut self, ctx: &Context) {
 		let mut invalidate_nth = false;
 		egui::Window::new(format!("Settings: {}", self.raw_func_str))
 			.open(&mut self.settings_opened)
