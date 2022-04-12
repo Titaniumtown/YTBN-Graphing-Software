@@ -74,6 +74,7 @@ lazy_static::lazy_static! {
 		let mut font_ubuntu_light: Option<FontData> = None;
 		let mut font_notoemoji: Option<FontData> = None;
 		let mut font_hack: Option<FontData> = None;
+		let mut font_emoji_icon: Option<FontData> = None;
 
 		// Stores text
 		let mut text_data: Option<JsonFileOutput> = None;
@@ -104,6 +105,15 @@ lazy_static::lazy_static! {
 					"Ubuntu-Light.ttf" => {
 						font_ubuntu_light = Some(font_data);
 					},
+					"emoji-icon-font.ttf" => {
+						font_emoji_icon = Some(font_data.tweak(
+							egui::FontTweak {
+								scale: 0.8,            // make it smaller
+								y_offset_factor: 0.07, // move it down slightly
+								y_offset: 0.0,
+							},
+						))
+					}
 					_ => {
 						panic!("Font File {} not expected!", path_string);
 					}
@@ -120,17 +130,22 @@ lazy_static::lazy_static! {
 		let font_data: BTreeMap<String, FontData> = BTreeMap::from([
 			("Hack".to_owned(), font_hack.expect("Hack font not found!")),
 			("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu Light font not found!")),
-			("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("Noto Emoji font not found!"))
+			("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("Noto Emoji font not found!")),
+			("emoji-icon-font".to_owned(), font_emoji_icon.expect("Emoji Icon Font not found!"))
 		]);
+
 		let families = BTreeMap::from([
 			(FontFamily::Monospace,
 				vec![
 					"Hack".to_owned(),
 					"Ubuntu-Light".to_owned(),
 					"NotoEmoji-Regular".to_owned(),
+					"emoji-icon-font".to_owned(),
+
 				]),
 				(FontFamily::Proportional,
-					vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()])
+					vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(),
+					"emoji-icon-font".to_owned()])
 		]);
 
 		let fonts = FontDefinitions {
@@ -161,6 +176,10 @@ fn test_file_data() {
 			"NotoEmoji-Regular".to_owned(),
 			FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec()),
 		),
+		(
+			"emoji-icon-font".to_owned(),
+			FontData::from_owned(include_bytes!("../assets/emoji-icon-font.ttf").to_vec()),
+		),
 	]);
 
 	let families = BTreeMap::from([
@@ -170,11 +189,16 @@ fn test_file_data() {
 				"Hack".to_owned(),
 				"Ubuntu-Light".to_owned(),
 				"NotoEmoji-Regular".to_owned(),
+				"emoji-icon-font".to_owned(),
 			],
 		),
 		(
 			FontFamily::Proportional,
-			vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned()],
+			vec![
+				"Ubuntu-Light".to_owned(),
+				"NotoEmoji-Regular".to_owned(),
+				"emoji-icon-font".to_owned(),
+			],
 		),
 	]);
 
@@ -464,7 +488,7 @@ impl MathApp {
 						);
 
 						function.settings_opened.bitxor_assign(
-							ui.add(Button::new("⚙")) // fix gear icon
+							ui.add(Button::new("⚙"))
 								.on_hover_text(match function.settings_opened {
 									true => "Close Settings",
 									false => "Open Settings",
