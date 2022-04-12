@@ -34,7 +34,7 @@ impl<'a> Default for AutoComplete<'a> {
 
 impl<'a> AutoComplete<'a> {
 	pub fn update_string(&mut self, string: &str) {
-		if &self.string != string {
+		if self.string != string {
 			self.i = 0;
 			self.string = string.to_string();
 			self.hint = generate_hint(string);
