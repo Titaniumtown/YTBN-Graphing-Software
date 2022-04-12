@@ -41,7 +41,7 @@ impl<'a> AutoComplete<'a> {
 		}
 	}
 
-	fn interact_back(&mut self, movement: &Movement) {
+	fn register_movement(&mut self, movement: &Movement) {
 		if movement == &Movement::None {
 			return;
 		}
@@ -123,7 +123,7 @@ impl<'a> AutoComplete<'a> {
 
 		self.update_string(&new_string);
 
-		self.interact_back(&movement);
+		self.register_movement(&movement);
 
 		if movement != Movement::Complete && let Hint::Many(hints) = self.hint {
 			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
@@ -235,7 +235,7 @@ mod autocomplete_tests {
 					ac.update_string(target_string);
 				}
 				Action::Move(target_movement) => {
-					ac.interact_back(target_movement);
+					ac.register_movement(target_movement);
 				}
 			}
 		}
