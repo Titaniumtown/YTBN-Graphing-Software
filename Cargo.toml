@@ -5,6 +5,7 @@ edition = "2021"
 build = "build.rs"
 license = "AGPL-3.0"
 repository = "https://github.com/Titaniumtown/YTBN-Graphing-Software"
+description = "Crossplatform (and web-compatible) graphing calculator"
 
 [lib]
 crate-type = ["cdylib"]
