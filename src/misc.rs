@@ -80,17 +80,14 @@ pub struct SteppedVector {
 	/// Maximum value
 	max: f64,
 
-	/// Since all entries in `data` are evenly spaced, this field stores the
-	/// step between 2 adjacent elements
+	/// Since all entries in `data` are evenly spaced, this field stores the step between 2 adjacent elements
 	step: f64,
 }
 
 impl SteppedVector {
-	/// Returns `Option<usize>` with index of element with value `x`. and `None`
-	/// if `x` does not exist in `data`
+	/// Returns `Option<usize>` with index of element with value `x`. and `None` if `x` does not exist in `data`
 	pub fn get_index(&self, x: &f64) -> Option<usize> {
-		// if `x` is outside range, just go ahead and return `None` as it *shouldn't* be
-		// in `data`
+		// if `x` is outside range, just go ahead and return `None` as it *shouldn't* be in `data`
 		if (x > &self.max) | (&self.min > x) {
 			return None;
 		}
@@ -106,8 +103,7 @@ impl SteppedVector {
 		// Do some math in order to calculate the expected index value
 		let possible_i = ((x - self.min) / self.step) as usize;
 
-		// Make sure that the index is valid by checking the data returned vs the actual
-		// data (just in case)
+		// Make sure that the index is valid by checking the data returned vs the actual data (just in case)
 		if &self.data[possible_i] == x {
 			// It is valid!
 			Some(possible_i)
@@ -165,8 +161,7 @@ impl From<Vec<f64>> for SteppedVector {
 	}
 }
 
-/// Implements traits that are useful when dealing with Vectors of egui's
-/// `Value`
+/// Implements traits that are useful when dealing with Vectors of egui's `Value`
 pub trait EguiHelper {
 	/// Converts to `egui::plot::Line`
 	fn to_line(&self) -> Line;
