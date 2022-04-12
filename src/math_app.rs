@@ -474,7 +474,7 @@ impl MathApp {
 						);
 
 						// Contains the function string in a text box that the user can edit
-						function.auto_complete(ui, i as i32)
+						function.auto_complete(ui, i)
 					});
 					function.settings(ctx);
 				}

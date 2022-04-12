@@ -97,7 +97,7 @@ impl Default for FunctionEntry {
 
 impl FunctionEntry {
 	/// Create autocomplete ui and handle user input
-	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: i32) {
+	pub fn auto_complete(&mut self, ui: &mut egui::Ui, i: usize) {
 		self.autocomplete.update_string(&self.raw_func_str);
 		self.autocomplete.ui(ui, i);
 

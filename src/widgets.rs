@@ -80,7 +80,7 @@ impl<'a> AutoComplete<'a> {
 		self.update_string(&new_string);
 	}
 
-	pub fn ui(&mut self, ui: &mut egui::Ui, func_i: i32) {
+	pub fn ui(&mut self, ui: &mut egui::Ui, func_i: usize) {
 		let mut movement: Movement = Movement::default();
 
 		let mut new_string = self.string.clone();
