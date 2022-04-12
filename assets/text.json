@@ -16,7 +16,8 @@
 	"help_function": [
 		"- The 'X' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.",
 		"- The ∫ button (between the 'X' and 'd/dx' buttons) indicates whether to integrate the function in question.",
-		"- The 'd/dx' button next to the function input indicates whether or not calculating the derivative is enabled or not."
+		"- The 'd/dx' button next to the gear icon indicates whether or not calculating the derivative is enabled or not.",
+		"- The gear icon next to the function input allows you to tweak settings in relation to the selected function."
 	],
 	"help_other": [
 		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points on the graph. You can toggle these in the Side Panel.",
