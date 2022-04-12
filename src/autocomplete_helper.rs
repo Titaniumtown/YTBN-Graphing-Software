@@ -34,7 +34,7 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 
 		seen_3.insert(key.clone());
 		if keys.iter().filter(|a| a == &&key).count() == 1 {
-			output.push((key.clone(), format!(r#"HintEnum::Single("{}")"#, value)));
+			output.push((key.clone(), format!(r#"Hint::Single("{}")"#, value)));
 		} else {
 			let mut multi_data = tuple_list_1
 				.iter()
@@ -42,7 +42,7 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 				.map(|(_, b)| b)
 				.collect::<Vec<&String>>();
 			multi_data.sort_unstable_by(|a, b| compare_len_reverse_alpha(a, b));
-			output.push((key.clone(), format!("HintEnum::Many(&{:?})", multi_data)));
+			output.push((key.clone(), format!("Hint::Many(&{:?})", multi_data)));
 		}
 	}
 	println!("Done! {:?}", start.elapsed());
@@ -80,15 +80,15 @@ mod tests {
 	fn hashmap_gen_test() {
 		let data = vec!["time", "text", "test"];
 		let expect = vec![
-			("t", r#"HintEnum::Many(&["ime(", "ext(", "est("])"#),
-			("ti", r#"HintEnum::Single("me(")"#),
-			("tim", r#"HintEnum::Single("e(")"#),
-			("time", r#"HintEnum::Single("(")"#),
-			("te", r#"HintEnum::Many(&["xt(", "st("])"#),
-			("tex", r#"HintEnum::Single("t(")"#),
-			("text", r#"HintEnum::Single("(")"#),
-			("tes", r#"HintEnum::Single("t(")"#),
-			("test", r#"HintEnum::Single("(")"#),
+			("t", r#"Hint::Many(&["ime(", "ext(", "est("])"#),
+			("ti", r#"Hint::Single("me(")"#),
+			("tim", r#"Hint::Single("e(")"#),
+			("time", r#"Hint::Single("(")"#),
+			("te", r#"Hint::Many(&["xt(", "st("])"#),
+			("tex", r#"Hint::Single("t(")"#),
+			("text", r#"Hint::Single("(")"#),
+			("tes", r#"Hint::Single("t(")"#),
+			("test", r#"Hint::Single("(")"#),
 		];
 
 		assert_eq!(

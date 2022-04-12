@@ -48,7 +48,7 @@ fn generate_hashmap() {
 
 	write!(
 		&mut file,
-		"static COMPLETION_HASHMAP: phf::Map<&'static str, HintEnum> = {};",
+		"static COMPLETION_HASHMAP: phf::Map<&'static str, Hint> = {};",
 		hashmap.build()
 	)
 	.expect("Could not write to file");

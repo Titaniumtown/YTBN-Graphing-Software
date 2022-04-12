@@ -1,4 +1,4 @@
-use crate::suggestions::{generate_hint, HintEnum};
+use crate::suggestions::{generate_hint, Hint};
 use eframe::{egui, epaint};
 use egui::{text::CCursor, text_edit::CursorRange, Key, Modifiers, TextEdit, Widget};
 use epaint::text::cursor::{Cursor, PCursor, RCursor};
@@ -14,7 +14,7 @@ enum Movement {
 #[derive(Clone)]
 pub struct AutoComplete<'a> {
 	pub i: usize,
-	pub hint: &'a HintEnum<'a>,
+	pub hint: &'a Hint<'a>,
 	pub string: String,
 }
 
@@ -26,14 +26,14 @@ impl<'a> Default for AutoComplete<'a> {
 	fn default() -> AutoComplete<'a> {
 		AutoComplete {
 			i: 0,
-			hint: &crate::suggestions::HINTENUM_EMPTY,
+			hint: &crate::suggestions::HINT_EMPTY,
 			string: String::new(),
 		}
 	}
 }
 
 impl<'a> AutoComplete<'a> {
-	pub fn update(&mut self, string: &str) {
+	pub fn update_string(&mut self, string: &str) {
 		if &self.string != string {
 			self.i = 0;
 			self.string = string.to_string();
@@ -47,7 +47,7 @@ impl<'a> AutoComplete<'a> {
 		}
 
 		match self.hint {
-			HintEnum::Many(hints) => {
+			Hint::Many(hints) => {
 				if movement == &Movement::Complete {
 					self.apply_hint(hints[self.i]);
 					return;
@@ -71,18 +71,18 @@ impl<'a> AutoComplete<'a> {
 					_ => unreachable!(),
 				}
 			}
-			HintEnum::Single(hint) => {
+			Hint::Single(hint) => {
 				if movement == &Movement::Complete {
 					self.apply_hint(hint);
 				}
 			}
-			HintEnum::None => {}
+			Hint::None => {}
 		}
 	}
 
 	fn apply_hint(&mut self, hint: &str) {
 		let new_string = self.string.clone() + hint;
-		self.update(&new_string);
+		self.update_string(&new_string);
 	}
 
 	pub fn ui(&mut self, ui: &mut egui::Ui, func_i: i32) {
@@ -99,7 +99,7 @@ impl<'a> AutoComplete<'a> {
 
 		if self.hint.is_none() {
 			let _ = func_edit.ui(ui);
-			self.update(&new_string);
+			self.update_string(&new_string);
 			return;
 		}
 
@@ -110,7 +110,7 @@ impl<'a> AutoComplete<'a> {
 			movement = Movement::Complete;
 		}
 
-		if let HintEnum::Single(single_hint) = self.hint {
+		if let Hint::Single(single_hint) = self.hint {
 			func_edit = func_edit.hint_text(*single_hint);
 			if ui.input().key_pressed(Key::ArrowDown) {
 				movement = Movement::Down;
@@ -121,11 +121,11 @@ impl<'a> AutoComplete<'a> {
 
 		let re = func_edit.ui(ui);
 
-		self.update(&new_string);
+		self.update_string(&new_string);
 
 		self.interact_back(&movement);
 
-		if movement != Movement::Complete && let HintEnum::Many(hints) = self.hint {
+		if movement != Movement::Complete && let Hint::Many(hints) = self.hint {
 			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
 			let popup_id = ui.make_persistent_id("autocomplete_popup");
 
@@ -205,34 +205,34 @@ mod autocomplete_tests {
 					}
 				}
 				Action::AssertHint(target_hint) => match ac.hint {
-					HintEnum::None => {
+					Hint::None => {
 						if !target_hint.is_empty() {
 							panic!(
-								"AssertHint failed on `HintEnum::None`: Expected: {}",
+								"AssertHint failed on `Hint::None`: Expected: {}",
 								target_hint
 							);
 						}
 					}
-					HintEnum::Many(hints) => {
+					Hint::Many(hints) => {
 						let hint = hints[ac.i];
 						if &hint != target_hint {
 							panic!(
-								"AssertHint failed on `HintEnum::Many`: Current: '{}' (index: {}) Expected: '{}'",
+								"AssertHint failed on `Hint::Many`: Current: '{}' (index: {}) Expected: '{}'",
 								hint, ac.i, target_hint
 							)
 						}
 					}
-					HintEnum::Single(hint) => {
+					Hint::Single(hint) => {
 						if hint != target_hint {
 							panic!(
-								"AssertHint failed on `HintEnum::Single`: Current: '{}' Expected: '{}'",
+								"AssertHint failed on `Hint::Single`: Current: '{}' Expected: '{}'",
 								hint, target_hint
 							)
 						}
 					}
 				},
 				Action::SetString(target_string) => {
-					ac.update(target_string);
+					ac.update_string(target_string);
 				}
 				Action::Move(target_movement) => {
 					ac.interact_back(target_movement);

@@ -1,12 +1,12 @@
 use crate::misc::chars_take;
 
-pub const HINTENUM_EMPTY: HintEnum = HintEnum::Single("x^2");
-const HINTENUM_CLOSED_PARENS: HintEnum = HintEnum::Single(")");
+pub const HINT_EMPTY: Hint = Hint::Single("x^2");
+const HINT_CLOSED_PARENS: Hint = Hint::Single(")");
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
-pub fn generate_hint<'a>(input: &str) -> &'a HintEnum<'a> {
+pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 	if input.is_empty() {
-		return &HINTENUM_EMPTY;
+		return &HINT_EMPTY;
 	}
 
 	let chars: Vec<char> = input.chars().collect::<Vec<char>>();
@@ -20,7 +20,7 @@ pub fn generate_hint<'a>(input: &str) -> &'a HintEnum<'a> {
 	});
 
 	if open_parens > closed_parens {
-		return &HINTENUM_CLOSED_PARENS;
+		return &HINT_CLOSED_PARENS;
 	}
 
 	let len = chars.len();
@@ -36,49 +36,44 @@ pub fn generate_hint<'a>(input: &str) -> &'a HintEnum<'a> {
 		}
 	}
 
-	&HintEnum::None
+	&Hint::None
 }
 
 #[derive(PartialEq)]
-pub enum HintEnum<'a> {
+pub enum Hint<'a> {
 	Single(&'a str),
 	Many(&'a [&'a str]),
 	None,
 }
 
-impl<'a> std::fmt::Debug for HintEnum<'a> {
+impl<'a> std::fmt::Debug for Hint<'a> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self) }
 }
 
-impl<'a> std::fmt::Display for HintEnum<'a> {
+impl<'a> std::fmt::Display for Hint<'a> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
-			HintEnum::Single(single_data) => {
+			Hint::Single(single_data) => {
 				return write!(f, "{}", single_data);
 			}
-			HintEnum::Many(multi_data) => {
+			Hint::Many(multi_data) => {
 				return write!(f, "{:?}", multi_data);
 			}
-			HintEnum::None => {
+			Hint::None => {
 				return write!(f, "None");
 			}
 		}
 	}
 }
 
-impl<'a> HintEnum<'a> {
-	pub fn is_none(&self) -> bool { matches!(self, HintEnum::None) }
+impl<'a> Hint<'a> {
+	pub fn is_none(&self) -> bool { matches!(self, Hint::None) }
 
 	#[allow(dead_code)]
 	pub fn is_some(&self) -> bool { !self.is_none() }
 
 	#[allow(dead_code)]
-	pub fn is_single(&self) -> bool {
-		match self {
-			HintEnum::Single(_) => true,
-			_ => false,
-		}
-	}
+	pub fn is_single(&self) -> bool { matches!(self, Hint::Single(_)) }
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
@@ -93,13 +88,13 @@ mod tests {
 	#[test]
 	fn hint_test() {
 		let values = HashMap::from([
-			("", HintEnum::Single("x^2")),
-			("si", HintEnum::Many(&["n(", "nh(", "gnum("])),
-			("log", HintEnum::Many(&["2(", "10("])),
-			("cos", HintEnum::Many(&["(", "h("])),
-			("sin(", HintEnum::Single(")")),
-			("sqrt", HintEnum::Single("(")),
-			("ln(x)", HintEnum::None),
+			("", Hint::Single("x^2")),
+			("si", Hint::Many(&["n(", "nh(", "gnum("])),
+			("log", Hint::Many(&["2(", "10("])),
+			("cos", Hint::Many(&["(", "h("])),
+			("sin(", Hint::Single(")")),
+			("sqrt", Hint::Single("(")),
+			("ln(x)", Hint::None),
 		]);
 
 		for (key, value) in values {
@@ -111,13 +106,13 @@ mod tests {
 	#[test]
 	fn hint_to_string_test() {
 		let values = HashMap::from([
-			("x^2", HintEnum::Single("x^2")),
+			("x^2", Hint::Single("x^2")),
 			(
 				r#"["n(", "nh(", "gnum("]"#,
-				HintEnum::Many(&["n(", "nh(", "gnum("]),
+				Hint::Many(&["n(", "nh(", "gnum("]),
 			),
-			(r#"["n("]"#, HintEnum::Many(&["n("])),
-			("None", HintEnum::None),
+			(r#"["n("]"#, Hint::Many(&["n("])),
+			("None", Hint::None),
 		]);
 
 		for (key, value) in values {
