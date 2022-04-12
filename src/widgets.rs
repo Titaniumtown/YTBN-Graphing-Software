@@ -48,27 +48,22 @@ impl<'a> AutoComplete<'a> {
 
 		match self.hint {
 			Hint::Many(hints) => {
-				if movement == &Movement::Complete {
-					self.apply_hint(hints[self.i]);
-					return;
-				}
-
-				// maximum index value
-				let max_i = hints.len() - 1;
-
 				match movement {
 					Movement::Up => {
-						// subtract one, if fail, set to max_i value.
-						self.i = self.i.checked_sub(1).unwrap_or(max_i);
+						// subtract one, if fail, set to maximum index value.
+						self.i = self.i.checked_sub(1).unwrap_or(hints.len() - 1);
 					}
 					Movement::Down => {
 						// add one, if resulting value is above maximum i value, set i to 0
 						self.i += 1;
-						if self.i > max_i {
+						if self.i > (hints.len() - 1) {
 							self.i = 0;
 						}
 					}
-					_ => unreachable!(),
+					Movement::Complete => {
+						self.apply_hint(hints[self.i]);
+					}
+					Movement::None => {}
 				}
 			}
 			Hint::Single(hint) => {
@@ -92,15 +87,29 @@ impl<'a> AutoComplete<'a> {
 
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
 
-		let mut func_edit = egui::TextEdit::singleline(&mut new_string)
+		let re = egui::TextEdit::singleline(&mut new_string)
 			.hint_forward(true) // Make the hint appear after the last text in the textbox
 			.lock_focus(true)
-			.id(te_id);
+			.id(te_id)
+			.hint_text({
+				if let Hint::Single(single_hint) = self.hint {
+					*single_hint
+				} else {
+					""
+				}
+			})
+			.ui(ui);
+
+		self.update_string(&new_string);
 
 		if self.hint.is_none() {
-			let _ = func_edit.ui(ui);
-			self.update_string(&new_string);
 			return;
+		}
+
+		if ui.input().key_pressed(Key::ArrowDown) {
+			movement = Movement::Down;
+		} else if ui.input().key_pressed(Key::ArrowUp) {
+			movement = Movement::Up;
 		}
 
 		// Put here so these key presses don't interact with other elements
@@ -109,19 +118,6 @@ impl<'a> AutoComplete<'a> {
 		if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
 			movement = Movement::Complete;
 		}
-
-		if let Hint::Single(single_hint) = self.hint {
-			func_edit = func_edit.hint_text(*single_hint);
-			if ui.input().key_pressed(Key::ArrowDown) {
-				movement = Movement::Down;
-			} else if ui.input().key_pressed(Key::ArrowUp) {
-				movement = Movement::Up;
-			}
-		}
-
-		let re = func_edit.ui(ui);
-
-		self.update_string(&new_string);
 
 		self.register_movement(&movement);
 
