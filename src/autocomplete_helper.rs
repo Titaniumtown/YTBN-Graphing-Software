@@ -12,9 +12,6 @@ fn compare_len_reverse_alpha(a: &String, b: &String) -> Ordering {
 /// Generates hashmap (well really a vector of tuple of strings that are then turned into a hashmap by phf)
 #[allow(dead_code)]
 pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
-	let start = std::time::Instant::now();
-	println!("compile_hashmap");
-
 	let mut seen = HashSet::new();
 
 	let tuple_list_1: Vec<(String, String)> = data
@@ -45,8 +42,6 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 			output.push((key.clone(), format!("Hint::Many(&{:?})", multi_data)));
 		}
 	}
-	println!("Done! {:?}", start.elapsed());
-
 	output
 }
 
