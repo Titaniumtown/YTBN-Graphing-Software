@@ -391,8 +391,26 @@ impl FunctionEntry {
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
 			/ (settings.integral_num as f64);
 
+		let resolution = (self.min_x - self.max_x).abs() / (settings.plot_width as f64);
+
 		// Plot back data
 		if !self.back_data.is_empty() {
+			if self.integral && (resolution >= step) {
+				plot_ui.line(
+					self.back_data
+						.iter()
+						.filter(|value| {
+							(value.x > settings.integral_min_x)
+								&& (settings.integral_max_x > value.x)
+						})
+						.cloned()
+						.collect::<Vec<Value>>()
+						.to_line()
+						.color(Color32::BLUE)
+						.name(&self.raw_func_str)
+						.fill(0.0),
+				);
+			}
 			plot_ui.line(
 				self.back_data
 					.to_line()
@@ -445,11 +463,13 @@ impl FunctionEntry {
 		// Plot integral data
 		match &self.integral_data {
 			Some(integral_data) => {
-				plot_ui.bar_chart(
-					BarChart::new(integral_data.0.clone())
-						.color(Color32::BLUE)
-						.width(step),
-				);
+				if step > resolution {
+					plot_ui.bar_chart(
+						BarChart::new(integral_data.0.clone())
+							.color(Color32::BLUE)
+							.width(step),
+					);
+				}
 
 				// return value rounded to 8 decimal places
 				Some(crate::misc::decimal_round(integral_data.1, 8))
