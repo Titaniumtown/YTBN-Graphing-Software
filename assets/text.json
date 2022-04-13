@@ -14,8 +14,8 @@
 		"- The Sun/Moon button toggles Dark and Light mode."
 	],
 	"help_function": [
-		"- The 'X' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.",
-		"- The ∫ button (between the 'X' and 'd/dx' buttons) indicates whether to integrate the function in question.",
+		"- The '✖' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.",
+		"- The ∫ button (between the '✖' and 'd/dx' buttons) indicates whether to integrate the function in question.",
 		"- The 'd/dx' button next to the gear icon indicates whether or not calculating the derivative is enabled or not.",
 		"- The gear icon next to the function input allows you to tweak settings in relation to the selected function."
 	],

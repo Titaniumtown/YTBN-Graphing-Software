@@ -206,7 +206,7 @@ impl FunctionEntry {
 			ui.horizontal(|ui| {
 				// There's more than 1 function! Functions can now be deleted
 				if ui
-					.add_enabled(can_remove, Button::new("X").frame(false))
+					.add_enabled(can_remove, Button::new("✖").frame(false))
 					.on_hover_text("Delete Function")
 					.clicked()
 				{
