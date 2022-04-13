@@ -60,7 +60,7 @@ impl Assets {
 }
 
 lazy_static::lazy_static! {
-	// Load all of the data from the compressed tarball
+	/// Load all of the data from the compressed tarball
 	static ref ASSETS: Assets = {
 		let start = instant::Instant::now();
 
@@ -316,8 +316,7 @@ pub struct MathApp {
 	/// Stores vector of functions
 	functions: Vec<FunctionEntry>,
 
-	/// Contains the list of Areas calculated (the vector of f64) and time it
-	/// took for the last frame (the Duration). Stored in a Tuple.
+	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Duration),
 
 	/// Stores whether or not dark mode is enabled
@@ -533,8 +532,7 @@ impl MathApp {
 }
 
 impl epi::App for MathApp {
-	/// Called each time the UI needs repainting, which may be many times per
-	/// second.
+	/// Called each time the UI needs repainting, which may be many times per second.
 	fn update(&mut self, ctx: &Context, _frame: &mut epi::Frame) {
 		// start timer
 		let start = instant::Instant::now();
@@ -545,9 +543,7 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
-		// if text boxes aren't in focus, allow H keybind to toggle side panel.
-		// this is behind this check as if it wasn't, it would trigger if the user
-		// presses the h key in a text box as well
+		// if keyboard input isn't being grabed, check for key combos
 		if !ctx.wants_keyboard_input() {
 			self.opened
 				.side_panel
