@@ -1,10 +1,7 @@
 use crate::suggestions::{generate_hint, Hint};
-use eframe::{egui, epaint};
-use egui::{text::CCursor, text_edit::CursorRange, Key, Modifiers, TextEdit, Widget};
-use epaint::text::cursor::{Cursor, PCursor, RCursor};
 
 #[derive(PartialEq, Debug)]
-enum Movement {
+pub enum Movement {
 	Complete,
 	Down,
 	Up,
@@ -41,7 +38,7 @@ impl<'a> AutoComplete<'a> {
 		}
 	}
 
-	fn register_movement(&mut self, movement: &Movement) {
+	pub fn register_movement(&mut self, movement: &Movement) {
 		if movement == &Movement::None {
 			return;
 		}
@@ -75,96 +72,9 @@ impl<'a> AutoComplete<'a> {
 		}
 	}
 
-	fn apply_hint(&mut self, hint: &str) {
+	pub fn apply_hint(&mut self, hint: &str) {
 		let new_string = self.string.clone() + hint;
 		self.update_string(&new_string);
-	}
-
-	pub fn ui(&mut self, ui: &mut egui::Ui, func_i: usize) {
-		let mut movement: Movement = Movement::default();
-
-		let mut new_string = self.string.clone();
-
-		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", func_i));
-
-		let re = egui::TextEdit::singleline(&mut new_string)
-			.hint_forward(true) // Make the hint appear after the last text in the textbox
-			.lock_focus(true)
-			.id(te_id)
-			.hint_text({
-				if let Hint::Single(single_hint) = self.hint {
-					*single_hint
-				} else {
-					""
-				}
-			})
-			.ui(ui);
-
-		self.update_string(&new_string);
-
-		if self.hint.is_none() {
-			return;
-		}
-
-		if ui.input().key_pressed(Key::ArrowDown) {
-			movement = Movement::Down;
-		} else if ui.input().key_pressed(Key::ArrowUp) {
-			movement = Movement::Up;
-		}
-
-		// Put here so these key presses don't interact with other elements
-		let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-		let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
-		if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
-			movement = Movement::Complete;
-		}
-
-		self.register_movement(&movement);
-
-		if movement != Movement::Complete && let Hint::Many(hints) = self.hint {
-			// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
-			let popup_id = ui.make_persistent_id("autocomplete_popup");
-
-			let mut clicked = false;
-
-			egui::popup_below_widget(ui, popup_id, &re, |ui| {
-				hints.iter().enumerate().for_each(|(i, candidate)| {
-					if ui.selectable_label(i == self.i, *candidate).clicked() {
-						clicked = true;
-						self.i = i;
-					}
-				});
-			});
-
-			if clicked {
-				self.apply_hint(hints[self.i]);
-
-				// don't need this here as it simply won't be display next frame
-				// ui.memory().close_popup();
-
-				movement = Movement::Complete;
-			} else {
-				ui.memory().open_popup(popup_id);
-			}
-		}
-
-		// Push cursor to end if needed
-		if movement == Movement::Complete {
-			let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-			state.set_cursor_range(Some(CursorRange::one(Cursor {
-				ccursor: CCursor {
-					index: 0,
-					prefer_next_row: false,
-				},
-				rcursor: RCursor { row: 0, column: 0 },
-				pcursor: PCursor {
-					paragraph: 0,
-					offset: 10000,
-					prefer_next_row: false,
-				},
-			})));
-			TextEdit::store_state(ui.ctx(), te_id, state);
-		}
 	}
 }
 

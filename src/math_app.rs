@@ -461,49 +461,8 @@ impl MathApp {
 				ui.label("Functions:");
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					// Entry for a function
-					ui.horizontal(|ui| {
-						// There's more than 1 function! Functions can now be deleted
-						if ui
-							.add_enabled(functions_len > 1, Button::new("X"))
-							.on_hover_text("Delete Function")
-							.clicked()
-						{
-							remove_i = Some(i);
-						}
+					function.function_entry(ui, &mut remove_i, functions_len > 1, i);
 
-						// Toggle integral being enabled or not
-						function.integral.bitxor_assign(
-							ui.add(Button::new("∫"))
-								.on_hover_text(match function.integral {
-									true => "Don't integrate",
-									false => "Integrate",
-								})
-								.clicked(),
-						);
-
-						// Toggle showing the derivative (even though it's already calculated this
-						// option just toggles if it's displayed or not)
-						function.derivative.bitxor_assign(
-							ui.add(Button::new("d/dx"))
-								.on_hover_text(match function.derivative {
-									true => "Don't Differentiate",
-									false => "Differentiate",
-								})
-								.clicked(),
-						);
-
-						function.settings_opened.bitxor_assign(
-							ui.add(Button::new("⚙"))
-								.on_hover_text(match function.settings_opened {
-									true => "Close Settings",
-									false => "Open Settings",
-								})
-								.clicked(),
-						);
-
-						// Contains the function string in a text box that the user can edit
-						function.auto_complete(ui, i)
-					});
 					function.settings_window(ctx);
 				}
 
