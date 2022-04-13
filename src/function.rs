@@ -5,14 +5,15 @@ use crate::misc::*;
 use crate::parsing::{process_func_str, BackingFunction};
 use crate::suggestions::Hint;
 use crate::widgets::{AutoComplete, Movement};
-use eframe::{egui, epaint};
+use eframe::{egui, emath, epaint};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
 	text::CCursor,
 	text_edit::CursorRange,
 	widgets::plot::Bar,
-	Button, Checkbox, Context, Key, Modifiers, TextEdit, Widget,
+	Button, Checkbox, Context, Key, Modifiers, TextEdit,
 };
+use emath::{pos2, vec2};
 use epaint::{
 	text::cursor::{Cursor, PCursor, RCursor},
 	Color32,
@@ -106,53 +107,21 @@ impl FunctionEntry {
 	pub fn function_entry(
 		&mut self, ui: &mut egui::Ui, remove_i: &mut Option<usize>, can_remove: bool, i: usize,
 	) {
-		ui.horizontal(|ui| {
-			// There's more than 1 function! Functions can now be deleted
-			if ui
-				.add_enabled(can_remove, Button::new("X").frame(true))
-				.on_hover_text("Delete Function")
-				.clicked()
-			{
-				*remove_i = Some(i);
-			}
+		let output_string = self.autocomplete.string.clone();
+		self.update_string(&output_string);
 
-			// Toggle integral being enabled or not
-			self.integral.bitxor_assign(
-				ui.add(Button::new("∫"))
-					.on_hover_text(match self.integral {
-						true => "Don't integrate",
-						false => "Integrate",
-					})
-					.clicked(),
-			);
+		let mut movement: Movement = Movement::default();
 
-			// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-			self.derivative.bitxor_assign(
-				ui.add(Button::new("d/dx"))
-					.on_hover_text(match self.derivative {
-						true => "Don't Differentiate",
-						false => "Differentiate",
-					})
-					.clicked(),
-			);
+		let mut new_string = self.autocomplete.string.clone();
 
-			self.settings_opened.bitxor_assign(
-				ui.add(Button::new("⚙"))
-					.on_hover_text(match self.settings_opened {
-						true => "Close Settings",
-						false => "Open Settings",
-					})
-					.clicked(),
-			);
+		let row_height = ui
+			.fonts()
+			.row_height(&egui::FontSelection::default().resolve(ui.style()));
 
-			// Contains the function string in a text box that the user can edit
-			// self.autocomplete.update_string(&self.raw_func_str);
-			let mut movement: Movement = Movement::default();
-
-			let mut new_string = self.autocomplete.string.clone();
-
-			let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", i));
-			let re = egui::TextEdit::singleline(&mut new_string)
+		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", i));
+		let re = ui.add_sized(
+			vec2(ui.available_width(), row_height * 2.5),
+			egui::TextEdit::singleline(&mut new_string)
 				.hint_forward(true) // Make the hint appear after the last text in the textbox
 				.lock_focus(true)
 				.id(te_id)
@@ -162,75 +131,117 @@ impl FunctionEntry {
 					} else {
 						""
 					}
-				})
-				.ui(ui);
+				}),
+		);
 
-			self.autocomplete.update_string(&new_string);
+		self.autocomplete.update_string(&new_string);
 
-			if !self.autocomplete.hint.is_none() {
-				if ui.input().key_pressed(Key::ArrowDown) {
-					movement = Movement::Down;
-				} else if ui.input().key_pressed(Key::ArrowUp) {
-					movement = Movement::Up;
-				}
+		if !self.autocomplete.hint.is_none() {
+			if ui.input().key_pressed(Key::ArrowDown) {
+				movement = Movement::Down;
+			} else if ui.input().key_pressed(Key::ArrowUp) {
+				movement = Movement::Up;
+			}
 
-				// Put here so these key presses don't interact with other elements
-				let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-				let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
-				if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
+			// Put here so these key presses don't interact with other elements
+			let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
+			let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
+			if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
+				movement = Movement::Complete;
+			}
+
+			self.autocomplete.register_movement(&movement);
+
+			if movement != Movement::Complete && let Hint::Many(hints) = self.autocomplete.hint {
+				// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
+				let popup_id = ui.make_persistent_id("autocomplete_popup");
+
+				let mut clicked = false;
+
+				egui::popup_below_widget(ui, popup_id, &re, |ui| {
+					hints.iter().enumerate().for_each(|(i, candidate)| {
+						if ui.selectable_label(i == self.autocomplete.i, *candidate).clicked() {
+							clicked = true;
+							self.autocomplete.i = i;
+						}
+					});
+				});
+
+				if clicked {
+					self.autocomplete.apply_hint(hints[self.autocomplete.i]);
+
+					// don't need this here as it simply won't be display next frame
+					// ui.memory().close_popup();
+
 					movement = Movement::Complete;
-				}
-
-				self.autocomplete.register_movement(&movement);
-
-				if movement != Movement::Complete && let Hint::Many(hints) = self.autocomplete.hint {
-						// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
-						let popup_id = ui.make_persistent_id("autocomplete_popup");
-
-						let mut clicked = false;
-
-						egui::popup_below_widget(ui, popup_id, &re, |ui| {
-							hints.iter().enumerate().for_each(|(i, candidate)| {
-								if ui.selectable_label(i == self.autocomplete.i, *candidate).clicked() {
-									clicked = true;
-									self.autocomplete.i = i;
-								}
-							});
-						});
-
-					if clicked {
-						self.autocomplete.apply_hint(hints[self.autocomplete.i]);
-
-						// don't need this here as it simply won't be display next frame
-						// ui.memory().close_popup();
-
-						movement = Movement::Complete;
-					} else {
-						ui.memory().open_popup(popup_id);
-					}
-				}
-
-				// Push cursor to end if needed
-				if movement == Movement::Complete {
-					let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-					state.set_cursor_range(Some(CursorRange::one(Cursor {
-						ccursor: CCursor {
-							index: 0,
-							prefer_next_row: false,
-						},
-						rcursor: RCursor { row: 0, column: 0 },
-						pcursor: PCursor {
-							paragraph: 0,
-							offset: 10000,
-							prefer_next_row: false,
-						},
-					})));
-					TextEdit::store_state(ui.ctx(), te_id, state);
+				} else {
+					ui.memory().open_popup(popup_id);
 				}
 			}
 
-			let output_string = self.autocomplete.string.clone();
-			self.update_string(&output_string);
+			// Push cursor to end if needed
+			if movement == Movement::Complete {
+				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
+				state.set_cursor_range(Some(CursorRange::one(Cursor {
+					ccursor: CCursor {
+						index: 0,
+						prefer_next_row: false,
+					},
+					rcursor: RCursor { row: 0, column: 0 },
+					pcursor: PCursor {
+						paragraph: 0,
+						offset: 10000,
+						prefer_next_row: false,
+					},
+				})));
+				TextEdit::store_state(ui.ctx(), te_id, state);
+			}
+		}
+
+		let buttons_area = egui::Area::new(format!("buttons_area_{}", i))
+			.fixed_pos(pos2(re.rect.min.x, re.rect.min.y + (row_height * 1.3)))
+			.order(egui::Order::Foreground);
+
+		buttons_area.show(ui.ctx(), |ui| {
+			ui.horizontal(|ui| {
+				// There's more than 1 function! Functions can now be deleted
+				if ui
+					.add_enabled(can_remove, Button::new("X").frame(false))
+					.on_hover_text("Delete Function")
+					.clicked()
+				{
+					*remove_i = Some(i);
+				}
+
+				// Toggle integral being enabled or not
+				self.integral.bitxor_assign(
+					ui.add(Button::new("∫").frame(false))
+						.on_hover_text(match self.integral {
+							true => "Don't integrate",
+							false => "Integrate",
+						})
+						.clicked(),
+				);
+
+				// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
+				self.derivative.bitxor_assign(
+					ui.add(Button::new("d/dx").frame(false))
+						.on_hover_text(match self.derivative {
+							true => "Don't Differentiate",
+							false => "Differentiate",
+						})
+						.clicked(),
+				);
+
+				self.settings_opened.bitxor_assign(
+					ui.add(Button::new("⚙").frame(false))
+						.on_hover_text(match self.settings_opened {
+							true => "Close Settings",
+							false => "Open Settings",
+						})
+						.clicked(),
+				);
+			});
 		});
 	}
 
