@@ -136,11 +136,13 @@ impl FunctionEntry {
 
 		self.autocomplete.update_string(&new_string);
 
-		if !self.autocomplete.hint.is_none() {
-			if ui.input().key_pressed(Key::ArrowDown) {
-				movement = Movement::Down;
-			} else if ui.input().key_pressed(Key::ArrowUp) {
-				movement = Movement::Up;
+		if !self.autocomplete.hint.is_none() && re.has_focus() {
+			if !self.autocomplete.hint.is_single() {
+				if ui.input().key_pressed(Key::ArrowDown) {
+					movement = Movement::Down;
+				} else if ui.input().key_pressed(Key::ArrowUp) {
+					movement = Movement::Up;
+				}
 			}
 
 			// Put here so these key presses don't interact with other elements
