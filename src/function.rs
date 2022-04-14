@@ -75,8 +75,6 @@ pub struct FunctionEntry {
 	curr_nth: usize,
 
 	pub settings_opened: bool,
-
-	menu_opened: f32,
 }
 
 impl Default for FunctionEntry {
@@ -100,7 +98,6 @@ impl Default for FunctionEntry {
 			test_result: None,
 			curr_nth: 3,
 			settings_opened: false,
-			menu_opened: 1.0,
 		}
 	}
 }
@@ -121,14 +118,15 @@ impl FunctionEntry {
 			.fonts()
 			.row_height(&egui::FontSelection::default().resolve(ui.style()));
 
-		let max_size = vec2(
-			ui.available_width(),
-			if self.menu_opened == 1.0 {
+		let max_size = vec2(ui.available_width(), {
+			let had_focus = ui.ctx().memory().has_focus(te_id);
+			let gotten_value = ui.ctx().animate_bool(te_id, had_focus);
+			if gotten_value == 1.0 {
 				row_height * 2.5
 			} else {
-				row_height * (1.0 + (self.menu_opened * 1.5))
-			},
-		);
+				row_height * (1.0 + (gotten_value * 1.5))
+			}
+		});
 
 		let re = ui.add_sized(
 			max_size,
@@ -145,9 +143,7 @@ impl FunctionEntry {
 				}),
 		);
 
-		self.menu_opened = ui.ctx().animate_bool(te_id, re.has_focus());
-
-		if self.menu_opened < 1.0 {
+		if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
 			return;
 		}
 
