@@ -41,8 +41,7 @@ lazy_static::lazy_static! {
 	pub static ref DEFAULT_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::default();
 }
 
-/// `FunctionEntry` is a function that can calculate values, integrals,
-/// derivatives, etc etc
+/// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
 #[derive(Clone)]
 pub struct FunctionEntry {
 	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
@@ -77,7 +76,8 @@ pub struct FunctionEntry {
 
 	pub settings_opened: bool,
 
-	auto_complete_focused: bool,
+	// todo: use https://docs.rs/egui/0.17.0/egui/struct.Context.html#method.animate_bool
+	menu_opened: i32,
 }
 
 impl Default for FunctionEntry {
@@ -101,7 +101,7 @@ impl Default for FunctionEntry {
 			test_result: None,
 			curr_nth: 3,
 			settings_opened: false,
-			auto_complete_focused: false,
+			menu_opened: 100,
 		}
 	}
 }
@@ -124,10 +124,10 @@ impl FunctionEntry {
 
 		let max_size = vec2(
 			ui.available_width(),
-			if self.auto_complete_focused {
+			if self.menu_opened == 100 {
 				row_height * 2.5
 			} else {
-				row_height
+				row_height * (1.0 + ((self.menu_opened as f32 / 100.0) * 1.5))
 			},
 		);
 
@@ -145,9 +145,24 @@ impl FunctionEntry {
 					}
 				}),
 		);
-		self.auto_complete_focused = re.has_focus();
 
-		if !self.auto_complete_focused {
+		if re.has_focus() {
+			if 100 > self.menu_opened {
+				self.menu_opened += 10;
+				if self.menu_opened > 100 {
+					self.menu_opened = 100;
+				}
+				ui.ctx().request_repaint();
+			}
+		} else if self.menu_opened > 15 {
+  				self.menu_opened -= 15;
+  				if 0 > self.menu_opened {
+  					self.menu_opened = 0;
+  				}
+  				ui.ctx().request_repaint();
+  			}
+
+		if self.menu_opened < 100 {
 			return;
 		}
 
