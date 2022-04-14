@@ -76,7 +76,6 @@ pub struct FunctionEntry {
 
 	pub settings_opened: bool,
 
-	// todo: use https://docs.rs/egui/0.17.0/egui/struct.Context.html#method.animate_bool
 	menu_opened: i32,
 }
 
@@ -146,21 +145,7 @@ impl FunctionEntry {
 				}),
 		);
 
-		if re.has_focus() {
-			if 100 > self.menu_opened {
-				self.menu_opened += 10;
-				if self.menu_opened > 100 {
-					self.menu_opened = 100;
-				}
-				ui.ctx().request_repaint();
-			}
-		} else if self.menu_opened > 15 {
-  				self.menu_opened -= 15;
-  				if 0 > self.menu_opened {
-  					self.menu_opened = 0;
-  				}
-  				ui.ctx().request_repaint();
-  			}
+		self.menu_opened = (ui.ctx().animate_bool(te_id, re.has_focus()) * 100.0) as i32;
 
 		if self.menu_opened < 100 {
 			return;
