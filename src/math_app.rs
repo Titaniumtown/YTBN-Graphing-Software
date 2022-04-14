@@ -357,8 +357,8 @@ impl MathApp {
 
 		tracing::info!("Integration name: {}", cc.integration_info.name);
 
-		if let Some(url) = &cc.integration_info.web_info {
-			tracing::info!("Url: {:?}", url);
+		if let Some(web_info) = &cc.integration_info.web_info {
+			tracing::info!("Web Info: {:?}", web_info);
 		}
 
 		tracing::info!("egui app initialized.");
