@@ -199,7 +199,7 @@ impl FunctionEntry {
 		}
 
 		let buttons_area = egui::Area::new(format!("buttons_area_{}", i))
-			.fixed_pos(pos2(re.rect.min.x, re.rect.min.y + (row_height * 1.3)))
+			.fixed_pos(pos2(re.rect.min.x, re.rect.min.y + (row_height * 1.32)))
 			.order(egui::Order::Foreground);
 
 		buttons_area.show(ui.ctx(), |ui| {
