@@ -76,6 +76,8 @@ pub struct FunctionEntry {
 	curr_nth: usize,
 
 	pub settings_opened: bool,
+
+	auto_complete_focused: bool,
 }
 
 impl Default for FunctionEntry {
@@ -99,6 +101,7 @@ impl Default for FunctionEntry {
 			test_result: None,
 			curr_nth: 3,
 			settings_opened: false,
+			auto_complete_focused: false,
 		}
 	}
 }
@@ -114,13 +117,22 @@ impl FunctionEntry {
 
 		let mut new_string = self.autocomplete.string.clone();
 
+		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", i));
 		let row_height = ui
 			.fonts()
 			.row_height(&egui::FontSelection::default().resolve(ui.style()));
 
-		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", i));
+		let max_size = vec2(
+			ui.available_width(),
+			if self.auto_complete_focused {
+				row_height * 2.5
+			} else {
+				row_height
+			},
+		);
+
 		let re = ui.add_sized(
-			vec2(ui.available_width(), row_height * 2.5),
+			max_size,
 			egui::TextEdit::singleline(&mut new_string)
 				.hint_forward(true) // Make the hint appear after the last text in the textbox
 				.lock_focus(true)
@@ -133,10 +145,15 @@ impl FunctionEntry {
 					}
 				}),
 		);
+		self.auto_complete_focused = re.has_focus();
+
+		if !self.auto_complete_focused {
+			return;
+		}
 
 		self.autocomplete.update_string(&new_string);
 
-		if !self.autocomplete.hint.is_none() && re.has_focus() {
+		if !self.autocomplete.hint.is_none() {
 			if !self.autocomplete.hint.is_single() {
 				if ui.input().key_pressed(Key::ArrowDown) {
 					movement = Movement::Down;
