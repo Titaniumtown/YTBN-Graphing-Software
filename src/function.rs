@@ -76,7 +76,7 @@ pub struct FunctionEntry {
 
 	pub settings_opened: bool,
 
-	menu_opened: i32,
+	menu_opened: f32,
 }
 
 impl Default for FunctionEntry {
@@ -100,7 +100,7 @@ impl Default for FunctionEntry {
 			test_result: None,
 			curr_nth: 3,
 			settings_opened: false,
-			menu_opened: 100,
+			menu_opened: 1.0,
 		}
 	}
 }
@@ -123,10 +123,10 @@ impl FunctionEntry {
 
 		let max_size = vec2(
 			ui.available_width(),
-			if self.menu_opened == 100 {
+			if self.menu_opened == 1.0 {
 				row_height * 2.5
 			} else {
-				row_height * (1.0 + ((self.menu_opened as f32 / 100.0) * 1.5))
+				row_height * (1.0 + (self.menu_opened * 1.5))
 			},
 		);
 
@@ -145,9 +145,9 @@ impl FunctionEntry {
 				}),
 		);
 
-		self.menu_opened = (ui.ctx().animate_bool(te_id, re.has_focus()) * 100.0) as i32;
+		self.menu_opened = ui.ctx().animate_bool(te_id, re.has_focus());
 
-		if self.menu_opened < 100 {
+		if self.menu_opened < 1.0 {
 			return;
 		}
 
