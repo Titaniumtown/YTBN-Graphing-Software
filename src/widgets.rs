@@ -8,15 +8,15 @@ pub enum Movement {
 	None,
 }
 
+impl Default for Movement {
+	fn default() -> Self { Self::None }
+}
+
 #[derive(Clone)]
 pub struct AutoComplete<'a> {
 	pub i: usize,
 	pub hint: &'a Hint<'a>,
 	pub string: String,
-}
-
-impl Default for Movement {
-	fn default() -> Self { Self::None }
 }
 
 impl<'a> Default for AutoComplete<'a> {
