@@ -442,19 +442,19 @@ impl FunctionEntry {
 			}
 
 			if self.nth_derviative && let Some(nth_derivative_data) = &self.nth_derivative_data {
-					let new_nth_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
-						.map(|x| {
-							if let Some(i) = x_data.get_index(x) {
-								(*nth_derivative_data)[i]
-							} else {
-								Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
-							}
-						})
-						.collect();
+				let new_nth_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
+					.map(|x| {
+						if let Some(i) = x_data.get_index(x) {
+							(*nth_derivative_data)[i]
+						} else {
+							Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
+						}
+					})
+					.collect();
 
-					debug_assert_eq!(new_nth_derivative_data.len(), settings.plot_width + 1);
+				debug_assert_eq!(new_nth_derivative_data.len(), settings.plot_width + 1);
 
-					self.nth_derivative_data = Some(new_nth_derivative_data);
+				self.nth_derivative_data = Some(new_nth_derivative_data);
 			} else {
 				self.invalidate_nth();
 			}
