@@ -389,32 +389,28 @@ impl MathApp {
 							"Right",
 						);
 					});
+
 				let riemann_changed = prev_sum != self.settings.riemann_sum;
 
-				// Config options for Extrema and roots
-				let mut extrema_toggled: bool = false;
-				let mut roots_toggled: bool = false;
 				ui.horizontal(|ui| {
-					extrema_toggled = ui
-						.add(Button::new("Extrema"))
-						.on_hover_text(match self.settings.do_extrema {
-							true => "Disable Displaying Extrema",
-							false => "Display Extrema",
-						})
-						.clicked();
+					self.settings.do_extrema.bitxor_assign(
+						ui.add(Button::new("Extrema"))
+							.on_hover_text(match self.settings.do_extrema {
+								true => "Disable Displaying Extrema",
+								false => "Display Extrema",
+							})
+							.clicked(),
+					);
 
-					roots_toggled = ui
-						.add(Button::new("Roots"))
-						.on_hover_text(match self.settings.do_roots {
-							true => "Disable Displaying Roots",
-							false => "Display Roots",
-						})
-						.clicked();
+					self.settings.do_roots.bitxor_assign(
+						ui.add(Button::new("Roots"))
+							.on_hover_text(match self.settings.do_roots {
+								true => "Disable Displaying Roots",
+								false => "Display Roots",
+							})
+							.clicked(),
+					);
 				});
-
-				// If options toggled, flip the boolean
-				self.settings.do_extrema.bitxor_assign(extrema_toggled);
-				self.settings.do_roots.bitxor_assign(roots_toggled);
 
 				let min_x_old = self.settings.integral_min_x;
 				let min_x_changed = ui
