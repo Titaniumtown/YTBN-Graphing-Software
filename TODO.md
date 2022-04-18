@@ -14,3 +14,4 @@
 8. Look into other, better methods of compression that would be faster
 9. Better handling of panics and errors to display to the user
 10. Turn Dynamic Iterator functions into traits
+11. Better handling of roots and extrema finding
