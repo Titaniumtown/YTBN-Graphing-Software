@@ -452,18 +452,21 @@ impl MathApp {
 				self.settings.integral_changed =
 					max_x_changed | min_x_changed | integral_num_changed | riemann_changed;
 
-				let functions_len = self.functions.len();
-				let mut remove_i: Option<usize> = None;
+				let can_remove = self.functions.len() > 1;
 				ui.label("Functions:");
+
+				let mut remove_i: Option<usize> = None;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					// Entry for a function
-					function.function_entry(ui, &mut remove_i, functions_len > 1, i);
+					if function.function_entry(ui, can_remove, i) {
+						remove_i = Some(i);
+					}
 
 					function.settings_window(ctx);
 				}
 
 				// Remove function if the user requests it
-				if let Some(remove_i_unwrap) = remove_i {
+				if can_remove && let Some(remove_i_unwrap) = remove_i {
 					self.functions.remove(remove_i_unwrap);
 				}
 

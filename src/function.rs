@@ -103,9 +103,9 @@ impl Default for FunctionEntry {
 }
 
 impl FunctionEntry {
-	pub fn function_entry(
-		&mut self, ui: &mut egui::Ui, remove_i: &mut Option<usize>, can_remove: bool, i: usize,
-	) {
+	/// Creates edit box for [`FunctionEntry`] to edit function settings and string.
+	/// Returns whether or not this function was marked for removal.
+	pub fn function_entry(&mut self, ui: &mut egui::Ui, can_remove: bool, i: usize) -> bool {
 		let output_string = self.autocomplete.string.clone();
 		self.update_string(&output_string);
 
@@ -144,7 +144,7 @@ impl FunctionEntry {
 		);
 
 		if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
-			return;
+			return false;
 		}
 
 		self.autocomplete.update_string(&new_string);
@@ -217,16 +217,15 @@ impl FunctionEntry {
 			.fixed_pos(pos2(re.rect.min.x, re.rect.min.y + (row_height * 1.32)))
 			.order(egui::Order::Foreground);
 
+		let mut should_remove: bool = false;
+
 		buttons_area.show(ui.ctx(), |ui| {
 			ui.horizontal(|ui| {
 				// There's more than 1 function! Functions can now be deleted
-				if ui
+				should_remove = ui
 					.add_enabled(can_remove, Button::new("✖").frame(false))
 					.on_hover_text("Delete Function")
-					.clicked()
-				{
-					*remove_i = Some(i);
-				}
+					.clicked();
 
 				// Toggle integral being enabled or not
 				self.integral.bitxor_assign(
@@ -258,6 +257,7 @@ impl FunctionEntry {
 				);
 			});
 		});
+		return should_remove;
 	}
 
 	pub fn settings_window(&mut self, ctx: &Context) {
