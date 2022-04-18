@@ -219,17 +219,21 @@ impl FunctionEntry {
 
 		let mut should_remove: bool = false;
 
+		fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
+			Button::new(text.into()).frame(false)
+		}
+
 		buttons_area.show(ui.ctx(), |ui| {
 			ui.horizontal(|ui| {
 				// There's more than 1 function! Functions can now be deleted
 				should_remove = ui
-					.add_enabled(can_remove, Button::new("✖").frame(false))
+					.add_enabled(can_remove, button_area_button("✖"))
 					.on_hover_text("Delete Function")
 					.clicked();
 
 				// Toggle integral being enabled or not
 				self.integral.bitxor_assign(
-					ui.add(Button::new("∫").frame(false))
+					ui.add(button_area_button("∫"))
 						.on_hover_text(match self.integral {
 							true => "Don't integrate",
 							false => "Integrate",
@@ -239,7 +243,7 @@ impl FunctionEntry {
 
 				// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
 				self.derivative.bitxor_assign(
-					ui.add(Button::new("d/dx").frame(false))
+					ui.add(button_area_button("d/dx"))
 						.on_hover_text(match self.derivative {
 							true => "Don't Differentiate",
 							false => "Differentiate",
@@ -248,7 +252,7 @@ impl FunctionEntry {
 				);
 
 				self.settings_opened.bitxor_assign(
-					ui.add(Button::new("⚙").frame(false))
+					ui.add(button_area_button("⚙"))
 						.on_hover_text(match self.settings_opened {
 							true => "Close Settings",
 							false => "Open Settings",
@@ -257,7 +261,7 @@ impl FunctionEntry {
 				);
 			});
 		});
-		return should_remove;
+		should_remove
 	}
 
 	pub fn settings_window(&mut self, ctx: &Context) {
