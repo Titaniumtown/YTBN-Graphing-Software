@@ -128,10 +128,10 @@ lazy_static::lazy_static! {
 		tracing::info!("Done loading assets! Took: {:?}", start.elapsed());
 
 		let font_data: BTreeMap<String, FontData> = BTreeMap::from([
-			("Hack".to_owned(), font_hack.expect("Hack font not found!")),
-			("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu Light font not found!")),
-			("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("Noto Emoji font not found!")),
-			("emoji-icon-font".to_owned(), font_emoji_icon.expect("Emoji Icon Font not found!"))
+			("Hack".to_owned(), font_hack.expect("Hack -Regular.ttf not found!")),
+			("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu-Light.ttf not found!")),
+			("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("NotoEmoji-Regular.ttf not found!")),
+			("emoji-icon-font".to_owned(), font_emoji_icon.expect("emoji-icon-font.ttf not found!"))
 		]);
 
 		let families = BTreeMap::from([
@@ -156,7 +156,7 @@ lazy_static::lazy_static! {
 
 		// Create and return Assets struct
 		Assets::new(
-			fonts, text_data.expect("Text data not found!"))
+			fonts, text_data.expect("text.json not found!"))
 	};
 }
 
