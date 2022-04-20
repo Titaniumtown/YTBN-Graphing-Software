@@ -206,12 +206,13 @@ impl FunctionEntry {
 			.fixed_pos(re.rect.min.offset_y(row_height * 1.32))
 			.order(egui::Order::Foreground);
 
-		let mut should_remove: bool = false;
-
 		/// Function that creates button that's used with the `button_area`
 		fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
 			Button::new(text.into()).frame(false)
 		}
+
+		// returned at the end of this function to indicate whether or not this function should be removed from where it's stored
+		let mut should_remove: bool = false;
 
 		buttons_area.show(ui.ctx(), |ui| {
 			ui.horizontal(|ui| {
