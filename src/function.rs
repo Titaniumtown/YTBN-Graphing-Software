@@ -8,16 +8,11 @@ use crate::widgets::{AutoComplete, Movement};
 use eframe::{egui, emath, epaint};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
-	text::CCursor,
-	text_edit::CursorRange,
 	widgets::plot::Bar,
-	Button, Checkbox, Context, Key, Modifiers, TextEdit,
+	Button, Checkbox, Context, Key, Modifiers,
 };
 use emath::{pos2, vec2};
-use epaint::{
-	text::cursor::{Cursor, PCursor, RCursor},
-	Color32,
-};
+use epaint::Color32;
 use std::fmt::{self, Debug};
 use std::ops::BitXorAssign;
 
@@ -196,20 +191,7 @@ impl FunctionEntry {
 
 			// Push cursor to end if needed
 			if movement == Movement::Complete {
-				let mut state = TextEdit::load_state(ui.ctx(), te_id).unwrap();
-				state.set_cursor_range(Some(CursorRange::one(Cursor {
-					ccursor: CCursor {
-						index: 0,
-						prefer_next_row: false,
-					},
-					rcursor: RCursor { row: 0, column: 0 },
-					pcursor: PCursor {
-						paragraph: 0,
-						offset: 10000,
-						prefer_next_row: false,
-					},
-				})));
-				TextEdit::store_state(ui.ctx(), te_id, state);
+				crate::widgets::move_cursor_to_end(ui.ctx(), te_id);
 			}
 		}
 

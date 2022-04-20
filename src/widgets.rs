@@ -1,5 +1,9 @@
 use crate::suggestions::{generate_hint, Hint};
 
+use eframe::{egui, epaint};
+use egui::{text::CCursor, text_edit::CursorRange, TextEdit};
+use epaint::text::cursor::{Cursor, PCursor, RCursor};
+
 #[derive(PartialEq, Debug)]
 pub enum Movement {
 	Complete,
@@ -76,6 +80,24 @@ impl<'a> AutoComplete<'a> {
 		let new_string = self.string.clone() + hint;
 		self.update_string(&new_string);
 	}
+}
+
+/// Moves cursor of TextEdit `te_id` to the end
+pub fn move_cursor_to_end(ctx: &egui::Context, te_id: egui::Id) {
+	let mut state = TextEdit::load_state(ctx, te_id).unwrap();
+	state.set_cursor_range(Some(CursorRange::one(Cursor {
+		ccursor: CCursor {
+			index: 0,
+			prefer_next_row: false,
+		},
+		rcursor: RCursor { row: 0, column: 0 },
+		pcursor: PCursor {
+			paragraph: 0,
+			offset: 10000,
+			prefer_next_row: false,
+		},
+	})));
+	TextEdit::store_state(ctx, te_id, state);
 }
 
 #[cfg(test)]
