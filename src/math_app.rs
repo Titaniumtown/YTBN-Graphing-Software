@@ -466,7 +466,7 @@ impl MathApp {
 				}
 
 				// Remove function if the user requests it
-				if can_remove && let Some(remove_i_unwrap) = remove_i {
+				if let Some(remove_i_unwrap) = remove_i {
 					self.functions.remove(remove_i_unwrap);
 				}
 
