@@ -11,7 +11,7 @@ use egui::{
 	widgets::plot::Bar,
 	Button, Checkbox, Context, Key, Modifiers,
 };
-use emath::{pos2, vec2};
+use emath::vec2;
 use epaint::Color32;
 use std::fmt::{self, Debug};
 use std::ops::BitXorAssign;
