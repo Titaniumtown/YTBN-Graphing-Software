@@ -26,14 +26,35 @@ else
 fi
 
 mkdir tmp
-cp -r pkg/ytbn_graphing_software_bg.wasm pkg/ytbn_graphing_software.js tmp/
+cp -r pkg/ytbn_graphing_software_bg.wasm tmp/
+minify pkg/ytbn_graphing_software.js > tmp/ytbn_graphing_software.js
 
 sed -i 's/fatal: true/fatal: false/g' tmp/ytbn_graphing_software.js
 
 sed -i "s/TextEncoder('utf-8')/TextEncoder('utf-8', { ignoreBOM: true, fatal: false })/g" tmp/ytbn_graphing_software.js
 
-
 cp www/* tmp/
 
+wasm_sum=($(md5sum tmp/ytbn_graphing_software_bg.wasm))
+js_sum=($(md5sum tmp/ytbn_graphing_software.js))
+sum=($(echo "$wasm_sum $js_sum" | md5sum))
+
+echo $sum
+
+new_wasm_name="ytbn_${sum}.wasm"
+new_js_name="ytbn_${sum}.js"
+
+
+
+mv tmp/ytbn_graphing_software_bg.wasm "tmp/${new_wasm_name}"
+mv tmp/ytbn_graphing_software.js "tmp/${new_js_name}"
+
+
+sed -i "s/ytbn_graphing_software_bg.wasm/${new_wasm_name}/g" tmp/*.*
+
+sed -i "s/ytbn_graphing_software.js/${new_js_name}/g" tmp/*.*
+
+
+
 echo "Total size: $(du -sb tmp)"
-echo "Binary size: $(du -sb tmp/ytbn_graphing_software_bg.wasm)"
+echo "Binary size: $(du -sb tmp/${new_wasm_name})"
