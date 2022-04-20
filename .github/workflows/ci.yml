@@ -23,16 +23,3 @@ jobs:
           crate: cargo-all-features
           version: latest
       - run: cargo test-all-features
-
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test-all-features
-
-  # fails CI because criterion needs two versions of autocfg
-  #cargo-deny:
-  #  name: Cargo Deny
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #  - uses: actions/checkout@v1
-  #  - uses: EmbarkStudios/cargo-deny-action@v0
