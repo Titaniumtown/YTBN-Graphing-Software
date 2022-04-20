@@ -471,7 +471,7 @@ impl MathApp {
 				}
 
 				ui.with_layout(egui::Layout::bottom_up(emath::Align::Min), |ui| {
-					// Contents put in reverse order from bottom to top
+					// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
 
 					// Licensing information
 					ui.label(
