@@ -115,23 +115,27 @@ impl FunctionEntry {
 			.fonts()
 			.row_height(&egui::FontSelection::default().resolve(ui.style()));
 
-		let max_size = vec2(ui.available_width(), {
+		// target size of text edit box
+		let target_size = vec2(ui.available_width(), {
 			let had_focus = ui.ctx().memory().has_focus(te_id);
 			let gotten_value = ui.ctx().animate_bool(te_id, had_focus);
 			if gotten_value == 1.0 {
+				// text box is fully in focus, extra `1.5x` height for buttons
 				row_height * 2.5
 			} else {
+				// text box is NOT fully in focus, calculate offset to height based on `gotten_value`
 				row_height * (1.0 + (gotten_value * 1.5))
 			}
 		});
 
 		let re = ui.add_sized(
-			max_size,
+			target_size,
 			egui::TextEdit::singleline(&mut new_string)
 				.hint_forward(true) // Make the hint appear after the last text in the textbox
 				.lock_focus(true)
-				.id(te_id)
+				.id(te_id) // set widget's id to `te_id`
 				.hint_text({
+					// if there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
 					if let Hint::Single(single_hint) = self.autocomplete.hint {
 						*single_hint
 					} else {
@@ -140,6 +144,7 @@ impl FunctionEntry {
 				}),
 		);
 
+		// if not fully open, return here as buttons cannot yet be displayed
 		if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
 			return false;
 		}
@@ -198,7 +203,7 @@ impl FunctionEntry {
 		}
 
 		let buttons_area = egui::Area::new(format!("buttons_area_{}", i))
-			.fixed_pos(pos2(re.rect.min.x, re.rect.min.y + (row_height * 1.32)))
+			.fixed_pos(re.rect.min.offset_y(row_height * 1.32))
 			.order(egui::Order::Foreground);
 
 		let mut should_remove: bool = false;
