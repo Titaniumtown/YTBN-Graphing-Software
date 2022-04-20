@@ -14,3 +14,4 @@
 8. Turn Dynamic Iterator functions into traits
 9. Better handling of roots and extrema finding
 10. Add closing animation for function entry
+11. Create actual icon(s) for PWA/favicon (using placeholder from eframe_template)

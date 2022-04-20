@@ -1,31 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
-	<!-- Disable zooming: -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
-	<head>
-		<meta charset="utf-8" />
-		<title>(Yet-to-be-named) Graphing Software</title>
-		<link rel="stylesheet" href="style.css" />
-	</head>
-	<body>
-		<noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 
-		<canvas id="canvas"></canvas>
-		<div class="centered" id="loading">
-			<p style="font-size: 16px;">
-				Loading…
-			</p>
-			<div class="lds-dual-ring"></div>
-		</div>
+<head>
+	<meta charset="utf-8" />
+	<title>(Yet-to-be-named) Graphing Software</title>
 
-		<script type="module">
-			import init, { start } from "./ytbn_graphing_software.js";
+	<meta name="theme-color" media="(prefers-color-scheme: light)" content="white">
+	<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#404040">
+	<link rel="apple-touch-icon" href="/icon_ios_touch_192.png">
 
-			async function run() {
-				await init();
+	<link rel="manifest" href="/manifest.json">
+	<!--Register Service Worker-->
+	<script>
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker
+				.register('./sw.js');
+		}
+	</script>
+
+	<style>
+		html {
+			/* Remove touch delay: */
+			touch-action: manipulation;
+		}
+
+		body {
+			/* Light mode background color for what is not covered by the egui canvas,
+			or where the egui canvas is translucent. */
+			background: #909090;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			body {
+				/* Dark mode background color for what is not covered by the egui canvas,
+				or where the egui canvas is translucent. */
+				background: #404040;
 			}
-			run();
-		</script>
-	</body>
+		}
+
+		/* Allow canvas to fill entire web page: */
+		html,
+		body {
+			overflow: hidden;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+
+		/* Position canvas in center-top: */
+		canvas {
+			margin-right: auto;
+			margin-left: auto;
+			display: block;
+			position: absolute;
+			top: 0%;
+			left: 50%;
+			transform: translate(-50%, 0%);
+		}
+
+		.centered {
+			margin-right: auto;
+			margin-left: auto;
+			display: block;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			color: #f0f0f0;
+			font-size: 24px;
+			font-family: Ubuntu-Light, Helvetica, sans-serif;
+			text-align: center;
+		}
+
+		/* ---------------------------------------------- */
+		/* Loading animation from https://loading.io/css/ */
+		.lds-dual-ring {
+			display: inline-block;
+			width: 24px;
+			height: 24px;
+		}
+
+		.lds-dual-ring:after {
+			content: " ";
+			display: block;
+			width: 24px;
+			height: 24px;
+			margin: 0px;
+			border-radius: 50%;
+			border: 3px solid #fff;
+			border-color: #fff transparent #fff transparent;
+			animation: lds-dual-ring 1.2s linear infinite;
+		}
+
+		@keyframes lds-dual-ring {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
+
+	<canvas id="canvas"></canvas>
+	<div class="centered" id="loading">
+		<p style="font-size: 16px;">
+			Loading…
+		</p>
+		<div class="lds-dual-ring"></div>
+	</div>
+
+	<script type="module">
+		delete WebAssembly.instantiateStreaming;
+		import init from "./ytbn_graphing_software.js";
+
+		async function run() {
+			await init();
+		}
+		run();
+	</script>
+
+</body>
+
 </html>
