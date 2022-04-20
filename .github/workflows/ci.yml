@@ -18,9 +18,11 @@ jobs:
           override: true
 
       - name: Install cargo-all-features
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/install@v0.1
         with:
-          command: install cargo-all-features
+          crate: cargo-all-features
+          version: latest
+      - run: cargo test-all-features
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
