@@ -27,6 +27,12 @@ fi
 
 mkdir tmp
 cp -r pkg/ytbn_graphing_software_bg.wasm pkg/ytbn_graphing_software.js tmp/
+
+sed -i 's/fatal: true/fatal: false/g' tmp/ytbn_graphing_software.js
+
+sed -i "s/TextEncoder('utf-8')/TextEncoder('utf-8', { ignoreBOM: true, fatal: false })/g" tmp/ytbn_graphing_software.js
+
+
 cp www/index.html www/style.css tmp/
 
 echo "Total size: $(du -sb tmp)"
