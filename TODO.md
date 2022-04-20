@@ -2,16 +2,15 @@
 1. Multiple functions in one graph.
 	- Backend support
 		- Integrals between functions (too hard to implement, maybe will shelve)
-		- Display intersection between functions
+		- Display intersection between functions (would have to rewrite a lot of the function plotting handling)
 2. Rerwite of function parsing code
 	- Non `y=` functions.
 3. Smart display of graph
 	- Display of intersections between functions
 4. Allow constants in min/max integral input (like pi or euler's number)
 5. Sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
-6. Threading (Partially implemented when running natively)
-7. Fix integral display
-8. Look into other, better methods of compression that would be faster
-9. Better handling of panics and errors to display to the user
-10. Turn Dynamic Iterator functions into traits
-11. Better handling of roots and extrema finding
+6. Fix integral display
+7. Better handling of panics and errors to display to the user
+8. Turn Dynamic Iterator functions into traits
+9. Better handling of roots and extrema finding
+10. Add closing animation for function entry
