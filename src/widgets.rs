@@ -84,7 +84,7 @@ impl<'a> AutoComplete<'a> {
 
 /// Moves cursor of TextEdit `te_id` to the end
 pub fn move_cursor_to_end(ctx: &egui::Context, te_id: egui::Id) {
-	let mut state = TextEdit::load_state(ctx, te_id).unwrap();
+	let mut state = TextEdit::load_state(ctx, te_id).expect("Expected TextEdit");
 	state.set_cursor_range(Some(CursorRange::one(Cursor {
 		ccursor: CCursor {
 			index: 0,

@@ -634,8 +634,7 @@ impl epi::App for MathApp {
 			self.side_panel(ctx);
 		}
 
-		// Referenced in plotting code, but needs to be here so it can be later
-		// referenced when storing `last_info`
+		// Referenced in plotting code, but needs to be here so it can be later  referenced when storing `last_info`
 		let mut area_list: Vec<Option<f64>> = Vec::new();
 
 		// Central panel which contains the central plot (or an error created when
