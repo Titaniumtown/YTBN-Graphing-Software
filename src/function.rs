@@ -117,15 +117,20 @@ impl FunctionEntry {
 
 		// target size of text edit box
 		let target_size = vec2(ui.available_width(), {
+			// need to get whether or not the text box has focus so it can be used to get the animated bool value
 			let had_focus = ui.ctx().memory().has_focus(te_id);
-			let gotten_value = ui.ctx().animate_bool(te_id, had_focus);
-			if gotten_value == 1.0 {
-				// text box is fully in focus, extra `1.5x` height for buttons
-				row_height * 2.5
+
+			// get the animated bool that stores how "in focus" the text box is
+			let gotten_focus_value = ui.ctx().animate_bool(te_id, had_focus);
+
+			// multiplier for row_width
+			let multiplier = if gotten_focus_value == 1.0 {
+				2.5
 			} else {
-				// text box is NOT fully in focus, calculate offset to height based on `gotten_value`
-				row_height * (1.0 + (gotten_value * 1.5))
-			}
+				1.0 + (gotten_focus_value * 1.5)
+			};
+
+			row_height * multiplier
 		});
 
 		let re = ui.add_sized(
@@ -144,7 +149,7 @@ impl FunctionEntry {
 				}),
 		);
 
-		// if not fully open, return here as buttons cannot yet be displayed
+		// if not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
 		if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
 			return false;
 		}
@@ -202,9 +207,12 @@ impl FunctionEntry {
 			}
 		}
 
+		/// the y offset multiplier of the `buttons_area` area
+		const BUTTONS_Y_OFFSET: f32 = 1.32;
+
 		let buttons_area = egui::Area::new(format!("buttons_area_{}", i))
-			.fixed_pos(re.rect.min.offset_y(row_height * 1.32))
-			.order(egui::Order::Foreground);
+			.fixed_pos(re.rect.min.offset_y(row_height * BUTTONS_Y_OFFSET))
+			.order(egui::Order::Foreground); // put it in the foreground so it's above the text edit box
 
 		/// Function that creates button that's used with the `button_area`
 		fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
@@ -252,6 +260,7 @@ impl FunctionEntry {
 				);
 			});
 		});
+
 		should_remove
 	}
 
