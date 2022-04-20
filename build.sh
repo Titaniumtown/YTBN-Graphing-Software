@@ -8,21 +8,21 @@ rm -fr pkg | true
 
 #apply optimizations via wasm-opt
 wasm_opt() {
-	wasm-opt -Oz -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
-	mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+    wasm-opt -Oz -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+    mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
 }
 
 if test "$1" == "" || test "$1" == "release"; then
-	RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --target web --release --no-typescript
-	echo "Binary size (pre-wasm_opt): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
-	wasm_opt #apply wasm optimizations
-	echo "Binary size (pre-strip): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
-	llvm-strip --strip-all pkg/ytbn_graphing_software_bg.wasm
-elif test "$1" == "debug"; then
-	RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --target web --debug --no-typescript
+    RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --target web --release --no-typescript
+    echo "Binary size (pre-wasm_opt): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
+    wasm_opt #apply wasm optimizations
+    echo "Binary size (pre-strip): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
+    llvm-strip --strip-all pkg/ytbn_graphing_software_bg.wasm
+    elif test "$1" == "debug"; then
+    RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --target web --debug --no-typescript
 else
-	echo "ERROR: build.sh, argument invalid"
-	exit 1
+    echo "ERROR: build.sh, argument invalid"
+    exit 1
 fi
 
 mkdir tmp
@@ -39,11 +39,10 @@ wasm_sum=($(md5sum tmp/ytbn_graphing_software_bg.wasm))
 js_sum=($(md5sum tmp/ytbn_graphing_software.js))
 sum=($(echo "$wasm_sum $js_sum" | md5sum))
 
-echo $sum
+echo "sum: $sum"
 
-new_wasm_name="ytbn_${sum}.wasm"
-new_js_name="ytbn_${sum}.js"
-
+new_wasm_name="${sum}.wasm"
+new_js_name="${sum}.js"
 
 
 mv tmp/ytbn_graphing_software_bg.wasm "tmp/${new_wasm_name}"
