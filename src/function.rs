@@ -219,6 +219,7 @@ impl FunctionEntry {
 
 		let mut should_remove: bool = false;
 
+		/// Function that creates button that's used with the `button_area`
 		fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
 			Button::new(text.into()).frame(false)
 		}
