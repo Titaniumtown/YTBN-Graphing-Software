@@ -67,3 +67,7 @@ wasm-bindgen = { version = "0.2.80", default-features = false, features = [
 ] }
 web-sys = "0.3.57"
 tracing-wasm = "0.2.1"
+
+
+[package.metadata.cargo-all-features]
+skip_optional_dependencies = true #don't test optional dependencies, only features
