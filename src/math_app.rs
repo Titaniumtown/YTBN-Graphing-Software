@@ -490,7 +490,7 @@ impl MathApp {
 }
 
 impl epi::App for MathApp {
-	/// Called each time the UI needs repainting, which may be many times per second.
+	/// Called each time the UI needs repainting.
 	fn update(&mut self, ctx: &Context, _frame: &mut epi::Frame) {
 		// start timer
 		let start = instant::Instant::now();
@@ -501,8 +501,9 @@ impl epi::App for MathApp {
 			false => Visuals::light(),
 		});
 
-		// if keyboard input isn't being grabed, check for key combos
+		// If keyboard input isn't being grabbed, check for key combos
 		if !ctx.wants_keyboard_input() {
+			// If `H` key is pressed, toggle Side Panel
 			self.opened
 				.side_panel
 				.bitxor_assign(ctx.input_mut().consume_key(egui::Modifiers::NONE, Key::H));

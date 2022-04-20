@@ -4,7 +4,7 @@ use crate::math_app::AppSettings;
 use crate::misc::*;
 use crate::parsing::{process_func_str, BackingFunction};
 use crate::suggestions::Hint;
-use crate::widgets::{AutoComplete, Movement};
+use crate::widgets::{widgets_ontop, AutoComplete, Movement};
 use eframe::{egui, emath, epaint};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
@@ -207,13 +207,6 @@ impl FunctionEntry {
 			}
 		}
 
-		/// the y offset multiplier of the `buttons_area` area
-		const BUTTONS_Y_OFFSET: f32 = 1.32;
-
-		let buttons_area = egui::Area::new(format!("buttons_area_{}", i))
-			.fixed_pos(re.rect.min.offset_y(row_height * BUTTONS_Y_OFFSET))
-			.order(egui::Order::Foreground); // put it in the foreground so it's above the text edit box
-
 		/// Function that creates button that's used with the `button_area`
 		fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
 			Button::new(text.into()).frame(false)
@@ -222,44 +215,53 @@ impl FunctionEntry {
 		// returned at the end of this function to indicate whether or not this function should be removed from where it's stored
 		let mut should_remove: bool = false;
 
-		buttons_area.show(ui.ctx(), |ui| {
-			ui.horizontal(|ui| {
-				// There's more than 1 function! Functions can now be deleted
-				should_remove = ui
-					.add_enabled(can_remove, button_area_button("✖"))
-					.on_hover_text("Delete Function")
-					.clicked();
+		/// the y offset multiplier of the `buttons_area` area
+		const BUTTONS_Y_OFFSET: f32 = 1.32;
 
-				// Toggle integral being enabled or not
-				self.integral.bitxor_assign(
-					ui.add(button_area_button("∫"))
-						.on_hover_text(match self.integral {
-							true => "Don't integrate",
-							false => "Integrate",
-						})
-						.clicked(),
-				);
+		widgets_ontop(
+			ui,
+			format!("buttons_area_{}", i),
+			&re,
+			row_height * BUTTONS_Y_OFFSET,
+			|ui| {
+				ui.horizontal(|ui| {
+					// There's more than 1 function! Functions can now be deleted
+					should_remove = ui
+						.add_enabled(can_remove, button_area_button("✖"))
+						.on_hover_text("Delete Function")
+						.clicked();
 
-				// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-				self.derivative.bitxor_assign(
-					ui.add(button_area_button("d/dx"))
-						.on_hover_text(match self.derivative {
-							true => "Don't Differentiate",
-							false => "Differentiate",
-						})
-						.clicked(),
-				);
+					// Toggle integral being enabled or not
+					self.integral.bitxor_assign(
+						ui.add(button_area_button("∫"))
+							.on_hover_text(match self.integral {
+								true => "Don't integrate",
+								false => "Integrate",
+							})
+							.clicked(),
+					);
 
-				self.settings_opened.bitxor_assign(
-					ui.add(button_area_button("⚙"))
-						.on_hover_text(match self.settings_opened {
-							true => "Close Settings",
-							false => "Open Settings",
-						})
-						.clicked(),
-				);
-			});
-		});
+					// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
+					self.derivative.bitxor_assign(
+						ui.add(button_area_button("d/dx"))
+							.on_hover_text(match self.derivative {
+								true => "Don't Differentiate",
+								false => "Differentiate",
+							})
+							.clicked(),
+					);
+
+					self.settings_opened.bitxor_assign(
+						ui.add(button_area_button("⚙"))
+							.on_hover_text(match self.settings_opened {
+								true => "Close Settings",
+								false => "Open Settings",
+							})
+							.clicked(),
+					);
+				});
+			},
+		);
 
 		should_remove
 	}
