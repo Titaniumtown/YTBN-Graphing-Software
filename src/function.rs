@@ -109,6 +109,8 @@ impl FunctionEntry {
 		let mut new_string = self.autocomplete.string.clone();
 
 		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", i));
+
+		// TODO: cache this
 		let row_height = ui
 			.fonts()
 			.row_height(&egui::FontSelection::default().resolve(ui.style()));
