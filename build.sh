@@ -34,6 +34,8 @@ sed -i 's/fatal: true/fatal: false/g' tmp/ytbn_graphing_software.js
 sed -i "s/TextEncoder('utf-8')/TextEncoder('utf-8', { ignoreBOM: true, fatal: false })/g" tmp/ytbn_graphing_software.js
 
 cp www/* tmp/
+minify www/index.html > tmp/index.html
+minify www/sw.js > tmp/sw.js
 
 wasm_sum=($(md5sum tmp/ytbn_graphing_software_bg.wasm))
 js_sum=($(md5sum tmp/ytbn_graphing_software.js))
