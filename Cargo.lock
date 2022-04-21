@@ -485,7 +485,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "egui",
  "egui-winit",
@@ -497,7 +497,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "ahash",
  "epaint",
@@ -508,7 +508,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "arboard",
  "egui",
@@ -523,7 +523,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "bytemuck",
  "egui",
@@ -540,7 +540,7 @@ dependencies = [
 [[package]]
 name = "egui_web"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "bytemuck",
  "egui",
@@ -563,7 +563,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "bytemuck",
 ]
@@ -571,7 +571,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -585,7 +585,7 @@ dependencies = [
 [[package]]
 name = "epi"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#fc157eab5eb2098c254470a249f07aa2fa7b0970"
+source = "git+https://github.com/Titaniumtown/egui.git#b2fd225aa1e3177e8ec0b5c348f7240b0b7b0be0"
 dependencies = [
  "egui",
  "glow",
