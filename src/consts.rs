@@ -8,10 +8,11 @@ shadow!(build);
 
 // Constant string that has a string containing information about the build.
 pub const BUILD_INFO: &str = formatc!(
-	"Commit: {} ({})\nBuild Date: {}\nRust Channel: {}\nRust Version: {}",
+	"Commit: {} ({})\nBuild Date: {}\nPackage Version: {}\nRust Channel: {}\nRust Version: {}",
 	&build::SHORT_COMMIT,
 	&build::BRANCH,
 	&build::BUILD_TIME,
+	&build::PKG_VERSION,
 	&build::RUST_CHANNEL,
 	&build::RUST_VERSION,
 );
