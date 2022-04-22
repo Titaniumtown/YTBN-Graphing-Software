@@ -129,7 +129,7 @@ mod tests {
 
 		for (key, value) in values {
 			println!("{} + {:?}", key, value);
-			assert_eq!(generate_hint(key), &value);
+			assert_eq!(super::generate_hint(key), &value);
 		}
 	}
 
@@ -164,7 +164,7 @@ mod tests {
 			.filter(|func| !SUPPORTED_FUNCTIONS.contains(&func.as_str()))
 			.for_each(|key| {
 				println!("{}", key);
-				if generate_hint(&key).is_none() {
+				if super::generate_hint(&key).is_none() {
 					println!("success: {}", key);
 				} else {
 					panic!("failed: {}", key);
