@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
+/// REMEMBER TO UPDATE THIS IF EXMEX ADDS NEW FUNCTIONS
 const SUPPORTED_FUNCTIONS: [&str; 22] = [
 	"abs", "signum", "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "floor",
 	"round", "ceil", "trunc", "fract", "exp", "sqrt", "cbrt", "ln", "log2", "log10",
