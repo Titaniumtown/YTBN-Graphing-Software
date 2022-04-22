@@ -119,4 +119,26 @@ mod tests {
 			assert_eq!(value.to_string(), key);
 		}
 	}
+
+	#[test]
+	fn invalid_function_test() {
+		SUPPORTED_FUNCTIONS
+			.iter()
+			.map(|func1| {
+				SUPPORTED_FUNCTIONS
+					.iter()
+					.map(|func2| func1.to_string() + func2)
+					.collect::<Vec<String>>()
+			})
+			.flatten()
+			.filter(|func| !SUPPORTED_FUNCTIONS.contains(&func.as_str()))
+			.for_each(|key| {
+				println!("{}", key);
+				if generate_hint(&key).is_none() {
+					println!("success: {}", key);
+				} else {
+					panic!("failed: {}", key);
+				}
+			});
+	}
 }
