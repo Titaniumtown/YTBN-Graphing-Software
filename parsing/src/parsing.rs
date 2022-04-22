@@ -128,13 +128,22 @@ fn prettyify_function_str(func: &str) -> String {
 	}
 }
 
-const VALID_VARIABLES: [char; 5] = ['x', 'X', 'e', 'E', 'π'];
+pub const VALID_VARIABLES: [char; 5] = ['x', 'X', 'e', 'E', 'π'];
 const LETTERS: [char; 52] = [
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
 	't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
 	'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ];
 const NUMBERS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+#[inline]
+pub fn is_variable(c: &char) -> bool { VALID_VARIABLES.contains(&c) }
+
+#[inline]
+pub fn is_letter(c: &char) -> bool { LETTERS.contains(&c) }
+
+#[inline]
+pub fn is_number(c: &char) -> bool { NUMBERS.contains(&c) }
 
 /*
 EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
@@ -169,11 +178,11 @@ pub fn process_func_str(function_in: &str) -> String {
 			' '
 		};
 
-		let c_is_number = NUMBERS.contains(c);
-		let c_is_letter = LETTERS.contains(c);
-		let c_is_variable = VALID_VARIABLES.contains(c);
-		let prev_char_is_variable = VALID_VARIABLES.contains(&prev_char);
-		let prev_char_is_number = NUMBERS.contains(&prev_char);
+		let c_is_number = is_number(c);
+		let c_is_letter = is_letter(c);
+		let c_is_variable = is_variable(c);
+		let prev_char_is_variable = is_variable(&prev_char);
+		let prev_char_is_number = is_number(&prev_char);
 
 		// makes special case for log with base of a 1-2 digit number
 		if ((prev_prev_prev_char == 'l')
@@ -187,7 +196,7 @@ pub fn process_func_str(function_in: &str) -> String {
 		}
 
 		let c_letters_var = c_is_letter | c_is_variable;
-		let prev_letters_var = prev_char_is_variable | LETTERS.contains(&prev_char);
+		let prev_letters_var = prev_char_is_variable | is_letter(&prev_char);
 
 		if prev_char == ')' {
 			// cases like `)x`, `)2`, and `)(`
@@ -196,7 +205,7 @@ pub fn process_func_str(function_in: &str) -> String {
 			}
 		} else if *c == '(' {
 			// cases like `x(` and `2(`
-			if (prev_char_is_variable | prev_char_is_number) && !LETTERS.contains(&prev_prev_char) {
+			if (prev_char_is_variable | prev_char_is_number) && !is_letter(&prev_prev_char) {
 				add_asterisk = true;
 			}
 		} else if prev_char_is_number {
@@ -235,7 +244,7 @@ pub fn process_func_str(function_in: &str) -> String {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::function_handling::suggestions::SUPPORTED_FUNCTIONS;
+	use crate::suggestions::SUPPORTED_FUNCTIONS;
 	use std::collections::HashMap;
 
 	/// returns if function with string `func_str` is valid after processing through [`process_func_str`]

@@ -333,31 +333,6 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
-/// Takes `take` number of chars from the end of `chars` and returns a string
-pub fn chars_take(chars: &[char], take: usize) -> String {
-	let len = chars.len();
-	assert!(len >= take);
-
-	match take {
-		0 => {
-			// return empty string if `take == 0`
-			String::new()
-		}
-		1 => {
-			// return last character as a string if take == 1
-			chars[len - 1].to_string()
-		}
-		_ if take == len => {
-			// return `chars` turned into a string if `take == len`
-			return chars.iter().collect::<String>();
-		}
-		_ => {
-			// actually do the thing
-			return chars.iter().rev().take(take).rev().collect::<String>();
-		}
-	}
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -448,23 +423,6 @@ mod tests {
 
 		for (key, value) in values_nums {
 			assert_eq!(option_vec_printer(&key), value);
-		}
-	}
-
-	#[test]
-	fn chars_take_test() {
-		let values = HashMap::from([
-			(("test", 2), "st"),
-			(("cool text", 4), "text"),
-			(("aaa", 0), ""),
-			(("aaab", 1), "b"),
-		]);
-
-		for ((in_str, i), value) in values {
-			assert_eq!(
-				chars_take(&in_str.chars().collect::<Vec<char>>(), i),
-				value.to_owned()
-			);
 		}
 	}
 }

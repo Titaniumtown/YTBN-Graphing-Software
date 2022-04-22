@@ -4,10 +4,8 @@
 #[macro_use]
 extern crate static_assertions;
 
-mod autocomplete_helper;
 mod consts;
 mod function_entry;
-mod function_handling;
 mod math_app;
 mod misc;
 mod widgets;

@@ -1,7 +1,5 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
-use crate::function_handling::parsing::{process_func_str, BackingFunction};
-use crate::function_handling::suggestions::Hint;
 use crate::math_app::AppSettings;
 use crate::misc::*;
 use crate::widgets::{widgets_ontop, AutoComplete, Movement};
@@ -12,6 +10,10 @@ use egui::{
 };
 use emath::vec2;
 use epaint::Color32;
+use parsing::{
+	parsing::{process_func_str, BackingFunction},
+	suggestions::Hint,
+};
 use std::fmt::{self, Debug};
 use std::ops::BitXorAssign;
 

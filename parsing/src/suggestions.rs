@@ -1,7 +1,16 @@
-use crate::misc::chars_take;
+use crate::parsing::is_number;
 
 pub const HINT_EMPTY: Hint = Hint::Single("x^2");
 const HINT_CLOSED_PARENS: Hint = Hint::Single(")");
+
+/// Only enacts println if cfg(test) is enabled
+macro_rules! test_print {
+    ($($arg:tt)*) => {
+		#[cfg(test)]
+        println!($($arg)*)
+    };
+}
+
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
 pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
@@ -23,20 +32,38 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 		return &HINT_CLOSED_PARENS;
 	}
 
-	let len = chars.len();
+	// let len = chars.len();
 
-	for key in (1..=MAX_COMPLETION_LEN)
-		.rev()
-		.filter(|i| len >= *i)
-		.map(|i| chars_take(&chars, i))
-		.filter(|cut_string| !cut_string.is_empty())
-	{
-		if let Some(output) = COMPLETION_HASHMAP.get(&key) {
-			return output;
+
+	let mut split: Vec<String> = Vec::new();
+
+	let mut buffer: Vec<char> = Vec::new();
+	for c in chars {
+		buffer.push(c);
+		if c == ')' {
+			split.push(buffer.iter().collect::<String>());
+			buffer.clear();
+			continue;
+		}
+
+		let buffer_string = buffer.iter().collect::<String>();
+
+		if ((&buffer_string == "log") | (&buffer_string == "log1")) && is_number(&c) {
+			continue;
 		}
 	}
 
-	&Hint::None
+	if !buffer.is_empty() {
+		split.push(buffer.iter().collect::<String>());
+	}
+
+	test_print!("split: {:?}", split);
+
+	if split.is_empty() {
+		return COMPLETION_HASHMAP.get(input).unwrap_or(&Hint::None);
+	}
+
+	COMPLETION_HASHMAP.get(& unsafe {split.last().unwrap_unchecked()}.as_str()).unwrap_or(&Hint::None)
 }
 
 #[derive(PartialEq)]
@@ -95,6 +122,7 @@ mod tests {
 			("sin(", Hint::Single(")")),
 			("sqrt", Hint::Single("(")),
 			("ln(x)", Hint::None),
+			("ln(x)cos", Hint::Many(&["(", "h("])),
 		]);
 
 		for (key, value) in values {

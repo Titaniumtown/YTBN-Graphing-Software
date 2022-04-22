@@ -1380,6 +1380,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "parsing"
+version = "0.1.0"
+dependencies = [
+ "exmex",
+ "lazy_static",
+ "phf",
+ "phf_codegen",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2312,10 +2322,10 @@ dependencies = [
  "emath",
  "epaint",
  "epi",
- "exmex",
  "instant",
  "itertools",
  "lazy_static",
+ "parsing",
  "phf",
  "phf_codegen",
  "rayon",
