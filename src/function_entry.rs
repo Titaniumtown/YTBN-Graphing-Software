@@ -1,9 +1,9 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
+use crate::function_handling::parsing::{process_func_str, BackingFunction};
+use crate::function_handling::suggestions::Hint;
 use crate::math_app::AppSettings;
 use crate::misc::*;
-use crate::parsing::{process_func_str, BackingFunction};
-use crate::suggestions::Hint;
 use crate::widgets::{widgets_ontop, AutoComplete, Movement};
 use eframe::{egui, emath, epaint};
 use egui::{

@@ -6,11 +6,10 @@ extern crate static_assertions;
 
 mod autocomplete_helper;
 mod consts;
-mod function;
+mod function_entry;
+mod function_handling;
 mod math_app;
 mod misc;
-mod parsing;
-mod suggestions;
 mod widgets;
 
 cfg_if::cfg_if! {

@@ -189,7 +189,7 @@ pub struct JsonFileOutput {
 	pub help_function: String,
 	pub help_other: String,
 	pub license_info: String,
-	pub welcome_text: String,
+	pub welcome: String,
 }
 
 /// Helps parsing text data from `text.json`
@@ -228,7 +228,7 @@ impl SerdeValueHelper {
 			help_function: self.parse_multiline("help_function"),
 			help_other: self.parse_multiline("help_other"),
 			license_info: self.parse_singleline("license_info"),
-			welcome_text: self.parse_multiline("welcome"),
+			welcome: self.parse_multiline("welcome"),
 		}
 	}
 }

@@ -235,7 +235,7 @@ pub fn process_func_str(function_in: &str) -> String {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::suggestions::SUPPORTED_FUNCTIONS;
+	use crate::function_handling::suggestions::SUPPORTED_FUNCTIONS;
 	use std::collections::HashMap;
 
 	/// returns if function with string `func_str` is valid after processing through [`process_func_str`]

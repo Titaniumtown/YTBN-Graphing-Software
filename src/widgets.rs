@@ -1,4 +1,4 @@
-use crate::suggestions::{generate_hint, Hint};
+use crate::function_handling::suggestions::{self, generate_hint, Hint};
 
 use eframe::{egui, epaint};
 use egui::{text::CCursor, text_edit::CursorRange, TextEdit};
@@ -27,7 +27,7 @@ impl<'a> Default for AutoComplete<'a> {
 	fn default() -> AutoComplete<'a> {
 		AutoComplete {
 			i: 0,
-			hint: &crate::suggestions::HINT_EMPTY,
+			hint: &suggestions::HINT_EMPTY,
 			string: String::new(),
 		}
 	}

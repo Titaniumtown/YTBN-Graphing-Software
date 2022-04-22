@@ -1,4 +1,4 @@
-use crate::function::Riemann;
+use crate::function_entry::Riemann;
 use std::ops::RangeInclusive;
 
 use const_format::formatc;

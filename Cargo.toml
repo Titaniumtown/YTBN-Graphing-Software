@@ -23,8 +23,9 @@ strip = true
 
 [profile.dev]
 debug = true
-opt-level = 2
-lto = false
+opt-level = 0
+lto = true
+strip = false
 
 [dependencies]
 eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }

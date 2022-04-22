@@ -1,5 +1,5 @@
 use crate::consts::*;
-use crate::function::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
+use crate::function_entry::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use eframe::{egui, emath, epi};
 use egui::{
@@ -13,221 +13,6 @@ use std::{io::Read, ops::BitXorAssign, str};
 
 #[cfg(threading)]
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
-
-// Stores data loaded from files
-struct Assets {
-	// Stores `FontDefinitions`
-	pub fonts: FontDefinitions,
-
-	// Help blurbs
-	pub text_help_expr: String,
-	pub text_help_vars: String,
-	pub text_help_panel: String,
-	pub text_help_function: String,
-	pub text_help_other: String,
-	pub text_welcome: String,
-
-	// Explanation of license
-	pub text_license_info: String,
-}
-
-impl Assets {
-	pub fn new(fonts: FontDefinitions, json: JsonFileOutput) -> Self {
-		Self {
-			fonts,
-			text_help_expr: json.help_expr,
-			text_help_vars: json.help_vars,
-			text_help_panel: json.help_panel,
-			text_help_function: json.help_function,
-			text_help_other: json.help_other,
-			text_license_info: json.license_info,
-			text_welcome: json.welcome_text,
-		}
-	}
-
-	#[cfg(test)] // Only used for testing
-	pub fn get_json_file_output(&self) -> JsonFileOutput {
-		JsonFileOutput {
-			help_expr: self.text_help_expr.clone(),
-			help_vars: self.text_help_vars.clone(),
-			help_panel: self.text_help_panel.clone(),
-			help_function: self.text_help_function.clone(),
-			help_other: self.text_help_other.clone(),
-			license_info: self.text_license_info.clone(),
-			welcome_text: self.text_welcome.clone(),
-		}
-	}
-}
-
-lazy_static::lazy_static! {
-	/// Load all of the data from the compressed tarball
-	static ref ASSETS: Assets = {
-		let start = instant::Instant::now();
-
-		tracing::info!("Loading assets...");
-		let mut tar_file_data = Vec::new();
-		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice()).expect("failed to decompress assets").read_to_end(&mut tar_file_data).expect("failed to read assets");
-
-		let mut tar_archive = tar::Archive::new(&*tar_file_data);
-
-		// Stores fonts
-		let mut font_ubuntu_light: Option<FontData> = None;
-		let mut font_notoemoji: Option<FontData> = None;
-		let mut font_hack: Option<FontData> = None;
-		let mut font_emoji_icon: Option<FontData> = None;
-
-		// Stores text
-		let mut text_data: Option<JsonFileOutput> = None;
-
-
-		tracing::info!("Reading assets...");
-		// Iterate through all entries in the tarball
-		for file in tar_archive.entries().unwrap() {
-			let mut file = file.unwrap();
-			let mut data: Vec<u8> = Vec::new();
-			file.read_to_end(&mut data).unwrap();
-			let path = file.header().path().unwrap();
-			let path_string = path.to_string_lossy();
-
-			tracing::debug!("Loading file: {}", path_string);
-
-			// Match the file extention
-			if path_string.ends_with(".ttf") {
-				// Parse font files
-				let font_data = FontData::from_owned(data);
-				match path_string.as_ref() {
-					"Hack-Regular.ttf" => {
-						font_hack = Some(font_data);
-					},
-					"NotoEmoji-Regular.ttf" => {
-						font_notoemoji = Some(font_data);
-					},
-					"Ubuntu-Light.ttf" => {
-						font_ubuntu_light = Some(font_data);
-					},
-					"emoji-icon-font.ttf" => {
-						font_emoji_icon = Some(font_data.tweak(
-							egui::FontTweak {
-								scale: 0.8,            // make it smaller
-								y_offset_factor: 0.07, // move it down slightly
-								y_offset: 0.0,
-							},
-						))
-					}
-					_ => {
-						panic!("Font File {} not expected!", path_string);
-					}
-				}
-			} else if path_string == "text.json" {
-				text_data = Some(SerdeValueHelper::new(str::from_utf8(&data).expect("unable to read text.json")).parse_values());
-			} else {
-				panic!("File {} not expected!", path_string);
-			}
-		}
-
-		tracing::info!("Done loading assets! Took: {:?}", start.elapsed());
-
-		let font_data: BTreeMap<String, FontData> = BTreeMap::from([
-			("Hack".to_owned(), font_hack.expect("Hack -Regular.ttf not found!")),
-			("Ubuntu-Light".to_owned(), font_ubuntu_light.expect("Ubuntu-Light.ttf not found!")),
-			("NotoEmoji-Regular".to_owned(), font_notoemoji.expect("NotoEmoji-Regular.ttf not found!")),
-			("emoji-icon-font".to_owned(), font_emoji_icon.expect("emoji-icon-font.ttf not found!"))
-		]);
-
-		let families = BTreeMap::from([
-			(FontFamily::Monospace,
-				vec![
-					"Hack".to_owned(),
-					"Ubuntu-Light".to_owned(),
-					"NotoEmoji-Regular".to_owned(),
-					"emoji-icon-font".to_owned(),
-
-				]),
-				(FontFamily::Proportional,
-					vec!["Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(),
-					"emoji-icon-font".to_owned()])
-		]);
-
-		let fonts = FontDefinitions {
-			font_data,
-			families,
-		};
-
-
-		// Create and return Assets struct
-		Assets::new(
-			fonts, text_data.expect("text.json not found!"))
-	};
-}
-
-/// Tests to make sure archived (and compressed) assets match expected data
-#[test]
-fn test_file_data() {
-	let font_data: BTreeMap<String, FontData> = BTreeMap::from([
-		(
-			"Hack".to_owned(),
-			FontData::from_owned(include_bytes!("../assets/Hack-Regular.ttf").to_vec()),
-		),
-		(
-			"Ubuntu-Light".to_owned(),
-			FontData::from_owned(include_bytes!("../assets/Ubuntu-Light.ttf").to_vec()),
-		),
-		(
-			"NotoEmoji-Regular".to_owned(),
-			FontData::from_owned(include_bytes!("../assets/NotoEmoji-Regular.ttf").to_vec()),
-		),
-		(
-			"emoji-icon-font".to_owned(),
-			FontData::from_owned(include_bytes!("../assets/emoji-icon-font.ttf").to_vec()).tweak(
-				egui::FontTweak {
-					scale: 0.8,
-					y_offset_factor: 0.07,
-					y_offset: 0.0,
-				},
-			),
-		),
-	]);
-
-	let families = BTreeMap::from([
-		(
-			FontFamily::Monospace,
-			vec![
-				"Hack".to_owned(),
-				"Ubuntu-Light".to_owned(),
-				"NotoEmoji-Regular".to_owned(),
-				"emoji-icon-font".to_owned(),
-			],
-		),
-		(
-			FontFamily::Proportional,
-			vec![
-				"Ubuntu-Light".to_owned(),
-				"NotoEmoji-Regular".to_owned(),
-				"emoji-icon-font".to_owned(),
-			],
-		),
-	]);
-
-	let fonts = FontDefinitions {
-		font_data,
-		families,
-	};
-
-	assert_eq!(ASSETS.fonts, fonts);
-
-	let json_data: SerdeValueHelper = SerdeValueHelper::new(include_str!("../assets/text.json"));
-
-	let asset_json = ASSETS.get_json_file_output();
-	let json_data_parsed = json_data.parse_values();
-
-	assert_eq!(asset_json, json_data_parsed);
-
-	// NOTE: UPDATE THIS STRING IF `license_info` IN `text.json` IS MODIFIED
-	let target_license_info = "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.";
-
-	assert_eq!(target_license_info, asset_json.license_info);
-	assert_eq!(target_license_info, json_data_parsed.license_info);
-}
 
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
@@ -325,20 +110,10 @@ pub struct MathApp {
 	/// Stores opened windows/elements for later reference
 	opened: Opened,
 
+	text: JsonFileOutput,
+
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
-}
-
-impl Default for MathApp {
-	fn default() -> Self {
-		Self {
-			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
-			last_info: (vec![None], Duration::ZERO),
-			dark_mode: true,
-			opened: Opened::default(),
-			settings: AppSettings::default(),
-		}
-	}
 }
 
 impl MathApp {
@@ -361,8 +136,128 @@ impl MathApp {
 			tracing::info!("Web Info: {:?}", web_info);
 		}
 
+		let start = instant::Instant::now();
+
+		tracing::info!("Loading assets...");
+		let mut tar_file_data = Vec::new();
+		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice())
+			.expect("failed to decompress assets")
+			.read_to_end(&mut tar_file_data)
+			.expect("failed to read assets");
+
+		let mut tar_archive = tar::Archive::new(&*tar_file_data);
+
+		// Stores fonts
+		let mut font_ubuntu_light: Option<FontData> = None;
+		let mut font_notoemoji: Option<FontData> = None;
+		let mut font_hack: Option<FontData> = None;
+		let mut font_emoji_icon: Option<FontData> = None;
+
+		// Stores text
+		let mut text_data: Option<JsonFileOutput> = None;
+
+		tracing::info!("Reading assets...");
+		// Iterate through all entries in the tarball
+		for file in tar_archive.entries().unwrap() {
+			let mut file = file.unwrap();
+			let mut data: Vec<u8> = Vec::new();
+			file.read_to_end(&mut data).unwrap();
+			let path = file.header().path().unwrap();
+			let path_string = path.to_string_lossy();
+
+			tracing::debug!("Loading file: {}", path_string);
+
+			// Match the file extention
+			if path_string.ends_with(".ttf") {
+				// Parse font files
+				let font_data = FontData::from_owned(data);
+				match path_string.as_ref() {
+					"Hack-Regular.ttf" => {
+						font_hack = Some(font_data);
+					}
+					"NotoEmoji-Regular.ttf" => {
+						font_notoemoji = Some(font_data);
+					}
+					"Ubuntu-Light.ttf" => {
+						font_ubuntu_light = Some(font_data);
+					}
+					"emoji-icon-font.ttf" => {
+						font_emoji_icon = Some(font_data.tweak(egui::FontTweak {
+							scale: 0.8,            // make it smaller
+							y_offset_factor: 0.07, // move it down slightly
+							y_offset: 0.0,
+						}))
+					}
+					_ => {
+						panic!("Font File {} not expected!", path_string);
+					}
+				}
+			} else if path_string == "text.json" {
+				text_data = Some(
+					SerdeValueHelper::new(str::from_utf8(&data).expect("unable to read text.json"))
+						.parse_values(),
+				);
+			} else {
+				panic!("File {} not expected!", path_string);
+			}
+		}
+
+		let fonts = FontDefinitions {
+			font_data: BTreeMap::from([
+				(
+					"Hack".to_owned(),
+					font_hack.expect("Hack -Regular.ttf not found!"),
+				),
+				(
+					"Ubuntu-Light".to_owned(),
+					font_ubuntu_light.expect("Ubuntu-Light.ttf not found!"),
+				),
+				(
+					"NotoEmoji-Regular".to_owned(),
+					font_notoemoji.expect("NotoEmoji-Regular.ttf not found!"),
+				),
+				(
+					"emoji-icon-font".to_owned(),
+					font_emoji_icon.expect("emoji-icon-font.ttf not found!"),
+				),
+			]),
+			families: BTreeMap::from([
+				(
+					FontFamily::Monospace,
+					vec![
+						"Hack".to_owned(),
+						"Ubuntu-Light".to_owned(),
+						"NotoEmoji-Regular".to_owned(),
+						"emoji-icon-font".to_owned(),
+					],
+				),
+				(
+					FontFamily::Proportional,
+					vec![
+						"Ubuntu-Light".to_owned(),
+						"NotoEmoji-Regular".to_owned(),
+						"emoji-icon-font".to_owned(),
+					],
+				),
+			]),
+		};
+
+		tracing::info!("Done loading assets! Took: {:?}", start.elapsed());
+
+		// Initialize fonts
+		// this used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
+		cc.egui_ctx.set_fonts(fonts);
+
 		tracing::info!("egui app initialized.");
-		Self::default() // initialize `MathApp`
+
+		Self {
+			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
+			last_info: (vec![None], Duration::ZERO),
+			dark_mode: true,
+			text: text_data.expect("text.json failed to load"),
+			opened: Opened::default(),
+			settings: AppSettings::default(),
+		}
 	}
 
 	/// Creates SidePanel which contains configuration options
@@ -477,7 +372,7 @@ impl MathApp {
 					ui.label(
 						RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
 					)
-					.on_hover_text(&ASSETS.text_license_info);
+					.on_hover_text(&self.text.license_info);
 
 					// Hyperlink to project's github
 					ui.hyperlink_to(
@@ -508,9 +403,6 @@ impl epi::App for MathApp {
 				.side_panel
 				.bitxor_assign(ctx.input_mut().consume_key(egui::Modifiers::NONE, Key::H));
 		}
-
-		// Initialize fonts
-		ctx.set_fonts(ASSETS.fonts.clone());
 
 		// Creates Top bar that contains some general options
 		TopBottomPanel::top("top_bar").show(ctx, |ui| {
@@ -589,23 +481,23 @@ impl epi::App for MathApp {
 				ui.heading("Help With...");
 
 				ui.collapsing("Supported Expressions", |ui| {
-					ui.label(&ASSETS.text_help_expr);
+					ui.label(&self.text.help_expr);
 				});
 
 				ui.collapsing("Supported Constants", |ui| {
-					ui.label(&ASSETS.text_help_vars);
+					ui.label(&self.text.help_vars);
 				});
 
 				ui.collapsing("Panel", |ui| {
-					ui.label(&ASSETS.text_help_panel);
+					ui.label(&self.text.help_panel);
 				});
 
 				ui.collapsing("Functions", |ui| {
-					ui.label(&ASSETS.text_help_function);
+					ui.label(&self.text.help_function);
 				});
 
 				ui.collapsing("Other", |ui| {
-					ui.label(&ASSETS.text_help_other);
+					ui.label(&self.text.help_other);
 				});
 			});
 
@@ -616,7 +508,7 @@ impl epi::App for MathApp {
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
-				ui.label(&*ASSETS.text_welcome);
+				ui.label(&self.text.welcome);
 			});
 
 		// Window with information about the build and current commit
