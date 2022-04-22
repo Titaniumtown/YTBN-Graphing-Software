@@ -23,7 +23,7 @@ jobs:
           command: check
 
   parsing_test:
-    name: Parsing Crate Tests
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
