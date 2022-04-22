@@ -1,11 +1,14 @@
 use crate::consts::*;
 use crate::function_entry::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
+use egui::style::Margin;
+use egui::Frame;
 use egui::{
 	plot::Plot, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions,
 	FontFamily, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use emath::Align2;
+use epaint::Rounding;
 use instant::Duration;
 use std::collections::BTreeMap;
 use std::{io::Read, ops::BitXorAssign, str};
@@ -531,7 +534,13 @@ impl epi::App for MathApp {
 		// Central panel which contains the central plot (or an error created when
 		// parsing)
 		CentralPanel::default()
-			.frame(egui::Frame::none())
+			.frame(Frame {
+				inner_margin: Margin::symmetric(0.0, 0.0),
+				rounding: Rounding::none(),
+				fill: ctx.style().visuals.window_fill(),
+				stroke: Default::default(),
+				..Default::default()
+			})
 			.show(ctx, |ui| {
 				// Display an error if it exists
 				let errors_formatted: String = self
