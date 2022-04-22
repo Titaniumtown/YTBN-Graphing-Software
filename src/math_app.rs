@@ -531,64 +531,70 @@ impl epi::App for MathApp {
 
 		// Central panel which contains the central plot (or an error created when
 		// parsing)
-		CentralPanel::default().show(ctx, |ui| {
-			// Display an error if it exists
-			let errors_formatted: String = self
-				.functions
-				.iter()
-				.map(|func| func.get_test_result())
-				.enumerate()
-				.filter(|(_, error)| error.is_some())
-				.map(|(i, error)| {
-					// use unwrap_unchecked as None Errors are already filtered out
-					unsafe { format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked()) }
-				})
-				.collect::<String>();
+		CentralPanel::default()
+			.frame(egui::Frame::none())
+			.show(ctx, |ui| {
+				// Display an error if it exists
+				let errors_formatted: String = self
+					.functions
+					.iter()
+					.map(|func| func.get_test_result())
+					.enumerate()
+					.filter(|(_, error)| error.is_some())
+					.map(|(i, error)| {
+						// use unwrap_unchecked as None Errors are already filtered out
+						unsafe {
+							format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked())
+						}
+					})
+					.collect::<String>();
 
-			if !errors_formatted.is_empty() {
-				ui.centered_and_justified(|ui| {
-					ui.heading(errors_formatted);
-				});
-				return;
-			}
+				if !errors_formatted.is_empty() {
+					ui.centered_and_justified(|ui| {
+						ui.heading(errors_formatted);
+					});
+					return;
+				}
 
-			let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
-			let width_changed = available_width != self.settings.plot_width;
+				let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
+				let width_changed = available_width != self.settings.plot_width;
 
-			if width_changed {
-				self.settings.plot_width = available_width;
-			}
+				if width_changed {
+					self.settings.plot_width = available_width;
+				}
 
-			// Create and setup plot
-			Plot::new("plot")
-				.set_margin_fraction(Vec2::ZERO)
-				.data_aspect(1.0)
-				.include_y(0)
-				.legend(egui::plot::Legend::default())
-				.show(ui, |plot_ui| {
-					let bounds = plot_ui.plot_bounds();
-					let minx_bounds: f64 = bounds.min()[0];
-					let maxx_bounds: f64 = bounds.max()[0];
+				// Create and setup plot
+				Plot::new("plot")
+					.set_margin_fraction(Vec2::ZERO)
+					.data_aspect(1.0)
+					.include_y(0)
+					.legend(egui::plot::Legend::default())
+					.show(ui, |plot_ui| {
+						let bounds = plot_ui.plot_bounds();
+						let minx_bounds: f64 = bounds.min()[0];
+						let maxx_bounds: f64 = bounds.max()[0];
 
-					dyn_mut_iter(&mut self.functions)
-						.enumerate()
-						.for_each(|(_, function)| {
-							function.calculate(
-								&minx_bounds,
-								&maxx_bounds,
-								width_changed,
-								&self.settings,
-							)
-						});
+						dyn_mut_iter(&mut self.functions)
+							.enumerate()
+							.for_each(|(_, function)| {
+								function.calculate(
+									&minx_bounds,
+									&maxx_bounds,
+									width_changed,
+									&self.settings,
+								)
+							});
 
-					area_list = self
-						.functions
-						.iter()
-						.enumerate()
-						.map(|(i, function)| function.display(plot_ui, &self.settings, COLORS[i]))
-						.collect();
-				});
-		});
+						area_list = self
+							.functions
+							.iter()
+							.enumerate()
+							.map(|(i, function)| {
+								function.display(plot_ui, &self.settings, COLORS[i])
+							})
+							.collect();
+					});
+			});
 		// Store list of functions' areas along with the time it took to process.
 		self.last_info = (area_list, start.elapsed());
 	}
