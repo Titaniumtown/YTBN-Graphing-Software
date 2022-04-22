@@ -122,6 +122,8 @@ impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of [`MathApp`] and return it
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+		let start = instant::Instant::now();
+
 		// Remove loading indicator on wasm
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
@@ -137,8 +139,6 @@ impl MathApp {
 		if let Some(web_info) = &cc.integration_info.web_info {
 			tracing::info!("Web Info: {:?}", web_info);
 		}
-
-		let start = instant::Instant::now();
 
 		tracing::info!("Loading assets...");
 		let mut tar_file_data = Vec::new();
@@ -244,13 +244,11 @@ impl MathApp {
 			]),
 		};
 
-		tracing::info!("Done loading assets! Took: {:?}", start.elapsed());
-
 		// Initialize fonts
 		// this used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
 		cc.egui_ctx.set_fonts(fonts);
 
-		tracing::info!("egui app initialized.");
+		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
 		Self {
 			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
