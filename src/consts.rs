@@ -2,7 +2,7 @@ use crate::function_entry::Riemann;
 use std::ops::RangeInclusive;
 
 use const_format::formatc;
-use eframe::epaint::Color32;
+use epaint::Color32;
 use shadow_rs::shadow;
 shadow!(build);
 

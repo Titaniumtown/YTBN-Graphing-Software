@@ -1,6 +1,4 @@
 use crate::function_handling::suggestions::{self, generate_hint, Hint};
-
-use eframe::{egui, epaint};
 use egui::{text::CCursor, text_edit::CursorRange, TextEdit};
 use epaint::text::cursor::{Cursor, PCursor, RCursor};
 

@@ -29,6 +29,11 @@ strip = false
 
 [dependencies]
 eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+epi = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+emath = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+
 shadow-rs = { version = "0.11.0", default-features = false }
 const_format = { version = "0.2.22", default-features = false, features = [
     "fmt",

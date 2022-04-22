@@ -5,7 +5,6 @@ use crate::function_handling::suggestions::Hint;
 use crate::math_app::AppSettings;
 use crate::misc::*;
 use crate::widgets::{widgets_ontop, AutoComplete, Movement};
-use eframe::{egui, emath, epaint};
 use egui::{
 	plot::{BarChart, PlotUi, Value},
 	widgets::plot::Bar,
