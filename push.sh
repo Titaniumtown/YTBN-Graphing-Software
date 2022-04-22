@@ -3,7 +3,7 @@ set -e #kill script if error occurs
 
 cargo test-all-features
 
-bash build.sh
+bash build.sh release
 
 echo "rsyncing"
 #rsync -av --delete --info=progress2 tmp/ rpi-public:/mnt/hdd/http_share/integral-demo/

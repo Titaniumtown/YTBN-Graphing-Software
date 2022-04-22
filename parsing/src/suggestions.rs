@@ -4,6 +4,7 @@ pub const HINT_EMPTY: Hint = Hint::Single("x^2");
 const HINT_CLOSED_PARENS: Hint = Hint::Single(")");
 
 /// Only enacts println if cfg(test) is enabled
+#[allow(unused_macros)]
 macro_rules! test_print {
     ($($arg:tt)*) => {
 		#[cfg(test)]
@@ -11,6 +12,36 @@ macro_rules! test_print {
     };
 }
 
+pub fn split_function(input: &str) -> Vec<String> {
+	split_function_chars(&input.chars().collect::<Vec<char>>())
+}
+
+fn split_function_chars(chars: &[char]) -> Vec<String> {
+	assert!(!chars.is_empty());
+
+	let mut split: Vec<String> = Vec::new();
+
+	let mut buffer: Vec<char> = Vec::new();
+	for c in chars {
+		buffer.push(*c);
+		if *c == ')' {
+			split.push(buffer.iter().collect::<String>());
+			buffer.clear();
+			continue;
+		}
+
+		let buffer_string = buffer.iter().collect::<String>();
+
+		if ((&buffer_string == "log") | (&buffer_string == "log1")) && is_number(&c) {
+			continue;
+		}
+	}
+
+	if !buffer.is_empty() {
+		split.push(buffer.iter().collect::<String>());
+	}
+	split
+}
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
 pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
@@ -32,38 +63,9 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 		return &HINT_CLOSED_PARENS;
 	}
 
-	// let len = chars.len();
-
-
-	let mut split: Vec<String> = Vec::new();
-
-	let mut buffer: Vec<char> = Vec::new();
-	for c in chars {
-		buffer.push(c);
-		if c == ')' {
-			split.push(buffer.iter().collect::<String>());
-			buffer.clear();
-			continue;
-		}
-
-		let buffer_string = buffer.iter().collect::<String>();
-
-		if ((&buffer_string == "log") | (&buffer_string == "log1")) && is_number(&c) {
-			continue;
-		}
-	}
-
-	if !buffer.is_empty() {
-		split.push(buffer.iter().collect::<String>());
-	}
-
-	test_print!("split: {:?}", split);
-
-	if split.is_empty() {
-		return COMPLETION_HASHMAP.get(input).unwrap_or(&Hint::None);
-	}
-
-	COMPLETION_HASHMAP.get(& unsafe {split.last().unwrap_unchecked()}.as_str()).unwrap_or(&Hint::None)
+	COMPLETION_HASHMAP
+		.get(&unsafe { split_function_chars(&chars).last().unwrap_unchecked() }.as_str())
+		.unwrap_or(&Hint::None)
 }
 
 #[derive(PartialEq)]
@@ -113,7 +115,7 @@ mod tests {
 
 	/// Tests to make sure hints are properly outputed based on input
 	#[test]
-	fn hint_test() {
+	fn hints() {
 		let values = HashMap::from([
 			("", Hint::Single("x^2")),
 			("si", Hint::Many(&["n(", "nh(", "gnum("])),
@@ -132,7 +134,7 @@ mod tests {
 	}
 
 	#[test]
-	fn hint_to_string_test() {
+	fn hint_to_string() {
 		let values = HashMap::from([
 			("x^2", Hint::Single("x^2")),
 			(
@@ -149,7 +151,7 @@ mod tests {
 	}
 
 	#[test]
-	fn invalid_function_test() {
+	fn invalid_function() {
 		SUPPORTED_FUNCTIONS
 			.iter()
 			.map(|func1| {
@@ -168,5 +170,19 @@ mod tests {
 					panic!("failed: {}", key);
 				}
 			});
+	}
+
+	#[test]
+	fn split_function() {
+		let values = HashMap::from([
+			("cos(x)", vec!["cos(x)"]),
+			("cos(", vec!["cos("]),
+			("cos(x)sin(x)", vec!["cos(x)", "sin(x)"]),
+			("aaaaaaaaaaa", vec!["aaaaaaaaaaa"]),
+		]);
+
+		for (key, value) in values {
+			assert_eq!(super::split_function(key), value);
+		}
 	}
 }

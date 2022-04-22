@@ -9,7 +9,6 @@ const SUPPORTED_FUNCTIONS: [&str; 22] = [
 ];
 
 fn main() {
-	println!("cargo:rerun-if-changed=.git/logs/HEAD");
 	println!("cargo:rerun-if-changed=src/*");
 
 	generate_hashmap();

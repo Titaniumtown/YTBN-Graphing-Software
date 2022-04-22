@@ -12,6 +12,18 @@ crate-type = ["cdylib"]
 [features]
 threading = ["async-lock", "rayon"]
 
+[profile.release]
+debug = false
+codegen-units = 1
+opt-level = "z"   #optimize for size
+lto = true
+strip = true
+
+[profile.dev]
+debug = true
+opt-level = 0
+lto = true
+strip = false
 
 [dependencies]
 parsing = { path = "./parsing" }
