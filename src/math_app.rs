@@ -30,6 +30,14 @@ cfg_if::cfg_if! {
 			// Remove the element
 			loading_element.remove();
 		}
+
+		fn is_mobile() -> Option<bool> {
+			const MOBILE_DEVICE: [&str; 6] = ["Android", "iPhone", "iPad", "iPod", "webOS", "BlackBerry"];
+
+			let user_agent = web_sys::window()?.navigator().user_agent().ok()?;
+			Some(MOBILE_DEVICE.iter().any(|&name| user_agent.contains(name)))
+		}
+
 	}
 }
 
@@ -60,6 +68,8 @@ pub struct AppSettings {
 
 	/// Stores current plot pixel width
 	pub plot_width: usize,
+
+	pub is_mobile: bool,
 }
 
 impl Default for AppSettings {
@@ -75,6 +85,7 @@ impl Default for AppSettings {
 			do_extrema: true,
 			do_roots: true,
 			plot_width: 0,
+			is_mobile: false,
 		}
 	}
 }
@@ -124,9 +135,18 @@ impl MathApp {
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
 		let start = instant::Instant::now();
 
+		#[allow(unused_mut)]
+		#[allow(unused_assignments)]
+		let mut mobile = false;
+
 		// Remove loading indicator on wasm
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
+
+		#[cfg(target_arch = "wasm32")]
+		{
+			mobile = is_mobile().unwrap_or_default();
+		}
 
 		#[cfg(threading)]
 		tracing::info!("Threading: Enabled");
@@ -256,7 +276,10 @@ impl MathApp {
 			dark_mode: true,
 			text: text_data.expect("text.json failed to load"),
 			opened: Opened::default(),
-			settings: AppSettings::default(),
+			settings: AppSettings {
+				is_mobile: mobile,
+				..AppSettings::default()
+			},
 		}
 	}
 
@@ -362,7 +385,7 @@ impl MathApp {
 				let mut remove_i: Option<usize> = None;
 				for (i, function) in self.functions.iter_mut().enumerate() {
 					// Entry for a function
-					if function.function_entry(ui, can_remove, i) {
+					if function.function_entry(ui, can_remove, i, self.settings.is_mobile) {
 						remove_i = Some(i);
 					}
 

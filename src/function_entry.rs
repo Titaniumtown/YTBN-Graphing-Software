@@ -101,7 +101,9 @@ impl Default for FunctionEntry {
 impl FunctionEntry {
 	/// Creates edit box for [`FunctionEntry`] to edit function settings and string.
 	/// Returns whether or not this function was marked for removal.
-	pub fn function_entry(&mut self, ui: &mut egui::Ui, can_remove: bool, i: usize) -> bool {
+	pub fn function_entry(
+		&mut self, ui: &mut egui::Ui, can_remove: bool, i: usize, mobile: bool,
+	) -> bool {
 		let output_string = self.autocomplete.string.clone();
 		self.update_string(&output_string);
 
@@ -727,6 +729,7 @@ mod tests {
 			do_extrema: false,
 			do_roots: false,
 			plot_width: pixel_width,
+			is_mobile: false,
 		}
 	}
 
