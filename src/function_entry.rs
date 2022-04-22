@@ -116,20 +116,14 @@ impl FunctionEntry {
 
 		// target size of text edit box
 		let target_size = vec2(ui.available_width(), {
-			// need to get whether or not the text box has focus so it can be used to get the animated bool value
-			let had_focus = ui.ctx().memory().has_focus(te_id);
-
 			// get the animated bool that stores how "in focus" the text box is
-			let gotten_focus_value = ui.ctx().animate_bool(te_id, had_focus);
-
-			// multiplier for row_width
-			let multiplier = if gotten_focus_value == 1.0 {
-				2.5
-			} else {
-				1.0 + (gotten_focus_value * 1.5)
+			let gotten_focus_value = {
+				let ctx = ui.ctx();
+				let had_focus = ctx.memory().has_focus(te_id);
+				ctx.animate_bool(te_id, had_focus)
 			};
 
-			row_height * multiplier
+			row_height * (1.0 + (gotten_focus_value * 1.5))
 		});
 
 		let re = ui.add_sized(
