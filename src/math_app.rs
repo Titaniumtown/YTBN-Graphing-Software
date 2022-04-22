@@ -271,21 +271,30 @@ impl MathApp {
 			.show(ctx, |ui| {
 				let prev_sum = self.settings.riemann_sum;
 				// ComboBox for selecting what Riemann sum type to use
-				ComboBox::from_label("Riemann Sum Type")
-					.selected_text(self.settings.riemann_sum.to_string())
-					.show_ui(ui, |ui| {
-						ui.selectable_value(&mut self.settings.riemann_sum, Riemann::Left, "Left");
-						ui.selectable_value(
-							&mut self.settings.riemann_sum,
-							Riemann::Middle,
-							"Middle",
-						);
-						ui.selectable_value(
-							&mut self.settings.riemann_sum,
-							Riemann::Right,
-							"Right",
-						);
-					});
+				ui.add_enabled_ui(
+					self.functions.iter().filter(|func| func.integral).count() > 0,
+					|ui| {
+						ComboBox::from_label("Riemann Sum")
+							.selected_text(self.settings.riemann_sum.to_string())
+							.show_ui(ui, |ui| {
+								ui.selectable_value(
+									&mut self.settings.riemann_sum,
+									Riemann::Left,
+									"Left",
+								);
+								ui.selectable_value(
+									&mut self.settings.riemann_sum,
+									Riemann::Middle,
+									"Middle",
+								);
+								ui.selectable_value(
+									&mut self.settings.riemann_sum,
+									Riemann::Right,
+									"Right",
+								);
+							});
+					},
+				);
 
 				let riemann_changed = prev_sum != self.settings.riemann_sum;
 
