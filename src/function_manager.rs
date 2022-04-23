@@ -70,30 +70,31 @@ impl Manager {
 			);
 
 			// if not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			let should_remove = if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
-				false
-			} else {
-				function.autocomplete.update_string(&new_string);
+			if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
+				continue;
+			}
 
-				if !function.autocomplete.hint.is_none() {
-					if !is_mobile() && !function.autocomplete.hint.is_single() {
-						if ui.input().key_pressed(Key::ArrowDown) {
-							movement = Movement::Down;
-						} else if ui.input().key_pressed(Key::ArrowUp) {
-							movement = Movement::Up;
-						}
+			function.autocomplete.update_string(&new_string);
+
+			if !function.autocomplete.hint.is_none() {
+				if !is_mobile() && !function.autocomplete.hint.is_single() {
+					if ui.input().key_pressed(Key::ArrowDown) {
+						movement = Movement::Down;
+					} else if ui.input().key_pressed(Key::ArrowUp) {
+						movement = Movement::Up;
 					}
+				}
 
-					// Put here so these key presses don't interact with other elements
-					let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-					let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
-					if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
-						movement = Movement::Complete;
-					}
+				// Put here so these key presses don't interact with other elements
+				let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
+				let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
+				if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
+					movement = Movement::Complete;
+				}
 
-					function.autocomplete.register_movement(&movement);
+				function.autocomplete.register_movement(&movement);
 
-					if movement != Movement::Complete && let Hint::Many(hints) = function.autocomplete.hint {
+				if movement != Movement::Complete && let Hint::Many(hints) = function.autocomplete.hint {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
                     let popup_id = ui.make_persistent_id("autocomplete_popup");
 
@@ -120,73 +121,67 @@ impl Manager {
                     }
                 }
 
-					// Push cursor to end if needed
-					if movement == Movement::Complete {
-						move_cursor_to_end(ui.ctx(), te_id);
-					}
+				// Push cursor to end if needed
+				if movement == Movement::Complete {
+					move_cursor_to_end(ui.ctx(), te_id);
 				}
-
-				/// Function that creates button that's used with the `button_area`
-				fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
-					Button::new(text.into()).frame(false)
-				}
-
-				// returned at the end of this function to indicate whether or not this function should be removed from where it's stored
-				let mut should_remove_selected: bool = false;
-
-				/// the y offset multiplier of the `buttons_area` area
-				const BUTTONS_Y_OFFSET: f32 = 1.32;
-
-				widgets_ontop(
-					ui,
-					format!("buttons_area_{}", i),
-					&re,
-					row_height * BUTTONS_Y_OFFSET,
-					|ui| {
-						ui.horizontal(|ui| {
-							// There's more than 1 function! Functions can now be deleted
-							should_remove_selected = ui
-								.add_enabled(can_remove, button_area_button("✖"))
-								.on_hover_text("Delete Function")
-								.clicked();
-
-							// Toggle integral being enabled or not
-							function.integral.bitxor_assign(
-								ui.add(button_area_button("∫"))
-									.on_hover_text(match function.integral {
-										true => "Don't integrate",
-										false => "Integrate",
-									})
-									.clicked(),
-							);
-
-							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-							function.derivative.bitxor_assign(
-								ui.add(button_area_button("d/dx"))
-									.on_hover_text(match function.derivative {
-										true => "Don't Differentiate",
-										false => "Differentiate",
-									})
-									.clicked(),
-							);
-
-							function.settings_opened.bitxor_assign(
-								ui.add(button_area_button("⚙"))
-									.on_hover_text(match function.settings_opened {
-										true => "Close Settings",
-										false => "Open Settings",
-									})
-									.clicked(),
-							);
-						});
-					},
-				);
-				should_remove_selected
-			};
-
-			if should_remove {
-				remove_i = Some(i);
 			}
+
+			/// Function that creates button that's used with the `button_area`
+			fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
+				Button::new(text.into()).frame(false)
+			}
+
+			/// the y offset multiplier of the `buttons_area` area
+			const BUTTONS_Y_OFFSET: f32 = 1.32;
+
+			widgets_ontop(
+				ui,
+				format!("buttons_area_{}", i),
+				&re,
+				row_height * BUTTONS_Y_OFFSET,
+				|ui| {
+					ui.horizontal(|ui| {
+						// There's more than 1 function! Functions can now be deleted
+						if ui
+							.add_enabled(can_remove, button_area_button("✖"))
+							.on_hover_text("Delete Function")
+							.clicked()
+						{
+							remove_i = Some(i);
+						}
+
+						// Toggle integral being enabled or not
+						function.integral.bitxor_assign(
+							ui.add(button_area_button("∫"))
+								.on_hover_text(match function.integral {
+									true => "Don't integrate",
+									false => "Integrate",
+								})
+								.clicked(),
+						);
+
+						// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
+						function.derivative.bitxor_assign(
+							ui.add(button_area_button("d/dx"))
+								.on_hover_text(match function.derivative {
+									true => "Don't Differentiate",
+									false => "Differentiate",
+								})
+								.clicked(),
+						);
+
+						function.settings_opened.bitxor_assign(
+							ui.add(button_area_button("⚙"))
+								.on_hover_text(match function.settings_opened {
+									true => "Close Settings",
+									false => "Open Settings",
+								})
+								.clicked(),
+						);
+					});
+				},
+			);
 
 			function.settings_window(ui.ctx());
 		}
