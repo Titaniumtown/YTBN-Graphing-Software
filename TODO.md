@@ -5,6 +5,7 @@
 	- Sort by UUIDs
 	- [Drag and drop support](https://github.com/emilk/egui/discussions/1530) in the UI
 	- Hide/disable functions
+	- Prevent user from making too many function entries
 2. Smart display of graph
 	- Display of intersections between functions
 3. Allow constants in min/max integral input (like pi or euler's number)

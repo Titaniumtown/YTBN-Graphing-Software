@@ -1,22 +1,16 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
-use crate::consts::IS_MOBILE;
 use crate::math_app::AppSettings;
 use crate::misc::*;
-use crate::widgets::{widgets_ontop, AutoComplete, Movement};
+use crate::widgets::AutoComplete;
 use egui::{
 	plot::{BarChart, PlotUi, Value},
 	widgets::plot::Bar,
-	Button, Checkbox, Context, Key, Modifiers,
+	Checkbox, Context,
 };
-use emath::vec2;
 use epaint::Color32;
-use parsing::{
-	parsing::{process_func_str, BackingFunction},
-	suggestions::Hint,
-};
+use parsing::parsing::{process_func_str, BackingFunction};
 use std::fmt::{self, Debug};
-use std::ops::BitXorAssign;
 
 #[cfg(threading)]
 use rayon::iter::ParallelIterator;
@@ -66,7 +60,7 @@ pub struct FunctionEntry {
 	root_data: Vec<Value>,
 	nth_derivative_data: Option<Vec<Value>>,
 
-	autocomplete: AutoComplete<'static>,
+	pub autocomplete: AutoComplete<'static>,
 
 	test_result: Option<String>,
 	curr_nth: usize,
@@ -100,168 +94,6 @@ impl Default for FunctionEntry {
 }
 
 impl FunctionEntry {
-	/// Creates edit box for [`FunctionEntry`] to edit function settings and string.
-	/// Returns whether or not this function was marked for removal.
-	pub fn function_entry(&mut self, ui: &mut egui::Ui, can_remove: bool, i: usize) -> bool {
-		let output_string = self.autocomplete.string.clone();
-		self.update_string(&output_string);
-
-		let mut movement: Movement = Movement::default();
-
-		let mut new_string = self.autocomplete.string.clone();
-
-		let te_id = ui.make_persistent_id(format!("text_edit_ac_{}", i));
-
-		// TODO: cache this
-		let row_height = ui
-			.fonts()
-			.row_height(&egui::FontSelection::default().resolve(ui.style()));
-
-		// target size of text edit box
-		let target_size = vec2(ui.available_width(), {
-			// get the animated bool that stores how "in focus" the text box is
-			let gotten_focus_value = {
-				let ctx = ui.ctx();
-				let had_focus = ctx.memory().has_focus(te_id);
-				ctx.animate_bool(te_id, had_focus)
-			};
-
-			row_height * (1.0 + (gotten_focus_value * 1.5))
-		});
-
-		let re = ui.add_sized(
-			target_size,
-			egui::TextEdit::singleline(&mut new_string)
-				.hint_forward(true) // Make the hint appear after the last text in the textbox
-				.lock_focus(true)
-				.id(te_id) // set widget's id to `te_id`
-				.hint_text({
-					// if there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
-					if let Hint::Single(single_hint) = self.autocomplete.hint {
-						*single_hint
-					} else {
-						""
-					}
-				}),
-		);
-
-		// if not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-		if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
-			return false;
-		}
-
-		self.autocomplete.update_string(&new_string);
-
-		if !self.autocomplete.hint.is_none() {
-			if !IS_MOBILE && !self.autocomplete.hint.is_single() {
-				if ui.input().key_pressed(Key::ArrowDown) {
-					movement = Movement::Down;
-				} else if ui.input().key_pressed(Key::ArrowUp) {
-					movement = Movement::Up;
-				}
-			}
-
-			// Put here so these key presses don't interact with other elements
-			let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-			let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
-			if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
-				movement = Movement::Complete;
-			}
-
-			self.autocomplete.register_movement(&movement);
-
-			if movement != Movement::Complete && let Hint::Many(hints) = self.autocomplete.hint {
-				// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
-				let popup_id = ui.make_persistent_id("autocomplete_popup");
-
-				let mut clicked = false;
-
-				egui::popup_below_widget(ui, popup_id, &re, |ui| {
-					hints.iter().enumerate().for_each(|(i, candidate)| {
-						if ui.selectable_label(i == self.autocomplete.i, *candidate).clicked() {
-							clicked = true;
-							self.autocomplete.i = i;
-						}
-					});
-				});
-
-				if clicked {
-					self.autocomplete.apply_hint(hints[self.autocomplete.i]);
-
-					// don't need this here as it simply won't be display next frame
-					// ui.memory().close_popup();
-
-					movement = Movement::Complete;
-				} else {
-					ui.memory().open_popup(popup_id);
-				}
-			}
-
-			// Push cursor to end if needed
-			if movement == Movement::Complete {
-				crate::widgets::move_cursor_to_end(ui.ctx(), te_id);
-			}
-		}
-
-		/// Function that creates button that's used with the `button_area`
-		fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
-			Button::new(text.into()).frame(false)
-		}
-
-		// returned at the end of this function to indicate whether or not this function should be removed from where it's stored
-		let mut should_remove: bool = false;
-
-		/// the y offset multiplier of the `buttons_area` area
-		const BUTTONS_Y_OFFSET: f32 = 1.32;
-
-		widgets_ontop(
-			ui,
-			format!("buttons_area_{}", i),
-			&re,
-			row_height * BUTTONS_Y_OFFSET,
-			|ui| {
-				ui.horizontal(|ui| {
-					// There's more than 1 function! Functions can now be deleted
-					should_remove = ui
-						.add_enabled(can_remove, button_area_button("✖"))
-						.on_hover_text("Delete Function")
-						.clicked();
-
-					// Toggle integral being enabled or not
-					self.integral.bitxor_assign(
-						ui.add(button_area_button("∫"))
-							.on_hover_text(match self.integral {
-								true => "Don't integrate",
-								false => "Integrate",
-							})
-							.clicked(),
-					);
-
-					// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-					self.derivative.bitxor_assign(
-						ui.add(button_area_button("d/dx"))
-							.on_hover_text(match self.derivative {
-								true => "Don't Differentiate",
-								false => "Differentiate",
-							})
-							.clicked(),
-					);
-
-					self.settings_opened.bitxor_assign(
-						ui.add(button_area_button("⚙"))
-							.on_hover_text(match self.settings_opened {
-								true => "Close Settings",
-								false => "Open Settings",
-							})
-							.clicked(),
-					);
-				});
-			},
-		);
-
-		should_remove
-	}
-
 	pub fn settings_window(&mut self, ctx: &Context) {
 		let mut invalidate_nth = false;
 		egui::Window::new(format!("Settings: {}", self.raw_func_str))
@@ -292,7 +124,7 @@ impl FunctionEntry {
 	pub fn get_test_result(&self) -> &Option<String> { &self.test_result }
 
 	/// Update function string and test it
-	fn update_string(&mut self, raw_func_str: &str) {
+	pub fn update_string(&mut self, raw_func_str: &str) {
 		if raw_func_str == self.raw_func_str {
 			return;
 		}
