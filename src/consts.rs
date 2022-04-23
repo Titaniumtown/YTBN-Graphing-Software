@@ -71,3 +71,20 @@ pub const COLORS: &[Color32; 13] = &[
 	Color32::DARK_GREEN,
 	Color32::DARK_BLUE,
 ];
+
+#[cfg(target_arch = "wasm32")]
+lazy_static::lazy_static! {
+	pub static IS_MOBILE: bool = {
+		fn is_mobile() -> Option<bool> {
+			const MOBILE_DEVICE: [&str; 6] = ["Android", "iPhone", "iPad", "iPod", "webOS", "BlackBerry"];
+
+			let user_agent = web_sys::window()?.navigator().user_agent().ok()?;
+			Some(MOBILE_DEVICE.iter().any(|&name| user_agent.contains(name)))
+		}
+
+		is_mobile().unwrap_or_default()
+	}
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub const IS_MOBILE: bool = false;

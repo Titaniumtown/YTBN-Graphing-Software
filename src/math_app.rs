@@ -1,5 +1,6 @@
 use crate::consts::*;
-use crate::function_entry::{FunctionEntry, Riemann, DEFAULT_FUNCTION_ENTRY};
+use crate::function_entry::Riemann;
+use crate::function_manager::Manager;
 use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
 use egui::style::Margin;
 use egui::Frame;
@@ -30,14 +31,6 @@ cfg_if::cfg_if! {
 			// Remove the element
 			loading_element.remove();
 		}
-
-		fn is_mobile() -> Option<bool> {
-			const MOBILE_DEVICE: [&str; 6] = ["Android", "iPhone", "iPad", "iPod", "webOS", "BlackBerry"];
-
-			let user_agent = web_sys::window()?.navigator().user_agent().ok()?;
-			Some(MOBILE_DEVICE.iter().any(|&name| user_agent.contains(name)))
-		}
-
 	}
 }
 
@@ -68,8 +61,6 @@ pub struct AppSettings {
 
 	/// Stores current plot pixel width
 	pub plot_width: usize,
-
-	pub is_mobile: bool,
 }
 
 impl Default for AppSettings {
@@ -85,7 +76,6 @@ impl Default for AppSettings {
 			do_extrema: true,
 			do_roots: true,
 			plot_width: 0,
-			is_mobile: false,
 		}
 	}
 }
@@ -112,7 +102,7 @@ impl Default for Opened {
 /// The actual application
 pub struct MathApp {
 	/// Stores vector of functions
-	functions: Vec<FunctionEntry>,
+	functions: Manager,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Duration),
@@ -135,18 +125,9 @@ impl MathApp {
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
 		let start = instant::Instant::now();
 
-		#[allow(unused_mut)]
-		#[allow(unused_assignments)]
-		let mut mobile = false;
-
 		// Remove loading indicator on wasm
 		#[cfg(target_arch = "wasm32")]
 		stop_loading();
-
-		#[cfg(target_arch = "wasm32")]
-		{
-			mobile = is_mobile().unwrap_or_default();
-		}
 
 		#[cfg(threading)]
 		tracing::info!("Threading: Enabled");
@@ -271,15 +252,12 @@ impl MathApp {
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
 		Self {
-			functions: vec![DEFAULT_FUNCTION_ENTRY.clone()],
+			functions: Default::default(),
 			last_info: (vec![None], Duration::ZERO),
 			dark_mode: true,
 			text: text_data.expect("text.json failed to load"),
 			opened: Opened::default(),
-			settings: AppSettings {
-				is_mobile: mobile,
-				..AppSettings::default()
-			},
+			settings: Default::default(),
 		}
 	}
 
@@ -292,30 +270,27 @@ impl MathApp {
 			.show(ctx, |ui| {
 				let prev_sum = self.settings.riemann_sum;
 				// ComboBox for selecting what Riemann sum type to use
-				ui.add_enabled_ui(
-					self.functions.iter().filter(|func| func.integral).count() > 0,
-					|ui| {
-						ComboBox::from_label("Riemann Sum")
-							.selected_text(self.settings.riemann_sum.to_string())
-							.show_ui(ui, |ui| {
-								ui.selectable_value(
-									&mut self.settings.riemann_sum,
-									Riemann::Left,
-									"Left",
-								);
-								ui.selectable_value(
-									&mut self.settings.riemann_sum,
-									Riemann::Middle,
-									"Middle",
-								);
-								ui.selectable_value(
-									&mut self.settings.riemann_sum,
-									Riemann::Right,
-									"Right",
-								);
-							});
-					},
-				);
+				ui.add_enabled_ui(self.functions.any_using_integral(), |ui| {
+					ComboBox::from_label("Riemann Sum")
+						.selected_text(self.settings.riemann_sum.to_string())
+						.show_ui(ui, |ui| {
+							ui.selectable_value(
+								&mut self.settings.riemann_sum,
+								Riemann::Left,
+								"Left",
+							);
+							ui.selectable_value(
+								&mut self.settings.riemann_sum,
+								Riemann::Middle,
+								"Middle",
+							);
+							ui.selectable_value(
+								&mut self.settings.riemann_sum,
+								Riemann::Right,
+								"Right",
+							);
+						});
+				});
 
 				let riemann_changed = prev_sum != self.settings.riemann_sum;
 
@@ -379,39 +354,26 @@ impl MathApp {
 				self.settings.integral_changed =
 					max_x_changed | min_x_changed | integral_num_changed | riemann_changed;
 
-				let can_remove = self.functions.len() > 1;
-				ui.label("Functions:");
+				self.functions.display_entries(ui);
 
-				let mut remove_i: Option<usize> = None;
-				for (i, function) in self.functions.iter_mut().enumerate() {
-					// Entry for a function
-					if function.function_entry(ui, can_remove, i, self.settings.is_mobile) {
-						remove_i = Some(i);
-					}
+				// Only render if there's enough space
+				if ui.available_height() > 0.0 {
+					ui.with_layout(egui::Layout::bottom_up(emath::Align::Min), |ui| {
+						// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
 
-					function.settings_window(ctx);
+						// Licensing information
+						ui.label(
+							RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
+						)
+						.on_hover_text(&self.text.license_info);
+
+						// Hyperlink to project's github
+						ui.hyperlink_to(
+							"I'm Open Source!",
+							"https://github.com/Titaniumtown/YTBN-Graphing-Software",
+						);
+					});
 				}
-
-				// Remove function if the user requests it
-				if let Some(remove_i_unwrap) = remove_i {
-					self.functions.remove(remove_i_unwrap);
-				}
-
-				ui.with_layout(egui::Layout::bottom_up(emath::Align::Min), |ui| {
-					// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
-
-					// Licensing information
-					ui.label(
-						RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
-					)
-					.on_hover_text(&self.text.license_info);
-
-					// Hyperlink to project's github
-					ui.hyperlink_to(
-						"I'm Open Source!",
-						"https://github.com/Titaniumtown/YTBN-Graphing-Software",
-					);
-				});
 			});
 	}
 }
@@ -458,7 +420,7 @@ impl epi::App for MathApp {
 					.on_hover_text("Create and graph new function")
 					.clicked()
 				{
-					self.functions.push(DEFAULT_FUNCTION_ENTRY.clone());
+					self.functions.new_function();
 				}
 
 				// Toggles opening the Help window
@@ -575,8 +537,9 @@ impl epi::App for MathApp {
 				// Display an error if it exists
 				let errors_formatted: String = self
 					.functions
+					.get_entries()
 					.iter()
-					.map(|func| func.get_test_result())
+					.map(|(_, func)| func.get_test_result())
 					.enumerate()
 					.filter(|(_, error)| error.is_some())
 					.map(|(i, error)| {
@@ -612,22 +575,21 @@ impl epi::App for MathApp {
 						let minx_bounds: f64 = bounds.min()[0];
 						let maxx_bounds: f64 = bounds.max()[0];
 
-						dyn_mut_iter(&mut self.functions)
-							.enumerate()
-							.for_each(|(_, function)| {
-								function.calculate(
-									&minx_bounds,
-									&maxx_bounds,
-									width_changed,
-									&self.settings,
-								)
-							});
+						dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
+							function.calculate(
+								&minx_bounds,
+								&maxx_bounds,
+								width_changed,
+								&self.settings,
+							)
+						});
 
 						area_list = self
 							.functions
+							.get_entries()
 							.iter()
 							.enumerate()
-							.map(|(i, function)| {
+							.map(|(i, (_, function))| {
 								function.display(plot_ui, &self.settings, COLORS[i])
 							})
 							.collect();

@@ -7,6 +7,7 @@ extern crate static_assertions;
 
 mod consts;
 mod function_entry;
+mod function_manager;
 mod math_app;
 mod misc;
 mod widgets;

@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments)] // Clippy, shut
 
+use crate::consts::IS_MOBILE;
 use crate::math_app::AppSettings;
 use crate::misc::*;
 use crate::widgets::{widgets_ontop, AutoComplete, Movement};
@@ -101,9 +102,7 @@ impl Default for FunctionEntry {
 impl FunctionEntry {
 	/// Creates edit box for [`FunctionEntry`] to edit function settings and string.
 	/// Returns whether or not this function was marked for removal.
-	pub fn function_entry(
-		&mut self, ui: &mut egui::Ui, can_remove: bool, i: usize, mobile: bool,
-	) -> bool {
+	pub fn function_entry(&mut self, ui: &mut egui::Ui, can_remove: bool, i: usize) -> bool {
 		let output_string = self.autocomplete.string.clone();
 		self.update_string(&output_string);
 
@@ -154,7 +153,7 @@ impl FunctionEntry {
 		self.autocomplete.update_string(&new_string);
 
 		if !self.autocomplete.hint.is_none() {
-			if !self.autocomplete.hint.is_single() {
+			if !IS_MOBILE && !self.autocomplete.hint.is_single() {
 				if ui.input().key_pressed(Key::ArrowDown) {
 					movement = Movement::Down;
 				} else if ui.input().key_pressed(Key::ArrowUp) {
@@ -729,7 +728,6 @@ mod tests {
 			do_extrema: false,
 			do_roots: false,
 			plot_width: pixel_width,
-			is_mobile: false,
 		}
 	}
 

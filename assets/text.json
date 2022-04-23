@@ -7,17 +7,18 @@
 		"- PI is available through 'pi' or 'π'"
 	],
 	"help_panel": [
-		"- The 'Panel' button on the top bar toggles if the side bar should be shown or not. This can also be accomplished by pressing the 'h' key.",
-		"- The 'Add Function' button on the top panel adds a new function to be graphed. You can then configure that function in the side panel.",
-		"- The 'Help' button on the top bar opens and closes this window!",
+		"- The 'Panel' button toggles if the side bar should be shown or not. This can also be accomplished by pressing the 'h' key.",
+		"- The 'Add Function' button adds a new function to be graphed. You can then configure that function in the side panel.",
+		"- The 'Help' button opens and closes this window!",
 		"- The 'Info' button provides information on the build currently running.",
 		"- The Sun/Moon button toggles Dark and Light mode."
 	],
 	"help_function": [
-		"- The '✖' button before the '∫' button allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.",
-		"- The ∫ button (between the '✖' and 'd/dx' buttons) indicates whether to integrate the function in question.",
-		"- The 'd/dx' button next to the gear icon indicates whether or not calculating the derivative is enabled or not.",
-		"- The gear icon next to the function input allows you to tweak settings in relation to the selected function."
+		"(From Left to Right)",
+		"- The `✖` allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.",
+		"- The `∫` indicates whether to integrate the function in question.",
+		"- The `d/dx` toggles the calculation of derivatives.",
+		"- The `⚙` opens a window to tweak function options."
 	],
 	"help_other": [
 		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points on the graph. You can toggle these in the Side Panel.",
