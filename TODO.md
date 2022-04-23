@@ -2,7 +2,6 @@
 1. Function management
 	- Integrals between functions (too hard to implement, maybe will shelve)
 	- Display intersection between functions (would have to rewrite a lot of the function plotting handling)
-	- Sort by UUIDs
 	- [Drag and drop support](https://github.com/emilk/egui/discussions/1530) in the UI
 	- Hide/disable functions
 	- Prevent user from making too many function entries

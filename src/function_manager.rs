@@ -1,4 +1,4 @@
-use crate::consts::IS_MOBILE;
+use crate::consts::is_mobile;
 use crate::function_entry::{FunctionEntry, DEFAULT_FUNCTION_ENTRY};
 use crate::widgets::{move_cursor_to_end, widgets_ontop, Movement};
 use egui::{Button, Key, Modifiers};
@@ -76,7 +76,7 @@ impl Manager {
 				function.autocomplete.update_string(&new_string);
 
 				if !function.autocomplete.hint.is_none() {
-					if !IS_MOBILE && !function.autocomplete.hint.is_single() {
+					if !is_mobile() && !function.autocomplete.hint.is_single() {
 						if ui.input().key_pressed(Key::ArrowDown) {
 							movement = Movement::Down;
 						} else if ui.input().key_pressed(Key::ArrowUp) {
