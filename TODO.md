@@ -2,9 +2,12 @@
 1. Function management
 	- Integrals between functions (too hard to implement, maybe will shelve)
 	- Display intersection between functions (would have to rewrite a lot of the function plotting handling)
-	- [Drag and drop support](https://github.com/emilk/egui/discussions/1530) in the UI
+	- [Drag and drop support](https://github.com/emilk/egui/discussions/1530) in the UI to re-order functions
 	- Hide/disable functions
 	- Prevent user from making too many function entries
+	- Display function errors as tooltips or a warning box (not preventing the display of the graph)
+	- Clone functions
+	- Better integration with egui's legend
 2. Smart display of graph
 	- Display of intersections between functions
 3. Allow constants in min/max integral input (like pi or euler's number)
