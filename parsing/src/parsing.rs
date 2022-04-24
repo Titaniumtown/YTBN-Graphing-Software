@@ -154,7 +154,8 @@ pub fn process_func_str(function_in: &str) -> String {
 	let function = function_in
 		.replace("log10(", "log(") // log10 -> log
 		.replace("pi", "π") // pi -> π
-		.replace("exp", "\u{1fc93}"); // replace 'exp' with this random unicode character because it can't be parsed correctly
+		.replace("exp", "\u{1fc93}") // replace 'exp' with this random unicode character because it can't be parsed correctly
+		.replace("**", "^"); // alternate exponential representation
 	let function_chars: Vec<char> = function.chars().collect();
 	let mut output_string: String = String::new();
 	for (i, c) in function_chars.iter().enumerate() {
@@ -284,6 +285,7 @@ mod tests {
 			"e^sin(x)",
 			"E^sin(x)",
 			"e^x",
+			"x**2",
 		];
 
 		for func_str in functions.iter().cloned() {
@@ -332,6 +334,7 @@ mod tests {
 			("emax(x)", "e*max(x)"),
 			("pisin(x)", "π*sin(x)"),
 			("e^sin(x)", "e^sin(x)"),
+			("x**2", "x^2"),
 		]);
 
 		for (key, value) in values {
