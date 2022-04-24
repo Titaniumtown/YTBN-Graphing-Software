@@ -403,7 +403,7 @@ impl FunctionEntry {
 			plot_ui.line(
 				self.back_data
 					.to_line()
-					.color(main_plot_color)
+					.stroke(egui::Stroke::new(2.0, main_plot_color))
 					.name(&self.raw_func_str),
 			);
 		}
