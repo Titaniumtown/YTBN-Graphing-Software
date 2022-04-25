@@ -105,7 +105,7 @@ pub struct MathApp {
 	functions: Manager,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
-	last_info: (Vec<Option<f64>>, Duration),
+	last_info: (Vec<Option<f64>>, Option<Duration>),
 
 	/// Stores whether or not dark mode is enabled
 	dark_mode: bool,
@@ -253,7 +253,7 @@ impl MathApp {
 
 		Self {
 			functions: Default::default(),
-			last_info: (vec![None], Duration::ZERO),
+			last_info: (vec![None], None),
 			dark_mode: true,
 			text: text_data.expect("text.json failed to load"),
 			opened: Opened::default(),
@@ -382,7 +382,11 @@ impl epi::App for MathApp {
 	/// Called each time the UI needs repainting.
 	fn update(&mut self, ctx: &Context, _frame: &mut epi::Frame) {
 		// start timer
-		let start = instant::Instant::now();
+		let start = if self.opened.info {
+			Some(instant::Instant::now())
+		} else {
+			None
+		};
 
 		// Set dark/light mode depending on the variable `self.dark_mode`
 		ctx.set_visuals(match self.dark_mode {
@@ -457,11 +461,9 @@ impl epi::App for MathApp {
 				);
 
 				// Display Area and time of last frame
-				ui.label(format!(
-					"Area: {} Took: {:?}",
-					option_vec_printer(&self.last_info.0),
-					self.last_info.1
-				));
+				if self.last_info.0.iter().filter(|e| e.is_some()).count() > 0 {
+					ui.label(format!("Area: {}", option_vec_printer(&self.last_info.0)));
+				}
 			});
 		});
 
@@ -513,6 +515,10 @@ impl epi::App for MathApp {
 			.collapsible(false)
 			.show(ctx, |ui| {
 				ui.label(&*BUILD_INFO);
+
+				if let Some(took) = self.last_info.1 {
+					ui.label(format!("Took: {:?}", took));
+				}
 			});
 
 		// If side panel is enabled, show it.
@@ -596,6 +602,6 @@ impl epi::App for MathApp {
 					});
 			});
 		// Store list of functions' areas along with the time it took to process.
-		self.last_info = (area_list, start.elapsed());
+		self.last_info = (area_list, start.map(|a| a.elapsed()));
 	}
 }
