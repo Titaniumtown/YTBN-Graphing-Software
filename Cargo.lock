@@ -245,9 +245,9 @@ dependencies = [
 
 [[package]]
 name = "combine"
-version = "4.6.3"
+version = "4.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50b727aacc797f9fc28e355d21f34709ac4fc9adecfe470ad07b8f4464f53062"
+checksum = "2a604e93b79d1808327a6fca85a6f2d69de66461e7620f5a4cbf5fb4d1d7c948"
 dependencies = [
  "bytes",
  "memchr",
@@ -485,7 +485,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "egui",
  "egui-winit",
@@ -497,7 +497,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "ahash",
  "epaint",
@@ -508,7 +508,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "arboard",
  "egui",
@@ -523,7 +523,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "bytemuck",
  "egui",
@@ -540,7 +540,7 @@ dependencies = [
 [[package]]
 name = "egui_web"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "bytemuck",
  "egui",
@@ -563,7 +563,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "bytemuck",
 ]
@@ -571,7 +571,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -585,7 +585,7 @@ dependencies = [
 [[package]]
 name = "epi"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b936365a62ba9e857fabc651c1cfb328fe5b17cb"
+source = "git+https://github.com/Titaniumtown/egui.git#c23c874b141846219e252a0541199535a640b1c8"
 dependencies = [
  "egui",
  "glow",
@@ -2127,9 +2127,9 @@ dependencies = [
 
 [[package]]
 name = "webbrowser"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9c28b6b6a78440b02647358625e3febc90724126480b9da6a967b5f674b3554"
+checksum = "4b69b622bc637b83844de630868d5c431bb25614fdf49a7b75c008f9b2f6b110"
 dependencies = [
  "jni",
  "ndk-glue 0.6.2",
