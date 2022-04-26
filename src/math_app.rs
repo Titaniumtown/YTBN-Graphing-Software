@@ -527,9 +527,6 @@ impl epi::App for MathApp {
 			self.side_panel(ctx);
 		}
 
-		// Referenced in plotting code, but needs to be here so it can be later  referenced when storing `last_info`
-		let mut area_list: Vec<Option<f64>> = Vec::new();
-
 		// Central panel which contains the central plot (or an error created when
 		// parsing)
 		CentralPanel::default()
@@ -537,7 +534,6 @@ impl epi::App for MathApp {
 				inner_margin: Margin::symmetric(0.0, 0.0),
 				rounding: Rounding::none(),
 				fill: ctx.style().visuals.window_fill(),
-				stroke: Default::default(),
 				..Default::default()
 			})
 			.show(ctx, |ui| {
@@ -591,7 +587,7 @@ impl epi::App for MathApp {
 							)
 						});
 
-						area_list = self
+						self.last_info.0 = self
 							.functions
 							.get_entries()
 							.iter()
@@ -602,7 +598,8 @@ impl epi::App for MathApp {
 							.collect();
 					});
 			});
-		// Store list of functions' areas along with the time it took to process.
-		self.last_info = (area_list, start.map(|a| a.elapsed()));
+
+		// Calculate and store the last time it took to draw the frame
+		self.last_info.1 = start.map(|a| a.elapsed());
 	}
 }
