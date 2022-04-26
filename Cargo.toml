@@ -16,13 +16,14 @@ threading = ["async-lock", "rayon"]
 debug = false
 codegen-units = 1
 opt-level = "z"   #optimize for size
-lto = true
+lto = "fat"
 strip = true
 
 [profile.dev]
 debug = true
+codegen-units = 8
 opt-level = 0
-lto = true
+lto = "thin"
 strip = false
 
 [dependencies]
