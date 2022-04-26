@@ -7,11 +7,11 @@ use parsing::suggestions::Hint;
 use std::ops::BitXorAssign;
 use uuid::Uuid;
 
-pub struct Manager {
+pub struct FunctionManager {
 	functions: Vec<(Uuid, FunctionEntry)>,
 }
 
-impl Default for Manager {
+impl Default for FunctionManager {
 	fn default() -> Self {
 		Self {
 			functions: vec![(Uuid::new_v4(), DEFAULT_FUNCTION_ENTRY.clone())],
@@ -19,7 +19,7 @@ impl Default for Manager {
 	}
 }
 
-impl Manager {
+impl FunctionManager {
 	pub fn display_entries(&mut self, ui: &mut egui::Ui) {
 		// ui.label("Functions:");
 		let can_remove = self.functions.len() > 1;

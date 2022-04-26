@@ -1,12 +1,11 @@
 use crate::consts::*;
 use crate::function_entry::Riemann;
-use crate::function_manager::Manager;
-use crate::misc::{dyn_mut_iter, option_vec_printer, SerdeValueHelper, TextData};
-use egui::style::Margin;
-use egui::Frame;
+use crate::function_manager::FunctionManager;
+use crate::misc::{dyn_mut_iter, option_vec_printer, TextData};
 use egui::{
-	plot::Plot, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData, FontDefinitions,
-	FontFamily, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
+	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData,
+	FontDefinitions, FontFamily, Frame, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2,
+	Visuals, Window,
 };
 use emath::Align2;
 use epaint::Rounding;
@@ -102,12 +101,12 @@ impl Default for Opened {
 /// The actual application
 pub struct MathApp {
 	/// Stores vector of functions
-	functions: Manager,
+	functions: FunctionManager,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Option<Duration>),
 
-	/// Stores whether or not dark mode is enabled
+	toggle_visuals: bool,
 	dark_mode: bool,
 
 	/// Stores opened windows/elements for later reference
@@ -124,6 +123,7 @@ impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of [`MathApp`] and return it
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+		let ctx = &cc.egui_ctx;
 		let start = instant::Instant::now();
 
 		// Remove loading indicator on wasm
@@ -197,10 +197,9 @@ impl MathApp {
 					}
 				}
 			} else if path_string == "text.json" {
-				text_data = Some(
-					SerdeValueHelper::new(str::from_utf8(&data).expect("unable to read text.json"))
-						.parse_values(),
-				);
+				text_data = Some(TextData::from_json_str(
+					str::from_utf8(&data).expect("unable to read text.json"),
+				));
 			} else {
 				panic!("File {} not expected!", path_string);
 			}
@@ -247,16 +246,20 @@ impl MathApp {
 		};
 
 		// Initialize fonts
-		// this used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
-		cc.egui_ctx.set_fonts(fonts);
+		// This used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
+		ctx.set_fonts(fonts);
+
+		// Set dark mode by default
+		ctx.set_visuals(Visuals::dark());
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
 		Self {
 			functions: Default::default(),
 			last_info: (vec![None], None),
-			dark_mode: true,
-			text: text_data.expect("text.json failed to load"),
+			toggle_visuals: false,
+			dark_mode: true, // dark mode is default and is previously set
+			text: text_data.expect("Didn't find text.json"),
 			opened: Opened::default(),
 			settings: Default::default(),
 		}
@@ -389,11 +392,15 @@ impl epi::App for MathApp {
 			None
 		};
 
-		// Set dark/light mode depending on the variable `self.dark_mode`
-		ctx.set_visuals(match self.dark_mode {
-			true => Visuals::dark(),
-			false => Visuals::light(),
-		});
+		// Toggle visuals if requested
+		if self.toggle_visuals {
+			ctx.set_visuals(match self.dark_mode {
+				true => Visuals::light(),
+				false => Visuals::dark(),
+			});
+			self.dark_mode.bitxor_assign(true);
+			self.toggle_visuals = false;
+		}
 
 		// If keyboard input isn't being grabbed, check for key combos
 		if !ctx.wants_keyboard_input() {
@@ -449,8 +456,8 @@ impl epi::App for MathApp {
 				);
 
 				// Toggles dark/light mode
-				self.dark_mode.bitxor_assign(
-					ui.add(Button::new(match self.dark_mode {
+				self.toggle_visuals = ui
+					.add(Button::new(match self.dark_mode {
 						true => "🌞",
 						false => "🌙",
 					}))
@@ -458,8 +465,7 @@ impl epi::App for MathApp {
 						true => "Turn the Lights on!",
 						false => "Turn the Lights off.",
 					})
-					.clicked(),
-				);
+					.clicked();
 
 				// Display Area and time of last frame
 				if self.last_info.0.iter().filter(|e| e.is_some()).count() > 0 {

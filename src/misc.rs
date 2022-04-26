@@ -192,43 +192,35 @@ pub struct TextData {
 	pub welcome: String,
 }
 
-/// Helps parsing text data from `text.json`
-pub struct SerdeValueHelper {
-	value: JsonValue,
+/// Parses an array of strings at `self.value[key]` as a multiline string
+fn parse_multiline(value: &JsonValue, key: &str) -> String {
+	(value[key])
+		.as_array()
+		.expect("Cannot cast to array")
+		.iter()
+		.map(|ele| ele.as_str().unwrap())
+		.fold(String::new(), |s, l| s + l + "\n")
+		.trim_end()
+		.to_owned()
 }
 
-impl SerdeValueHelper {
-	pub fn new(string: &str) -> Self {
+/// Parses `self.value[key]` as a single line string
+fn parse_singleline(value: &JsonValue, key: &str) -> String {
+	value[key].as_str().expect("cannot cast to str").to_owned()
+}
+
+impl TextData {
+	pub fn from_json_str(string: &str) -> Self {
+		let value = serde_json::from_str(string).expect("Cannot parse json file");
+
 		Self {
-			value: serde_json::from_str(string).unwrap(),
-		}
-	}
-
-	/// Parses an array of strings at `self.value[key]` as a multiline string
-	fn parse_multiline(&self, key: &str) -> String {
-		(&self.value[key])
-			.as_array()
-			.expect("Cannot call as_array")
-			.iter()
-			.map(|ele| ele.as_str().unwrap())
-			.fold(String::new(), |s, l| s + l + "\n")
-			.trim_end()
-			.to_owned()
-	}
-
-	/// Parses `self.value[key]` as a single line string
-	fn parse_singleline(&self, key: &str) -> String { self.value[key].as_str().unwrap().to_owned() }
-
-	/// Used to parse `text.json`
-	pub fn parse_values(&self) -> TextData {
-		TextData {
-			help_expr: self.parse_multiline("help_expr"),
-			help_vars: self.parse_multiline("help_vars"),
-			help_panel: self.parse_multiline("help_panel"),
-			help_function: self.parse_multiline("help_function"),
-			help_other: self.parse_multiline("help_other"),
-			license_info: self.parse_singleline("license_info"),
-			welcome: self.parse_multiline("welcome"),
+			help_expr: parse_multiline(&value, "help_expr"),
+			help_vars: parse_multiline(&value, "help_vars"),
+			help_panel: parse_multiline(&value, "help_panel"),
+			help_function: parse_multiline(&value, "help_func"),
+			help_other: parse_multiline(&value, "help_other"),
+			license_info: parse_singleline(&value, "agpl_info"),
+			welcome: parse_multiline(&value, "welcome"),
 		}
 	}
 }
