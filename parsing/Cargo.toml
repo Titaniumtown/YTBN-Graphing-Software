@@ -10,14 +10,14 @@ description = "Parsing library for YTBN-Graphing-Software"
 [lib]
 
 [dependencies]
-phf = "0.10.1"
+phf = "0.10"
 exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", features = [
     "partial",
 ] }
-lazy_static = "1.4.0"
+lazy_static = "1.4"
 
 [build-dependencies]
-phf_codegen = "0.10.0"
+phf_codegen = "0.10"
 
 [package.metadata.cargo-all-features]
 skip_optional_dependencies = true #don't test optional dependencies, only features
