@@ -19,3 +19,5 @@
 9. Add closing animation for function entry
 10. Create actual icon(s) for PWA/favicon (using placeholder from eframe_template)
 11. Fix mobile text input
+12. Don't use json for text storage
+13. Seperate rendering code and logic (separatable backends)
