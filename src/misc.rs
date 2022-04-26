@@ -208,7 +208,7 @@ impl SerdeValueHelper {
 	fn parse_multiline(&self, key: &str) -> String {
 		(&self.value[key])
 			.as_array()
-			.unwrap()
+			.expect("Cannot call as_array")
 			.iter()
 			.map(|ele| ele.as_str().unwrap())
 			.fold(String::new(), |s, l| s + l + "\n")
