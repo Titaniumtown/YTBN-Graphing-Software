@@ -1573,7 +1573,7 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 [[package]]
 name = "ruzstd"
 version = "0.2.4"
-source = "git+https://github.com/KillingSpark/zstd-rs.git?branch=ringbuffer#30e65d726f934dbb3641ad0f9c096384f5823f63"
+source = "git+https://github.com/KillingSpark/zstd-rs.git#744956aa87b845d7648ed9cf3d16e042c40c7766"
 dependencies = [
  "byteorder",
  "twox-hash",

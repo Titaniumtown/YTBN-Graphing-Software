@@ -41,7 +41,7 @@ const_format = { version = "0.2", default-features = false, features = [
 cfg-if = "1"
 lazy_static = "1"
 tar = "0.4"
-ruzstd = { git = "https://github.com/KillingSpark/zstd-rs.git", branch = "ringbuffer" }
+ruzstd = { git = "https://github.com/KillingSpark/zstd-rs.git" }
 serde_json = "1.0"
 tracing = "0.1"
 itertools = "0.10"
