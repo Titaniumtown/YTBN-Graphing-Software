@@ -247,7 +247,7 @@ mod tests {
 	use crate::suggestions::SUPPORTED_FUNCTIONS;
 	use std::collections::HashMap;
 
-	/// returns if function with string `func_str` is valid after processing through [`process_func_str`]
+	/// Returns if function with string `func_str` is valid after processing through [`process_func_str`]
 	fn func_is_valid(func_str: &str) -> bool {
 		BackingFunction::new(&process_func_str(func_str)).is_ok()
 	}
@@ -255,60 +255,52 @@ mod tests {
 	/// Used for testing: passes function to [`process_func_str`] before running [`test_func`]. if `expect_valid` == `true`, it expects no errors to be created.
 	fn test_func_helper(func_str: &str, expect_valid: bool) {
 		let is_valid = func_is_valid(func_str);
-		println!(
+		let string = format!(
 			"function: {} (expected: {}, got: {})",
 			func_str, expect_valid, is_valid
 		);
 
-		assert!(is_valid == expect_valid);
+		if is_valid == expect_valid {
+			println!("{}", string);
+		} else {
+			panic!("{}", string);
+		}
 	}
 
 	/// Tests to make sure functions that are expected to succeed, succeed.
 	#[test]
-	fn test_expected_func_successes() {
-		let functions = vec![
-			"x^2",
-			"2x",
-			"E^x",
-			"log10(x)",
-			"xxxxx", // test variables side-by-side
-			"sin(x)",
-			"xsin(x)",      // Tests `x{letter}` pattern
-			"sin(x)cos(x)", // Tests `){letter}` pattern
-			"x/0",          // always returns NaN
-			"(x+1)(x-3)",   // tests 2 parentheses in `)(` pattern
-			"(2x+1)x",
-			"(2x+1)pi",
-			"pi(2x+1)",
-			"pipipipipipix",
-			"e^sin(x)",
-			"E^sin(x)",
-			"e^x",
-			"x**2",
-		];
+	fn test_expected() {
+		let values = HashMap::from([
+			("", true),
+			("x^2", true),
+			("2x", true),
+			("E^x", true),
+			("log10(x)", true),
+			("xxxxx", true),
+			("sin(x)", true),
+			("xsin(x)", true),
+			("sin(x)cos(x)", true),
+			("x/0", true),
+			("(x+1)(x-3)", true),
+			("(2x+1)x", true),
+			("(2x+1)pi", true),
+			("pi(2x+1)", true),
+			("pipipipipipix", true),
+			("e^sin(x)", true),
+			("E^sin(x)", true),
+			("e^x", true),
+			("x**2", true),
+			("a", false),
+			("log222(x)", false),
+			("abcdef", false),
+			("log10(x", false),
+			("x^a", false),
+			("sin(cos(x)))", false),
+			("0/0", false),
+		]);
 
-		for func_str in functions.iter().cloned() {
-			test_func_helper(func_str, true);
-		}
-	}
-
-	/// Tests to make sure functions that are expected to fail, fail.
-	#[test]
-	fn test_expected_func_failures() {
-		let functions = vec![
-			"a",            // Invalid variable
-			"l^2",          // Invalid variable
-			"log222(x)",    // Invalid function
-			"abcdef",       // Invalid variables
-			"log10(x",      // unclosed bracket
-			"x^a",          // Invalid variable
-			"sin(cos(x)))", // extra bracket
-			"((())",        // extra opening bracket
-			"0/0",
-		];
-
-		for func_str in functions.iter().cloned() {
-			test_func_helper(func_str, false);
+		for (key, value) in values {
+			test_func_helper(key, value);
 		}
 	}
 
