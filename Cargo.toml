@@ -18,6 +18,9 @@ codegen-units = 1
 opt-level = "z"   #optimize for size
 lto = "fat"
 strip = true
+panic = "abort"
+overflow-checks = false
+debug-assertions = false
 
 [profile.dev]
 debug = true

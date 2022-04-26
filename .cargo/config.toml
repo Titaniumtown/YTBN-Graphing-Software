@@ -1,2 +1,3 @@
 [target.wasm32-unknown-unknown]
 rustflags = ["-C", "linker-plugin-lto=yes", "-C", "inline-threshold=275"]
+
