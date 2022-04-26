@@ -1,7 +1,7 @@
 use crate::consts::*;
 use crate::function_entry::Riemann;
 use crate::function_manager::Manager;
-use crate::misc::{dyn_mut_iter, option_vec_printer, JsonFileOutput, SerdeValueHelper};
+use crate::misc::{dyn_mut_iter, option_vec_printer, SerdeValueHelper, TextData};
 use egui::style::Margin;
 use egui::Frame;
 use egui::{
@@ -113,7 +113,8 @@ pub struct MathApp {
 	/// Stores opened windows/elements for later reference
 	opened: Opened,
 
-	text: JsonFileOutput,
+	/// Stores loaded text data from `test.json`
+	text: TextData,
 
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
@@ -157,7 +158,7 @@ impl MathApp {
 		let mut font_emoji_icon: Option<FontData> = None;
 
 		// Stores text
-		let mut text_data: Option<JsonFileOutput> = None;
+		let mut text_data: Option<TextData> = None;
 
 		tracing::info!("Reading assets...");
 		// Iterate through all entries in the tarball

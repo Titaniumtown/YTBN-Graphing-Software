@@ -182,7 +182,7 @@ impl EguiHelper for Vec<EguiValue> {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct JsonFileOutput {
+pub struct TextData {
 	pub help_expr: String,
 	pub help_vars: String,
 	pub help_panel: String,
@@ -220,8 +220,8 @@ impl SerdeValueHelper {
 	fn parse_singleline(&self, key: &str) -> String { self.value[key].as_str().unwrap().to_owned() }
 
 	/// Used to parse `text.json`
-	pub fn parse_values(&self) -> JsonFileOutput {
-		JsonFileOutput {
+	pub fn parse_values(&self) -> TextData {
+		TextData {
 			help_expr: self.parse_multiline("help_expr"),
 			help_vars: self.parse_multiline("help_vars"),
 			help_panel: self.parse_multiline("help_panel"),
