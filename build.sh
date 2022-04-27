@@ -9,16 +9,18 @@ rm -fr pkg | true
 export RUSTFLAGS="--cfg=web_sys_unstable_apis"
 
 if test "$1" == "" || test "$1" == "release"; then
-    wasm-pack build --target web --no-typescript --release
-    echo "Binary size (pre-strip): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
-    llvm-strip --strip-all pkg/ytbn_graphing_software_bg.wasm
-    
-    elif test "$1" == "debug"; then
-    wasm-pack build --target web --no-typescript --dev
+    cargo build --release --target wasm32-unknown-unknown -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --lib
+    llvm-strip --strip-all target/wasm32-unknown-unknown/release/ytbn_graphing_software.wasm
+    export TYPE="release"
+elif test "$1" == "debug"; then
+    cargo build --dev --target wasm32-unknown-unknown -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --lib
+    export TYPE="debug"
 else
     echo "ERROR: build.sh, argument invalid"
     exit 1
 fi
+
+wasm-bindgen target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm --out-dir pkg --target web --no-typescript
 
 mkdir tmp
 cp -r pkg/ytbn_graphing_software_bg.wasm tmp/
