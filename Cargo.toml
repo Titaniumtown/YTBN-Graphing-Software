@@ -73,3 +73,12 @@ tracing-wasm = "0.2"
 
 [package.metadata.cargo-all-features]
 skip_optional_dependencies = true #don't test optional dependencies, only features
+
+
+[package.metadata.wasm-pack.profile.profiling.wasm-bindgen]
+debug-js-glue = false
+demangle-name-section = true
+dwarf-debug-info = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-Oz']
