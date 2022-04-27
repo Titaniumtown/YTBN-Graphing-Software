@@ -16,7 +16,7 @@ threading = ["async-lock", "rayon"]
 debug = false
 codegen-units = 1
 opt-level = "z"   #optimize for size
-#lto = "fat" #causes issues with wasm, disabling for the time being
+#lto = "fat"       #causes issues with wasm, disabling for the time being
 strip = true
 panic = "abort"
 

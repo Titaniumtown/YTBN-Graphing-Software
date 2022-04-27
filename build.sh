@@ -10,10 +10,10 @@ export RUSTFLAGS="--cfg=web_sys_unstable_apis"
 
 if test "$1" == "" || test "$1" == "release"; then
     cargo build --release --target wasm32-unknown-unknown -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --lib
-    llvm-strip --strip-all target/wasm32-unknown-unknown/release/ytbn_graphing_software.wasm
+    llvm-strip -s target/wasm32-unknown-unknown/release/ytbn_graphing_software.wasm
     export TYPE="release"
 elif test "$1" == "debug"; then
-    cargo build --dev --target wasm32-unknown-unknown -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --lib
+    cargo build --dev --target wasm32-unknown-unknown -Z build-std=std,panic_unwind -Z build-std-features=panic-abort --lib
     export TYPE="debug"
 else
     echo "ERROR: build.sh, argument invalid"
