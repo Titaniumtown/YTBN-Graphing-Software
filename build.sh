@@ -11,18 +11,17 @@ wasm_opt() {
     wasm-opt -Oz -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
     mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
 }
-#export RUSTFLAGS="--cfg=web_sys_unstable_apis"
-export COMMON_PACK="--target web --no-typescript -- -Z build-std=std,panic_abort -C linker-plugin-lto=yes -C inline-threshold=275"
+export RUSTFLAGS="--cfg=web_sys_unstable_apis"
 
 if test "$1" == "" || test "$1" == "release"; then
-    wasm-pack build --release
+    wasm-pack build --target web --no-typescript --release
     echo "Binary size (pre-wasm_opt): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
     wasm_opt #apply wasm optimizations
     echo "Binary size (pre-strip): $(du -sb pkg/ytbn_graphing_software_bg.wasm)"
     llvm-strip --strip-all pkg/ytbn_graphing_software_bg.wasm
     
     elif test "$1" == "debug"; then
-    wasm-pack build --dev $COMMON_PACK
+    wasm-pack build --target web --no-typescript --dev
 else
     echo "ERROR: build.sh, argument invalid"
     exit 1
