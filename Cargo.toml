@@ -19,8 +19,6 @@ opt-level = "z"   #optimize for size
 lto = "fat"
 strip = true
 panic = "abort"
-overflow-checks = false
-debug-assertions = false
 
 [profile.dev]
 debug = true
@@ -39,9 +37,7 @@ epi = { git = "https://github.com/Titaniumtown/egui.git", default-features = fal
 emath = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 
 shadow-rs = { version = "0.11", default-features = false }
-const_format = { version = "0.2", default-features = false, features = [
-    "fmt",
-] }
+const_format = { version = "0.2", default-features = false, features = ["fmt"] }
 cfg-if = "1"
 lazy_static = "1"
 tar = "0.4"
@@ -71,9 +67,7 @@ async-lock = { version = "2.5", optional = true }
 instant = { version = "0.1", features = ["wasm-bindgen"] }
 console_error_panic_hook = "0.1"
 wee_alloc = "0.4"
-wasm-bindgen = { version = "0.2", default-features = false, features = [
-    "std",
-] }
+wasm-bindgen = { version = "0.2", default-features = false, features = ["std"] }
 web-sys = "0.3"
 tracing-wasm = "0.2"
 
