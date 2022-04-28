@@ -6,11 +6,6 @@ rm -fr pkg | true
 
 # cargo test
 
-wasm_opt() {
-    wasm-opt -Oz --dae --dce -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
-    mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
-}
-
 export RUSTFLAGS="--cfg=web_sys_unstable_apis"
 
 if test "$1" == "" || test "$1" == "release"; then
@@ -29,7 +24,8 @@ wasm-bindgen target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm -
 
 if test "$TYPE" == "release"; then
     echo "running wasm-opt..."
-    wasm_opt
+    wasm-opt -Oz --dae --dce -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+    mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
 fi
 
 mkdir tmp
