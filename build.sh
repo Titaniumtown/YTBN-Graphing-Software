@@ -24,7 +24,7 @@ wasm-bindgen target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm -
 
 if test "$TYPE" == "release"; then
     echo "running wasm-opt..."
-    wasm-opt -Oz --dae --dce -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+    wasm-opt -Oz --dae --dce --code-folding --const-hoisting --coalesce-locals -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
     mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
 fi
 
