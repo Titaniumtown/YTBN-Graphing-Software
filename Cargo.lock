@@ -485,7 +485,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "egui",
  "egui-winit",
@@ -497,7 +497,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "ahash",
  "epaint",
@@ -508,7 +508,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "arboard",
  "egui",
@@ -523,7 +523,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "bytemuck",
  "egui",
@@ -540,7 +540,7 @@ dependencies = [
 [[package]]
 name = "egui_web"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "bytemuck",
  "egui",
@@ -563,7 +563,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "bytemuck",
 ]
@@ -571,7 +571,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -585,7 +585,7 @@ dependencies = [
 [[package]]
 name = "epi"
 version = "0.17.0"
-source = "git+https://github.com/Titaniumtown/egui.git#b19998c672007e8ae9a3c82507963b5a9096d33f"
+source = "git+https://github.com/Titaniumtown/egui.git#0e8e8b76a042115498449c9da8e0f2ccae87df82"
 dependencies = [
  "egui",
  "glow",
@@ -611,7 +611,7 @@ checksum = "77f3309417938f28bf8228fcff79a4a37103981e3e186d2ccd19c74b38f4eb71"
 [[package]]
 name = "exmex"
 version = "0.15.0"
-source = "git+https://github.com/bertiqwerty/exmex.git?branch=main#0666c26b1fd1f97bca3dce19e2581aab1df590cb"
+source = "git+https://github.com/bertiqwerty/exmex.git?branch=main#4f34fb927246009b6b716b5ba8e35f045d27c239"
 dependencies = [
  "lazy_static",
  "num",
@@ -687,9 +687,9 @@ dependencies = [
 
 [[package]]
 name = "git2"
-version = "0.14.2"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3826a6e0e2215d7a41c2bfc7c9244123969273f3476b939a226aac0ab56e9e3c"
+checksum = "5e77a14ffc6ba4ad5188d6cf428894c4fcfda725326b37558f35bb677e712cec"
 dependencies = [
  "bitflags",
  "libc",
@@ -910,9 +910,9 @@ checksum = "21a41fed9d98f27ab1c6d161da622a4fa35e8a54a8adc24bbf3ddd0ef70b0e50"
 
 [[package]]
 name = "libgit2-sys"
-version = "0.13.2+1.4.2"
+version = "0.13.3+1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a42de9a51a5c12e00fc0e4ca6bc2ea43582fc6418488e8f615e905d886f258b"
+checksum = "c24d36c3ac9b9996a2418d6bf428cc0bc5d1a814a84303fc60986088c5ed60de"
 dependencies = [
  "cc",
  "libc",
