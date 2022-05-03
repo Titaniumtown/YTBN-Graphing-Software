@@ -27,16 +27,16 @@ pub fn split_function(input: &str) -> Vec<String> {
 }
 
 // __REVIEW__
-fn split_function_chars(chars: &[char]) -> Vec<String> {
+pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	if chars.is_empty() {
 		return Vec::new();
 	}
 
 	// Resulting split-up data
-	let mut data: Vec<String> = Vec::new();
+	let mut data: Vec<String> = Vec::with_capacity(chars.len());
 
 	// Buffer used to store data ready to be appended
-	let mut buffer: Vec<&char> = Vec::new();
+	let mut buffer: Vec<&char> = Vec::with_capacity(chars.len());
 
 	#[derive(Default)]
 	struct BoolSlice {
@@ -94,7 +94,7 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 			}
 
 			// If letter and not a variable (or a masked variable)
-			if prev_char.letter && !(prev_char.variable && !prev_char.masked_var) {
+			if prev_char.letter && prev_char.is_variable() {
 				// Mask number status if current char is number
 				if curr_c.number {
 					curr_c.masked_num = true;

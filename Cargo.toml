@@ -29,6 +29,7 @@ strip = false
 
 [dependencies]
 parsing = { path = "./parsing" }
+benchmarks = { path = "./benchmarks" }
 
 eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }

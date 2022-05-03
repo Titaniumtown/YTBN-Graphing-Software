@@ -16,6 +16,10 @@ exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", fea
 ] }
 lazy_static = "1.4"
 
+pprof = { version = "0.8", features = ["flamegraph"] }
+criterion = "0.3"
+criterion-macro = "0.3"
+
 [build-dependencies]
 phf_codegen = "0.10"
 

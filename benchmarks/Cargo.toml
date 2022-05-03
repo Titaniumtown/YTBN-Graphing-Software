@@ -1,0 +1,13 @@
+[package]
+name = "benchmarks"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0"
+
+[lib]
+
+[dependencies]
+pprof = { version = "0.8", features = ["flamegraph"] }
+criterion = "0.3"
+criterion-macro = "0.3"
+parsing = { path = "../parsing" }
