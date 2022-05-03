@@ -15,23 +15,28 @@ macro_rules! test_print {
 pub fn split_function(input: &str) -> Vec<String> {
 	split_function_chars(
 		&input
-			.replace("pi", "π")
-			.replace("**", "^")
-			.replace("exp", "\u{1fc93}")
+			.replace("pi", "π") // replace "pi" text with pi symbol
+			.replace("**", "^") // support alternate manner of expressing exponents
+			.replace("exp", "\u{1fc93}") //stop-gap solution to fix the `exp` function
 			.chars()
 			.collect::<Vec<char>>(),
 	)
 	.iter()
-	.map(|x| x.replace("\u{1fc93}", "exp"))
+	.map(|x| x.replace("\u{1fc93}", "exp")) // Convert back to `exp` text
 	.collect::<Vec<String>>()
 }
 
+// __REVIEW__
 fn split_function_chars(chars: &[char]) -> Vec<String> {
-	assert!(!chars.is_empty());
+	if chars.is_empty() {
+		return Vec::new();
+	}
 
-	let mut split: Vec<String> = Vec::new();
+	// Resulting split-up data
+	let mut data: Vec<String> = Vec::new();
 
-	let mut buffer: Vec<char> = Vec::new();
+	// Buffer used to store data ready to be appended
+	let mut buffer: Vec<&char> = Vec::new();
 
 	#[derive(Default)]
 	struct BoolSlice {
@@ -45,15 +50,17 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 	}
 
 	impl BoolSlice {
-		#[inline]
+		#[inline(always)]
 		fn is_variable(&self) -> bool { self.variable && !self.masked_var }
 
-		#[inline]
+		#[inline(always)]
 		fn is_number(&self) -> bool { self.number && !self.masked_num }
 	}
+
 	let mut prev_char: BoolSlice = BoolSlice::default();
 
 	for c in chars {
+		// Set data about current character
 		let mut curr_c = {
 			let isnumber = is_number(c);
 			let isvariable = is_variable(c);
@@ -74,28 +81,26 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 			}
 		};
 
-		let buffer_string = buffer.iter().collect::<String>();
-
 		// Check if prev_char is valid
 		if prev_char.exists {
-			// if previous char was a masked number, and current char is a number, mask current char's variable status
+			// If previous char was a masked number, and current char is a number, mask current char's variable status
 			if prev_char.masked_num && curr_c.number {
 				curr_c.masked_num = true;
 			}
 
-			// if previous char was a masked variable, and current char is a variable, mask current char's variable status
+			// If previous char was a masked variable, and current char is a variable, mask current char's variable status
 			if prev_char.masked_var && curr_c.variable {
 				curr_c.masked_var = true;
 			}
 
-			// if letter and not a variable (or a masked variable)
+			// If letter and not a variable (or a masked variable)
 			if prev_char.letter && !(prev_char.variable && !prev_char.masked_var) {
-				// mask number status if current char is number
+				// Mask number status if current char is number
 				if curr_c.number {
 					curr_c.masked_num = true;
 				}
 
-				// mask variable status if current char is a variable
+				// Mask variable status if current char is a variable
 				if curr_c.variable {
 					curr_c.masked_var = true;
 				}
@@ -105,7 +110,7 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 		let mut do_split = false;
 
 		if prev_char.closing_parens {
-			// cases like `)x`, `)2`, and `)(`
+			// Cases like `)x`, `)2`, and `)(`
 			if (c == &'(')
 				| (curr_c.letter && !curr_c.is_variable())
 				| curr_c.is_variable()
@@ -114,17 +119,17 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 				do_split = true;
 			}
 		} else if c == &'(' {
-			// cases like `x(` and `2(`
+			// Cases like `x(` and `2(`
 			if (prev_char.is_variable() | prev_char.is_number()) && !prev_char.letter {
 				do_split = true;
 			}
 		} else if prev_char.is_number() {
-			// cases like `2x` and `2sin(x)`
+			// Cases like `2x` and `2sin(x)`
 			if curr_c.is_variable() | curr_c.letter {
 				do_split = true;
 			}
 		} else if curr_c.is_variable() | curr_c.letter {
-			// cases like `e2` and `xx`
+			// Cases like `e2` and `xx`
 			if prev_char.is_number()
 				| (prev_char.is_variable() && curr_c.is_variable())
 				| prev_char.is_variable()
@@ -134,26 +139,31 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 		} else if (curr_c.is_number() | curr_c.letter | curr_c.is_variable())
 			&& (prev_char.is_number() | prev_char.letter)
 		{
-			// cases like `x2` and `xx`
 			do_split = true;
 		} else if curr_c.is_number() && prev_char.is_variable() {
+			// Cases like `x2`
 			do_split = true;
 		}
 
-		// split and append buffer
+		// Append split
 		if do_split {
-			split.push(buffer_string);
+			data.push(buffer.iter().cloned().collect::<String>());
 			buffer.clear();
 		}
 
-		buffer.push(*c);
+		// Add character to buffer
+		buffer.push(c);
+
+		// Move current character data to `prev_char`
 		prev_char = curr_c;
 	}
 
+	// If there is still data in the buffer, append it
 	if !buffer.is_empty() {
-		split.push(buffer.iter().collect::<String>());
+		data.push(buffer.iter().cloned().collect::<String>());
 	}
-	split
+
+	data
 }
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
