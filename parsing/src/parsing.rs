@@ -145,10 +145,7 @@ pub fn is_letter(c: &char) -> bool { LETTERS.contains(&c) }
 #[inline]
 pub fn is_number(c: &char) -> bool { NUMBERS.contains(&c) }
 
-/// EXTREMELY Janky function that tries to put asterisks in the proper places to be parsed. This is so cursed. But it works, and I hopefully won't ever have to touch it again.
-/// One limitation though, variables with multiple characters like `pi` cannot be multiplied (like `pipipipi` won't result in `pi*pi*pi*pi`). But that's such a niche use case (and that same thing could be done by using exponents) that it doesn't really matter.
-/// In the future I may want to completely rewrite this or implement this natively in exmex.
-// TODO: use `split_function` here instead of this janky code
+/// Adds asterisks where needed in a function
 pub fn process_func_str(function_in: &str) -> String {
 	if function_in.is_empty() {
 		return String::new();
