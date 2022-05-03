@@ -43,7 +43,7 @@ jobs:
           version: latest
       - run: cargo test-all-features
 
-      - name: Test Parsing
-        uses: actions-rs/cargo@v1
-        with:
-          command: cargo test --package parsing
+      # - name: Test Parsing
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: test --package parsing
