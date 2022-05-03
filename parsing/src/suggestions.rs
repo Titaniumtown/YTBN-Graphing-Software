@@ -54,22 +54,24 @@ fn split_function_chars(chars: &[char]) -> Vec<String> {
 	let mut prev_char: BoolSlice = BoolSlice::default();
 
 	for c in chars {
-		let mut curr_c = BoolSlice {
-			closing_parens: c == &')',
-			number: is_number(c),
-			letter: is_letter(c),
-			variable: is_variable(c),
-			masked_num: if is_number(c) {
-				prev_char.masked_num
-			} else {
-				false
-			},
-			masked_var: if is_variable(c) {
-				prev_char.masked_var
-			} else {
-				false
-			},
-			exists: true,
+		let mut curr_c = {
+			let isnumber = is_number(c);
+			let isvariable = is_variable(c);
+			BoolSlice {
+				closing_parens: c == &')',
+				number: isnumber,
+				letter: is_letter(c),
+				variable: isvariable,
+				masked_num: match isnumber {
+					true => prev_char.masked_num,
+					false => false,
+				},
+				masked_var: match isvariable {
+					true => prev_char.masked_var,
+					false => false,
+				},
+				exists: true,
+			}
 		};
 
 		let buffer_string = buffer.iter().collect::<String>();
