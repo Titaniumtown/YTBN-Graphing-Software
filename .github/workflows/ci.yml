@@ -46,4 +46,4 @@ jobs:
       - name: Test Parsing
         uses: actions-rs/cargo@v1
         with:
-          command: check --package parsing
+          command: test --package parsing
