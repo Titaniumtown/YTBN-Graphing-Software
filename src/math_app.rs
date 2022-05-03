@@ -2,6 +2,7 @@ use crate::consts::*;
 use crate::function_entry::Riemann;
 use crate::function_manager::FunctionManager;
 use crate::misc::{dyn_mut_iter, option_vec_printer, TextData};
+use eframe::App;
 use egui::{
 	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData,
 	FontDefinitions, FontFamily, Frame, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2,
@@ -135,8 +136,6 @@ impl MathApp {
 
 		#[cfg(not(threading))]
 		tracing::info!("Threading: Disabled");
-
-		tracing::info!("Integration name: {}", cc.integration_info.name);
 
 		if let Some(web_info) = &cc.integration_info.web_info {
 			tracing::info!("Web Info: {:?}", web_info);
@@ -382,9 +381,9 @@ impl MathApp {
 	}
 }
 
-impl epi::App for MathApp {
+impl App for MathApp {
 	/// Called each time the UI needs repainting.
-	fn update(&mut self, ctx: &Context, _frame: &mut epi::Frame) {
+	fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
 		// start timer
 		let start = if self.opened.info {
 			Some(instant::Instant::now())

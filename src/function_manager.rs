@@ -1,7 +1,7 @@
 use crate::consts::is_mobile;
 use crate::function_entry::{FunctionEntry, DEFAULT_FUNCTION_ENTRY};
 use crate::widgets::{move_cursor_to_end, widgets_ontop, Movement};
-use egui::{Button, Key, Modifiers};
+use egui::{Button, Key, Modifiers, RichText, WidgetText};
 use emath::vec2;
 use parsing::suggestions::Hint;
 use std::ops::BitXorAssign;
@@ -128,8 +128,8 @@ impl FunctionManager {
 			}
 
 			/// Function that creates button that's used with the `button_area`
-			fn button_area_button(text: impl Into<egui::WidgetText>) -> Button {
-				Button::new(text.into()).frame(false)
+			const fn button_area_button(text: String) -> Button {
+				Button::new_const(WidgetText::RichText(RichText::new_const(text))).frame(false)
 			}
 
 			/// the y offset multiplier of the `buttons_area` area
@@ -144,7 +144,7 @@ impl FunctionManager {
 					ui.horizontal(|ui| {
 						// There's more than 1 function! Functions can now be deleted
 						if ui
-							.add_enabled(can_remove, button_area_button("✖"))
+							.add_enabled(can_remove, button_area_button("✖".to_owned()))
 							.on_hover_text("Delete Function")
 							.clicked()
 						{
@@ -153,7 +153,7 @@ impl FunctionManager {
 
 						// Toggle integral being enabled or not
 						function.integral.bitxor_assign(
-							ui.add(button_area_button("∫"))
+							ui.add(button_area_button("∫".to_owned()))
 								.on_hover_text(match function.integral {
 									true => "Don't integrate",
 									false => "Integrate",
@@ -163,7 +163,7 @@ impl FunctionManager {
 
 						// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
 						function.derivative.bitxor_assign(
-							ui.add(button_area_button("d/dx"))
+							ui.add(button_area_button("d/dx".to_owned()))
 								.on_hover_text(match function.derivative {
 									true => "Don't Differentiate",
 									false => "Differentiate",
@@ -172,7 +172,7 @@ impl FunctionManager {
 						);
 
 						function.settings_opened.bitxor_assign(
-							ui.add(button_area_button("⚙"))
+							ui.add(button_area_button("⚙".to_owned()))
 								.on_hover_text(match function.settings_opened {
 									true => "Close Settings",
 									false => "Open Settings",

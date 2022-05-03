@@ -42,3 +42,8 @@ jobs:
           crate: cargo-all-features
           version: latest
       - run: cargo test-all-features
+
+      - name: Test Parsing
+        uses: actions-rs/cargo@v1
+        with:
+          command: check --package parsing

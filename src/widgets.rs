@@ -10,7 +10,7 @@ pub enum Movement {
 	None,
 }
 
-impl Default for Movement {
+impl const Default for Movement {
 	fn default() -> Self { Self::None }
 }
 
@@ -21,7 +21,7 @@ pub struct AutoComplete<'a> {
 	pub string: String,
 }
 
-impl<'a> Default for AutoComplete<'a> {
+impl<'a> const Default for AutoComplete<'a> {
 	fn default() -> AutoComplete<'a> {
 		AutoComplete {
 			i: 0,
@@ -34,9 +34,14 @@ impl<'a> Default for AutoComplete<'a> {
 impl<'a> AutoComplete<'a> {
 	pub fn update_string(&mut self, string: &str) {
 		if self.string != string {
-			self.i = 0;
-			self.string = string.to_string();
-			self.hint = generate_hint(string);
+			// catch empty strings here to avoid call to `generate_hint` and unnecessary logic
+			if string.is_empty() {
+				*self = Self::default();
+			} else {
+				self.i = 0;
+				self.string = string.to_string();
+				self.hint = generate_hint(string);
+			}
 		}
 	}
 

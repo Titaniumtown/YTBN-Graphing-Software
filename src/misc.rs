@@ -298,7 +298,7 @@ where
 			.map(|x| {
 				x.as_ref()
 					.map(|x_1| x_1.to_string())
-					.unwrap_or_else(|| "None".to_string())
+					.unwrap_or_else(|| "None".to_owned())
 			})
 			.enumerate()
 			.map(|(i, x)| {

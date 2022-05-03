@@ -150,95 +150,11 @@ pub fn is_number(c: &char) -> bool { NUMBERS.contains(&c) }
 /// In the future I may want to completely rewrite this or implement this natively in exmex.
 // TODO: use `split_function` here instead of this janky code
 pub fn process_func_str(function_in: &str) -> String {
-	let function = function_in
-		.replace("log10(", "log(") // log10 -> log
-		.replace("pi", "π") // pi -> π
-		.replace("exp", "\u{1fc93}") // replace 'exp' with this random unicode character because it can't be parsed correctly
-		.replace("**", "^"); // alternate exponential representation
-	let function_chars: Vec<char> = function.chars().collect();
-	let mut output_string: String = String::new();
-	for (i, c) in function_chars.iter().enumerate() {
-		let mut add_asterisk: bool = false;
-
-		let prev_prev_prev_char = if i > 2 {
-			*function_chars.get(i - 3).unwrap()
-		} else {
-			' '
-		};
-
-		let prev_prev_char = if i > 1 {
-			*function_chars.get(i - 2).unwrap()
-		} else {
-			' '
-		};
-
-		let prev_char = if i > 0 {
-			*function_chars.get(i - 1).unwrap()
-		} else {
-			' '
-		};
-
-		let c_is_number = is_number(c);
-		let c_is_letter = is_letter(c);
-		let c_is_variable = is_variable(c);
-		let prev_char_is_variable = is_variable(&prev_char);
-		let prev_char_is_number = is_number(&prev_char);
-
-		// makes special case for log with base of a 1-2 digit number
-		if ((prev_prev_prev_char == 'l')
-			&& (prev_prev_char == 'o')
-			&& (prev_char == 'g')
-			&& c_is_number)
-			| ((prev_prev_char == 'c') && (prev_char == 'e') && (*c == 'i'))
-		{
-			output_string += &c.to_string();
-			continue;
-		}
-
-		let c_letters_var = c_is_letter | c_is_variable;
-		let prev_letters_var = prev_char_is_variable | is_letter(&prev_char);
-
-		if prev_char == ')' {
-			// cases like `)x`, `)2`, and `)(`
-			if c_letters_var | c_is_number | (*c == '(') {
-				add_asterisk = true;
-			}
-		} else if *c == '(' {
-			// cases like `x(` and `2(`
-			if (prev_char_is_variable | prev_char_is_number) && !is_letter(&prev_prev_char) {
-				add_asterisk = true;
-			}
-		} else if prev_char_is_number {
-			// cases like `2x` and `2sin(x)`
-			if c_letters_var {
-				add_asterisk = true;
-			}
-		} else if c_is_letter {
-			// cases like `e2` and `xx`
-			if prev_char_is_number
-				| (prev_char_is_variable && c_is_variable)
-				| prev_char_is_variable
-				| (prev_char == 'π')
-			{
-				add_asterisk = true;
-			}
-		} else if (c_is_number | c_letters_var) && prev_letters_var {
-			// cases like `x2` and `xx`
-			add_asterisk = true;
-		}
-
-		// if add_asterisk is true, add the asterisk
-		if add_asterisk {
-			output_string += "*";
-		}
-
-		// push current char to `output_string` (which is eventually returned)
-		output_string += &c.to_string();
+	if function_in.is_empty() {
+		return String::new();
 	}
 
-	output_string
-		.replace("log(", "log10(")
-		.replace('\u{1fc93}', "exp")
+	crate::suggestions::split_function(&function_in).join("*")
 }
 
 #[cfg(test)]
@@ -326,6 +242,7 @@ mod tests {
 			("pisin(x)", "π*sin(x)"),
 			("e^sin(x)", "e^sin(x)"),
 			("x**2", "x^2"),
+			("(x+1)(x-3)", "(x+1)*(x-3)"),
 		]);
 
 		for (key, value) in values {
