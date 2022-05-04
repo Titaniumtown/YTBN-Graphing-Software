@@ -36,8 +36,6 @@ strip = false
 
 [dependencies]
 parsing = { path = "./parsing" }
-benchmarks = { path = "./benchmarks" }
-
 eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
@@ -56,6 +54,8 @@ static_assertions = "1.1"
 phf = "0.10"
 uuid = { version = "1", features = ["v4", "fast-rng", "js"] }
 
+[dev-dependencies]
+benchmarks = { path = "./benchmarks" }
 
 [build-dependencies]
 shadow-rs = "0.11"

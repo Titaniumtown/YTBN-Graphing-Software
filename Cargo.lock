@@ -1674,13 +1674,10 @@ dependencies = [
 name = "parsing"
 version = "0.1.0"
 dependencies = [
- "criterion",
- "criterion-macro",
  "exmex",
  "lazy_static",
  "phf",
  "phf_codegen",
- "pprof",
 ]
 
 [[package]]
