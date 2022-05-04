@@ -1,4 +1,4 @@
-use std::mem;
+use std::{intrinsics::assume, mem};
 
 use crate::parsing::is_variable;
 
@@ -34,6 +34,16 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		return Vec::new();
 	}
 
+	// No point in processing everything if there's only 1 character
+	if chars.len() == 1 {
+		return vec![chars[0].to_string()];
+	}
+
+	unsafe {
+		assume(chars.len() > 1);
+		assume(!chars.is_empty());
+	}
+
 	// Resulting split-up data
 	let mut data: Vec<Vec<&char>> = Vec::with_capacity(chars.len());
 
@@ -47,72 +57,61 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		variable: bool,
 		masked_num: bool,
 		masked_var: bool,
-		exists: bool,
 	}
 
 	impl BoolSlice {
-		#[inline(always)]
-		fn is_variable(&self) -> bool { self.variable && !self.masked_var }
-
-		#[inline(always)]
-		fn is_number(&self) -> bool { self.number && !self.masked_num }
-	}
-
-	let mut prev_char: BoolSlice = BoolSlice {
-		closing_parens: false,
-		number: false,
-		letter: false,
-		variable: false,
-		masked_num: false,
-		masked_var: false,
-		exists: false,
-	};
-
-	for c in chars {
-		// Set data about current character
-		let mut curr_c = {
+		fn from_char(c: &char, prev_masked_num: bool, prev_masked_var: bool) -> Self {
 			let isnumber = c.is_ascii_digit();
 			let isvariable = is_variable(c);
-			BoolSlice {
+			Self {
 				closing_parens: c == &')',
 				number: isnumber,
 				letter: c.is_ascii_alphabetic(),
 				variable: isvariable,
 				masked_num: match isnumber {
-					true => prev_char.masked_num,
+					true => prev_masked_num,
 					false => false,
 				},
 				masked_var: match isvariable {
-					true => prev_char.masked_var,
+					true => prev_masked_var,
 					false => false,
 				},
-				exists: true,
 			}
-		};
+		}
+		fn is_variable(&self) -> bool { self.variable && !self.masked_var }
 
-		// Check if prev_char is valid
-		if prev_char.exists {
-			// If previous char was a masked number, and current char is a number, mask current char's variable status
-			if prev_char.masked_num && curr_c.number {
+		fn is_number(&self) -> bool { self.number && !self.masked_num }
+	}
+
+	// Setup first char here
+	let mut prev_char: BoolSlice = BoolSlice::from_char(&chars[0], false, false);
+	buffer.push(&chars[0]);
+
+	// Iterate through all chars excluding the first one
+	for c in chars.iter().skip(1) {
+		// Set data about current character
+		let mut curr_c = BoolSlice::from_char(c, prev_char.masked_num, prev_char.masked_var);
+
+		// If previous char was a masked number, and current char is a number, mask current char's variable status
+		if prev_char.masked_num && curr_c.number {
+			curr_c.masked_num = true;
+		}
+
+		// If previous char was a masked variable, and current char is a variable, mask current char's variable status
+		if prev_char.masked_var && curr_c.variable {
+			curr_c.masked_var = true;
+		}
+
+		// If letter and not a variable (or a masked variable)
+		if prev_char.letter && !prev_char.is_variable() {
+			// Mask number status if current char is number
+			if curr_c.number {
 				curr_c.masked_num = true;
 			}
 
-			// If previous char was a masked variable, and current char is a variable, mask current char's variable status
-			if prev_char.masked_var && curr_c.variable {
+			// Mask variable status if current char is a variable
+			if curr_c.variable {
 				curr_c.masked_var = true;
-			}
-
-			// If letter and not a variable (or a masked variable)
-			if prev_char.letter && !prev_char.is_variable() {
-				// Mask number status if current char is number
-				if curr_c.number {
-					curr_c.masked_num = true;
-				}
-
-				// Mask variable status if current char is a variable
-				if curr_c.variable {
-					curr_c.masked_var = true;
-				}
 			}
 		}
 
@@ -120,31 +119,21 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 
 		if prev_char.closing_parens {
 			// Cases like `)x`, `)2`, and `)(`
-			if (c == &'(')
+			do_split = (c == &'(')
 				| (curr_c.letter && !curr_c.is_variable())
 				| curr_c.is_variable()
-				| curr_c.is_number()
-			{
-				do_split = true;
-			}
+				| curr_c.is_number();
 		} else if c == &'(' {
 			// Cases like `x(` and `2(`
-			if (prev_char.is_variable() | prev_char.is_number()) && !prev_char.letter {
-				do_split = true;
-			}
+			do_split = (prev_char.is_variable() | prev_char.is_number()) && !prev_char.letter;
 		} else if prev_char.is_number() {
 			// Cases like `2x` and `2sin(x)`
-			if curr_c.is_variable() | curr_c.letter {
-				do_split = true;
-			}
+			do_split = curr_c.is_variable() | curr_c.letter;
 		} else if curr_c.is_variable() | curr_c.letter {
 			// Cases like `e2` and `xx`
-			if prev_char.is_number()
+			do_split = prev_char.is_number()
 				| (prev_char.is_variable() && curr_c.is_variable())
 				| prev_char.is_variable()
-			{
-				do_split = true;
-			}
 		} else if (curr_c.is_number() | curr_c.letter | curr_c.is_variable())
 			&& (prev_char.is_number() | prev_char.letter)
 		{
@@ -157,6 +146,8 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		// Append split
 		if do_split {
 			data.push(Vec::new());
+
+			// Don't deinitialize `buffer`, simply swap data between the new last element of `data` with buffer!
 			unsafe {
 				mem::swap(data.last_mut().unwrap_unchecked(), &mut buffer);
 			}
@@ -174,13 +165,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		data.push(buffer);
 	}
 
-	if data.len() == 1 {
-		if data[0].is_empty() {
-			return Vec::new();
-		}
-	}
-
-	data.iter()
+	data.into_iter()
 		.map(|e| e.iter().map(|c| *c).collect::<String>())
 		.collect::<Vec<String>>()
 }
@@ -330,6 +315,9 @@ mod tests {
 			("cos(x)sin(x)", vec!["cos(x)", "sin(x)"]),
 			("aaaaaaaaaaa", vec!["aaaaaaaaaaa"]),
 			("emax(x)", vec!["e", "max(x)"]),
+			("x", vec!["x"]),
+			("xxx", vec!["x", "x", "x"]),
+			("sin(cos(x)x)", vec!["sin(cos(x)", "x)"]),
 		]);
 
 		for (key, value) in values {
