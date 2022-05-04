@@ -176,8 +176,14 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		data.push(buffer);
 	}
 
+	if data.len() == 1 {
+		if data[0].is_empty() {
+			return Vec::new();
+		}
+	}
+
 	data.iter()
-		.map(|e| e.iter().cloned().collect::<String>())
+		.map(|e| e.iter().map(|c| *c).collect::<String>())
 		.collect::<Vec<String>>()
 }
 
