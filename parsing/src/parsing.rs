@@ -129,21 +129,9 @@ fn prettyify_function_str(func: &str) -> String {
 }
 
 pub const VALID_VARIABLES: [char; 5] = ['x', 'X', 'e', 'E', 'π'];
-const LETTERS: [char; 52] = [
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-	't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-	'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-];
-const NUMBERS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 #[inline]
 pub fn is_variable(c: &char) -> bool { VALID_VARIABLES.contains(&c) }
-
-#[inline]
-pub fn is_letter(c: &char) -> bool { LETTERS.contains(&c) }
-
-#[inline]
-pub fn is_number(c: &char) -> bool { NUMBERS.contains(&c) }
 
 /// Adds asterisks where needed in a function
 pub fn process_func_str(function_in: &str) -> String {

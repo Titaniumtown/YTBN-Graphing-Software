@@ -4,10 +4,13 @@
 #[allow(unused_imports)]
 use parsing::suggestions::split_function_chars;
 
+#[allow(unused_imports)]
+use std::time::Duration;
 use std::{fs::File, os::raw::c_int, path::Path};
 
 use criterion::profiler::Profiler;
-use criterion::Criterion;
+#[allow(unused_imports)]
+use criterion::{BenchmarkId, Criterion};
 use criterion_macro::criterion;
 use pprof::ProfilerGuard;
 
@@ -47,8 +50,11 @@ impl<'a> Profiler for FlamegraphProfiler<'a> {
 	}
 }
 
+#[allow(dead_code)] // this infact IS used by benchmarks
 fn custom_criterion() -> Criterion {
-	Criterion::default().with_profiler(FlamegraphProfiler::new(100))
+	Criterion::default()
+		// .with_profiler(FlamegraphProfiler::new(100))
+		.warm_up_time(Duration::from_millis(250))
 }
 
 #[criterion(custom_criterion())]
@@ -71,11 +77,17 @@ fn split_function_bench(c: &mut Criterion) {
 	.map(|a| a.chars().collect::<Vec<char>>())
 	.collect::<Vec<Vec<char>>>();
 
-	c.bench_function("split_function", |b| {
-		b.iter(|| {
-			data_chars.iter().for_each(|a| {
-				split_function_chars(a);
-			})
-		})
-	});
+	let mut group = c.benchmark_group("split_function");
+	for entry in data_chars {
+		group.bench_with_input(
+			BenchmarkId::new("split_function", entry.iter().collect::<String>()),
+			&entry,
+			|b, i| {
+				b.iter(|| {
+					split_function_chars(i);
+				})
+			},
+		);
+	}
+	group.finish();
 }

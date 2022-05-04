@@ -1,4 +1,4 @@
-use crate::parsing::{is_letter, is_number, is_variable};
+use crate::parsing::is_variable;
 
 pub const HINT_EMPTY: Hint = Hint::Single("x^2");
 const HINT_CLOSED_PARENS: Hint = Hint::Single(")");
@@ -40,7 +40,6 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	// Buffer used to store data ready to be appended
 	let mut buffer: Vec<&char> = Vec::with_capacity(chars.len());
 
-	#[derive(Default)]
 	struct BoolSlice {
 		closing_parens: bool,
 		number: bool,
@@ -59,17 +58,25 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		fn is_number(&self) -> bool { self.number && !self.masked_num }
 	}
 
-	let mut prev_char: BoolSlice = BoolSlice::default();
+	let mut prev_char: BoolSlice = BoolSlice {
+		closing_parens: false,
+		number: false,
+		letter: false,
+		variable: false,
+		masked_num: false,
+		masked_var: false,
+		exists: false,
+	};
 
 	for c in chars {
 		// Set data about current character
 		let mut curr_c = {
-			let isnumber = is_number(c);
+			let isnumber = c.is_ascii_digit();
 			let isvariable = is_variable(c);
 			BoolSlice {
 				closing_parens: c == &')',
 				number: isnumber,
-				letter: is_letter(c),
+				letter: c.is_ascii_alphabetic(),
 				variable: isvariable,
 				masked_num: match isnumber {
 					true => prev_char.masked_num,
