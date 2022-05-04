@@ -242,13 +242,13 @@ impl<'a> std::fmt::Debug for Hint<'a> {
 }
 
 impl<'a> Hint<'a> {
-	pub fn is_none(&self) -> bool { matches!(self, Hint::None) }
+	pub fn is_none(&self) -> bool { matches!(&self, &Hint::None) }
 
 	#[allow(dead_code)]
 	pub fn is_some(&self) -> bool { !self.is_none() }
 
 	#[allow(dead_code)]
-	pub fn is_single(&self) -> bool { matches!(self, Hint::Single(_)) }
+	pub fn is_single(&self) -> bool { matches!(&self, &Hint::Single(_)) }
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
@@ -336,6 +336,30 @@ mod tests {
 
 		for (key, value) in values {
 			assert_eq!(super::split_function(key), value);
+		}
+	}
+
+	#[test]
+	fn hint_tests() {
+		{
+			let hint = Hint::None;
+			assert!(hint.is_none());
+			assert!(!hint.is_some());
+			assert!(!hint.is_single());
+		}
+
+		{
+			let hint = Hint::Single(&"");
+			assert!(!hint.is_none());
+			assert!(hint.is_some());
+			assert!(hint.is_single());
+		}
+
+		{
+			let hint = Hint::Many(&[""]);
+			assert!(!hint.is_none());
+			assert!(hint.is_some());
+			assert!(!hint.is_single());
 		}
 	}
 }
