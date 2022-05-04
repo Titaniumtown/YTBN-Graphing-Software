@@ -27,6 +27,8 @@ pub fn split_function(input: &str) -> Vec<String> {
 }
 
 // __REVIEW__
+// __OPTIMIZE__
+// takes up to 33% of performance in calls like `buffer.iter().cloned().collect::<String>()` along with allocating `data` and `buffer` vectors
 pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	if chars.is_empty() {
 		return Vec::new();
@@ -94,7 +96,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 			}
 
 			// If letter and not a variable (or a masked variable)
-			if prev_char.letter && prev_char.is_variable() {
+			if prev_char.letter && !prev_char.is_variable() {
 				// Mask number status if current char is number
 				if curr_c.number {
 					curr_c.masked_num = true;

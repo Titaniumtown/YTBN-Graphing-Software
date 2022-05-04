@@ -27,6 +27,13 @@ opt-level = 0
 lto = "thin"
 strip = false
 
+[profile.bench]
+debug = true
+codegen-units = 1
+opt-level = 3
+lto = "thin"
+strip = false
+
 [dependencies]
 parsing = { path = "./parsing" }
 benchmarks = { path = "./benchmarks" }
