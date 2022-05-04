@@ -53,13 +53,17 @@ impl<'a> Profiler for FlamegraphProfiler<'a> {
 #[allow(dead_code)] // this infact IS used by benchmarks
 fn custom_criterion() -> Criterion {
 	Criterion::default()
-		// .with_profiler(FlamegraphProfiler::new(100))
 		.warm_up_time(Duration::from_millis(250))
 		.sample_size(1000)
 }
 
+#[allow(dead_code)] // this infact IS used by benchmarks
+fn custom_criterion_flamegraph() -> Criterion {
+	custom_criterion().with_profiler(FlamegraphProfiler::new(100))
+}
+
 #[criterion(custom_criterion())]
-fn split_function_bench(c: &mut Criterion) {
+fn mutli_split_function(c: &mut Criterion) {
 	let data_chars = vec![
 		"sin(x)cos(x)",
 		"x^2",
@@ -88,3 +92,14 @@ fn split_function_bench(c: &mut Criterion) {
 	}
 	group.finish();
 }
+
+// #[criterion(custom_criterion_flamegraph())]
+// fn single_split_function(c: &mut Criterion) {
+// 	let data_chars = "(2x+1)(3x+1)".chars().collect::<Vec<char>>();
+
+// 	c.bench_function("split_function", |b| {
+// 		b.iter(|| {
+// 			split_function_chars(&data_chars);
+// 		});
+// 	});
+// }
