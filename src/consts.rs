@@ -87,14 +87,9 @@ lazy_static::lazy_static! {
 	};
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-const IS_MOBILE: bool = false;
-
 #[inline]
-pub fn is_mobile() -> bool {
-	#[cfg(target_arch = "wasm32")]
-	return *IS_MOBILE;
+#[cfg(target_arch = "wasm32")]
+pub fn is_mobile() -> bool { return *IS_MOBILE; }
 
-	#[cfg(not(target_arch = "wasm32"))]
-	return IS_MOBILE;
-}
+#[cfg(not(target_arch = "wasm32"))]
+pub const fn is_mobile() -> bool { return false; }
