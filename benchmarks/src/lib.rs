@@ -55,6 +55,7 @@ fn custom_criterion() -> Criterion {
 	Criterion::default()
 		// .with_profiler(FlamegraphProfiler::new(100))
 		.warm_up_time(Duration::from_millis(250))
+		.sample_size(1000)
 }
 
 #[criterion(custom_criterion())]
@@ -79,15 +80,11 @@ fn split_function_bench(c: &mut Criterion) {
 
 	let mut group = c.benchmark_group("split_function");
 	for entry in data_chars {
-		group.bench_with_input(
-			BenchmarkId::new("split_function", entry.iter().collect::<String>()),
-			&entry,
-			|b, i| {
-				b.iter(|| {
-					split_function_chars(i);
-				})
-			},
-		);
+		group.bench_function(entry.iter().collect::<String>(), |b| {
+			b.iter(|| {
+				split_function_chars(&entry);
+			})
+		});
 	}
 	group.finish();
 }

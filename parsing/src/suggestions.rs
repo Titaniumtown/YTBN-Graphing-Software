@@ -1,3 +1,5 @@
+use std::intrinsics::assume;
+
 use crate::parsing::is_variable;
 
 pub const HINT_EMPTY: Hint = Hint::Single("x^2");
@@ -35,7 +37,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	}
 
 	// Resulting split-up data
-	let mut data: Vec<String> = Vec::with_capacity(chars.len());
+	let mut data: Vec<Vec<&char>> = Vec::with_capacity(chars.len());
 
 	// Buffer used to store data ready to be appended
 	let mut buffer: Vec<&char> = Vec::with_capacity(chars.len());
@@ -156,7 +158,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 
 		// Append split
 		if do_split {
-			data.push(buffer.iter().cloned().collect::<String>());
+			data.push(buffer.clone());
 			buffer.clear();
 		}
 
@@ -169,10 +171,16 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 
 	// If there is still data in the buffer, append it
 	if !buffer.is_empty() {
-		data.push(buffer.iter().cloned().collect::<String>());
+		data.push(buffer);
 	}
 
-	data
+	unsafe {
+		assume(!data.is_empty());
+	}
+
+	data.iter()
+		.map(|e| e.iter().cloned().collect::<String>())
+		.collect()
 }
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
