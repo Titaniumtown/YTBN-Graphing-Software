@@ -1,4 +1,4 @@
-use std::intrinsics::assume;
+use std::mem;
 
 use crate::parsing::is_variable;
 
@@ -158,8 +158,10 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 
 		// Append split
 		if do_split {
-			data.push(buffer.clone());
-			buffer.clear();
+			data.push(Vec::new());
+			unsafe {
+				mem::swap(data.last_mut().unwrap_unchecked(), &mut buffer);
+			}
 		}
 
 		// Add character to buffer
@@ -174,13 +176,9 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		data.push(buffer);
 	}
 
-	unsafe {
-		assume(!data.is_empty());
-	}
-
 	data.iter()
 		.map(|e| e.iter().cloned().collect::<String>())
-		.collect()
+		.collect::<Vec<String>>()
 }
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`
