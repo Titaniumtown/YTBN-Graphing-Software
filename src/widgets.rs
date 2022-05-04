@@ -1,3 +1,5 @@
+use std::intrinsics::assume;
+
 use egui::{text::CCursor, text_edit::CursorRange, TextEdit};
 use epaint::text::cursor::{Cursor, PCursor, RCursor};
 use parsing::suggestions::{self, generate_hint, Hint};
@@ -52,6 +54,12 @@ impl<'a> AutoComplete<'a> {
 
 		match self.hint {
 			Hint::Many(hints) => {
+				// Impossible for plural hints to be singular or non-existant
+				unsafe {
+					assume(hints.len() > 1);
+					assume(!hints.is_empty());
+				}
+
 				match movement {
 					Movement::Up => {
 						// subtract one, if fail, set to maximum index value.
@@ -65,6 +73,8 @@ impl<'a> AutoComplete<'a> {
 						}
 					}
 					Movement::Complete => {
+						unsafe { assume(hints.len() >= (self.i + 1)) }
+
 						self.apply_hint(hints[self.i]);
 					}
 					Movement::None => {}
@@ -87,7 +97,7 @@ impl<'a> AutoComplete<'a> {
 
 /// Moves cursor of TextEdit `te_id` to the end
 pub fn move_cursor_to_end(ctx: &egui::Context, te_id: egui::Id) {
-	let mut state = TextEdit::load_state(ctx, te_id).expect("Expected TextEdit");
+	let mut state = unsafe { TextEdit::load_state(ctx, te_id).unwrap_unchecked() };
 	state.set_cursor_range(Some(CursorRange::one(Cursor {
 		ccursor: CCursor {
 			index: 0,

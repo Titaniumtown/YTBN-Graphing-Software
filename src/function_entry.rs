@@ -10,7 +10,10 @@ use egui::{
 };
 use epaint::Color32;
 use parsing::parsing::{process_func_str, BackingFunction};
-use std::fmt::{self, Debug};
+use std::{
+	fmt::{self, Debug},
+	intrinsics::assume,
+};
 
 #[cfg(threading)]
 use rayon::iter::ParallelIterator;
@@ -233,6 +236,8 @@ impl FunctionEntry {
 		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
 		let resolution_iter = resolution_helper(&settings.plot_width + 1, min_x, &resolution);
 
+		unsafe { assume(!resolution_iter.is_empty()) }
+
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
 			self.invalidate_integral();
@@ -330,6 +335,10 @@ impl FunctionEntry {
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.derivative_data = data;
+
+				unsafe {
+					assume(!self.derivative_data.is_empty());
+				}
 			}
 
 			if self.nth_derviative && self.nth_derivative_data.is_none() {
@@ -338,6 +347,10 @@ impl FunctionEntry {
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.nth_derivative_data = Some(data);
+
+				unsafe {
+					assume(self.nth_derivative_data.is_some());
+				}
 			}
 		}
 
@@ -351,6 +364,9 @@ impl FunctionEntry {
 				);
 				self.integral_data =
 					Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
+				unsafe {
+					assume(self.integral_data.is_some());
+				}
 			}
 		} else {
 			self.invalidate_integral();

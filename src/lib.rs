@@ -2,6 +2,7 @@
 #![feature(let_chains)]
 #![feature(stmt_expr_attributes)]
 #![feature(const_trait_impl)]
+#![feature(core_intrinsics)]
 
 #[macro_use]
 extern crate static_assertions;
