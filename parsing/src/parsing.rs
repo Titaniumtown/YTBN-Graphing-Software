@@ -1,69 +1,122 @@
 use exmex::prelude::*;
 
-lazy_static::lazy_static! {
-	/// Function returns `f64::NaN` at every x value, which is not displayed.
-	static ref EMPTY_FUNCTION: FlatEx<f64> = exmex::parse::<f64>("0/0").unwrap();
+#[derive(Clone)]
+pub struct FlatExWrapper {
+	func: Option<FlatEx<f64>>,
 }
-/// Function that includes f(x), f'(x), f'(x)'s string representation, and
-/// f''(x)
+
+impl FlatExWrapper {
+	const EMPTY: FlatExWrapper = FlatExWrapper { func: None };
+
+	fn new(f: FlatEx<f64>) -> Self { Self { func: Some(f) } }
+
+	fn eval(&self, x: &[f64]) -> f64 {
+		if let Some(ref f) = self.func {
+			f.eval(x).unwrap_or(f64::NAN)
+		} else {
+			f64::NAN
+		}
+	}
+
+	fn partial(&self, x: usize) -> Self {
+		if let Some(ref f) = self.func {
+			match f.partial(x) {
+				Ok(a) => Self::new(a),
+				Err(_) => Self::EMPTY,
+			}
+		} else {
+			Self::EMPTY
+		}
+	}
+
+	fn get_string(&self) -> &str {
+		if let Some(ref f) = self.func {
+			f.unparse()
+		} else {
+			""
+		}
+	}
+
+	fn partial_iter(&self, x: &[usize]) -> Self {
+		if let Some(ref f) = self.func {
+			match f.partial_iter(x.iter()) {
+				Ok(a) => Self::new(a),
+				Err(_) => Self::EMPTY,
+			}
+		} else {
+			Self::EMPTY
+		}
+	}
+}
+
+impl const Default for FlatExWrapper {
+	fn default() -> FlatExWrapper { FlatExWrapper::EMPTY }
+}
+
+/// Function that includes f(x), f'(x), f'(x)'s string representation, and f''(x)
 #[derive(Clone)]
 pub struct BackingFunction {
 	/// f(x)
-	function: FlatEx<f64>,
+	function: FlatExWrapper,
 	/// f'(x)
-	derivative_1: FlatEx<f64>,
+	derivative_1: FlatExWrapper,
 	/// Mathematical representation of f'(x)
 	derivative_1_str: String,
 	/// f''(x)
-	derivative_2: FlatEx<f64>,
+	derivative_2: FlatExWrapper,
 
-	nth_derivative: Option<(usize, FlatEx<f64>, String)>,
+	nth_derivative: Option<(usize, FlatExWrapper, String)>,
 }
 
 impl BackingFunction {
+	const EMPTY: BackingFunction = BackingFunction {
+		function: FlatExWrapper::EMPTY,
+		derivative_1: FlatExWrapper::EMPTY,
+		derivative_1_str: String::new(),
+		derivative_2: FlatExWrapper::EMPTY,
+		nth_derivative: None,
+	};
+
 	/// Create new [`BackingFunction`] instance
 	pub fn new(func_str: &str) -> Result<Self, String> {
-		let function = match func_str {
-			"" => EMPTY_FUNCTION.clone(),
-			_ => {
-				let parse_result = exmex::parse::<f64>(func_str);
+		if func_str.is_empty() {
+			return Ok(Self::EMPTY);
+		}
 
-				match &parse_result {
-					Err(e) => return Err(e.to_string()),
-					Ok(_) => {
-						let var_names = unsafe { parse_result.as_ref().unwrap_unchecked() }
-							.var_names()
-							.to_vec();
+		let function = FlatExWrapper::new({
+			let parse_result = exmex::parse::<f64>(func_str);
 
-						if var_names != ["x"] {
-							let var_names_not_x: Vec<&String> = var_names
-								.iter()
-								.filter(|ele| ele != &"x")
-								.collect::<Vec<&String>>();
+			match &parse_result {
+				Err(e) => return Err(e.to_string()),
+				Ok(_) => {
+					let var_names = unsafe { parse_result.as_ref().unwrap_unchecked() }
+						.var_names()
+						.to_vec();
 
-							return Err(format!(
-								"Error: invalid variable{}",
-								match var_names_not_x.len() {
-									1 => String::from(": ") + var_names_not_x[0].as_str(),
-									_ => format!("s: {:?}", var_names_not_x),
-								}
-							));
-						}
+					if var_names != ["x"] {
+						let var_names_not_x: Vec<&String> = var_names
+							.iter()
+							.filter(|ele| ele != &"x")
+							.collect::<Vec<&String>>();
+
+						return Err(format!(
+							"Error: invalid variable{}",
+							match var_names_not_x.len() {
+								1 => String::from(": ") + var_names_not_x[0].as_str(),
+								_ => format!("s: {:?}", var_names_not_x),
+							}
+						));
 					}
 				}
-				unsafe { parse_result.unwrap_unchecked() }
 			}
-		};
+			unsafe { parse_result.unwrap_unchecked() }
+		});
 
-		let derivative_1 = function
-			.partial(0)
-			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
+		let derivative_1 = function.partial(0);
 
-		let derivative_1_str = prettyify_function_str(derivative_1.unparse());
+		let derivative_1_str = prettyify_function_str(derivative_1.get_string());
 
-		let derivative_2 = function
-			.partial_iter([0, 0].iter())
-			.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
+		let derivative_2 = derivative_1.partial(0);
 
 		Ok(Self {
 			function,
@@ -78,17 +131,13 @@ impl BackingFunction {
 	pub fn get_derivative_str(&self) -> &str { &self.derivative_1_str }
 
 	/// Calculate f(x)
-	pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]).unwrap_or(f64::NAN) }
+	pub fn get(&self, x: f64) -> f64 { self.function.eval(&[x]) }
 
 	/// Calculate f'(x)
-	pub fn get_derivative_1(&self, x: f64) -> f64 {
-		self.derivative_1.eval(&[x]).unwrap_or(f64::NAN)
-	}
+	pub fn get_derivative_1(&self, x: f64) -> f64 { self.derivative_1.eval(&[x]) }
 
 	/// Calculate f''(x)
-	pub fn get_derivative_2(&self, x: f64) -> f64 {
-		self.derivative_2.eval(&[x]).unwrap_or(f64::NAN)
-	}
+	pub fn get_derivative_2(&self, x: f64) -> f64 { self.derivative_2.eval(&[x]) }
 
 	pub fn get_nth_derivative_str(&self) -> &str { &self.nth_derivative.as_ref().unwrap().2 }
 
@@ -100,20 +149,19 @@ impl BackingFunction {
 			_ => {
 				if let Some((curr_n, curr_n_func, _)) = &self.nth_derivative {
 					if curr_n == &n {
-						return curr_n_func.eval(&[x]).unwrap_or(f64::NAN);
+						return curr_n_func.eval(&[x]);
 					}
 				}
 				let new_func = self
 					.function
-					.partial_iter((1..=n).map(|_| 0).collect::<Vec<usize>>().iter())
-					.unwrap_or_else(|_| EMPTY_FUNCTION.clone());
+					.partial_iter((1..=n).map(|_| 0).collect::<Vec<usize>>().as_slice());
 
 				self.nth_derivative = Some((
 					n,
 					new_func.clone(),
-					prettyify_function_str(new_func.unparse()),
+					prettyify_function_str(new_func.get_string()),
 				));
-				new_func.eval(&[x]).unwrap_or(f64::NAN)
+				new_func.eval(&[x])
 			}
 		}
 	}
