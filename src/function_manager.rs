@@ -1,7 +1,7 @@
 use crate::consts::is_mobile;
-use crate::function_entry::{FunctionEntry, DEFAULT_FUNCTION_ENTRY};
+use crate::function_entry::FunctionEntry;
 use crate::widgets::{move_cursor_to_end, widgets_ontop, Movement};
-use egui::{Button, Key, Modifiers, RichText, WidgetText};
+use egui::{Button, Key, Modifiers, WidgetText};
 use emath::vec2;
 use parsing::suggestions::Hint;
 use std::ops::BitXorAssign;
@@ -14,9 +14,14 @@ pub struct FunctionManager {
 impl Default for FunctionManager {
 	fn default() -> Self {
 		Self {
-			functions: vec![(Uuid::new_v4(), DEFAULT_FUNCTION_ENTRY.clone())],
+			functions: vec![(Uuid::new_v4(), FunctionEntry::default())],
 		}
 	}
+}
+
+/// Function that creates button that's used with the `button_area`
+const fn button_area_button(text: impl Into<WidgetText>) -> Button {
+	Button::new(text).frame(false)
 }
 
 impl FunctionManager {
@@ -127,11 +132,6 @@ impl FunctionManager {
 				}
 			}
 
-			/// Function that creates button that's used with the `button_area`
-			const fn button_area_button(text: String) -> Button {
-				Button::new_const(WidgetText::RichText(RichText::new_const(text))).frame(false)
-			}
-
 			/// The y offset multiplier of the `buttons_area` area
 			const BUTTONS_Y_OFFSET: f32 = 1.32;
 
@@ -144,7 +144,7 @@ impl FunctionManager {
 					ui.horizontal(|ui| {
 						// There's more than 1 function! Functions can now be deleted
 						if ui
-							.add_enabled(can_remove, button_area_button("✖".to_owned()))
+							.add_enabled(can_remove, button_area_button("✖"))
 							.on_hover_text("Delete Function")
 							.clicked()
 						{
@@ -153,7 +153,7 @@ impl FunctionManager {
 
 						// Toggle integral being enabled or not
 						function.integral.bitxor_assign(
-							ui.add(button_area_button("∫".to_owned()))
+							ui.add(button_area_button("∫"))
 								.on_hover_text(match function.integral {
 									true => "Don't integrate",
 									false => "Integrate",
@@ -163,7 +163,7 @@ impl FunctionManager {
 
 						// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
 						function.derivative.bitxor_assign(
-							ui.add(button_area_button("d/dx".to_owned()))
+							ui.add(button_area_button("d/dx"))
 								.on_hover_text(match function.derivative {
 									true => "Don't Differentiate",
 									false => "Differentiate",
@@ -194,7 +194,7 @@ impl FunctionManager {
 
 	pub fn new_function(&mut self) {
 		self.functions
-			.push((Uuid::new_v4(), DEFAULT_FUNCTION_ENTRY.clone()));
+			.push((Uuid::new_v4(), FunctionEntry::default()));
 	}
 
 	pub fn any_using_integral(&self) -> bool {

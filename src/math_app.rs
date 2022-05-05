@@ -63,7 +63,7 @@ pub struct AppSettings {
 	pub plot_width: usize,
 }
 
-impl Default for AppSettings {
+impl const Default for AppSettings {
 	/// Default implementation of `AppSettings`, this is how the application
 	/// starts up
 	fn default() -> Self {
@@ -88,7 +88,7 @@ struct Opened {
 	pub welcome: bool,
 }
 
-impl Default for Opened {
+impl const Default for Opened {
 	fn default() -> Opened {
 		Self {
 			help: false,

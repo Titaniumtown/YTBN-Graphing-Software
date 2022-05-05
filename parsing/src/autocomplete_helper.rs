@@ -11,7 +11,7 @@ fn compare_len_reverse_alpha(a: &String, b: &String) -> Ordering {
 
 /// Generates hashmap (well really a vector of tuple of strings that are then turned into a hashmap by phf)
 #[allow(dead_code)]
-pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
+pub(crate) fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 	let mut seen = HashSet::new();
 
 	let tuple_list_1: Vec<(String, String)> = data

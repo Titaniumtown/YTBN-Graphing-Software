@@ -30,11 +30,6 @@ impl fmt::Display for Riemann {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
-lazy_static::lazy_static! {
-	/// Represents a "default" instance of `FunctionEntry`
-	pub static ref DEFAULT_FUNCTION_ENTRY: FunctionEntry = FunctionEntry::default();
-}
-
 /// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
 #[derive(Clone)]
 pub struct FunctionEntry {
@@ -71,11 +66,11 @@ pub struct FunctionEntry {
 	pub settings_opened: bool,
 }
 
-impl Default for FunctionEntry {
+impl const Default for FunctionEntry {
 	/// Creates default FunctionEntry instance (which is empty)
 	fn default() -> FunctionEntry {
 		FunctionEntry {
-			function: BackingFunction::new("").unwrap(),
+			function: BackingFunction::EMPTY,
 			raw_func_str: String::new(),
 			min_x: -1.0,
 			max_x: 1.0,

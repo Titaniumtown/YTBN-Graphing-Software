@@ -19,7 +19,7 @@ pub fn split_function(input: &str) -> Vec<String> {
 		&input
 			.replace("pi", "π") // replace "pi" text with pi symbol
 			.replace("**", "^") // support alternate manner of expressing exponents
-			.replace("exp", "\u{1fc93}") //stop-gap solution to fix the `exp` function
+			.replace("exp", "\u{1fc93}") // stop-gap solution to fix the `exp` function
 			.chars()
 			.collect::<Vec<char>>(),
 	)
@@ -64,7 +64,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 			let isnumber = c.is_ascii_digit();
 			let isvariable = is_variable(c);
 			Self {
-				closing_parens: c == &')',
+				closing_parens: *c == ')',
 				number: isnumber,
 				letter: c.is_ascii_alphabetic(),
 				variable: isvariable,

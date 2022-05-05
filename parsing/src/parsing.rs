@@ -8,44 +8,33 @@ pub struct FlatExWrapper {
 impl FlatExWrapper {
 	const EMPTY: FlatExWrapper = FlatExWrapper { func: None };
 
-	fn new(f: FlatEx<f64>) -> Self { Self { func: Some(f) } }
+	const fn new(f: FlatEx<f64>) -> Self { Self { func: Some(f) } }
 
 	fn eval(&self, x: &[f64]) -> f64 {
-		if let Some(ref f) = self.func {
-			f.eval(x).unwrap_or(f64::NAN)
-		} else {
-			f64::NAN
-		}
+		self.func
+			.as_ref()
+			.map(|f| f.eval(x).unwrap_or(f64::NAN))
+			.unwrap_or(f64::NAN)
 	}
 
 	fn partial(&self, x: usize) -> Self {
-		if let Some(ref f) = self.func {
-			match f.partial(x) {
-				Ok(a) => Self::new(a),
-				Err(_) => Self::EMPTY,
-			}
-		} else {
-			Self::EMPTY
-		}
+		self.func
+			.as_ref()
+			.map(|f| f.partial(x).map(|a| Self::new(a)).unwrap_or(Self::EMPTY))
+			.unwrap_or(Self::EMPTY)
 	}
 
-	fn get_string(&self) -> &str {
-		if let Some(ref f) = self.func {
-			f.unparse()
-		} else {
-			""
-		}
-	}
+	fn get_string(&self) -> &str { self.func.as_ref().map(|f| f.unparse()).unwrap_or("") }
 
 	fn partial_iter(&self, x: &[usize]) -> Self {
-		if let Some(ref f) = self.func {
-			match f.partial_iter(x.iter()) {
-				Ok(a) => Self::new(a),
-				Err(_) => Self::EMPTY,
-			}
-		} else {
-			Self::EMPTY
-		}
+		self.func
+			.as_ref()
+			.map(|f| {
+				f.partial_iter(x.iter())
+					.map(|a| Self::new(a))
+					.unwrap_or(Self::EMPTY)
+			})
+			.unwrap_or(Self::EMPTY)
 	}
 }
 
@@ -58,18 +47,23 @@ impl const Default for FlatExWrapper {
 pub struct BackingFunction {
 	/// f(x)
 	function: FlatExWrapper,
+
 	/// f'(x)
 	derivative_1: FlatExWrapper,
+
 	/// Mathematical representation of f'(x)
 	derivative_1_str: String,
+
 	/// f''(x)
 	derivative_2: FlatExWrapper,
 
+	/// Temporary cache for nth derivative
 	nth_derivative: Option<(usize, FlatExWrapper, String)>,
 }
 
 impl BackingFunction {
-	const EMPTY: BackingFunction = BackingFunction {
+	/// Empty [`BackingFunction`] instance
+	pub const EMPTY: BackingFunction = BackingFunction {
 		function: FlatExWrapper::EMPTY,
 		derivative_1: FlatExWrapper::EMPTY,
 		derivative_1_str: String::new(),
@@ -139,6 +133,7 @@ impl BackingFunction {
 	/// Calculate f''(x)
 	pub fn get_derivative_2(&self, x: f64) -> f64 { self.derivative_2.eval(&[x]) }
 
+	/// Get string relating to the nth derivative
 	pub fn get_nth_derivative_str(&self) -> &str { &self.nth_derivative.as_ref().unwrap().2 }
 
 	pub fn get_nth_derivative(&mut self, n: usize, x: f64) -> f64 {
@@ -168,7 +163,7 @@ impl BackingFunction {
 }
 
 fn prettyify_function_str(func: &str) -> String {
-	let new_str = func.to_owned().replace("{x}", "x");
+	let new_str = func.replace("{x}", "x");
 
 	if &new_str == "0/0" {
 		"Undefined".to_owned()
@@ -177,10 +172,10 @@ fn prettyify_function_str(func: &str) -> String {
 	}
 }
 
-pub const VALID_VARIABLES: [char; 5] = ['x', 'X', 'e', 'E', 'π'];
+pub const VALID_VARIABLES: [char; 3] = ['x', 'e', 'π'];
 
 #[inline]
-pub fn is_variable(c: &char) -> bool { VALID_VARIABLES.contains(&c) }
+pub fn is_variable(c: &char) -> bool { VALID_VARIABLES.contains(&c.to_ascii_lowercase()) }
 
 /// Adds asterisks where needed in a function
 pub fn process_func_str(function_in: &str) -> String {

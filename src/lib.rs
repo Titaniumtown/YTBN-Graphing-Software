@@ -3,6 +3,8 @@
 #![feature(stmt_expr_attributes)]
 #![feature(const_trait_impl)]
 #![feature(core_intrinsics)]
+#![feature(const_convert)]
+#![feature(const_default_impls)]
 
 #[macro_use]
 extern crate static_assertions;
