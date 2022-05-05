@@ -6,6 +6,7 @@ use serde_json::Value as JsonValue;
 use rayon::prelude::*;
 
 #[cfg(not(threading))]
+#[inline]
 pub fn dyn_iter<'a, T>(input: &'a [T]) -> impl Iterator<Item = &'a T>
 where
 	&'a [T]: IntoIterator,
@@ -14,6 +15,7 @@ where
 }
 
 #[cfg(threading)]
+#[inline]
 pub fn dyn_iter<'a, I>(input: &'a I) -> <&'a I as IntoParallelIterator>::Iter
 where
 	&'a I: IntoParallelIterator,
@@ -22,6 +24,7 @@ where
 }
 
 #[cfg(not(threading))]
+#[inline]
 pub fn dyn_mut_iter<'a, T>(input: &'a mut [T]) -> impl Iterator<Item = &'a mut T>
 where
 	&'a mut [T]: IntoIterator,
@@ -30,6 +33,7 @@ where
 }
 
 #[cfg(threading)]
+#[inline]
 pub fn dyn_mut_iter<'a, I>(input: &'a mut I) -> <&'a mut I as IntoParallelIterator>::Iter
 where
 	&'a mut I: IntoParallelIterator,
@@ -114,10 +118,10 @@ impl SteppedVector {
 	}
 
 	#[allow(dead_code)]
-	pub fn get_min(&self) -> f64 { self.min }
+	pub const fn get_min(&self) -> f64 { self.min }
 
 	#[allow(dead_code)]
-	pub fn get_max(&self) -> f64 { self.max }
+	pub const fn get_max(&self) -> f64 { self.max }
 
 	#[allow(dead_code)]
 	pub fn get_data(&self) -> Vec<f64> { self.data.clone() }

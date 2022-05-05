@@ -30,9 +30,12 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 		}
 
 		seen_3.insert(key.clone());
-		if keys.iter().filter(|a| a == &&key).count() == 1 {
+
+		let count_keys = keys.iter().filter(|a| a == &&key).count();
+
+		if count_keys == 1 {
 			output.push((key.clone(), format!(r#"Hint::Single("{}")"#, value)));
-		} else {
+		} else if count_keys > 1 {
 			let mut multi_data = tuple_list_1
 				.iter()
 				.filter(|(a, _)| a == key)
@@ -40,6 +43,8 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 				.collect::<Vec<&String>>();
 			multi_data.sort_unstable_by(|a, b| compare_len_reverse_alpha(a, b));
 			output.push((key.clone(), format!("Hint::Many(&{:?})", multi_data)));
+		} else {
+			panic!("Number of values for {key} is 0!");
 		}
 	}
 	output

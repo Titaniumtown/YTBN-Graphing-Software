@@ -31,7 +31,9 @@ impl BackingFunction {
 				match &parse_result {
 					Err(e) => return Err(e.to_string()),
 					Ok(_) => {
-						let var_names = parse_result.as_ref().unwrap().var_names().to_vec();
+						let var_names = unsafe { parse_result.as_ref().unwrap_unchecked() }
+							.var_names()
+							.to_vec();
 
 						if var_names != ["x"] {
 							let var_names_not_x: Vec<&String> = var_names
@@ -50,7 +52,7 @@ impl BackingFunction {
 						}
 					}
 				}
-				parse_result.unwrap()
+				unsafe { parse_result.unwrap_unchecked() }
 			}
 		};
 

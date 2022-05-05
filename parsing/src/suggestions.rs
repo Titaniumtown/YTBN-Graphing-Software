@@ -78,9 +78,9 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 				},
 			}
 		}
-		fn is_variable(&self) -> bool { self.variable && !self.masked_var }
+		const fn is_variable(&self) -> bool { self.variable && !self.masked_var }
 
-		fn is_number(&self) -> bool { self.number && !self.masked_num }
+		const fn is_number(&self) -> bool { self.number && !self.masked_num }
 	}
 
 	// Setup first char here
@@ -178,6 +178,10 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 
 	let chars: Vec<char> = input.chars().collect::<Vec<char>>();
 
+	unsafe {
+		assume(!chars.is_empty());
+	}
+
 	let mut open_parens: usize = 0;
 	let mut closed_parens: usize = 0;
 	chars.iter().for_each(|chr| match *chr {
@@ -225,13 +229,13 @@ impl<'a> std::fmt::Debug for Hint<'a> {
 }
 
 impl<'a> Hint<'a> {
-	pub fn is_none(&self) -> bool { matches!(&self, &Hint::None) }
+	pub const fn is_none(&self) -> bool { matches!(&self, &Hint::None) }
 
 	#[allow(dead_code)]
-	pub fn is_some(&self) -> bool { !self.is_none() }
+	pub const fn is_some(&self) -> bool { !self.is_none() }
 
 	#[allow(dead_code)]
-	pub fn is_single(&self) -> bool { matches!(&self, &Hint::Single(_)) }
+	pub const fn is_single(&self) -> bool { matches!(&self, &Hint::Single(_)) }
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));

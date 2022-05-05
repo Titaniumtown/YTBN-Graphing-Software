@@ -34,17 +34,23 @@ impl<'a> const Default for AutoComplete<'a> {
 }
 
 impl<'a> AutoComplete<'a> {
+	#[allow(dead_code)]
 	pub fn update_string(&mut self, string: &str) {
 		if self.string != string {
 			// catch empty strings here to avoid call to `generate_hint` and unnecessary logic
 			if string.is_empty() {
 				*self = Self::default();
 			} else {
-				self.i = 0;
 				self.string = string.to_string();
-				self.hint = generate_hint(string);
+				self.do_update_logic();
 			}
 		}
+	}
+
+	/// Runs update logic assuming that a change to `self.string` has been made
+	fn do_update_logic(&mut self) {
+		self.i = 0;
+		self.hint = generate_hint(&self.string);
 	}
 
 	pub fn register_movement(&mut self, movement: &Movement) {
@@ -90,8 +96,8 @@ impl<'a> AutoComplete<'a> {
 	}
 
 	pub fn apply_hint(&mut self, hint: &str) {
-		let new_string = self.string.clone() + hint;
-		self.update_string(&new_string);
+		self.string.push_str(hint);
+		self.do_update_logic();
 	}
 }
 
