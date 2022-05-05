@@ -107,7 +107,6 @@ pub struct MathApp {
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Option<Duration>),
 
-	toggle_visuals: bool,
 	dark_mode: bool,
 
 	/// Stores opened windows/elements for later reference
@@ -256,7 +255,6 @@ impl MathApp {
 		Self {
 			functions: Default::default(),
 			last_info: (vec![None], None),
-			toggle_visuals: false,
 			dark_mode: true, // dark mode is default and is previously set
 			text: text_data.expect("Didn't find text.json"),
 			opened: Opened::default(),
@@ -391,16 +389,6 @@ impl App for MathApp {
 			None
 		};
 
-		// Toggle visuals if requested
-		if self.toggle_visuals {
-			ctx.set_visuals(match self.dark_mode {
-				true => Visuals::light(),
-				false => Visuals::dark(),
-			});
-			self.dark_mode.bitxor_assign(true);
-			self.toggle_visuals = false;
-		}
-
 		// If keyboard input isn't being grabbed, check for key combos
 		if !ctx.wants_keyboard_input() {
 			// If `H` key is pressed, toggle Side Panel
@@ -455,7 +443,7 @@ impl App for MathApp {
 				);
 
 				// Toggles dark/light mode
-				self.toggle_visuals = ui
+				if ui
 					.add(Button::new(match self.dark_mode {
 						true => "🌞",
 						false => "🌙",
@@ -464,10 +452,17 @@ impl App for MathApp {
 						true => "Turn the Lights on!",
 						false => "Turn the Lights off.",
 					})
-					.clicked();
+					.clicked()
+				{
+					ctx.set_visuals(match self.dark_mode {
+						true => Visuals::light(),
+						false => Visuals::dark(),
+					});
+					self.dark_mode.bitxor_assign(true);
+				}
 
 				// Display Area and time of last frame
-				if self.last_info.0.iter().filter(|e| e.is_some()).count() > 0 {
+				if self.last_info.0.iter().any(|e| e.is_some()) {
 					ui.label(format!("Area: {}", option_vec_printer(&self.last_info.0)));
 				}
 			});

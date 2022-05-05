@@ -132,7 +132,7 @@ impl FunctionManager {
 				Button::new_const(WidgetText::RichText(RichText::new_const(text))).frame(false)
 			}
 
-			/// the y offset multiplier of the `buttons_area` area
+			/// The y offset multiplier of the `buttons_area` area
 			const BUTTONS_Y_OFFSET: f32 = 1.32;
 
 			widgets_ontop(
@@ -198,10 +198,7 @@ impl FunctionManager {
 	}
 
 	pub fn any_using_integral(&self) -> bool {
-		self.functions
-			.iter()
-			.filter(|(_, func)| func.integral)
-			.count() > 0
+		self.functions.iter().any(|(_, func)| func.integral)
 	}
 
 	#[inline]
