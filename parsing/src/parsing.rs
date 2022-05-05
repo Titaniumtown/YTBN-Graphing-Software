@@ -41,14 +41,13 @@ impl BackingFunction {
 								.filter(|ele| ele != &"x")
 								.collect::<Vec<&String>>();
 
-							return Err(match var_names_not_x.len() {
-								1 => {
-									format!("Error: invalid variable: {}", var_names_not_x[0])
+							return Err(format!(
+								"Error: invalid variable{}",
+								match var_names_not_x.len() {
+									1 => String::from(": ") + var_names_not_x[0].as_str(),
+									_ => format!("s: {:?}", var_names_not_x),
 								}
-								_ => {
-									format!("Error: invalid variables: {:?}", var_names_not_x)
-								}
-							});
+							));
 						}
 					}
 				}

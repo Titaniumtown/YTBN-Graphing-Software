@@ -92,4 +92,4 @@ lazy_static::lazy_static! {
 pub fn is_mobile() -> bool { return *IS_MOBILE; }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub const fn is_mobile() -> bool { return false; }
+pub const fn is_mobile() -> bool { false }
