@@ -1,7 +1,7 @@
 use crate::consts::is_mobile;
 use crate::function_entry::FunctionEntry;
-use crate::widgets::{move_cursor_to_end, widgets_ontop, Movement};
-use egui::{Button, Key, Modifiers, WidgetText};
+use crate::widgets::{widgets_ontop, Movement};
+use egui::{Button, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
 use parsing::suggestions::Hint;
 use std::ops::BitXorAssign;
@@ -128,7 +128,11 @@ impl FunctionManager {
 
 				// Push cursor to end if needed
 				if movement == Movement::Complete {
-					move_cursor_to_end(ui.ctx(), te_id);
+					let mut state =
+						unsafe { TextEdit::load_state(ui.ctx(), te_id).unwrap_unchecked() };
+					let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
+					state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
+					TextEdit::store_state(ui.ctx(), te_id, state);
 				}
 			}
 
