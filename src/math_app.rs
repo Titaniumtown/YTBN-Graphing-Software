@@ -147,8 +147,6 @@ impl MathApp {
 			.read_to_end(&mut tar_file_data)
 			.expect("failed to read assets");
 
-		let mut tar_archive = tar::Archive::new(&*tar_file_data);
-
 		// Stores fonts
 		let mut font_ubuntu_light: Option<FontData> = None;
 		let mut font_notoemoji: Option<FontData> = None;
@@ -159,12 +157,17 @@ impl MathApp {
 		let mut text_data: Option<TextData> = None;
 
 		tracing::info!("Reading assets...");
+
 		// Iterate through all entries in the tarball
-		for file in tar_archive.entries().unwrap() {
-			let mut file = file.unwrap();
+		for file in unsafe {
+			tar::Archive::new(&*tar_file_data)
+				.entries()
+				.unwrap_unchecked()
+		} {
+			let mut file = unsafe { file.unwrap_unchecked() };
 			let mut data: Vec<u8> = Vec::new();
-			file.read_to_end(&mut data).unwrap();
-			let path = file.header().path().unwrap();
+			unsafe { file.read_to_end(&mut data).unwrap_unchecked() };
+			let path = unsafe { file.header().path().unwrap_unchecked() };
 			let path_string = path.to_string_lossy();
 
 			tracing::debug!("Loading file: {}", path_string);
@@ -207,7 +210,7 @@ impl MathApp {
 			font_data: BTreeMap::from([
 				(
 					"Hack".to_owned(),
-					font_hack.expect("Hack -Regular.ttf not found!"),
+					font_hack.expect("Hack-Regular.ttf not found!"),
 				),
 				(
 					"Ubuntu-Light".to_owned(),
