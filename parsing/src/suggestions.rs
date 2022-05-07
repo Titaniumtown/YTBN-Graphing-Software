@@ -82,8 +82,29 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 
 		const fn is_number(&self) -> bool { self.number && !self.masked_num }
 
+		const fn calculate_mask(&mut self, other: &BoolSlice) {
+			if other.masked_num && self.number {
+				// If previous char was a masked number, and current char is a number, mask current char's variable status
+				self.masked_num = true;
+			} else if other.masked_var && self.variable {
+				// If previous char was a masked variable, and current char is a variable, mask current char's variable status
+				self.masked_var = true;
+			} else if other.letter && !other.is_variable() {
+				// If letter and not a variable (or a masked variable)
+				if self.number {
+					// Mask number status if current char is number
+					self.masked_num = true;
+				} else if self.variable {
+					// Mask variable status if current char is a variable
+					self.masked_var = true;
+				}
+			}
+		}
+
 		const fn splitable(&self, c: &char, other: &BoolSlice) -> bool {
-			if other.closing_parens {
+			if *c == '*' {
+				return true;
+			} else if other.closing_parens {
 				// Cases like `)x`, `)2`, and `)(`
 				return (*c == '(')
 					| (self.letter && !self.is_variable())
@@ -123,22 +144,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		// Set data about current character
 		let mut curr_c = BoolSlice::from_char(c, prev_char.masked_num, prev_char.masked_var);
 
-		if prev_char.masked_num && curr_c.number {
-			// If previous char was a masked number, and current char is a number, mask current char's variable status
-			curr_c.masked_num = true;
-		} else if prev_char.masked_var && curr_c.variable {
-			// If previous char was a masked variable, and current char is a variable, mask current char's variable status
-			curr_c.masked_var = true;
-		} else if prev_char.letter && !prev_char.is_variable() {
-			// If letter and not a variable (or a masked variable)
-			if curr_c.number {
-				// Mask number status if current char is number
-				curr_c.masked_num = true;
-			} else if curr_c.variable {
-				// Mask variable status if current char is a variable
-				curr_c.masked_var = true;
-			}
-		}
+		curr_c.calculate_mask(&prev_char);
 
 		// Append split
 		if curr_c.splitable(c, &prev_char) {
@@ -146,7 +152,10 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 			last = unsafe { data.last_mut().unwrap_unchecked() };
 		}
 
-		last.push(*c);
+		// Exclude asterisks
+		if *c != '*' {
+			last.push(*c);
+		}
 
 		// Move current character data to `prev_char`
 		prev_char = curr_c;
@@ -243,6 +252,7 @@ mod tests {
 			("sqrt", Hint::Single("(")),
 			("ln(x)", Hint::None),
 			("ln(x)cos", Hint::Many(&["(", "h("])),
+			("ln(x)*cos", Hint::Many(&["(", "h("])),
 		]);
 
 		for (key, value) in values {
@@ -307,6 +317,9 @@ mod tests {
 			("x", vec!["x"]),
 			("xxx", vec!["x", "x", "x"]),
 			("sin(cos(x)x)", vec!["sin(cos(x)", "x)"]),
+			("sin(x)*cos(x)", vec!["sin(x)", "cos(x)"]),
+			("x*x", vec!["x", "x"]),
+			("10*10", vec!["10", "10"]),
 		]);
 
 		for (key, value) in values {
