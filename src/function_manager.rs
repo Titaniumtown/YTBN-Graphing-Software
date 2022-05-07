@@ -36,6 +36,7 @@ impl FunctionManager {
 			.fonts()
 			.row_height(&egui::FontSelection::default().resolve(ui.style()));
 
+		let available_width = ui.available_width();
 		let mut remove_i: Option<usize> = None;
 		for (i, (uuid, function)) in self.functions.iter_mut().enumerate() {
 			// render cool input box
@@ -50,7 +51,7 @@ impl FunctionManager {
 			let te_id = ui.make_persistent_id(uuid);
 
 			// target size of text edit box
-			let target_size = vec2(ui.available_width(), {
+			let target_size = vec2(available_width, {
 				// get the animated bool that stores how "in focus" the text box is
 				let gotten_focus_value = {
 					let ctx = ui.ctx();
@@ -78,31 +79,28 @@ impl FunctionManager {
 			);
 
 			// if not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			if ui.ctx().animate_bool(te_id, re.has_focus()) < 1.0 {
-				continue;
-			}
+			if ui.ctx().animate_bool(te_id, re.has_focus()) >= 1.0 {
+				function.autocomplete.update_string(&new_string);
 
-			function.autocomplete.update_string(&new_string);
-
-			if !function.autocomplete.hint.is_none() {
-				if !is_mobile() && !function.autocomplete.hint.is_single() {
-					if ui.input().key_pressed(Key::ArrowDown) {
-						movement = Movement::Down;
-					} else if ui.input().key_pressed(Key::ArrowUp) {
-						movement = Movement::Up;
+				if !function.autocomplete.hint.is_none() {
+					if !is_mobile() && !function.autocomplete.hint.is_single() {
+						if ui.input().key_pressed(Key::ArrowDown) {
+							movement = Movement::Down;
+						} else if ui.input().key_pressed(Key::ArrowUp) {
+							movement = Movement::Up;
+						}
 					}
-				}
 
-				// Put here so these key presses don't interact with other elements
-				let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-				let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
-				if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
-					movement = Movement::Complete;
-				}
+					// Put here so these key presses don't interact with other elements
+					let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
+					let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
+					if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
+						movement = Movement::Complete;
+					}
 
-				function.autocomplete.register_movement(&movement);
+					function.autocomplete.register_movement(&movement);
 
-				if movement != Movement::Complete && let Hint::Many(hints) = function.autocomplete.hint {
+					if movement != Movement::Complete && let Hint::Many(hints) = function.autocomplete.hint {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
                     let popup_id = ui.make_persistent_id("autocomplete_popup");
 
@@ -129,66 +127,67 @@ impl FunctionManager {
                     }
                 }
 
-				// Push cursor to end if needed
-				if movement == Movement::Complete {
-					let mut state =
-						unsafe { TextEdit::load_state(ui.ctx(), te_id).unwrap_unchecked() };
-					let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
-					state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
-					TextEdit::store_state(ui.ctx(), te_id, state);
+					// Push cursor to end if needed
+					if movement == Movement::Complete {
+						let mut state =
+							unsafe { TextEdit::load_state(ui.ctx(), te_id).unwrap_unchecked() };
+						let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
+						state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
+						TextEdit::store_state(ui.ctx(), te_id, state);
+					}
 				}
+
+				/// The y offset multiplier of the `buttons_area` area
+				const BUTTONS_Y_OFFSET: f32 = 1.32;
+
+				widgets_ontop(
+					ui,
+					format!("buttons_area_{}", i),
+					&re,
+					row_height * BUTTONS_Y_OFFSET,
+					|ui| {
+						ui.horizontal(|ui| {
+							// There's more than 1 function! Functions can now be deleted
+							if ui
+								.add_enabled(can_remove, button_area_button("✖"))
+								.on_hover_text("Delete Function")
+								.clicked()
+							{
+								remove_i = Some(i);
+							}
+
+							// Toggle integral being enabled or not
+							function.integral.bitxor_assign(
+								ui.add(button_area_button("∫"))
+									.on_hover_text(match function.integral {
+										true => "Don't integrate",
+										false => "Integrate",
+									})
+									.clicked(),
+							);
+
+							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
+							function.derivative.bitxor_assign(
+								ui.add(button_area_button("d/dx"))
+									.on_hover_text(match function.derivative {
+										true => "Don't Differentiate",
+										false => "Differentiate",
+									})
+									.clicked(),
+							);
+
+							function.settings_opened.bitxor_assign(
+								ui.add(button_area_button("⚙"))
+									.on_hover_text(match function.settings_opened {
+										true => "Close Settings",
+										false => "Open Settings",
+									})
+									.clicked(),
+							);
+						});
+					},
+				);
 			}
-
-			/// The y offset multiplier of the `buttons_area` area
-			const BUTTONS_Y_OFFSET: f32 = 1.32;
-
-			widgets_ontop(
-				ui,
-				format!("buttons_area_{}", i),
-				&re,
-				row_height * BUTTONS_Y_OFFSET,
-				|ui| {
-					ui.horizontal(|ui| {
-						// There's more than 1 function! Functions can now be deleted
-						if ui
-							.add_enabled(can_remove, button_area_button("✖"))
-							.on_hover_text("Delete Function")
-							.clicked()
-						{
-							remove_i = Some(i);
-						}
-
-						// Toggle integral being enabled or not
-						function.integral.bitxor_assign(
-							ui.add(button_area_button("∫"))
-								.on_hover_text(match function.integral {
-									true => "Don't integrate",
-									false => "Integrate",
-								})
-								.clicked(),
-						);
-
-						// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-						function.derivative.bitxor_assign(
-							ui.add(button_area_button("d/dx"))
-								.on_hover_text(match function.derivative {
-									true => "Don't Differentiate",
-									false => "Differentiate",
-								})
-								.clicked(),
-						);
-
-						function.settings_opened.bitxor_assign(
-							ui.add(button_area_button("⚙".to_owned()))
-								.on_hover_text(match function.settings_opened {
-									true => "Close Settings",
-									false => "Open Settings",
-								})
-								.clicked(),
-						);
-					});
-				},
-			);
 
 			function.settings_window(ui.ctx());
 		}
