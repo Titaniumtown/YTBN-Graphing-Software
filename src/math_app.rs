@@ -107,6 +107,7 @@ pub struct MathApp {
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Vec<Option<f64>>, Option<Duration>),
 
+	/// Whether or not dark mode is enabled
 	dark_mode: bool,
 
 	/// Stores opened windows/elements for later reference

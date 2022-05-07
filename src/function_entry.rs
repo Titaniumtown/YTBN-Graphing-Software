@@ -68,30 +68,30 @@ pub struct FunctionEntry {
 
 impl const Default for FunctionEntry {
 	/// Creates default FunctionEntry instance (which is empty)
-	fn default() -> FunctionEntry {
-		FunctionEntry {
-			function: BackingFunction::EMPTY,
-			raw_func_str: String::new(),
-			min_x: -1.0,
-			max_x: 1.0,
-			integral: false,
-			derivative: false,
-			nth_derviative: false,
-			back_data: Vec::new(),
-			integral_data: None,
-			derivative_data: Vec::new(),
-			extrema_data: Vec::new(),
-			root_data: Vec::new(),
-			nth_derivative_data: None,
-			autocomplete: AutoComplete::default(),
-			test_result: None,
-			curr_nth: 3,
-			settings_opened: false,
-		}
-	}
+	fn default() -> FunctionEntry { FunctionEntry::EMPTY }
 }
 
 impl FunctionEntry {
+	pub const EMPTY: FunctionEntry = FunctionEntry {
+		function: BackingFunction::EMPTY,
+		raw_func_str: String::new(),
+		min_x: -1.0,
+		max_x: 1.0,
+		integral: false,
+		derivative: false,
+		nth_derviative: false,
+		back_data: Vec::new(),
+		integral_data: None,
+		derivative_data: Vec::new(),
+		extrema_data: Vec::new(),
+		root_data: Vec::new(),
+		nth_derivative_data: None,
+		autocomplete: AutoComplete::default(),
+		test_result: None,
+		curr_nth: 3,
+		settings_opened: false,
+	};
+
 	pub fn settings_window(&mut self, ctx: &Context) {
 		let mut invalidate_nth = false;
 		egui::Window::new(format!("Settings: {}", self.raw_func_str))
@@ -605,7 +605,7 @@ mod tests {
 	fn do_test(sum: Riemann, area_target: f64) {
 		let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10);
 
-		let mut function = FunctionEntry::default();
+		let mut function = FunctionEntry::EMPTY;
 		function.update_string("x^2");
 		function.integral = true;
 		function.derivative = true;

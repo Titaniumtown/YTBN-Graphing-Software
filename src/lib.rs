@@ -9,6 +9,9 @@
 #[macro_use]
 extern crate static_assertions;
 
+#[macro_use]
+extern crate uuid;
+
 mod consts;
 mod function_entry;
 mod function_manager;

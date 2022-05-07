@@ -1,7 +1,7 @@
 use exmex::prelude::*;
 
 #[derive(Clone)]
-pub struct FlatExWrapper {
+pub(crate) struct FlatExWrapper {
 	func: Option<FlatEx<f64>>,
 }
 
@@ -172,10 +172,18 @@ fn prettyify_function_str(func: &str) -> String {
 	}
 }
 
-pub const VALID_VARIABLES: [char; 3] = ['x', 'e', 'π'];
+// pub const VALID_VARIABLES: [char; 3] = ['x', 'e', 'π'];
 
+/// Case insensitive checks for if `c` is a character used to represent a variable
 #[inline]
-pub fn is_variable(c: &char) -> bool { VALID_VARIABLES.contains(&c.to_ascii_lowercase()) }
+pub const fn is_variable(c: &char) -> bool {
+	match c.to_ascii_lowercase() {
+		'x' => true,
+		'e' => true,
+		'π' => true,
+		_ => false,
+	}
+}
 
 /// Adds asterisks where needed in a function
 pub fn process_func_str(function_in: &str) -> String {

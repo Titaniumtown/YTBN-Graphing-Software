@@ -1,4 +1,4 @@
-use std::{intrinsics::assume, mem};
+use std::intrinsics::assume;
 
 use crate::parsing::is_variable;
 
@@ -28,7 +28,6 @@ pub fn split_function(input: &str) -> Vec<String> {
 	.collect::<Vec<String>>()
 }
 
-// __REVIEW__
 pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	if chars.is_empty() {
 		return Vec::new();
@@ -45,11 +44,12 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	}
 
 	// Resulting split-up data
-	let mut data: Vec<Vec<&char>> = Vec::with_capacity(chars.len());
+	let mut data: Vec<String> = Vec::with_capacity(chars.len());
 
-	// Buffer used to store data ready to be appended
-	let mut buffer: Vec<&char> = Vec::with_capacity(chars.len());
+	// Need to start out with an empty string
+	data.push(String::new());
 
+	/// Used to store info about a character
 	struct BoolSlice {
 		closing_parens: bool,
 		number: bool,
@@ -60,7 +60,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	}
 
 	impl BoolSlice {
-		fn from_char(c: &char, prev_masked_num: bool, prev_masked_var: bool) -> Self {
+		const fn from_char(c: &char, prev_masked_num: bool, prev_masked_var: bool) -> Self {
 			let isnumber = c.is_ascii_digit();
 			let isvariable = is_variable(c);
 			Self {
@@ -81,11 +81,42 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		const fn is_variable(&self) -> bool { self.variable && !self.masked_var }
 
 		const fn is_number(&self) -> bool { self.number && !self.masked_num }
+
+		const fn splitable(&self, c: &char, other: &BoolSlice) -> bool {
+			if other.closing_parens {
+				// Cases like `)x`, `)2`, and `)(`
+				return (*c == '(')
+					| (self.letter && !self.is_variable())
+					| self.is_variable() | self.is_number();
+			} else if *c == '(' {
+				// Cases like `x(` and `2(`
+				return (other.is_variable() | other.is_number()) && !other.letter;
+			} else if other.is_number() {
+				// Cases like `2x` and `2sin(x)`
+				return self.is_variable() | self.letter;
+			} else if self.is_variable() | self.letter {
+				// Cases like `e2` and `xx`
+				return other.is_number()
+					| (other.is_variable() && self.is_variable())
+					| other.is_variable();
+			} else if (self.is_number() | self.letter | self.is_variable())
+				&& (other.is_number() | other.letter)
+			{
+				return true;
+			} else if self.is_number() && other.is_variable() {
+				// Cases like `x2`
+				return true;
+			} else {
+				return false;
+			}
+		}
 	}
 
 	// Setup first char here
 	let mut prev_char: BoolSlice = BoolSlice::from_char(&chars[0], false, false);
-	buffer.push(&chars[0]);
+
+	let mut last = unsafe { data.last_mut().unwrap_unchecked() };
+	last.push(chars[0]);
 
 	// Iterate through all chars excluding the first one
 	for c in chars.iter().skip(1) {
@@ -115,59 +146,19 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 			}
 		}
 
-		let mut do_split = false;
-
-		if prev_char.closing_parens {
-			// Cases like `)x`, `)2`, and `)(`
-			do_split = (c == &'(')
-				| (curr_c.letter && !curr_c.is_variable())
-				| curr_c.is_variable()
-				| curr_c.is_number();
-		} else if c == &'(' {
-			// Cases like `x(` and `2(`
-			do_split = (prev_char.is_variable() | prev_char.is_number()) && !prev_char.letter;
-		} else if prev_char.is_number() {
-			// Cases like `2x` and `2sin(x)`
-			do_split = curr_c.is_variable() | curr_c.letter;
-		} else if curr_c.is_variable() | curr_c.letter {
-			// Cases like `e2` and `xx`
-			do_split = prev_char.is_number()
-				| (prev_char.is_variable() && curr_c.is_variable())
-				| prev_char.is_variable()
-		} else if (curr_c.is_number() | curr_c.letter | curr_c.is_variable())
-			&& (prev_char.is_number() | prev_char.letter)
-		{
-			do_split = true;
-		} else if curr_c.is_number() && prev_char.is_variable() {
-			// Cases like `x2`
-			do_split = true;
-		}
-
 		// Append split
-		if do_split {
-			data.push(Vec::new());
-
-			// Don't deinitialize `buffer`, simply swap data between the new last element of `data` with buffer!
-			unsafe {
-				mem::swap(data.last_mut().unwrap_unchecked(), &mut buffer);
-			}
+		if curr_c.splitable(c, &prev_char) {
+			data.push(String::new());
+			last = unsafe { data.last_mut().unwrap_unchecked() };
 		}
 
-		// Add character to buffer
-		buffer.push(c);
+		last.push(*c);
 
 		// Move current character data to `prev_char`
 		prev_char = curr_c;
 	}
 
-	// If there is still data in the buffer, append it
-	if !buffer.is_empty() {
-		data.push(buffer);
-	}
-
-	data.into_iter()
-		.map(|e| e.iter().map(|c| *c).collect::<String>())
-		.collect::<Vec<String>>()
+	data
 }
 
 /// Generate a hint based on the input `input`, returns an `Option<String>`

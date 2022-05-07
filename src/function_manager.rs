@@ -14,7 +14,10 @@ pub struct FunctionManager {
 impl Default for FunctionManager {
 	fn default() -> Self {
 		Self {
-			functions: vec![(Uuid::new_v4(), FunctionEntry::default())],
+			functions: vec![(
+				uuid!("684fc8be-4ba0-408d-96ef-480b0642126f"), // Random uuid here to avoid call to `Uuid::new_v4()`
+				FunctionEntry::EMPTY,
+			)],
 		}
 	}
 }
@@ -196,10 +199,7 @@ impl FunctionManager {
 		}
 	}
 
-	pub fn new_function(&mut self) {
-		self.functions
-			.push((Uuid::new_v4(), FunctionEntry::default()));
-	}
+	pub fn new_function(&mut self) { self.functions.push((Uuid::new_v4(), FunctionEntry::EMPTY)); }
 
 	pub fn any_using_integral(&self) -> bool {
 		self.functions.iter().any(|(_, func)| func.integral)
