@@ -10,6 +10,8 @@ impl FlatExWrapper {
 
 	const fn new(f: FlatEx<f64>) -> Self { Self { func: Some(f) } }
 
+	const fn is_none(&self) -> bool { self.func.is_none() }
+
 	fn eval(&self, x: &[f64]) -> f64 {
 		self.func
 			.as_ref()
@@ -70,6 +72,8 @@ impl BackingFunction {
 		derivative_2: FlatExWrapper::EMPTY,
 		nth_derivative: None,
 	};
+
+	pub fn is_none(&self) -> bool { self.function.is_none() }
 
 	/// Create new [`BackingFunction`] instance
 	pub fn new(func_str: &str) -> Result<Self, String> {

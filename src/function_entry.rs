@@ -383,7 +383,7 @@ impl FunctionEntry {
 	pub fn display(
 		&self, plot_ui: &mut PlotUi, settings: &AppSettings, main_plot_color: Color32,
 	) -> Option<f64> {
-		if self.test_result.is_some() {
+		if self.test_result.is_some() | self.function.is_none() {
 			return None;
 		}
 
