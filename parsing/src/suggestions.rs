@@ -123,25 +123,19 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		// Set data about current character
 		let mut curr_c = BoolSlice::from_char(c, prev_char.masked_num, prev_char.masked_var);
 
-		// If previous char was a masked number, and current char is a number, mask current char's variable status
 		if prev_char.masked_num && curr_c.number {
+			// If previous char was a masked number, and current char is a number, mask current char's variable status
 			curr_c.masked_num = true;
-		}
-
-		// If previous char was a masked variable, and current char is a variable, mask current char's variable status
-		if prev_char.masked_var && curr_c.variable {
+		} else if prev_char.masked_var && curr_c.variable {
+			// If previous char was a masked variable, and current char is a variable, mask current char's variable status
 			curr_c.masked_var = true;
-		}
-
-		// If letter and not a variable (or a masked variable)
-		if prev_char.letter && !prev_char.is_variable() {
-			// Mask number status if current char is number
+		} else if prev_char.letter && !prev_char.is_variable() {
+			// If letter and not a variable (or a masked variable)
 			if curr_c.number {
+				// Mask number status if current char is number
 				curr_c.masked_num = true;
-			}
-
-			// Mask variable status if current char is a variable
-			if curr_c.variable {
+			} else if curr_c.variable {
+				// Mask variable status if current char is a variable
 				curr_c.masked_var = true;
 			}
 		}
