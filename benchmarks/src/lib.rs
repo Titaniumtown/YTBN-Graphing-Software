@@ -86,7 +86,7 @@ fn mutli_split_function(c: &mut Criterion) {
 	for entry in data_chars {
 		group.bench_function(entry.iter().collect::<String>(), |b| {
 			b.iter(|| {
-				split_function_chars(&entry);
+				split_function_chars(&entry, parsing::suggestions::SplitType::Multiplication);
 			})
 		});
 	}
