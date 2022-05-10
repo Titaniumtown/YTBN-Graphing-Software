@@ -22,13 +22,20 @@ pub fn split_function(input: &str) -> Vec<String> {
 			.replace("exp", "\u{1fc93}") // stop-gap solution to fix the `exp` function
 			.chars()
 			.collect::<Vec<char>>(),
+		SplitType::Multiplication,
 	)
 	.iter()
 	.map(|x| x.replace("\u{1fc93}", "exp")) // Convert back to `exp` text
 	.collect::<Vec<String>>()
 }
 
-pub fn split_function_chars(chars: &[char]) -> Vec<String> {
+#[derive(PartialEq)]
+pub enum SplitType {
+	Multiplication,
+	Term,
+}
+
+pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 	if chars.is_empty() {
 		return Vec::new();
 	}
@@ -52,6 +59,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 	/// Used to store info about a character
 	struct BoolSlice {
 		closing_parens: bool,
+		open_parens: bool,
 		number: bool,
 		letter: bool,
 		variable: bool,
@@ -65,6 +73,7 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 			let isvariable = is_variable(c);
 			Self {
 				closing_parens: *c == ')',
+				open_parens: *c == '(',
 				number: isnumber,
 				letter: c.is_ascii_alphabetic(),
 				variable: isvariable,
@@ -101,8 +110,8 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 			}
 		}
 
-		const fn splitable(&self, c: &char, other: &BoolSlice) -> bool {
-			if *c == '*' {
+		fn splitable(&self, c: &char, other: &BoolSlice, split: &SplitType) -> bool {
+			if (c == &'*') | ((split == &SplitType::Term) && other.open_parens) {
 				return true;
 			} else if other.closing_parens {
 				// Cases like `)x`, `)2`, and `)(`
@@ -147,13 +156,13 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 		curr_c.calculate_mask(&prev_char);
 
 		// Append split
-		if curr_c.splitable(c, &prev_char) {
+		if curr_c.splitable(c, &prev_char, &split) {
 			data.push(String::new());
 			last = unsafe { data.last_mut().unwrap_unchecked() };
 		}
 
 		// Exclude asterisks
-		if *c != '*' {
+		if c != &'*' {
 			last.push(*c);
 		}
 
@@ -168,29 +177,42 @@ pub fn split_function_chars(chars: &[char]) -> Vec<String> {
 pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 	if input.is_empty() {
 		return &HINT_EMPTY;
-	}
+	} else {
+		let chars: Vec<char> = input.chars().collect::<Vec<char>>();
 
-	let chars: Vec<char> = input.chars().collect::<Vec<char>>();
+		unsafe {
+			assume(!chars.is_empty());
+		}
+
+		if let Some(hint) = COMPLETION_HASHMAP.get(get_last_term(&chars).as_str()) {
+			return hint;
+		}
+
+		let mut open_parens: usize = 0;
+		let mut closed_parens: usize = 0;
+		chars.iter().for_each(|chr| match *chr {
+			'(' => open_parens += 1,
+			')' => closed_parens += 1,
+			_ => {}
+		});
+
+		if open_parens > closed_parens {
+			return &HINT_CLOSED_PARENS;
+		}
+
+		return &Hint::None;
+	}
+}
+
+fn get_last_term(chars: &[char]) -> String {
+	assert!(!chars.is_empty());
 
 	unsafe {
-		assume(!chars.is_empty());
+		split_function_chars(chars, SplitType::Term)
+			.last()
+			.unwrap_unchecked()
+			.to_owned()
 	}
-
-	let mut open_parens: usize = 0;
-	let mut closed_parens: usize = 0;
-	chars.iter().for_each(|chr| match *chr {
-		'(' => open_parens += 1,
-		')' => closed_parens += 1,
-		_ => {}
-	});
-
-	if open_parens > closed_parens {
-		return &HINT_CLOSED_PARENS;
-	}
-
-	COMPLETION_HASHMAP
-		.get(&unsafe { split_function_chars(&chars).last().unwrap_unchecked() }.as_str())
-		.unwrap_or(&Hint::None)
 }
 
 #[derive(PartialEq)]
@@ -253,6 +275,7 @@ mod tests {
 			("ln(x)", Hint::None),
 			("ln(x)cos", Hint::Many(&["(", "h("])),
 			("ln(x)*cos", Hint::Many(&["(", "h("])),
+			("sin(cos", Hint::Many(&["(", "h("])),
 		]);
 
 		for (key, value) in values {
@@ -348,6 +371,27 @@ mod tests {
 			assert!(!hint.is_none());
 			assert!(hint.is_some());
 			assert!(!hint.is_single());
+		}
+	}
+
+	#[test]
+	fn get_last_term() {
+		let values = HashMap::from([
+			("cos(x)", "x)"),
+			("cos(", "cos("),
+			("aaaaaaaaaaa", "aaaaaaaaaaa"),
+			("x", "x"),
+			("xxx", "x"),
+			("x*x", "x"),
+			("10*10", "10"),
+			("sin(cos", "cos"),
+		]);
+
+		for (key, value) in values {
+			assert_eq!(
+				super::get_last_term(key.chars().collect::<Vec<char>>().as_slice()),
+				value
+			);
 		}
 	}
 }

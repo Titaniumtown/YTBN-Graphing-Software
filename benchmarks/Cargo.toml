@@ -7,7 +7,7 @@ license = "AGPL-3.0"
 [lib]
 
 [dependencies]
-pprof = { version = "0.8", features = ["flamegraph"] }
+pprof = { version = "0.9", features = ["flamegraph"] }
 criterion = "0.3"
 criterion-macro = "0.3"
 parsing = { path = "../parsing" }
