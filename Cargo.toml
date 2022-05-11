@@ -54,7 +54,7 @@ static_assertions = "1.1"
 uuid = { version = "1", features = ["v4", "fast-rng", "js"] }
 bincode = "1.3"
 serde = "1"
-
+base64 = "0.20.0-alpha.1"
 
 [dev-dependencies]
 benchmarks = { path = "./benchmarks" }
@@ -83,7 +83,6 @@ wee_alloc = "0.4"
 wasm-bindgen = { version = "0.2", default-features = false, features = ["std"] }
 web-sys = "0.3"
 tracing-wasm = "0.2"
-base64 = "0.20.0-alpha.1"
 
 [package.metadata.cargo-all-features]
 skip_optional_dependencies = true #don't test optional dependencies, only features

@@ -13,7 +13,7 @@ if test "$1" == "" || test "$1" == "release"; then
     llvm-strip -s target/wasm32-unknown-unknown/release/ytbn_graphing_software.wasm
     export TYPE="release"
     elif test "$1" == "debug"; then
-    cargo build --dev --target wasm32-unknown-unknown -Z build-std=std,panic_unwind -Z build-std-features=panic-abort --lib
+    cargo build --target wasm32-unknown-unknown -Z build-std=std,panic_unwind,panic_abort -Z build-std-features=panic-unwind --lib
     export TYPE="debug"
 else
     echo "ERROR: build.sh, argument invalid"

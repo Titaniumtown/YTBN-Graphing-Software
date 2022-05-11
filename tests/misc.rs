@@ -1,3 +1,5 @@
+use ytbn_graphing_software::{storage_create, storage_read};
+
 /// Tests [`SteppedVector`] to ensure everything works properly (helped me find a bunch of issues)
 #[test]
 fn stepped_vector() {
@@ -92,4 +94,18 @@ fn option_vec_printer() {
 	for (key, value) in values_nums {
 		assert_eq!(option_vec_printer(&key), value);
 	}
+}
+
+#[test]
+fn storage() {
+	let commit = "abcdefeg".chars().map(|c| c as u8).collect::<Vec<u8>>();
+	let data = "really cool data"
+		.chars()
+		.map(|c| c as u8)
+		.collect::<Vec<u8>>();
+	let storage = storage_create(commit.as_slice(), data.as_slice());
+
+	let read = storage_read(storage);
+	assert_eq!(read.0.chars().map(|c| c as u8).collect::<Vec<u8>>(), commit);
+	assert_eq!(read.1, data);
 }

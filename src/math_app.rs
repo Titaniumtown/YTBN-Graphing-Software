@@ -116,8 +116,6 @@ impl MathApp {
 		cfg_if::cfg_if! {
 			if #[cfg(target_arch = "wasm32")] {
 				use wasm_bindgen::JsCast;
-				use web_sys::{HtmlElement, Window};
-
 				if let Some(web_info) = &cc.integration_info.web_info {
 					tracing::info!("Web Info: {:?}", web_info);
 				}
@@ -132,17 +130,25 @@ impl MathApp {
 					.dyn_into::<web_sys::HtmlElement>()
 					.unwrap();
 
-				fn update_loading(loading_element: &HtmlElement, add: i32) {
+				fn update_loading(loading_element: &web_sys::HtmlElement, add: i32) {
 					let value =
 						unsafe { loading_element.get_attribute("value").unwrap_unchecked().parse::<i32>().unwrap_unchecked() };
 					loading_element.set_attribute("value", &(add + value).to_string()).unwrap();
 				}
 
-				const COMPRESSED_NAME: &str = const_format::formatc!("YTBN-{}-DECOMPRESSED", COMMIT);
+				const DATA_NAME: &str = "YTBN-DECOMPRESSED";
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
-					if let Ok(Some(data)) = web_sys::window().expect("Could not get web_sys window").local_storage().unwrap().unwrap().get_item(COMPRESSED_NAME) {
-						tracing::info!("Read cached data");
-						Some(base64::decode(data).expect("unable to read data"))
+					if let Ok(Some(data)) = web_sys::window().expect("Could not get web_sys window").local_storage().unwrap().unwrap().get_item("YTBN-DECOMPRESSED") {
+						let (commit, cached_data) = crate::misc::storage_read(data);
+
+						if commit == build::SHORT_COMMIT {
+							tracing::info!("Read cached data");
+							return Some(cached_data.to_vec());
+						} else {
+							// is invalid
+							None
+						}
+
 					} else {
 						None
 					}
@@ -151,8 +157,9 @@ impl MathApp {
 				fn set_storage_decompressed(data: &Vec<u8>) {
 					if let Ok(Some(local_storage)) = web_sys::window().expect("Could not get web_sys window").local_storage() {
 						tracing::info!("Setting cached data");
-
-						local_storage.set_item(COMPRESSED_NAME, &base64::encode(data));
+						let saved_data = &crate::misc::storage_create(&build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>(), data.as_slice());
+						tracing::info!("Data has length of {}", saved_data.len());
+						local_storage.set_item("YTBN-DECOMPRESSED", saved_data).expect("failed to set local storage cache");
 					} else {
 						panic!("unable to get local storage")
 					}

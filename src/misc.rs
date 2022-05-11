@@ -283,3 +283,24 @@ pub fn resolution_helper(max_i: usize, min_x: &f64, resolution: &f64) -> Vec<f64
 pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
+
+#[allow(dead_code)]
+pub fn storage_create(commit: &[u8], data: &[u8]) -> String {
+	assert_eq!(commit.len(), 8);
+
+	let mut new_data = commit.to_vec();
+	// new_data.push(20); // push 'space'
+	let mut data = data.to_vec();
+	new_data.append(&mut data);
+	base64::encode(new_data)
+}
+
+#[allow(dead_code)]
+pub fn storage_read(data: String) -> (String, Vec<u8>) {
+	let decoded_1 = base64::decode(data).expect("unable to read data");
+	let (commit, cached_data) = decoded_1.split_at(8);
+	(
+		commit.iter().map(|c| *c as char).collect::<String>(),
+		cached_data.to_vec(),
+	)
+}
