@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e #kill script if error occurs
 
-cargo test-all-features
+cargo test
 
 bash build.sh release
 
