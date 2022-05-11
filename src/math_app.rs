@@ -1,17 +1,17 @@
 use crate::consts::*;
+use crate::data::TextData;
 use crate::function_entry::Riemann;
 use crate::function_manager::FunctionManager;
-use crate::misc::{dyn_mut_iter, option_vec_printer, TextData};
+use crate::misc::{dyn_mut_iter, option_vec_printer};
 use eframe::App;
 use egui::{
-	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context,
-	FontDefinitions, Frame, Key, Label, Layout, RichText, SidePanel, Slider, TopBottomPanel, Vec2,
-	Visuals, Window,
+	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context, Frame, Key,
+	Label, Layout, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Duration;
-use std::{io::Read, ops::BitXorAssign, str};
+use std::{io::Read, ops::BitXorAssign};
 
 #[cfg(threading)]
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
@@ -142,55 +142,24 @@ impl MathApp {
 		tracing::info!("Initializing...");
 		let start = instant::Instant::now();
 
-		let mut tar_file_data = Vec::new();
+		let mut data = Vec::new();
 		let _ = unsafe {
-			ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice())
+			ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets/data").as_slice())
 				.unwrap_unchecked()
-				.read_to_end(&mut tar_file_data)
+				.read_to_end(&mut data)
 				.unwrap_unchecked()
 		};
+
+		let data: crate::data::TotalData = bincode::deserialize(data.as_slice()).unwrap();
 
 		#[cfg(target_arch = "wasm32")]
 		update_loading(&loading_element, 30);
 
-		// Stores fonts
-		let mut font_data: Option<FontDefinitions> = None;
-
-		// Stores text
-		let mut text_data: Option<TextData> = None;
-
 		tracing::info!("Reading assets...");
-
-		// Iterate through all entries in the tarball
-		for file in unsafe {
-			tar::Archive::new(&*tar_file_data)
-				.entries()
-				.unwrap_unchecked()
-		} {
-			let mut file = unsafe { file.unwrap_unchecked() };
-			let mut data: Vec<u8> = Vec::new();
-			unsafe { file.read_to_end(&mut data).unwrap_unchecked() };
-			let path = unsafe { file.header().path().unwrap_unchecked() };
-			let path_string = path.to_string_lossy();
-
-			// Match the file extention
-			if path_string.ends_with("font_data") {
-				font_data = Some(bincode::deserialize(&data).unwrap());
-			} else if path_string.ends_with("text.json") {
-				#[cfg(target_arch = "wasm32")]
-				update_loading(&loading_element, 10);
-				text_data = Some(TextData::from_json_str(unsafe {
-					str::from_utf8(&data).unwrap_unchecked()
-				}));
-			} else {
-				panic!("File {} not expected!", path_string);
-			}
-		}
 
 		// Initialize fonts
 		// This used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
-		cc.egui_ctx
-			.set_fonts(font_data.expect("Failed to load font_data"));
+		cc.egui_ctx.set_fonts(data.fonts);
 
 		// Set dark mode by default
 		cc.egui_ctx.set_visuals(Visuals::dark());
@@ -208,7 +177,7 @@ impl MathApp {
 			functions: Default::default(),
 			last_info: (vec![None], None),
 			dark_mode: true, // dark mode is default and is previously set
-			text: text_data.expect("Didn't find text.json"),
+			text: data.text,
 			opened: Opened::default(),
 			settings: Default::default(),
 		}

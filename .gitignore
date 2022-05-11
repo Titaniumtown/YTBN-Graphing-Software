@@ -1,6 +1,5 @@
 /target
 /pkg
 /tmp
-/assets.tar.zst
 /Cargo.lock
-/assets/font_data
+/assets/data

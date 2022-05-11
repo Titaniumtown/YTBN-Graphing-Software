@@ -21,3 +21,4 @@
 11. Fix mobile text input
 12. Don't use json for text storage
 13. Write custom plotter
+14. Cache decompressed data in browser's [Local Storage](https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Storage.html)

@@ -9,6 +9,8 @@ use epaint::{
 	FontFamily,
 };
 
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/data.rs"));
+
 fn main() {
 	// rebuild if new commit or contents of `assets` folder changed
 	println!("cargo:rerun-if-changed=.git/logs/HEAD");
@@ -49,16 +51,34 @@ fn main() {
 		]),
 	};
 
-	let path = "./assets/font_data";
+	let mut file = BufWriter::new(File::create("./assets/data").expect("Could not create file"));
 
-	let fonts_data = bincode::serialize(&fonts).unwrap();
-	// ::to_string(&fonts).expect("Failed to serialize fonts");
+	let aa: serde_json::Value = serde_json::from_str(include_str!("assets/text.json")).unwrap();
+	let mut json_file_array = aa.as_object().unwrap().clone();
+	for value in json_file_array.iter_mut() {
+		if let serde_json::Value::Array(values) = value.1 {
+			let values_copy = values.clone();
+			*value.1 = serde_json::Value::String(
+				values_copy
+					.iter()
+					.map(|s| s.as_str().unwrap())
+					.collect::<Vec<&str>>()
+					.join("\n"),
+			);
+		}
+	}
 
-	let mut file = BufWriter::new(File::create(&path).expect("Could not create file"));
+	let text_data: TextData =
+		serde_json::from_value(serde_json::Value::Object(json_file_array)).unwrap();
 
-	file.write_all(fonts_data.as_slice()).unwrap();
+	let data = bincode::serialize(&TotalData {
+		text: text_data,
+		fonts,
+	})
+	.unwrap();
 
-	let _ = command_run::Command::with_args("./pack_assets.sh", &[&path])
-		.enable_capture()
-		.run();
+	let data_compressed = zstd::encode_all(data.as_slice(), 22).unwrap();
+	println!("{:?}", data_compressed);
+
+	file.write_all(data_compressed.as_slice()).unwrap();
 }

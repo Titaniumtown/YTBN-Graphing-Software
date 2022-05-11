@@ -13,6 +13,7 @@ extern crate static_assertions;
 extern crate uuid;
 
 mod consts;
+mod data;
 mod function_entry;
 mod function_manager;
 mod math_app;

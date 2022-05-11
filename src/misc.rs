@@ -1,6 +1,5 @@
 use eframe::egui::plot::{Line, Points, Value as EguiValue, Values};
 use itertools::Itertools;
-use serde_json::Value as JsonValue;
 
 #[cfg(threading)]
 use rayon::prelude::*;
@@ -183,50 +182,6 @@ impl EguiHelper for Vec<EguiValue> {
 	fn to_points(&self) -> Points { Points::new(Values::from_values(self.clone())) }
 
 	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct TextData {
-	pub help_expr: String,
-	pub help_vars: String,
-	pub help_panel: String,
-	pub help_function: String,
-	pub help_other: String,
-	pub license_info: String,
-	pub welcome: String,
-}
-
-/// Parses an array of strings at `self.value[key]` as a multiline string
-fn parse_multiline(value: &JsonValue, key: &str) -> String {
-	(value[key])
-		.as_array()
-		.expect("Cannot cast to array")
-		.iter()
-		.map(|ele| ele.as_str().unwrap())
-		.fold(String::new(), |s, l| s + l + "\n")
-		.trim_end()
-		.to_owned()
-}
-
-/// Parses `self.value[key]` as a single line string
-fn parse_singleline(value: &JsonValue, key: &str) -> String {
-	value[key].as_str().expect("cannot cast to str").to_owned()
-}
-
-impl TextData {
-	pub fn from_json_str(string: &str) -> Self {
-		let value = serde_json::from_str(string).expect("Cannot parse json file");
-
-		Self {
-			help_expr: parse_multiline(&value, "help_expr"),
-			help_vars: parse_multiline(&value, "help_vars"),
-			help_panel: parse_multiline(&value, "help_panel"),
-			help_function: parse_multiline(&value, "help_func"),
-			help_other: parse_multiline(&value, "help_other"),
-			license_info: parse_singleline(&value, "agpl_info"),
-			welcome: parse_multiline(&value, "welcome"),
-		}
-	}
 }
 
 /// Rounds f64 to `n` decimal places

@@ -32,7 +32,7 @@ impl FunctionManager {
 		// ui.label("Functions:");
 		let can_remove = self.functions.len() > 1;
 
-		// update if font settings are ever changed
+		// Update if font settings are ever changed
 		const ROW_HEIGHT: f32 = 14.0;
 		// ui.fonts().row_height(&egui::FontSelection::default().resolve(ui.style()));
 
@@ -55,9 +55,9 @@ impl FunctionManager {
 				egui::TextEdit::singleline(&mut new_string)
 					.hint_forward(true) // Make the hint appear after the last text in the textbox
 					.lock_focus(true)
-					.id(*te_id) // set widget's id to `te_id`
+					.id(*te_id) // Set widget's id to `te_id`
 					.hint_text({
-						// if there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
+						// If there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
 						if let Hint::Single(single_hint) = function.autocomplete.hint {
 							*single_hint
 						} else {
@@ -66,7 +66,7 @@ impl FunctionManager {
 					}),
 			);
 
-			// if not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
+			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
 			if ui.ctx().animate_bool(*te_id, re.has_focus()) >= 1.0 {
 				function.autocomplete.update_string(&new_string);
 
@@ -110,7 +110,7 @@ impl FunctionManager {
                     if clicked {
                         function.autocomplete.apply_hint(hints[function.autocomplete.i]);
 
-                        // don't need this here as it simply won't be display next frame
+                        // Don't need this here as it simply won't be display next frame
                         // ui.memory().close_popup();
 
                         movement = Movement::Complete;
@@ -190,11 +190,13 @@ impl FunctionManager {
 		}
 	}
 
+	/// Create and push new empty function entry
 	pub fn push_empty(&mut self) {
 		self.functions
 			.push((Id::new(Uuid::new_v4()), FunctionEntry::EMPTY));
 	}
 
+	/// Detect if any functions are using integrals
 	pub fn any_using_integral(&self) -> bool {
 		self.functions.iter().any(|(_, func)| func.integral)
 	}
