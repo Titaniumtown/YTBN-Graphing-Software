@@ -3,7 +3,7 @@ use crate::function_entry::FunctionEntry;
 use crate::widgets::{widgets_ontop, Movement};
 use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
-use parsing::suggestions::Hint;
+use parsing::Hint;
 use std::ops::BitXorAssign;
 use uuid::Uuid;
 
@@ -204,7 +204,9 @@ impl FunctionManager {
 	#[inline]
 	pub fn len(&self) -> usize { self.functions.len() }
 
+	#[inline]
 	pub fn get_entries_mut(&mut self) -> &mut Vec<(Id, FunctionEntry)> { &mut self.functions }
 
+	#[inline]
 	pub fn get_entries(&self) -> &Vec<(Id, FunctionEntry)> { &self.functions }
 }

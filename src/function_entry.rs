@@ -9,7 +9,7 @@ use egui::{
 	Checkbox, Context,
 };
 use epaint::Color32;
-use parsing::parsing::{process_func_str, BackingFunction};
+use parsing::{process_func_str, BackingFunction};
 use std::{
 	fmt::{self, Debug},
 	intrinsics::assume,
@@ -500,7 +500,7 @@ impl FunctionEntry {
 	pub fn invalidate_nth(&mut self) { self.nth_derivative_data = None }
 
 	/// Runs asserts to make sure everything is the expected value
-	#[cfg(test)]
+	#[allow(dead_code)]
 	pub fn tests(
 		&mut self, settings: AppSettings, back_target: Vec<(f64, f64)>,
 		derivative_target: Vec<(f64, f64)>, area_target: f64, min_x: f64, max_x: f64,
@@ -551,79 +551,5 @@ impl FunctionEntry {
 			assert!(self.extrema_data.is_empty());
 			assert!(self.derivative_data.is_empty());
 		}
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	fn app_settings_constructor(
-		sum: Riemann, integral_min_x: f64, integral_max_x: f64, pixel_width: usize,
-		integral_num: usize,
-	) -> AppSettings {
-		crate::math_app::AppSettings {
-			riemann_sum: sum,
-			integral_min_x,
-			integral_max_x,
-			integral_changed: true,
-			integral_num,
-			do_extrema: false,
-			do_roots: false,
-			plot_width: pixel_width,
-		}
-	}
-
-	static BACK_TARGET: [(f64, f64); 11] = [
-		(-1.0, 1.0),
-		(-0.8, 0.6400000000000001),
-		(-0.6, 0.36),
-		(-0.4, 0.16000000000000003),
-		(-0.19999999999999996, 0.03999999999999998),
-		(0.0, 0.0),
-		(0.19999999999999996, 0.03999999999999998),
-		(0.3999999999999999, 0.15999999999999992),
-		(0.6000000000000001, 0.3600000000000001),
-		(0.8, 0.6400000000000001),
-		(1.0, 1.0),
-	];
-
-	static DERIVATIVE_TARGET: [(f64, f64); 11] = [
-		(-1.0, -2.0),
-		(-0.8, -1.6),
-		(-0.6, -1.2),
-		(-0.4, -0.8),
-		(-0.19999999999999996, -0.3999999999999999),
-		(0.0, 0.0),
-		(0.19999999999999996, 0.3999999999999999),
-		(0.3999999999999999, 0.7999999999999998),
-		(0.6000000000000001, 1.2000000000000002),
-		(0.8, 1.6),
-		(1.0, 2.0),
-	];
-
-	fn do_test(sum: Riemann, area_target: f64) {
-		let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10);
-
-		let mut function = FunctionEntry::EMPTY;
-		function.update_string("x^2");
-		function.integral = true;
-		function.derivative = true;
-
-		function.tests(
-			settings,
-			BACK_TARGET.to_vec(),
-			DERIVATIVE_TARGET.to_vec(),
-			area_target,
-			-1.0,
-			1.0,
-		);
-	}
-
-	#[test]
-	fn function_entry_test() {
-		do_test(Riemann::Left, 0.9600000000000001);
-		do_test(Riemann::Middle, 0.92);
-		do_test(Riemann::Right, 0.8800000000000001);
 	}
 }

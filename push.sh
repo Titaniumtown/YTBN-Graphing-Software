@@ -2,7 +2,6 @@
 set -e #kill script if error occurs
 
 cargo test-all-features
-cargo test --package parsing
 
 bash build.sh release
 

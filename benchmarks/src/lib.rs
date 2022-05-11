@@ -2,7 +2,7 @@
 #![test_runner(criterion::runner)]
 
 #[allow(unused_imports)]
-use parsing::suggestions::split_function_chars;
+use parsing::split_function_chars;
 
 #[allow(unused_imports)]
 use std::time::Duration;

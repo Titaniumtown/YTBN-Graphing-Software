@@ -11,7 +11,7 @@ fn compare_len_reverse_alpha(a: &String, b: &String) -> Ordering {
 
 /// Generates hashmap (well really a vector of tuple of strings that are then turned into a hashmap by phf)
 #[allow(dead_code)]
-fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
+pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 	let mut seen = HashSet::new();
 
 	let tuple_list_1: Vec<(String, String)> = data
@@ -69,34 +69,4 @@ fn all_possible_splits(
 			Some((first, last))
 		})
 		.collect::<Vec<(String, String)>>()
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	/// Tests to make sure hashmap generation works as expected
-	#[test]
-	fn hashmap_gen_test() {
-		let data = vec!["time", "text", "test"];
-		let expect = vec![
-			("t", r#"Hint::Many(&["ime(", "ext(", "est("])"#),
-			("ti", r#"Hint::Single("me(")"#),
-			("tim", r#"Hint::Single("e(")"#),
-			("time", r#"Hint::Single("(")"#),
-			("te", r#"Hint::Many(&["xt(", "st("])"#),
-			("tex", r#"Hint::Single("t(")"#),
-			("text", r#"Hint::Single("(")"#),
-			("tes", r#"Hint::Single("t(")"#),
-			("test", r#"Hint::Single("(")"#),
-		];
-
-		assert_eq!(
-			compile_hashmap(data.iter().map(|e| e.to_string()).collect()),
-			expect
-				.iter()
-				.map(|(a, b)| (a.to_string(), b.to_string()))
-				.collect::<Vec<(String, String)>>()
-		);
-	}
 }

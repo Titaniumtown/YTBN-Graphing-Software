@@ -7,7 +7,7 @@ repository = "https://github.com/Titaniumtown/YTBN-Graphing-Software"
 description = "Crossplatform (and web-compatible) graphing calculator"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [features]
 threading = ["async-lock", "rayon"]

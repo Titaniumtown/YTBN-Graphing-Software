@@ -20,6 +20,13 @@ mod math_app;
 mod misc;
 mod widgets;
 
+pub use crate::{
+	function_entry::{FunctionEntry, Riemann},
+	math_app::AppSettings,
+	misc::{decimal_round, option_vec_printer, resolution_helper, SteppedVector},
+	widgets::{AutoComplete, Movement},
+};
+
 cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
 		use wasm_bindgen::prelude::*;
