@@ -48,7 +48,6 @@ const_format = { version = "0.2", default-features = false, features = ["fmt"] }
 cfg-if = "1"
 lazy_static = "1"
 ruzstd = { git = "https://github.com/Titaniumtown/zstd-rs.git", branch = "ringbuffer" }
-serde_json = "1.0"
 tracing = "0.1"
 itertools = "0.10"
 static_assertions = "1.1"

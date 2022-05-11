@@ -17,7 +17,6 @@ use std::{io::Read, ops::BitXorAssign};
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
 
 /// Stores current settings/state of [`MathApp`]
-// TODO: find a better name for this
 #[derive(Copy, Clone)]
 pub struct AppSettings {
 	/// Stores the type of Rienmann sum that should be calculated
@@ -46,8 +45,7 @@ pub struct AppSettings {
 }
 
 impl const Default for AppSettings {
-	/// Default implementation of `AppSettings`, this is how the application
-	/// starts up
+	/// Default implementation of `AppSettings`, this is how the application starts up
 	fn default() -> Self {
 		Self {
 			riemann_sum: DEFAULT_RIEMANN,
@@ -144,10 +142,12 @@ impl MathApp {
 
 		let mut data = Vec::new();
 		let _ = unsafe {
-			ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets/data").as_slice())
-				.unwrap_unchecked()
-				.read_to_end(&mut data)
-				.unwrap_unchecked()
+			ruzstd::StreamingDecoder::new(
+				&mut include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice(),
+			)
+			.unwrap_unchecked()
+			.read_to_end(&mut data)
+			.unwrap_unchecked()
 		};
 
 		let data: crate::data::TotalData = bincode::deserialize(data.as_slice()).unwrap();

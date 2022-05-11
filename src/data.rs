@@ -11,7 +11,7 @@ pub struct TextData {
 	pub welcome: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct TotalData {
 	pub text: TextData,
 	pub fonts: epaint::text::FontDefinitions,

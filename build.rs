@@ -1,7 +1,9 @@
 use std::{
 	collections::BTreeMap,
+	env,
 	fs::File,
 	io::{BufWriter, Write},
+	path::Path,
 };
 
 use epaint::{
@@ -51,25 +53,24 @@ fn main() {
 		]),
 	};
 
-	let mut file = BufWriter::new(File::create("./assets/data").expect("Could not create file"));
-
-	let aa: serde_json::Value = serde_json::from_str(include_str!("assets/text.json")).unwrap();
-	let mut json_file_array = aa.as_object().unwrap().clone();
+	let text_json: serde_json::Value =
+		serde_json::from_str(include_str!("assets/text.json")).unwrap();
+	let mut json_file_array = text_json.as_object().unwrap().clone();
 	for value in json_file_array.iter_mut() {
 		if let serde_json::Value::Array(values) = value.1 {
 			let values_copy = values.clone();
 			*value.1 = serde_json::Value::String(
 				values_copy
 					.iter()
-					.map(|s| s.as_str().unwrap())
+					.map(|s| s.as_str().expect("failed to make a string"))
 					.collect::<Vec<&str>>()
 					.join("\n"),
 			);
 		}
 	}
 
-	let text_data: TextData =
-		serde_json::from_value(serde_json::Value::Object(json_file_array)).unwrap();
+	let text_data: TextData = serde_json::from_value(serde_json::Value::Object(json_file_array))
+		.expect("Failed to convert data to TextData");
 
 	let data = bincode::serialize(&TotalData {
 		text: text_data,
@@ -77,8 +78,13 @@ fn main() {
 	})
 	.unwrap();
 
-	let data_compressed = zstd::encode_all(data.as_slice(), 22).unwrap();
-	println!("{:?}", data_compressed);
+	let max_zstd_level = zstd::compression_level_range();
+	let data_compressed =
+		zstd::encode_all(data.as_slice(), *max_zstd_level.end()).expect("Could not compress data");
 
-	file.write_all(data_compressed.as_slice()).unwrap();
+	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("compressed_data");
+	let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
+
+	file.write_all(data_compressed.as_slice())
+		.expect("Failed to save compressed data");
 }
