@@ -70,8 +70,11 @@ impl<'a> AutoComplete<'a> {
 
 				match movement {
 					Movement::Up => {
-						// subtract one, if fail, set to maximum index value.
-						self.i = self.i.checked_sub(1).unwrap_or(hints.len() - 1);
+						// if self.i is below 1, it's at
+						match self.i {
+							0 => self.i = hints.len() - 1,
+							_ => self.i -= 1,
+						}
 					}
 					Movement::Down => {
 						// add one, if resulting value is above maximum i value, set i to 0
