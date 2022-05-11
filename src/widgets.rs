@@ -22,24 +22,24 @@ pub struct AutoComplete<'a> {
 }
 
 impl<'a> const Default for AutoComplete<'a> {
-	fn default() -> AutoComplete<'a> {
-		AutoComplete {
-			i: 0,
-			hint: &suggestions::HINT_EMPTY,
-			string: String::new(),
-		}
-	}
+	fn default() -> AutoComplete<'a> { AutoComplete::EMPTY }
 }
 
 impl<'a> AutoComplete<'a> {
+	const EMPTY: AutoComplete<'a> = Self {
+		i: 0,
+		hint: &suggestions::HINT_EMPTY,
+		string: String::new(),
+	};
+
 	#[allow(dead_code)]
 	pub fn update_string(&mut self, string: &str) {
 		if self.string != string {
 			// catch empty strings here to avoid call to `generate_hint` and unnecessary logic
 			if string.is_empty() {
-				*self = Self::default();
+				*self = Self::EMPTY;
 			} else {
-				self.string = string.to_string();
+				self.string = string.to_owned();
 				self.do_update_logic();
 			}
 		}

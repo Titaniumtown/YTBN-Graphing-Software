@@ -109,12 +109,7 @@
 	<noscript>Please enable Javascript, this page uses both WebAssembly and Javascript to run.</noscript>
 
 	<canvas id="canvas"></canvas>
-	<div class="centered" id="loading">
-		<p style="font-size: 16px;">
-			Loading…
-		</p>
-		<div class="lds-dual-ring"></div>
-	</div>
+	<progress class="centered" id="loading" value="0" max="100"></progress>
 
 	<script type="module">
 		delete WebAssembly.instantiateStreaming;

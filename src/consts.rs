@@ -72,6 +72,8 @@ pub const COLORS: &[Color32; 13] = &[
 	Color32::DARK_BLUE,
 ];
 
+const_assert!(!COLORS.is_empty());
+
 #[cfg(target_arch = "wasm32")]
 lazy_static::lazy_static! {
 	static ref IS_MOBILE: bool = {

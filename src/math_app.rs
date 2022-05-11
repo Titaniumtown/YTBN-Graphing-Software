@@ -3,12 +3,13 @@ use crate::function_entry::Riemann;
 use crate::function_manager::FunctionManager;
 use crate::misc::{dyn_mut_iter, option_vec_printer, TextData};
 use eframe::App;
+use egui::FontTweak;
 use egui::{
 	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData,
-	FontDefinitions, FontFamily, Frame, Key, RichText, SidePanel, Slider, TopBottomPanel, Vec2,
-	Visuals, Window,
+	FontDefinitions, FontFamily, Frame, Key, Label, Layout, RichText, SidePanel, Slider,
+	TopBottomPanel, Vec2, Visuals, Window,
 };
-use emath::Align2;
+use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Duration;
 use std::collections::BTreeMap;
@@ -16,23 +17,6 @@ use std::{io::Read, ops::BitXorAssign, str};
 
 #[cfg(threading)]
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
-
-cfg_if::cfg_if! {
-	if #[cfg(target_arch = "wasm32")] {
-		use wasm_bindgen::JsCast;
-
-		/// Removes the "loading" element on the web page that displays a loading indicator
-		fn stop_loading() {
-			let document = web_sys::window().expect("Could not get web_sys window").document().expect("Could not get web_sys document");
-
-			let loading_element = document.get_element_by_id("loading").expect("Couldn't get loading indicator element")
-			.dyn_into::<web_sys::HtmlElement>().unwrap();
-
-			// Remove the element
-			loading_element.remove();
-		}
-	}
-}
 
 /// Stores current settings/state of [`MathApp`]
 // TODO: find a better name for this
@@ -124,24 +108,42 @@ impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of [`MathApp`] and return it
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-		let ctx = &cc.egui_ctx;
-		let start = instant::Instant::now();
-
-		// Remove loading indicator on wasm
-		#[cfg(target_arch = "wasm32")]
-		stop_loading();
-
 		#[cfg(threading)]
 		tracing::info!("Threading: Enabled");
 
 		#[cfg(not(threading))]
 		tracing::info!("Threading: Disabled");
 
-		if let Some(web_info) = &cc.integration_info.web_info {
-			tracing::info!("Web Info: {:?}", web_info);
+		cfg_if::cfg_if! {
+			if #[cfg(target_arch = "wasm32")] {
+				use wasm_bindgen::JsCast;
+				use web_sys::HtmlElement;
+
+				if let Some(web_info) = &cc.integration_info.web_info {
+					tracing::info!("Web Info: {:?}", web_info);
+				}
+				let document = web_sys::window()
+					.expect("Could not get web_sys window")
+					.document()
+					.expect("Could not get web_sys document");
+
+				let loading_element = document
+					.get_element_by_id("loading")
+					.expect("Couldn't get loading indicator element")
+					.dyn_into::<web_sys::HtmlElement>()
+					.unwrap();
+
+				fn update_loading(loading_element: &HtmlElement, add: i32) {
+					let value =
+						unsafe { loading_element.get_attribute("value").unwrap_unchecked().parse::<i32>().unwrap_unchecked() };
+					loading_element.set_attribute("value", &(add + value).to_string()).unwrap();
+				}
+			}
 		}
 
-		tracing::info!("Loading assets...");
+		tracing::info!("Initializing...");
+		let start = instant::Instant::now();
+
 		let mut tar_file_data = Vec::new();
 		let _ = unsafe {
 			ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice())
@@ -149,6 +151,9 @@ impl MathApp {
 				.read_to_end(&mut tar_file_data)
 				.unwrap_unchecked()
 		};
+
+		#[cfg(target_arch = "wasm32")]
+		update_loading(&loading_element, 30);
 
 		// Stores fonts
 		let mut font_ubuntu_light: Option<FontData> = None;
@@ -173,24 +178,34 @@ impl MathApp {
 			let path = unsafe { file.header().path().unwrap_unchecked() };
 			let path_string = path.to_string_lossy();
 
-			tracing::debug!("Loading file: {}", path_string);
-
 			// Match the file extention
 			if path_string.ends_with(".ttf") {
 				// Parse font files
 				let font_data = FontData::from_owned(data);
 				match path_string.as_ref() {
 					"Hack-Regular.ttf" => {
+						#[cfg(target_arch = "wasm32")]
+						update_loading(&loading_element, 10);
+
 						font_hack = Some(font_data);
 					}
 					"NotoEmoji-Regular.ttf" => {
+						#[cfg(target_arch = "wasm32")]
+						update_loading(&loading_element, 10);
+
 						font_notoemoji = Some(font_data);
 					}
 					"Ubuntu-Light.ttf" => {
+						#[cfg(target_arch = "wasm32")]
+						update_loading(&loading_element, 10);
+
 						font_ubuntu_light = Some(font_data);
 					}
 					"emoji-icon-font.ttf" => {
-						font_emoji_icon = Some(font_data.tweak(egui::FontTweak {
+						#[cfg(target_arch = "wasm32")]
+						update_loading(&loading_element, 10);
+
+						font_emoji_icon = Some(font_data.tweak(FontTweak {
 							scale: 0.8,            // make it smaller
 							y_offset_factor: 0.07, // move it down slightly
 							y_offset: 0.0,
@@ -201,6 +216,8 @@ impl MathApp {
 					}
 				}
 			} else if path_string == "text.json" {
+				#[cfg(target_arch = "wasm32")]
+				update_loading(&loading_element, 10);
 				text_data = Some(TextData::from_json_str(unsafe {
 					str::from_utf8(&data).unwrap_unchecked()
 				}));
@@ -251,12 +268,19 @@ impl MathApp {
 
 		// Initialize fonts
 		// This used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
-		ctx.set_fonts(fonts);
+		cc.egui_ctx.set_fonts(fonts);
 
 		// Set dark mode by default
-		ctx.set_visuals(Visuals::dark());
+		cc.egui_ctx.set_visuals(Visuals::dark());
+
+		#[cfg(target_arch = "wasm32")]
+		update_loading(&loading_element, 20);
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
+
+		// Remove loading indicator on wasm
+		#[cfg(target_arch = "wasm32")]
+		loading_element.remove();
 
 		Self {
 			functions: Default::default(),
@@ -365,13 +389,13 @@ impl MathApp {
 
 				// Only render if there's enough space
 				if ui.available_height() > 0.0 {
-					ui.with_layout(egui::Layout::bottom_up(emath::Align::Min), |ui| {
+					ui.with_layout(Layout::bottom_up(Align::Min), |ui| {
 						// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
 
 						// Licensing information
-						ui.label(
+						ui.add(Label::new(
 							RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
-						)
+						))
 						.on_hover_text(&self.text.license_info);
 
 						// Hyperlink to project's github
@@ -425,7 +449,7 @@ impl App for MathApp {
 					.on_hover_text("Create and graph new function")
 					.clicked()
 				{
-					self.functions.new_function();
+					self.functions.push_empty();
 				}
 
 				// Toggles opening the Help window

@@ -124,7 +124,7 @@ impl SteppedVector {
 	pub const fn get_max(&self) -> f64 { self.max }
 
 	#[allow(dead_code)]
-	pub fn get_data(&self) -> Vec<f64> { self.data.clone() }
+	pub fn get_data(&self) -> &Vec<f64> { &self.data }
 }
 
 // Convert `Vec<f64>` into [`SteppedVector`]

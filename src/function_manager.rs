@@ -190,7 +190,7 @@ impl FunctionManager {
 		}
 	}
 
-	pub fn new_function(&mut self) {
+	pub fn push_empty(&mut self) {
 		self.functions
 			.push((Id::new(Uuid::new_v4()), FunctionEntry::EMPTY));
 	}
