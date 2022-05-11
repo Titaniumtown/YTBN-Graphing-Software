@@ -41,6 +41,7 @@ checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
 dependencies = [
  "getrandom",
  "once_cell",
+ "serde",
  "version_check",
 ]
 
@@ -150,6 +151,15 @@ dependencies = [
  "criterion-macro",
  "parsing",
  "pprof",
+]
+
+[[package]]
+name = "bincode"
+version = "1.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -730,6 +740,7 @@ version = "0.18.0"
 source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "bytemuck",
+ "serde",
 ]
 
 [[package]]
@@ -744,6 +755,7 @@ dependencies = [
  "emath",
  "nohash-hasher",
  "parking_lot 0.12.0",
+ "serde",
 ]
 
 [[package]]
@@ -1981,6 +1993,9 @@ name = "serde"
 version = "1.0.137"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61ea8d54c77f8315140a05f4c7237403bf38b72704d031543aa1d16abbf517d1"
+dependencies = [
+ "serde_derive",
+]
 
 [[package]]
 name = "serde_cbor"
@@ -2798,6 +2813,7 @@ version = "0.1.0"
 dependencies = [
  "async-lock",
  "benchmarks",
+ "bincode",
  "cfg-if 1.0.0",
  "command-run",
  "console_error_panic_hook",

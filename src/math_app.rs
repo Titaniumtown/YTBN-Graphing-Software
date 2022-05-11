@@ -3,16 +3,14 @@ use crate::function_entry::Riemann;
 use crate::function_manager::FunctionManager;
 use crate::misc::{dyn_mut_iter, option_vec_printer, TextData};
 use eframe::App;
-use egui::FontTweak;
 use egui::{
-	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context, FontData,
-	FontDefinitions, FontFamily, Frame, Key, Label, Layout, RichText, SidePanel, Slider,
-	TopBottomPanel, Vec2, Visuals, Window,
+	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context,
+	FontDefinitions, Frame, Key, Label, Layout, RichText, SidePanel, Slider, TopBottomPanel, Vec2,
+	Visuals, Window,
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Duration;
-use std::collections::BTreeMap;
 use std::{io::Read, ops::BitXorAssign, str};
 
 #[cfg(threading)]
@@ -156,10 +154,7 @@ impl MathApp {
 		update_loading(&loading_element, 30);
 
 		// Stores fonts
-		let mut font_ubuntu_light: Option<FontData> = None;
-		let mut font_notoemoji: Option<FontData> = None;
-		let mut font_hack: Option<FontData> = None;
-		let mut font_emoji_icon: Option<FontData> = None;
+		let mut font_data: Option<FontDefinitions> = None;
 
 		// Stores text
 		let mut text_data: Option<TextData> = None;
@@ -179,43 +174,9 @@ impl MathApp {
 			let path_string = path.to_string_lossy();
 
 			// Match the file extention
-			if path_string.ends_with(".ttf") {
-				// Parse font files
-				let font_data = FontData::from_owned(data);
-				match path_string.as_ref() {
-					"Hack-Regular.ttf" => {
-						#[cfg(target_arch = "wasm32")]
-						update_loading(&loading_element, 10);
-
-						font_hack = Some(font_data);
-					}
-					"NotoEmoji-Regular.ttf" => {
-						#[cfg(target_arch = "wasm32")]
-						update_loading(&loading_element, 10);
-
-						font_notoemoji = Some(font_data);
-					}
-					"Ubuntu-Light.ttf" => {
-						#[cfg(target_arch = "wasm32")]
-						update_loading(&loading_element, 10);
-
-						font_ubuntu_light = Some(font_data);
-					}
-					"emoji-icon-font.ttf" => {
-						#[cfg(target_arch = "wasm32")]
-						update_loading(&loading_element, 10);
-
-						font_emoji_icon = Some(font_data.tweak(FontTweak {
-							scale: 0.8,            // make it smaller
-							y_offset_factor: 0.07, // move it down slightly
-							y_offset: 0.0,
-						}))
-					}
-					_ => {
-						panic!("Font File {} not expected!", path_string);
-					}
-				}
-			} else if path_string == "text.json" {
+			if path_string.ends_with("font_data") {
+				font_data = Some(bincode::deserialize(&data).unwrap());
+			} else if path_string.ends_with("text.json") {
 				#[cfg(target_arch = "wasm32")]
 				update_loading(&loading_element, 10);
 				text_data = Some(TextData::from_json_str(unsafe {
@@ -226,49 +187,10 @@ impl MathApp {
 			}
 		}
 
-		let fonts = FontDefinitions {
-			font_data: BTreeMap::from([
-				(
-					"Hack".to_owned(),
-					font_hack.expect("Hack-Regular.ttf not found!"),
-				),
-				(
-					"Ubuntu-Light".to_owned(),
-					font_ubuntu_light.expect("Ubuntu-Light.ttf not found!"),
-				),
-				(
-					"NotoEmoji-Regular".to_owned(),
-					font_notoemoji.expect("NotoEmoji-Regular.ttf not found!"),
-				),
-				(
-					"emoji-icon-font".to_owned(),
-					font_emoji_icon.expect("emoji-icon-font.ttf not found!"),
-				),
-			]),
-			families: BTreeMap::from([
-				(
-					FontFamily::Monospace,
-					vec![
-						"Hack".to_owned(),
-						"Ubuntu-Light".to_owned(),
-						"NotoEmoji-Regular".to_owned(),
-						"emoji-icon-font".to_owned(),
-					],
-				),
-				(
-					FontFamily::Proportional,
-					vec![
-						"Ubuntu-Light".to_owned(),
-						"NotoEmoji-Regular".to_owned(),
-						"emoji-icon-font".to_owned(),
-					],
-				),
-			]),
-		};
-
 		// Initialize fonts
 		// This used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
-		cc.egui_ctx.set_fonts(fonts);
+		cc.egui_ctx
+			.set_fonts(font_data.expect("Failed to load font_data"));
 
 		// Set dark mode by default
 		cc.egui_ctx.set_visuals(Visuals::dark());

@@ -38,7 +38,9 @@ strip = false
 parsing = { path = "./parsing" }
 eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
-epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
+    "serde",
+] }
 emath = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 
 shadow-rs = { version = "0.11", default-features = false }
@@ -52,6 +54,8 @@ tracing = "0.1"
 itertools = "0.10"
 static_assertions = "1.1"
 uuid = { version = "1", features = ["v4", "fast-rng", "js"] }
+bincode = "1.3.3"
+
 
 [dev-dependencies]
 benchmarks = { path = "./benchmarks" }
@@ -59,6 +63,10 @@ benchmarks = { path = "./benchmarks" }
 [build-dependencies]
 shadow-rs = "0.11"
 command-run = "1.1"
+epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
+    "serde",
+] }
+bincode = "1.3.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = "0.1"
