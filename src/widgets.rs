@@ -85,7 +85,7 @@ impl<'a> AutoComplete<'a> {
 
 						self.apply_hint(hints[self.i]);
 					}
-					Movement::None => {}
+					_ => unreachable!(),
 				}
 			}
 			Hint::Single(hint) => {
@@ -93,7 +93,7 @@ impl<'a> AutoComplete<'a> {
 					self.apply_hint(hint);
 				}
 			}
-			Hint::None => {}
+			_ => unreachable!(),
 		}
 	}
 
