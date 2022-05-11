@@ -13,13 +13,11 @@
 3. Allow constants in min/max integral input (like pi or euler's number)
 4. Sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
 5. Fix integral display
-6. Better handling of panics and errors to display to the user
-7. Turn Dynamic Iterator functions into traits
-8. Better handling of roots and extrema finding
-9. Add closing animation for function entry
-10. Create actual icon(s) for PWA/favicon (using placeholder from eframe_template)
-11. Fix mobile text input
-12. Don't use json for text storage
-13. Write custom plotter
-14. Cache decompressed data in browser's [Local Storage](https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Storage.html)
-15. Add Url hashes loading and setting
+6. Turn Dynamic Iterator functions into traits
+7. Better handling of roots and extrema finding
+8. Add closing animation for function entry
+9. Create actual icon(s) for PWA/favicon (using placeholder from eframe_template)
+10. Fix mobile text input
+11. Write custom plotter
+12. Add Url hashes loading and setting
+13. Store settings in LocalStorage/Cookies

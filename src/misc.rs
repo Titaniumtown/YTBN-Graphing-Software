@@ -289,7 +289,6 @@ pub fn storage_create(commit: &[u8], data: &[u8]) -> String {
 	assert_eq!(commit.len(), 8);
 
 	let mut new_data = commit.to_vec();
-	// new_data.push(20); // push 'space'
 	let mut data = data.to_vec();
 	new_data.append(&mut data);
 	base64::encode(new_data)
