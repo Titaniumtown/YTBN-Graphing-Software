@@ -663,7 +663,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#8d3deeb02f7fd0b9a09a6fbbd08ab49c4d399133"
+source = "git+https://github.com/Titaniumtown/egui.git#ee8c475bf7c78bef05a5bd0b2c85d4430bc82936"
 dependencies = [
  "bytemuck",
  "egui",
@@ -683,7 +683,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#8d3deeb02f7fd0b9a09a6fbbd08ab49c4d399133"
+source = "git+https://github.com/Titaniumtown/egui.git#ee8c475bf7c78bef05a5bd0b2c85d4430bc82936"
 dependencies = [
  "ahash",
  "epaint",
@@ -694,7 +694,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#8d3deeb02f7fd0b9a09a6fbbd08ab49c4d399133"
+source = "git+https://github.com/Titaniumtown/egui.git#ee8c475bf7c78bef05a5bd0b2c85d4430bc82936"
 dependencies = [
  "arboard",
  "egui",
@@ -707,7 +707,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#8d3deeb02f7fd0b9a09a6fbbd08ab49c4d399133"
+source = "git+https://github.com/Titaniumtown/egui.git#ee8c475bf7c78bef05a5bd0b2c85d4430bc82936"
 dependencies = [
  "bytemuck",
  "egui",
@@ -727,7 +727,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#8d3deeb02f7fd0b9a09a6fbbd08ab49c4d399133"
+source = "git+https://github.com/Titaniumtown/egui.git#ee8c475bf7c78bef05a5bd0b2c85d4430bc82936"
 dependencies = [
  "bytemuck",
  "serde",
@@ -736,7 +736,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#8d3deeb02f7fd0b9a09a6fbbd08ab49c4d399133"
+source = "git+https://github.com/Titaniumtown/egui.git#ee8c475bf7c78bef05a5bd0b2c85d4430bc82936"
 dependencies = [
  "ab_glyph",
  "ahash",
