@@ -1,21 +1,21 @@
 use crate::consts::is_mobile;
 use crate::function_entry::FunctionEntry;
 use crate::widgets::{widgets_ontop, Movement};
-use egui::{Button, Key, Modifiers, TextEdit, WidgetText};
+use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
 use parsing::suggestions::Hint;
 use std::ops::BitXorAssign;
 use uuid::Uuid;
 
 pub struct FunctionManager {
-	functions: Vec<(Uuid, FunctionEntry)>,
+	functions: Vec<(Id, FunctionEntry)>,
 }
 
 impl Default for FunctionManager {
 	fn default() -> Self {
 		Self {
 			functions: vec![(
-				uuid!("684fc8be-4ba0-408d-96ef-480b0642126f"), // Random uuid here to avoid call to `Uuid::new_v4()`
+				Id::new(uuid!("684fc8be-4ba0-408d-96ef-480b0642126f")), // Random uuid here to avoid call to `Uuid::new_v4()`
 				FunctionEntry::EMPTY,
 			)],
 		}
@@ -32,42 +32,30 @@ impl FunctionManager {
 		// ui.label("Functions:");
 		let can_remove = self.functions.len() > 1;
 
-		let row_height = ui
-			.fonts()
-			.row_height(&egui::FontSelection::default().resolve(ui.style()));
+		// update if font settings are ever changed
+		const ROW_HEIGHT: f32 = 14.0;
+		// ui.fonts().row_height(&egui::FontSelection::default().resolve(ui.style()));
 
 		let available_width = ui.available_width();
 		let mut remove_i: Option<usize> = None;
-		for (i, (uuid, function)) in self.functions.iter_mut().enumerate() {
-			// render cool input box
-			let output_string = function.autocomplete.string.clone();
-			function.update_string(&output_string);
+		let target_size = vec2(available_width, ROW_HEIGHT);
+		for (i, (te_id, function)) in self.functions.iter_mut().enumerate() {
+			let mut new_string = function.autocomplete.string.clone();
+			function.update_string(&new_string);
 
 			let mut movement: Movement = Movement::default();
 
-			let mut new_string = function.autocomplete.string.clone();
-
-			// unique id for this function
-			let te_id = ui.make_persistent_id(uuid);
-
-			// target size of text edit box
-			let target_size = vec2(available_width, {
-				// get the animated bool that stores how "in focus" the text box is
-				let gotten_focus_value = {
-					let ctx = ui.ctx();
-					let had_focus = ctx.memory().has_focus(te_id);
-					ctx.animate_bool(te_id, had_focus)
-				};
-
-				row_height * (1.0 + (gotten_focus_value * 1.5))
-			});
-
 			let re = ui.add_sized(
-				target_size,
+				target_size
+					* vec2(1.0, {
+						let ctx = ui.ctx();
+						let had_focus = ctx.memory().has_focus(*te_id);
+						(ctx.animate_bool(*te_id, had_focus) * 1.5) + 1.0
+					}),
 				egui::TextEdit::singleline(&mut new_string)
 					.hint_forward(true) // Make the hint appear after the last text in the textbox
 					.lock_focus(true)
-					.id(te_id) // set widget's id to `te_id`
+					.id(*te_id) // set widget's id to `te_id`
 					.hint_text({
 						// if there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
 						if let Hint::Single(single_hint) = function.autocomplete.hint {
@@ -79,7 +67,7 @@ impl FunctionManager {
 			);
 
 			// if not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			if ui.ctx().animate_bool(te_id, re.has_focus()) >= 1.0 {
+			if ui.ctx().animate_bool(*te_id, re.has_focus()) >= 1.0 {
 				function.autocomplete.update_string(&new_string);
 
 				if !function.autocomplete.hint.is_none() {
@@ -92,7 +80,11 @@ impl FunctionManager {
 					}
 
 					// Put here so these key presses don't interact with other elements
-					let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
+					let enter_pressed = match is_mobile() {
+						true => false,
+						false => ui.input_mut().consume_key(Modifiers::NONE, Key::Enter),
+					};
+
 					let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 					if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
 						movement = Movement::Complete;
@@ -130,10 +122,10 @@ impl FunctionManager {
 					// Push cursor to end if needed
 					if movement == Movement::Complete {
 						let mut state =
-							unsafe { TextEdit::load_state(ui.ctx(), te_id).unwrap_unchecked() };
+							unsafe { TextEdit::load_state(ui.ctx(), *te_id).unwrap_unchecked() };
 						let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
 						state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
-						TextEdit::store_state(ui.ctx(), te_id, state);
+						TextEdit::store_state(ui.ctx(), *te_id, state);
 					}
 				}
 
@@ -144,7 +136,7 @@ impl FunctionManager {
 					ui,
 					format!("buttons_area_{}", i),
 					&re,
-					row_height * BUTTONS_Y_OFFSET,
+					ROW_HEIGHT * BUTTONS_Y_OFFSET,
 					|ui| {
 						ui.horizontal(|ui| {
 							// There's more than 1 function! Functions can now be deleted
@@ -198,7 +190,10 @@ impl FunctionManager {
 		}
 	}
 
-	pub fn new_function(&mut self) { self.functions.push((Uuid::new_v4(), FunctionEntry::EMPTY)); }
+	pub fn new_function(&mut self) {
+		self.functions
+			.push((Id::new(Uuid::new_v4()), FunctionEntry::EMPTY));
+	}
 
 	pub fn any_using_integral(&self) -> bool {
 		self.functions.iter().any(|(_, func)| func.integral)
@@ -207,7 +202,7 @@ impl FunctionManager {
 	#[inline]
 	pub fn len(&self) -> usize { self.functions.len() }
 
-	pub fn get_entries_mut(&mut self) -> &mut Vec<(Uuid, FunctionEntry)> { &mut self.functions }
+	pub fn get_entries_mut(&mut self) -> &mut Vec<(Id, FunctionEntry)> { &mut self.functions }
 
-	pub fn get_entries(&self) -> &Vec<(Uuid, FunctionEntry)> { &self.functions }
+	pub fn get_entries(&self) -> &Vec<(Id, FunctionEntry)> { &self.functions }
 }

@@ -36,13 +36,11 @@ pub enum SplitType {
 }
 
 pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
-	if chars.is_empty() {
-		return Vec::new();
-	}
-
-	// No point in processing everything if there's only 1 character
-	if chars.len() == 1 {
-		return vec![chars[0].to_string()];
+	// catch some basic cases
+	match chars.len() {
+		0 => return Vec::new(),
+		1 => return vec![chars[0].to_string()],
+		_ => {}
 	}
 
 	unsafe {

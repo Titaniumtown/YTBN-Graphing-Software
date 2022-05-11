@@ -338,8 +338,8 @@ mod tests {
 	/// find a bunch of issues)
 	#[test]
 	fn stepped_vector_test() {
-		let min: i32 = -10;
-		let max: i32 = 10;
+		let min: i32 = -1000;
+		let max: i32 = 1000;
 		let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
 		let len_data = data.len();
 		let stepped_vector: SteppedVector = data.into();

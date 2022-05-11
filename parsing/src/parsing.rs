@@ -181,12 +181,8 @@ fn prettyify_function_str(func: &str) -> String {
 /// Case insensitive checks for if `c` is a character used to represent a variable
 #[inline]
 pub const fn is_variable(c: &char) -> bool {
-	match c.to_ascii_lowercase() {
-		'x' => true,
-		'e' => true,
-		'π' => true,
-		_ => false,
-	}
+	let c = c.to_ascii_lowercase();
+	(c == 'x') | (c == 'e') | (c == 'π')
 }
 
 /// Adds asterisks where needed in a function

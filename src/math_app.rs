@@ -143,10 +143,12 @@ impl MathApp {
 
 		tracing::info!("Loading assets...");
 		let mut tar_file_data = Vec::new();
-		let _ = ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice())
-			.expect("failed to decompress assets")
-			.read_to_end(&mut tar_file_data)
-			.expect("failed to read assets");
+		let _ = unsafe {
+			ruzstd::StreamingDecoder::new(&mut include_bytes!("../assets.tar.zst").as_slice())
+				.unwrap_unchecked()
+				.read_to_end(&mut tar_file_data)
+				.unwrap_unchecked()
+		};
 
 		// Stores fonts
 		let mut font_ubuntu_light: Option<FontData> = None;
@@ -199,9 +201,9 @@ impl MathApp {
 					}
 				}
 			} else if path_string == "text.json" {
-				text_data = Some(TextData::from_json_str(
-					str::from_utf8(&data).expect("unable to read text.json"),
-				));
+				text_data = Some(TextData::from_json_str(unsafe {
+					str::from_utf8(&data).unwrap_unchecked()
+				}));
 			} else {
 				panic!("File {} not expected!", path_string);
 			}

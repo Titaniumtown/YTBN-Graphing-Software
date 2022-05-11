@@ -663,7 +663,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#bb3e7c02228e8cc3c03f91d4527ad3b4d4c3d0f7"
+source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "bytemuck",
  "egui",
@@ -683,7 +683,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#bb3e7c02228e8cc3c03f91d4527ad3b4d4c3d0f7"
+source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "ahash",
  "epaint",
@@ -694,7 +694,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#bb3e7c02228e8cc3c03f91d4527ad3b4d4c3d0f7"
+source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "arboard",
  "egui",
@@ -707,7 +707,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#bb3e7c02228e8cc3c03f91d4527ad3b4d4c3d0f7"
+source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "bytemuck",
  "egui",
@@ -727,7 +727,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#bb3e7c02228e8cc3c03f91d4527ad3b4d4c3d0f7"
+source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "bytemuck",
 ]
@@ -735,7 +735,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#bb3e7c02228e8cc3c03f91d4527ad3b4d4c3d0f7"
+source = "git+https://github.com/Titaniumtown/egui.git#e9ed0e4b3ad7ca6e887edb013437077ea398d568"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -1937,7 +1937,7 @@ dependencies = [
 [[package]]
 name = "ruzstd"
 version = "0.2.4"
-source = "git+https://github.com/Titaniumtown/zstd-rs.git?branch=ringbuffer#56972fa1fe8b188ad2f1f54fe1fe35d9479a2d9f"
+source = "git+https://github.com/Titaniumtown/zstd-rs.git?branch=ringbuffer#1b2f128459f6a899788465bc005d75f0240c9eae"
 dependencies = [
  "byteorder",
  "twox-hash",
