@@ -144,6 +144,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base64"
+version = "0.20.0-alpha.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "149ea5dc24cb11513350770afebba32b68e3d2e356f9221351a2a1ee89112a82"
+
+[[package]]
 name = "benchmarks"
 version = "0.1.0"
 dependencies = [
@@ -2760,6 +2766,7 @@ name = "ytbn_graphing_software"
 version = "0.1.0"
 dependencies = [
  "async-lock",
+ "base64",
  "benchmarks",
  "bincode",
  "cfg-if 1.0.0",

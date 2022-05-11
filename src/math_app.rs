@@ -110,18 +110,21 @@ impl MathApp {
 		#[cfg(not(threading))]
 		tracing::info!("Threading: Disabled");
 
+		tracing::info!("Initializing...");
+		let start = instant::Instant::now();
+
 		cfg_if::cfg_if! {
 			if #[cfg(target_arch = "wasm32")] {
 				use wasm_bindgen::JsCast;
-				use web_sys::HtmlElement;
+				use web_sys::{HtmlElement, Window};
 
 				if let Some(web_info) = &cc.integration_info.web_info {
 					tracing::info!("Web Info: {:?}", web_info);
 				}
-				let document = web_sys::window()
-					.expect("Could not get web_sys window")
-					.document()
-					.expect("Could not get web_sys document");
+
+				let window = web_sys::window().expect("Could not get web_sys window");
+
+				let document = window.document().expect("Could not get web_sys document");
 
 				let loading_element = document
 					.get_element_by_id("loading")
@@ -134,23 +137,53 @@ impl MathApp {
 						unsafe { loading_element.get_attribute("value").unwrap_unchecked().parse::<i32>().unwrap_unchecked() };
 					loading_element.set_attribute("value", &(add + value).to_string()).unwrap();
 				}
+
+				const COMPRESSED_NAME: &str = const_format::formatc!("YTBN-{}-DECOMPRESSED", COMMIT);
+				fn get_storage_decompressed() -> Option<Vec<u8>> {
+					if let Ok(Some(data)) = web_sys::window().expect("Could not get web_sys window").local_storage().unwrap().unwrap().get_item(COMPRESSED_NAME) {
+						tracing::info!("Read cached data");
+						Some(base64::decode(data).expect("unable to read data"))
+					} else {
+						None
+					}
+				}
+
+				fn set_storage_decompressed(data: &Vec<u8>) {
+					if let Ok(Some(local_storage)) = web_sys::window().expect("Could not get web_sys window").local_storage() {
+						tracing::info!("Setting cached data");
+
+						local_storage.set_item(COMPRESSED_NAME, &base64::encode(data));
+					} else {
+						panic!("unable to get local storage")
+					}
+				}
+			} else {
+				const fn get_storage_decompressed() -> Option<Vec<u8>> {
+					None
+				}
+
+				const fn set_storage_decompressed(_: &Vec<u8>) {}
 			}
 		}
 
-		tracing::info!("Initializing...");
-		let start = instant::Instant::now();
-
-		let mut data = Vec::new();
-		let _ = unsafe {
-			ruzstd::StreamingDecoder::new(
-				&mut include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice(),
-			)
-			.unwrap_unchecked()
-			.read_to_end(&mut data)
-			.unwrap_unchecked()
+		let data_decompressed: Vec<u8> = if let Some(cached_data) = get_storage_decompressed() {
+			cached_data
+		} else {
+			let mut data = Vec::new();
+			let _ = unsafe {
+				ruzstd::StreamingDecoder::new(
+					&mut include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice(),
+				)
+				.unwrap_unchecked()
+				.read_to_end(&mut data)
+				.unwrap_unchecked()
+			};
+			set_storage_decompressed(&data);
+			data
 		};
 
-		let data: crate::data::TotalData = bincode::deserialize(data.as_slice()).unwrap();
+		let data: crate::data::TotalData =
+			bincode::deserialize(data_decompressed.as_slice()).unwrap();
 
 		#[cfg(target_arch = "wasm32")]
 		update_loading(&loading_element, 30);

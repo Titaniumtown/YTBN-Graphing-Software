@@ -6,10 +6,12 @@ use epaint::Color32;
 use shadow_rs::shadow;
 shadow!(build);
 
+pub const COMMIT: &str = build::SHORT_COMMIT;
+
 // Constant string that has a string containing information about the build.
 pub const BUILD_INFO: &str = formatc!(
 	"Commit: {} ({})\nBuild Date: {}\nPackage Version: {}\nRust Channel: {}\nRust Version: {}",
-	&build::SHORT_COMMIT,
+	&COMMIT,
 	&build::BRANCH,
 	&build::BUILD_TIME,
 	&build::PKG_VERSION,
