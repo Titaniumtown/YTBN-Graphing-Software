@@ -2,7 +2,7 @@
 #![feature(core_intrinsics)]
 #![feature(const_default_impls)]
 #![feature(const_mut_refs)]
-
+#![feature(const_for)]
 mod autocomplete;
 mod autocomplete_hashmap;
 mod parsing;

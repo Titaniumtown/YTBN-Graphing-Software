@@ -7,7 +7,7 @@ fn stepped_vector() {
 	let max: i32 = 1000;
 	let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
 	let len_data = data.len();
-	let stepped_vector: SteppedVector = data.into();
+	let stepped_vector: SteppedVector = data.as_slice().into();
 
 	assert_eq!(stepped_vector.get_min(), min as f64);
 	assert_eq!(stepped_vector.get_max(), max as f64);

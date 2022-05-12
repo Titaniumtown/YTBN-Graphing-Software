@@ -36,7 +36,7 @@ pub enum SplitType {
 }
 
 pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
-	// catch some basic cases
+	// Catch some basic cases
 	match chars.len() {
 		0 => return Vec::new(),
 		1 => return vec![chars[0].to_string()],
@@ -49,10 +49,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 	}
 
 	// Resulting split-up data
-	let mut data: Vec<String> = Vec::with_capacity(chars.len());
-
-	// Need to start out with an empty string
-	data.push(String::new());
+	let mut data: Vec<String> = vec![chars[0].to_string()];
 
 	/// Used to store info about a character
 	struct BoolSlice {
@@ -85,6 +82,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 				},
 			}
 		}
+
 		const fn is_variable(&self) -> bool { self.variable && !self.masked_var }
 
 		const fn is_number(&self) -> bool { self.number && !self.masked_num }
@@ -108,8 +106,8 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 			}
 		}
 
-		fn splitable(&self, c: &char, other: &BoolSlice, split: &SplitType) -> bool {
-			if (c == &'*') | ((split == &SplitType::Term) && other.open_parens) {
+		const fn splitable(&self, c: &char, other: &BoolSlice, split: &SplitType) -> bool {
+			if (*c == '*') | (matches!(split, &SplitType::Term) && other.open_parens) {
 				return true;
 			} else if other.closing_parens {
 				// Cases like `)x`, `)2`, and `)(`
@@ -144,7 +142,6 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 	let mut prev_char: BoolSlice = BoolSlice::from_char(&chars[0], false, false);
 
 	let mut last = unsafe { data.last_mut().unwrap_unchecked() };
-	last.push(chars[0]);
 
 	// Iterate through all chars excluding the first one
 	for c in chars.iter().skip(1) {

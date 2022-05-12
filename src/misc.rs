@@ -1,3 +1,5 @@
+use std::intrinsics::assume;
+
 use eframe::egui::plot::{Line, Points, Value as EguiValue, Values};
 use itertools::Itertools;
 
@@ -90,7 +92,7 @@ pub struct SteppedVector {
 impl SteppedVector {
 	/// Returns `Option<usize>` with index of element with value `x`. and `None` if `x` does not exist in `data`
 	pub fn get_index(&self, x: &f64) -> Option<usize> {
-		// if `x` is outside range, just go ahead and return `None` as it *shouldn't* be in `data`
+		// If `x` is outside range, just go ahead and return `None` as it *shouldn't* be in `data`
 		if (x > &self.max) | (&self.min > x) {
 			return None;
 		}
@@ -126,37 +128,39 @@ impl SteppedVector {
 	pub fn get_data(&self) -> &Vec<f64> { &self.data }
 }
 
-// Convert `Vec<f64>` into [`SteppedVector`]
-impl From<Vec<f64>> for SteppedVector {
-	fn from(input_data: Vec<f64>) -> SteppedVector {
-		let mut data = input_data;
-		// length of data
-		let data_length = data.len();
-
+// Convert `&[f64]` into [`SteppedVector`]
+impl From<&[f64]> for SteppedVector {
+	fn from(data: &[f64]) -> SteppedVector {
 		// Ensure data is of correct length
-		if data_length < 2 {
+		if data.len() < 2 {
 			panic!("SteppedVector: data should have a length longer than 2");
 		}
 
-		// length of data subtracted by 1 (represents the maximum index value)
-		let data_i_length = data_length - 1;
+		unsafe {
+			assume(data.len() > 2);
+			assume(!data.is_empty());
+		}
 
-		let mut max: f64 = data[data_i_length]; // The max value should be the first element
-		let mut min: f64 = data[0]; // The minimum value should be the last element
+		// length of data subtracted by 1 (represents the maximum index value)
+		let max: f64 = data[data.len() - 1]; // The max value should be the first element
+		let min: f64 = data[0]; // The minimum value should be the last element
 
 		if min > max {
+			panic!("SteppedVector: min is larger than max");
+			/*
 			tracing::debug!("SteppedVector: min is larger than max, sorting.");
 			data.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
 			max = data[data_i_length];
 			min = data[0];
+			*/
 		}
 
 		// Calculate the step between elements
-		let step = (max - min).abs() / (data_length as f64);
+		let step = (max - min).abs() / (data.len() as f64);
 
 		// Create and return the struct
 		SteppedVector {
-			data,
+			data: data.to_vec(),
 			min,
 			max,
 			step,
@@ -316,7 +320,7 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 
 #[allow(dead_code)]
 pub fn format_bytes(bytes: usize) -> String {
-	byte_unit::Byte::from_bytes(bytes as u128)
+	byte_unit::Byte::from_bytes(bytes as u64)
 		.get_appropriate_unit(false)
 		.to_string()
 }

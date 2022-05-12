@@ -307,6 +307,7 @@ impl FunctionEntry {
 				.iter()
 				.map(|ele| ele.x)
 				.collect::<Vec<f64>>()
+				.as_slice()
 				.into();
 
 			let back_data: Vec<Value> = dyn_iter(&resolution_iter)

@@ -57,7 +57,7 @@ uuid = { version = "1", features = ["v4", "fast-rng", "js"] }
 bincode = "1.3"
 serde = "1"
 base64 = { git = "https://github.com/marshallpierce/rust-base64.git" }
-byte-unit = "4.0.14"
+byte-unit = { version = "4", default-features = false }
 
 [dev-dependencies]
 benchmarks = { path = "./benchmarks" }
