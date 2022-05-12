@@ -1,9 +1,10 @@
 use crate::consts::is_mobile;
 use crate::function_entry::FunctionEntry;
-use crate::widgets::{widgets_ontop, Movement};
+use crate::widgets::widgets_ontop;
 use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
 use parsing::Hint;
+use parsing::Movement;
 use std::ops::BitXorAssign;
 use uuid::Uuid;
 

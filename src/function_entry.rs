@@ -2,13 +2,13 @@
 
 use crate::math_app::AppSettings;
 use crate::misc::*;
-use crate::widgets::AutoComplete;
 use egui::{
 	plot::{BarChart, PlotUi, Value},
 	widgets::plot::Bar,
 	Checkbox, Context,
 };
 use epaint::Color32;
+use parsing::AutoComplete;
 use parsing::{process_func_str, BackingFunction};
 use std::{
 	fmt::{self, Debug},

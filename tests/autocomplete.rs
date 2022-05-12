@@ -1,5 +1,4 @@
-use parsing::Hint;
-use ytbn_graphing_software::{AutoComplete, Movement};
+use parsing::{AutoComplete, Hint, Movement};
 
 enum Action<'a> {
 	AssertIndex(usize),

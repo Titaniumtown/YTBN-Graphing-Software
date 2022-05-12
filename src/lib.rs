@@ -27,7 +27,6 @@ pub use crate::{
 		decimal_round, option_vec_printer, resolution_helper, storage_create, storage_read,
 		SteppedVector,
 	},
-	widgets::{AutoComplete, Movement},
 };
 
 cfg_if::cfg_if! {
