@@ -8,8 +8,9 @@ use egui::{
 	Checkbox, Context,
 };
 use epaint::Color32;
-use parsing::AutoComplete;
+use parsing::{generate_hint, AutoComplete};
 use parsing::{process_func_str, BackingFunction};
+use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 use std::{
 	fmt::{self, Debug},
 	intrinsics::assume,
@@ -64,6 +65,56 @@ pub struct FunctionEntry {
 	curr_nth: usize,
 
 	pub settings_opened: bool,
+}
+
+impl Serialize for FunctionEntry {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		let mut s = serializer.serialize_struct("FunctionEntry", 4)?;
+		s.serialize_field("raw_func_str", &self.raw_func_str)?;
+		s.serialize_field("integral", &self.integral)?;
+		s.serialize_field("derivative", &self.derivative)?;
+		s.serialize_field("curr_nth", &self.curr_nth)?;
+
+		s.end()
+	}
+}
+
+impl<'de> Deserialize<'de> for FunctionEntry {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		#[derive(Deserialize)]
+		struct Helper {
+			raw_func_str: String,
+			integral: bool,
+			derivative: bool,
+			curr_nth: usize,
+		}
+
+		let helper = Helper::deserialize(deserializer)?;
+		let mut new_func_entry = FunctionEntry::EMPTY;
+		let gen_func = BackingFunction::new(&helper.raw_func_str);
+		match gen_func {
+			Ok(func) => new_func_entry.function = func,
+			Err(x) => new_func_entry.test_result = Some(x),
+		}
+
+		new_func_entry.autocomplete = AutoComplete {
+			i: 0,
+			hint: generate_hint(&helper.raw_func_str),
+			string: helper.raw_func_str,
+		};
+
+		new_func_entry.integral = helper.integral;
+		new_func_entry.derivative = helper.derivative;
+		new_func_entry.curr_nth = helper.curr_nth;
+
+		Ok(new_func_entry)
+	}
 }
 
 impl const Default for FunctionEntry {

@@ -10,7 +10,7 @@ use egui::{
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
-use instant::Duration;
+use instant::{Duration, Instant};
 use std::{io::Read, ops::BitXorAssign};
 
 #[cfg(threading)]
@@ -98,6 +98,9 @@ pub struct MathApp {
 
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
+
+	#[cfg(target_arch = "wasm32")]
+	since_last_save: Instant,
 }
 
 impl MathApp {
@@ -111,7 +114,7 @@ impl MathApp {
 		tracing::info!("Threading: Disabled");
 
 		tracing::info!("Initializing...");
-		let start = instant::Instant::now();
+		let start = Instant::now();
 
 		cfg_if::cfg_if! {
 			if #[cfg(target_arch = "wasm32")] {
@@ -164,12 +167,33 @@ impl MathApp {
 						panic!("unable to get local storage")
 					}
 				}
+
+				fn get_functions() -> Option<FunctionManager> {
+					if let Ok(Some(data)) = web_sys::window().expect("Could not get web_sys window").local_storage().unwrap().unwrap().get_item("YTBN-FUNCTIONS") {
+						let (commit, func_data) = crate::misc::storage_read(data);
+
+						if commit == build::SHORT_COMMIT {
+							tracing::info!("Reading old functions");
+							let function_manager: FunctionManager = bincode::deserialize(&func_data).unwrap();
+							return Some(function_manager);
+						} else {
+							// is invalid
+							None
+						}
+
+					} else {
+						None
+					}
+				}
+
 			} else {
 				const fn get_storage_decompressed() -> Option<Vec<u8>> {
 					None
 				}
 
 				const fn set_storage_decompressed(_: &Vec<u8>) {}
+
+				const fn get_functions() -> Option<FunctionManager> { None }
 			}
 		}
 
@@ -214,12 +238,14 @@ impl MathApp {
 		loading_element.remove();
 
 		Self {
-			functions: Default::default(),
+			functions: get_functions().unwrap_or(FunctionManager::default()),
 			last_info: (vec![None], None),
 			dark_mode: true, // dark mode is default and is previously set
 			text: data.text,
 			opened: Opened::default(),
 			settings: Default::default(),
+			#[cfg(target_arch = "wasm32")]
+			since_last_save: Instant::now(),
 		}
 	}
 
@@ -562,5 +588,31 @@ impl App for MathApp {
 
 		// Calculate and store the last time it took to draw the frame
 		self.last_info.1 = start.map(|a| a.elapsed());
+
+		#[cfg(target_arch = "wasm32")]
+		{
+			if self.since_last_save.elapsed().as_millis() > 10000 {
+				self.since_last_save = Instant::now();
+				if let Ok(Some(local_storage)) = web_sys::window()
+					.expect("Could not get web_sys window")
+					.local_storage()
+				{
+					tracing::info!("Setting current functions");
+					let saved_data = &crate::misc::storage_create(
+						&build::SHORT_COMMIT
+							.chars()
+							.map(|c| c as u8)
+							.collect::<Vec<u8>>(),
+						bincode::serialize(&self.functions).unwrap().as_slice(),
+					);
+					tracing::info!("Data has length of {}", saved_data.len());
+					local_storage
+						.set_item("YTBN-FUNCTIONS", saved_data)
+						.expect("failed to set local function storage");
+				} else {
+					panic!("unable to get local storage")
+				}
+			}
+		}
 	}
 }

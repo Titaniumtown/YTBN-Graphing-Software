@@ -5,6 +5,11 @@ use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
 use parsing::Hint;
 use parsing::Movement;
+use serde::ser::SerializeStruct;
+use serde::Deserialize;
+use serde::Deserializer;
+use serde::Serialize;
+use serde::Serializer;
 use std::ops::BitXorAssign;
 use uuid::Uuid;
 
@@ -20,6 +25,46 @@ impl Default for FunctionManager {
 				FunctionEntry::EMPTY,
 			)],
 		}
+	}
+}
+
+impl Serialize for FunctionManager {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		let mut s = serializer.serialize_struct("FunctionManager", 1)?;
+		s.serialize_field(
+			"data",
+			&self
+				.functions
+				.iter()
+				.cloned()
+				.map(|(id, func)| (id.value(), func))
+				.collect::<Vec<(u64, FunctionEntry)>>(),
+		)?;
+		s.end()
+	}
+}
+
+impl<'de> Deserialize<'de> for FunctionManager {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		#[derive(Deserialize)]
+		struct Helper(Vec<(u64, FunctionEntry)>);
+
+		let helper = Helper::deserialize(deserializer)?;
+
+		Ok(FunctionManager {
+			functions: helper
+				.0
+				.iter()
+				.cloned()
+				.map(|(id, func)| (egui::Id::new_from_u64(id), func))
+				.collect::<Vec<(Id, FunctionEntry)>>(),
+		})
 	}
 }
 
