@@ -36,7 +36,9 @@ strip = false
 
 [dependencies]
 parsing = { path = "./parsing" }
-eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
+    "glow",
+] }
 egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
     "serde",
