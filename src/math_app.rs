@@ -113,6 +113,8 @@ impl MathApp {
 		#[cfg(not(threading))]
 		tracing::info!("Threading: Disabled");
 
+		tracing::info!("commit: {}", build::SHORT_COMMIT);
+
 		tracing::info!("Initializing...");
 		let start = Instant::now();
 
@@ -145,9 +147,11 @@ impl MathApp {
 						let (commit, cached_data) = crate::misc::storage_read(data);
 
 						if commit == build::SHORT_COMMIT {
-							tracing::info!("Read cached data");
+							tracing::info!("Reading decompression cache");
 							return Some(cached_data.to_vec());
 						} else {
+							tracing::info!("Decompression cache are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
+
 							// is invalid
 							None
 						}
@@ -159,7 +163,7 @@ impl MathApp {
 
 				fn set_storage_decompressed(data: &Vec<u8>) {
 					if let Ok(Some(local_storage)) = web_sys::window().expect("Could not get web_sys window").local_storage() {
-						tracing::info!("Setting cached data");
+						tracing::info!("Setting decompression cache");
 						let saved_data = &crate::misc::storage_create(&build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>(), data.as_slice());
 						tracing::info!("Data has length of {}", saved_data.len());
 						local_storage.set_item("YTBN-DECOMPRESSED", saved_data).expect("failed to set local storage cache");
@@ -177,6 +181,7 @@ impl MathApp {
 							let function_manager: FunctionManager = bincode::deserialize(&func_data).unwrap();
 							return Some(function_manager);
 						} else {
+							tracing::info!("Old functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
 							// is invalid
 							None
 						}
