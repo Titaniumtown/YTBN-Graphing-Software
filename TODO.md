@@ -20,4 +20,4 @@
 10. Fix mobile text input
 11. Write custom plotter
 12. Add Url hashes loading and setting
-13. Store settings in LocalStorage/Cookies
+13. Store settings in LocalStorage/Cookies and persist state
