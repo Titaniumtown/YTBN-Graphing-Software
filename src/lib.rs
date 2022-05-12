@@ -24,8 +24,8 @@ pub use crate::{
 	function_entry::{FunctionEntry, Riemann},
 	math_app::AppSettings,
 	misc::{
-		decimal_round, option_vec_printer, resolution_helper, storage_create, storage_read,
-		SteppedVector,
+		decimal_round, format_bytes, hashed_storage_create, hashed_storage_read,
+		option_vec_printer, resolution_helper, SteppedVector,
 	},
 };
 

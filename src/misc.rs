@@ -251,8 +251,9 @@ where
 	T: ToString,
 {
 	let max_i: i32 = (data.len() as i32) - 1;
-	"[".to_owned()
-		+ &data
+	[
+		"[",
+		&data
 			.iter()
 			.map(|x| {
 				x.as_ref()
@@ -268,8 +269,10 @@ where
 				}
 			})
 			.collect::<Vec<String>>()
-			.concat()
-		+ "]"
+			.concat(),
+		"]",
+	]
+	.concat()
 }
 
 /// Returns a vector of length `max_i` starting at value `min_x` with resolution of `resolution`
@@ -284,22 +287,36 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
-#[allow(dead_code)]
-pub fn storage_create(commit: &[u8], data: &[u8]) -> String {
-	assert_eq!(commit.len(), 8);
+const HASH_LENGTH: usize = 8;
 
-	let mut new_data = commit.to_vec();
-	let mut data = data.to_vec();
-	new_data.append(&mut data);
+#[allow(dead_code)]
+pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
+	debug_assert_eq!(hash.len(), HASH_LENGTH);
+	debug_assert!(data.len() > 0);
+
+	let new_data = [hash, data].concat();
+	debug_assert_eq!(new_data.len(), data.len() + hash.len());
 	base64::encode(new_data)
 }
 
 #[allow(dead_code)]
-pub fn storage_read(data: String) -> (String, Vec<u8>) {
+pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	let decoded_1 = base64::decode(data).expect("unable to read data");
-	let (commit, cached_data) = decoded_1.split_at(8);
+	debug_assert!(decoded_1.len() > HASH_LENGTH);
+
+	let (hash, cached_data) = decoded_1.split_at(8);
+	debug_assert_eq!(hash.len(), HASH_LENGTH);
+	debug_assert!(cached_data.len() > 0);
+
 	(
-		commit.iter().map(|c| *c as char).collect::<String>(),
+		hash.iter().map(|c| *c as char).collect::<String>(),
 		cached_data.to_vec(),
 	)
+}
+
+#[allow(dead_code)]
+pub fn format_bytes(bytes: usize) -> String {
+	byte_unit::Byte::from_bytes(bytes as u128)
+		.get_appropriate_unit(false)
+		.to_string()
 }

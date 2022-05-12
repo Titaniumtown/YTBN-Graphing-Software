@@ -3,15 +3,17 @@
 #![feature(const_default_impls)]
 #![feature(const_mut_refs)]
 
-mod autocomplete_helper;
+mod autocomplete;
+mod autocomplete_hashmap;
 mod parsing;
 mod suggestions;
 
 pub use crate::{
-	autocomplete_helper::compile_hashmap,
+	autocomplete::{AutoComplete, Movement},
+	autocomplete_hashmap::compile_hashmap,
 	parsing::{process_func_str, BackingFunction},
 	suggestions::{
-		generate_hint, get_last_term, split_function, split_function_chars, AutoComplete, Hint,
-		Movement, HINT_EMPTY, SUPPORTED_FUNCTIONS,
+		generate_hint, get_last_term, split_function, split_function_chars, Hint, HINT_EMPTY,
+		SUPPORTED_FUNCTIONS,
 	},
 };

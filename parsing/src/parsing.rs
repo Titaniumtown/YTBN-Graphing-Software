@@ -1,6 +1,6 @@
 use exmex::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub(crate) struct FlatExWrapper {
 	func: Option<FlatEx<f64>>,
 }
@@ -45,7 +45,7 @@ impl const Default for FlatExWrapper {
 }
 
 /// Function that includes f(x), f'(x), f'(x)'s string representation, and f''(x)
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct BackingFunction {
 	/// f(x)
 	function: FlatExWrapper,
@@ -73,7 +73,7 @@ impl BackingFunction {
 		nth_derivative: None,
 	};
 
-	pub fn is_none(&self) -> bool { self.function.is_none() }
+	pub const fn is_none(&self) -> bool { self.function.is_none() }
 
 	/// Create new [`BackingFunction`] instance
 	pub fn new(func_str: &str) -> Result<Self, String> {

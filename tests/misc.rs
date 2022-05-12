@@ -1,5 +1,3 @@
-use ytbn_graphing_software::{storage_create, storage_read};
-
 /// Tests [`SteppedVector`] to ensure everything works properly (helped me find a bunch of issues)
 #[test]
 fn stepped_vector() {
@@ -97,15 +95,29 @@ fn option_vec_printer() {
 }
 
 #[test]
-fn storage() {
+fn hash_b64_storage() {
+	use ytbn_graphing_software::{hashed_storage_create, hashed_storage_read};
+
 	let commit = "abcdefeg".chars().map(|c| c as u8).collect::<Vec<u8>>();
 	let data = "really cool data"
 		.chars()
 		.map(|c| c as u8)
 		.collect::<Vec<u8>>();
-	let storage = storage_create(commit.as_slice(), data.as_slice());
+	let storage = hashed_storage_create(commit.as_slice(), data.as_slice());
 
-	let read = storage_read(storage);
+	let read = hashed_storage_read(storage);
 	assert_eq!(read.0.chars().map(|c| c as u8).collect::<Vec<u8>>(), commit);
 	assert_eq!(read.1, data);
+}
+
+#[test]
+fn format_bytes() {
+	use std::collections::HashMap;
+	use ytbn_graphing_software::format_bytes;
+
+	let values: HashMap<usize, &str> = HashMap::from([(1000, "1000 B"), (10000, "10.00 KB")]);
+
+	for (key, value) in values {
+		assert_eq!(format_bytes(key), value);
+	}
 }

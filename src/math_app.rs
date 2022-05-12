@@ -125,29 +125,34 @@ impl MathApp {
 					tracing::info!("Web Info: {:?}", web_info);
 				}
 
-				let window = web_sys::window().expect("Could not get web_sys window");
+				fn get_window() -> web_sys::Window {
+					web_sys::window().expect("Could not get web_sys window")
+				}
 
-				let document = window.document().expect("Could not get web_sys document");
+				fn get_localstorage() -> web_sys::Storage {
+					get_window().local_storage().expect("failed to get localstorage1").expect("failed to get localstorage2")
+				}
 
-				let loading_element = document
+				let loading_element = get_window().document()
+					.expect("Could not get web_sys document")
 					.get_element_by_id("loading")
 					.expect("Couldn't get loading indicator element")
 					.dyn_into::<web_sys::HtmlElement>()
 					.unwrap();
 
+
 				fn update_loading(loading_element: &web_sys::HtmlElement, add: i32) {
-					let value =
-						unsafe { loading_element.get_attribute("value").unwrap_unchecked().parse::<i32>().unwrap_unchecked() };
-					loading_element.set_attribute("value", &(add + value).to_string()).unwrap();
+					let value = loading_element.get_attribute("value").expect("unable to get loading_elements's `value`").parse::<i32>().expect("unable to parse value as i32");
+					loading_element.set_attribute("value", &(add + value).to_string()).expect("unable to set loading_element's `value`");
 				}
 
 				const DATA_NAME: &str = "YTBN-DECOMPRESSED";
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
-					if let Ok(Some(data)) = web_sys::window().expect("Could not get web_sys window").local_storage().unwrap().unwrap().get_item("YTBN-DECOMPRESSED") {
-						let (commit, cached_data) = crate::misc::storage_read(data);
+					if let Ok(Some(data)) = get_localstorage().get_item(DATA_NAME) {
+						let (commit, cached_data) = crate::misc::hashed_storage_read(data);
 
 						if commit == build::SHORT_COMMIT {
-							tracing::info!("Reading decompression cache");
+							tracing::info!("Reading decompression cache. Bytes: {}, or: {}", cached_data.len(), crate::misc::format_bytes(cached_data.len()));
 							return Some(cached_data.to_vec());
 						} else {
 							tracing::info!("Decompression cache are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
@@ -155,33 +160,28 @@ impl MathApp {
 							// is invalid
 							None
 						}
-
 					} else {
 						None
 					}
 				}
 
 				fn set_storage_decompressed(data: &Vec<u8>) {
-					if let Ok(Some(local_storage)) = web_sys::window().expect("Could not get web_sys window").local_storage() {
-						tracing::info!("Setting decompression cache");
-						let saved_data = &crate::misc::storage_create(&build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>(), data.as_slice());
-						tracing::info!("Data has length of {}", saved_data.len());
-						local_storage.set_item("YTBN-DECOMPRESSED", saved_data).expect("failed to set local storage cache");
-					} else {
-						panic!("unable to get local storage")
-					}
+					tracing::info!("Setting decompression cache");
+					let saved_data = &crate::misc::hashed_storage_create(&build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>(), data.as_slice());
+					tracing::info!("Bytes: {}, or: {}", saved_data.len(), crate::misc::format_bytes(data.len()));
+					get_localstorage().set_item(DATA_NAME, saved_data).expect("failed to set local storage cache");
 				}
 
 				fn get_functions() -> Option<FunctionManager> {
-					if let Ok(Some(data)) = web_sys::window().expect("Could not get web_sys window").local_storage().unwrap().unwrap().get_item("YTBN-FUNCTIONS") {
-						let (commit, func_data) = crate::misc::storage_read(data);
+					if let Ok(Some(data)) = get_localstorage().get_item("YTBN-FUNCTIONS") {
+						let (commit, func_data) = crate::misc::hashed_storage_read(data);
 
 						if commit == build::SHORT_COMMIT {
-							tracing::info!("Reading old functions");
+							tracing::info!("Reading previous function data");
 							let function_manager: FunctionManager = bincode::deserialize(&func_data).unwrap();
 							return Some(function_manager);
 						} else {
-							tracing::info!("Old functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
+							tracing::info!("Previous functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
 							// is invalid
 							None
 						}
@@ -603,14 +603,14 @@ impl App for MathApp {
 					.local_storage()
 				{
 					tracing::info!("Setting current functions");
-					let saved_data = &crate::misc::storage_create(
+					let saved_data = &crate::misc::hashed_storage_create(
 						&build::SHORT_COMMIT
 							.chars()
 							.map(|c| c as u8)
 							.collect::<Vec<u8>>(),
 						bincode::serialize(&self.functions).unwrap().as_slice(),
 					);
-					tracing::info!("Data has length of {}", saved_data.len());
+					tracing::info!("Bytes: {}", saved_data.len());
 					local_storage
 						.set_item("YTBN-FUNCTIONS", saved_data)
 						.expect("failed to set local function storage");

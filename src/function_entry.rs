@@ -32,7 +32,7 @@ impl fmt::Display for Riemann {
 }
 
 /// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
-#[derive(Clone)]
+#[derive(PartialEq, Clone)]
 pub struct FunctionEntry {
 	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
 	function: BackingFunction,

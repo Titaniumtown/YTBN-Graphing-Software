@@ -198,6 +198,7 @@ fn split_function() {
 		("sin(x)*cos(x)", vec!["sin(x)", "cos(x)"]),
 		("x*x", vec!["x", "x"]),
 		("10*10", vec!["10", "10"]),
+		("a1b2c3d4", vec!["a1b2c3d4"]),
 	]);
 
 	for (key, value) in values {
@@ -240,6 +241,7 @@ fn get_last_term() {
 		("x*x", "x"),
 		("10*10", "10"),
 		("sin(cos", "cos"),
+		("exp(cos(exp(sin", "sin"),
 	]);
 
 	for (key, value) in values {
