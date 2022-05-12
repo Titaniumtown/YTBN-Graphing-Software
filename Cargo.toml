@@ -54,7 +54,7 @@ static_assertions = "1.1"
 uuid = { version = "1", features = ["v4", "fast-rng", "js"] }
 bincode = "1.3"
 serde = "1"
-base64 = "0.20.0-alpha.1"
+base64 = { git = "https://github.com/marshallpierce/rust-base64.git" }
 
 [dev-dependencies]
 benchmarks = { path = "./benchmarks" }

@@ -146,8 +146,7 @@ dependencies = [
 [[package]]
 name = "base64"
 version = "0.20.0-alpha.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "149ea5dc24cb11513350770afebba32b68e3d2e356f9221351a2a1ee89112a82"
+source = "git+https://github.com/marshallpierce/rust-base64.git#a675443d327e175f735a37f574de803d6a332591"
 
 [[package]]
 name = "benchmarks"
