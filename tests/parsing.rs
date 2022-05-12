@@ -161,13 +161,12 @@ fn hint_to_string() {
 fn invalid_function() {
 	SUPPORTED_FUNCTIONS
 		.iter()
-		.map(|func1| {
+		.flat_map(|func1| {
 			SUPPORTED_FUNCTIONS
 				.iter()
 				.map(|func2| func1.to_string() + func2)
 				.collect::<Vec<String>>()
 		})
-		.flatten()
 		.filter(|func| !SUPPORTED_FUNCTIONS.contains(&func.as_str()))
 		.for_each(|key| {
 			let split = parsing::split_function(&key);
@@ -180,7 +179,7 @@ fn invalid_function() {
 			if generated_hint.is_none() {
 				println!("success: {}", key);
 			} else {
-				panic!("failed: {} (Hint: '{}')", key, generated_hint.to_string());
+				panic!("failed: {} (Hint: '{}')", key, generated_hint);
 			}
 		});
 }
@@ -216,7 +215,7 @@ fn hint_tests() {
 	}
 
 	{
-		let hint = Hint::Single(&"");
+		let hint = Hint::Single("");
 		assert!(!hint.is_none());
 		assert!(hint.is_some());
 		assert!(hint.is_single());
