@@ -662,7 +662,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#8e62055679973f91ee58fe91cf6495ad28fae2f7"
+source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
 dependencies = [
  "bytemuck",
  "egui",
@@ -682,7 +682,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#8e62055679973f91ee58fe91cf6495ad28fae2f7"
+source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
 dependencies = [
  "ahash",
  "epaint",
@@ -693,7 +693,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#8e62055679973f91ee58fe91cf6495ad28fae2f7"
+source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
 dependencies = [
  "arboard",
  "egui",
@@ -706,7 +706,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#8e62055679973f91ee58fe91cf6495ad28fae2f7"
+source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
 dependencies = [
  "bytemuck",
  "egui",
@@ -726,22 +726,24 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#8e62055679973f91ee58fe91cf6495ad28fae2f7"
+source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
 dependencies = [
  "bytemuck",
+ "libm",
  "serde",
 ]
 
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#8e62055679973f91ee58fe91cf6495ad28fae2f7"
+source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
 dependencies = [
  "ab_glyph",
  "ahash",
  "atomic_refcell",
  "bytemuck",
  "emath",
+ "libm",
  "nohash-hasher",
  "parking_lot 0.12.0",
  "serde",
@@ -1145,6 +1147,11 @@ dependencies = [
  "cfg-if 1.0.0",
  "winapi",
 ]
+
+[[package]]
+name = "libm"
+version = "0.2.2"
+source = "git+https://github.com/phip1611/libm.git?branch=const-functions#d447daef3b9a4de4b1aaf6b87f09fbe20f5ded09"
 
 [[package]]
 name = "libz-sys"

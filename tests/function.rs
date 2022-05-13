@@ -62,8 +62,10 @@ fn do_test(sum: Riemann, area_target: f64) {
 }
 
 #[test]
-fn function_entries() {
-	do_test(Riemann::Left, 0.9600000000000001);
-	do_test(Riemann::Middle, 0.92);
-	do_test(Riemann::Right, 0.8800000000000001);
-}
+fn left_function() { do_test(Riemann::Left, 0.9600000000000001); }
+
+#[test]
+fn middle_function() { do_test(Riemann::Middle, 0.92); }
+
+#[test]
+fn right_function() { do_test(Riemann::Right, 0.8800000000000001); }

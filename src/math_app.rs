@@ -240,7 +240,7 @@ impl MathApp {
 		loading_element.remove();
 
 		Self {
-			functions: get_functions().unwrap_or(FunctionManager::default()),
+			functions: get_functions().unwrap_or_default(),
 			last_info: (vec![None], None),
 			dark_mode: true, // dark mode is default and is previously set
 			text: data.text,

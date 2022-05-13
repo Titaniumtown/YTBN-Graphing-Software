@@ -7,23 +7,23 @@ fn stepped_vector() {
 	let max: i32 = 1000;
 	let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
 	let len_data = data.len();
-	let stepped_vector: SteppedVector = data.as_slice().into();
+	let stepped_vector: SteppedVector = SteppedVector::from(data.as_slice());
 
-	assert_eq!(stepped_vector.get_min(), min as f64);
-	assert_eq!(stepped_vector.get_max(), max as f64);
+	assert_eq!(*stepped_vector.get_min(), min as f64);
+	assert_eq!(*stepped_vector.get_max(), max as f64);
 
-	assert_eq!(stepped_vector.get_index(&(min as f64)), Some(0));
-	assert_eq!(stepped_vector.get_index(&(max as f64)), Some(len_data - 1));
+	assert_eq!(stepped_vector.get_index(min as f64), Some(0));
+	assert_eq!(stepped_vector.get_index(max as f64), Some(len_data - 1));
 
 	for i in min..=max {
 		assert_eq!(
-			stepped_vector.get_index(&(i as f64)),
+			stepped_vector.get_index(i as f64),
 			Some((i + min.abs()) as usize)
 		);
 	}
 
-	assert_eq!(stepped_vector.get_index(&((min - 1) as f64)), None);
-	assert_eq!(stepped_vector.get_index(&((max + 1) as f64)), None);
+	assert_eq!(stepped_vector.get_index((min - 1) as f64), None);
+	assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
 }
 
 /// Ensures [`decimal_round`] returns correct values
@@ -63,6 +63,16 @@ fn resolution_helper() {
 	);
 
 	assert_eq!(resolution_helper(3, &-2.0, &1.0), vec![-2.0, -1.0, 0.0]);
+}
+
+#[test]
+fn step_helper() {
+	use ytbn_graphing_software::step_helper;
+
+	assert_eq!(
+		step_helper(10, &2.0, &3.0),
+		vec![2.0, 5.0, 8.0, 11.0, 14.0, 17.0, 20.0, 23.0, 26.0, 29.0]
+	);
 }
 
 /// Tests [`option_vec_printer`]

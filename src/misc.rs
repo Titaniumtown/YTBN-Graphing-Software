@@ -3,9 +3,6 @@ use std::intrinsics::assume;
 use eframe::egui::plot::{Line, Points, Value, Values};
 use itertools::Itertools;
 
-#[cfg(threading)]
-use rayon::prelude::*;
-
 #[cfg(not(threading))]
 #[inline]
 pub fn dyn_iter<'a, T>(input: &'a [T]) -> impl Iterator<Item = &'a T>
@@ -21,6 +18,8 @@ pub fn dyn_iter<'a, I>(input: &'a I) -> <&'a I as IntoParallelIterator>::Iter
 where
 	&'a I: IntoParallelIterator,
 {
+	use rayon::prelude::*;
+
 	input.par_iter()
 }
 
@@ -39,6 +38,7 @@ pub fn dyn_mut_iter<'a, I>(input: &'a mut I) -> <&'a mut I as IntoParallelIterat
 where
 	&'a mut I: IntoParallelIterator,
 {
+	use rayon::prelude::*;
 	input.par_iter_mut()
 }
 
@@ -79,37 +79,40 @@ pub struct SteppedVector<'a> {
 	/// Actual data being referenced. HAS to be sorted from minimum to maximum
 	data: &'a [f64],
 
-	/// Minimum value
-	min: f64,
-
-	/// Maximum value
-	max: f64,
-
 	/// Since all entries in `data` are evenly spaced, this field stores the step between 2 adjacent elements
 	step: f64,
 }
 
 impl<'a> SteppedVector<'a> {
 	/// Returns `Option<usize>` with index of element with value `x`. and `None` if `x` does not exist in `data`
-	pub fn get_index(&self, x: &f64) -> Option<usize> {
-		// If `x` is outside range, just go ahead and return `None` as it *shouldn't* be in `data`
-		if (x > &self.max) | (&self.min > x) {
+	pub fn get_index(&self, x: f64) -> Option<usize> {
+		unsafe {
+			assume(!self.step.is_nan());
+			assume(self.step > 0.0);
+			assume(self.step.is_sign_positive());
+		}
+
+		let max = self.get_max();
+		if &x > max {
 			return None;
 		}
 
-		if x == &self.min {
-			return Some(0);
+		let min = self.get_min();
+		if min > &x {
+			return None;
 		}
 
-		if x == &self.max {
+		if &x == min {
+			return Some(0);
+		} else if &x == max {
 			return Some(self.data.len() - 1);
 		}
 
 		// Do some math in order to calculate the expected index value
-		let possible_i = ((x - self.min) / self.step) as usize;
+		let possible_i = ((x - min).abs() / self.step) as usize;
 
 		// Make sure that the index is valid by checking the data returned vs the actual data (just in case)
-		if &self.data[possible_i] == x {
+		if self.data[possible_i] == x {
 			// It is valid!
 			Some(possible_i)
 		} else {
@@ -118,14 +121,26 @@ impl<'a> SteppedVector<'a> {
 		}
 	}
 
-	#[allow(dead_code)]
-	pub const fn get_min(&self) -> f64 { self.min }
+	#[inline]
+	pub const fn get_min(&self) -> &f64 {
+		unsafe {
+			assume(!self.data.is_empty());
+			assume(!self.data.is_empty());
+			self.data.get_unchecked(0)
+		}
+	}
+
+	#[inline]
+	pub const fn get_max(&self) -> &f64 {
+		unsafe {
+			assume(!self.data.is_empty());
+			assume(!self.data.is_empty());
+			self.data.last().unwrap_unchecked()
+		}
+	}
 
 	#[allow(dead_code)]
-	pub const fn get_max(&self) -> f64 { self.max }
-
-	#[allow(dead_code)]
-	pub fn get_data(&self) -> &'a [f64] { &self.data }
+	pub fn get_data(&self) -> &'a [f64] { self.data }
 }
 
 // Convert `&[f64]` into [`SteppedVector`]
@@ -140,8 +155,8 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 		}
 
 		// length of data subtracted by 1 (represents the maximum index value)
-		let max: f64 = data[data.len() - 1]; // The max value should be the first element
-		let min: f64 = data[0]; // The minimum value should be the last element
+		let max: f64 = data[data.len() - 1]; // The max value should be the last element
+		let min: f64 = data[0]; // The minimum value should be the first element
 
 		debug_assert!(max > min);
 
@@ -149,12 +164,7 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 		let step = (max - min).abs() / (data.len() as f64);
 
 		// Create and return the struct
-		SteppedVector {
-			data,
-			min,
-			max,
-			step,
-		}
+		SteppedVector { data, step }
 	}
 }
 
@@ -200,7 +210,7 @@ pub fn newtons_method_helper(
 
 	unsafe {
 		assume(!data.is_empty());
-		assume(data.len() > 0);
+		assume(!data.is_empty());
 	}
 
 	data.iter()
@@ -255,7 +265,7 @@ where
 
 	unsafe {
 		assume(!data.is_empty());
-		assume(data.len() > 0);
+		assume(!data.is_empty());
 	}
 
 	let max_i: i32 = (data.len() as i32) - 1;
@@ -300,10 +310,10 @@ const HASH_LENGTH: usize = 8;
 #[allow(dead_code)]
 pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
 	debug_assert_eq!(hash.len(), HASH_LENGTH);
-	debug_assert!(data.len() > 0);
+	debug_assert!(!data.is_empty());
 
 	unsafe {
-		assume(data.len() > 0);
+		assume(!data.is_empty());
 		assume(!data.is_empty());
 		assume(hash.len() == HASH_LENGTH);
 		assume(!hash.is_empty());
@@ -322,7 +332,7 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	debug_assert!(data.len() > HASH_LENGTH);
 	unsafe {
 		assume(!data.is_empty());
-		assume(data.len() > 0);
+		assume(!data.is_empty());
 	}
 
 	// can't use data.as_bytes() here for some reason, seems to break on wasm?
@@ -330,14 +340,14 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 
 	let (hash, cached_data) = decoded_1.split_at(8);
 	debug_assert_eq!(hash.len(), HASH_LENGTH);
-	debug_assert!(cached_data.len() > 0);
+	debug_assert!(!cached_data.is_empty());
 
 	unsafe {
 		assume(!cached_data.is_empty());
-		assume(cached_data.len() > 0);
+		assume(!cached_data.is_empty());
 
 		assume(!hash.is_empty());
-		assume(hash.len() > 0);
+		assume(!hash.is_empty());
 	}
 
 	(

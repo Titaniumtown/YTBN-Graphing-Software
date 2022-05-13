@@ -7,6 +7,8 @@
 #![feature(const_default_impls)]
 #![feature(const_fn_floating_point_arithmetic)]
 #![feature(const_assume)]
+#![feature(const_option_ext)]
+#![feature(const_slice_index)]
 
 #[macro_use]
 extern crate static_assertions;
@@ -27,7 +29,7 @@ pub use crate::{
 	math_app::AppSettings,
 	misc::{
 		decimal_round, format_bytes, hashed_storage_create, hashed_storage_read,
-		option_vec_printer, resolution_helper, SteppedVector,
+		option_vec_printer, resolution_helper, step_helper, SteppedVector,
 	},
 };
 

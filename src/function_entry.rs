@@ -318,23 +318,23 @@ impl FunctionEntry {
 				Vec<Option<Value>>,
 			) = dyn_iter(&resolution_iter)
 				.map(|x| {
-					if let Some(i) = x_data.get_index(x) {
-						return (
+					if let Some(i) = x_data.get_index(*x) {
+						(
 							self.back_data[i],
 							derivative_required.then(|| self.derivative_data[i]),
 							do_nth_derivative.then(|| unsafe {
 								nth_derivative_data.map(|data| data[i]).unwrap_unchecked()
 							}),
-						);
+						)
 					} else {
-						return (
+						(
 							Value::new(*x, self.function.get(*x)),
 							derivative_required
 								.then(|| Value::new(*x, self.function.get_derivative_1(*x))),
 							do_nth_derivative.then(|| {
 								Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
 							}),
-						);
+						)
 					}
 				})
 				.collect::<Vec<(Value, Option<Value>, Option<Value>)>>()
@@ -556,6 +556,7 @@ impl FunctionEntry {
 	/// Invalidate Derivative data
 	pub fn invalidate_derivative(&mut self) { self.derivative_data.clear(); }
 
+	/// Invalidates `n`th derivative data
 	pub fn invalidate_nth(&mut self) { self.nth_derivative_data = None }
 
 	/// Runs asserts to make sure everything is the expected value
@@ -566,7 +567,6 @@ impl FunctionEntry {
 	) {
 		{
 			self.calculate(&min_x, &max_x, true, &settings);
-			let back_target = back_target;
 			assert!(!self.back_data.is_empty());
 			assert_eq!(self.back_data.len(), settings.plot_width + 1);
 			let back_vec_tuple = self.back_data.to_tuple();
@@ -583,6 +583,86 @@ impl FunctionEntry {
 			assert_eq!(self.derivative_data.to_tuple(), derivative_target);
 
 			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
+		}
+
+		{
+			self.calculate(&(min_x + 1.0), &(max_x + 1.0), true, &settings);
+
+			assert_eq!(
+				self.derivative_data
+					.to_tuple()
+					.iter()
+					.take(6)
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>(),
+				derivative_target
+					.iter()
+					.rev()
+					.take(6)
+					.rev()
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>()
+			);
+
+			assert_eq!(
+				self.back_data
+					.to_tuple()
+					.iter()
+					.take(6)
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>(),
+				back_target
+					.iter()
+					.rev()
+					.take(6)
+					.rev()
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>()
+			);
+		}
+
+		{
+			self.calculate(&(min_x - 1.0), &(max_x - 1.0), true, &settings);
+
+			assert_eq!(
+				self.derivative_data
+					.to_tuple()
+					.iter()
+					.rev()
+					.take(6)
+					.rev()
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>(),
+				derivative_target
+					.iter()
+					.take(6)
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>()
+			);
+
+			assert_eq!(
+				self.back_data
+					.to_tuple()
+					.iter()
+					.rev()
+					.take(6)
+					.rev()
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>(),
+				back_target
+					.iter()
+					.take(6)
+					.cloned()
+					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
+					.collect::<Vec<(f64, f64)>>()
+			);
 		}
 
 		{
