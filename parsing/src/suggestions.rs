@@ -14,7 +14,7 @@ macro_rules! test_print {
     };
 }
 
-pub fn split_function(input: &str) -> Vec<String> {
+pub fn split_function(input: &str, split: SplitType) -> Vec<String> {
 	split_function_chars(
 		&input
 			.replace("pi", "π") // replace "pi" text with pi symbol
@@ -22,7 +22,7 @@ pub fn split_function(input: &str) -> Vec<String> {
 			.replace("exp", "\u{1fc93}") // stop-gap solution to fix the `exp` function
 			.chars()
 			.collect::<Vec<char>>(),
-		SplitType::Multiplication,
+		split,
 	)
 	.iter()
 	.map(|x| x.replace("\u{1fc93}", "exp")) // Convert back to `exp` text

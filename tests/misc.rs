@@ -95,7 +95,7 @@ fn option_vec_printer() {
 }
 
 #[test]
-fn hash_b64_storage() {
+fn hashed_storage() {
 	use ytbn_graphing_software::{hashed_storage_create, hashed_storage_read};
 
 	let commit = "abcdefeg".chars().map(|c| c as u8).collect::<Vec<u8>>();

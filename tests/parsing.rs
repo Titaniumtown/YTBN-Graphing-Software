@@ -159,6 +159,8 @@ fn hint_to_string() {
 
 #[test]
 fn invalid_function() {
+	use parsing::SplitType;
+
 	SUPPORTED_FUNCTIONS
 		.iter()
 		.flat_map(|func1| {
@@ -169,7 +171,7 @@ fn invalid_function() {
 		})
 		.filter(|func| !SUPPORTED_FUNCTIONS.contains(&func.as_str()))
 		.for_each(|key| {
-			let split = parsing::split_function(&key);
+			let split = parsing::split_function(&key, SplitType::Multiplication);
 
 			if split.len() != 1 {
 				panic!("failed: {} (len: {}, split: {:?})", key, split.len(), split);
@@ -185,7 +187,9 @@ fn invalid_function() {
 }
 
 #[test]
-fn split_function() {
+fn split_function_multiplication() {
+	use parsing::SplitType;
+
 	let values = HashMap::from([
 		("cos(x)", vec!["cos(x)"]),
 		("cos(", vec!["cos("]),
@@ -199,10 +203,28 @@ fn split_function() {
 		("x*x", vec!["x", "x"]),
 		("10*10", vec!["10", "10"]),
 		("a1b2c3d4", vec!["a1b2c3d4"]),
+		("cos(sin(x)cos(x))", vec!["cos(sin(x)", "cos(x))"]),
 	]);
 
 	for (key, value) in values {
-		assert_eq!(parsing::split_function(key), value);
+		assert_eq!(
+			parsing::split_function(key, SplitType::Multiplication),
+			value
+		);
+	}
+}
+
+#[test]
+fn split_function_terms() {
+	use parsing::SplitType;
+
+	let values = HashMap::from([(
+		"cos(sin(x)cos(x))",
+		vec!["cos(", "sin(", "x)", "cos(", "x))"],
+	)]);
+
+	for (key, value) in values {
+		assert_eq!(parsing::split_function(key, SplitType::Term), value);
 	}
 }
 

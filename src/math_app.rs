@@ -148,26 +148,23 @@ impl MathApp {
 
 				const DATA_NAME: &str = "YTBN-DECOMPRESSED";
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
-					if let Ok(Some(data)) = get_localstorage().get_item(DATA_NAME) {
-						let (commit, cached_data) = crate::misc::hashed_storage_read(data);
+					let data = get_localstorage().get_item(DATA_NAME).ok()??;
+					let (commit, cached_data) = crate::misc::hashed_storage_read(data);
 
-						if commit == build::SHORT_COMMIT {
-							tracing::info!("Reading decompression cache. Bytes: {}, or: {}", cached_data.len(), crate::misc::format_bytes(cached_data.len()));
-							return Some(cached_data.to_vec());
-						} else {
-							tracing::info!("Decompression cache are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
-
-							// is invalid
-							None
-						}
+					if commit == build::SHORT_COMMIT {
+						tracing::info!("Reading decompression cache. Bytes: {}, or: {}", cached_data.len(), crate::misc::format_bytes(cached_data.len()));
+						return Some(cached_data.to_vec());
 					} else {
+						tracing::info!("Decompression cache are invalid (build: {}, previous: {})", build::SHORT_COMMIT, commit);
+
+						// is invalid
 						None
 					}
 				}
 
-				fn set_storage_decompressed(data: &Vec<u8>) {
+				fn set_storage_decompressed(data: &[u8]) {
 					tracing::info!("Setting decompression cache");
-					let saved_data = &crate::misc::hashed_storage_create(&build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>(), data.as_slice());
+					let saved_data = &crate::misc::hashed_storage_create(&build::SHORT_COMMIT.as_bytes(), data);
 					tracing::info!("Bytes: {}, or: {}", saved_data.len(), crate::misc::format_bytes(data.len()));
 					get_localstorage().set_item(DATA_NAME, saved_data).expect("failed to set local storage cache");
 				}
@@ -610,7 +607,7 @@ impl App for MathApp {
 							.collect::<Vec<u8>>(),
 						bincode::serialize(&self.functions).unwrap().as_slice(),
 					);
-					tracing::info!("Bytes: {}", saved_data.len());
+					// tracing::info!("Bytes: {}", saved_data.len());
 					local_storage
 						.set_item("YTBN-FUNCTIONS", saved_data)
 						.expect("failed to set local function storage");

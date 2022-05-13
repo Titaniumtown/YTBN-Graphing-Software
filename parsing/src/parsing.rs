@@ -191,5 +191,6 @@ pub fn process_func_str(function_in: &str) -> String {
 		return String::new();
 	}
 
-	crate::suggestions::split_function(&function_in).join("*")
+	crate::suggestions::split_function(&function_in, crate::suggestions::SplitType::Multiplication)
+		.join("*")
 }

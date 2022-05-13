@@ -143,6 +143,8 @@ impl FunctionEntry {
 		settings_opened: false,
 	};
 
+	pub const fn is_some(&self) -> bool { !self.function.is_none() }
+
 	pub fn settings_window(&mut self, ctx: &Context) {
 		let mut invalidate_nth = false;
 		egui::Window::new(format!("Settings: {}", self.raw_func_str))
@@ -310,34 +312,37 @@ impl FunctionEntry {
 				.as_slice()
 				.into();
 
-			let back_data: Vec<Value> = dyn_iter(&resolution_iter)
-				.map(|x| {
-					if let Some(i) = x_data.get_index(x) {
-						self.back_data[i]
-					} else {
-						Value::new(*x, self.function.get(*x))
-					}
-				})
-				.collect();
+			let (back_data, derivative_data_1): (Vec<Value>, Vec<Option<Value>>) =
+				dyn_iter(&resolution_iter)
+					.map(|x| {
+						if let Some(i) = x_data.get_index(x) {
+							(
+								self.back_data[i],
+								derivative_required.then(|| self.derivative_data[i]),
+							)
+						} else {
+							(
+								Value::new(*x, self.function.get(*x)),
+								derivative_required
+									.then(|| Value::new(*x, self.function.get_derivative_1(*x))),
+							)
+						}
+					})
+					.collect::<Vec<(Value, Option<Value>)>>()
+					.into_iter()
+					.unzip();
 
 			debug_assert_eq!(back_data.len(), settings.plot_width + 1);
+			debug_assert_eq!(derivative_data_1.len(), settings.plot_width + 1);
 
 			self.back_data = back_data;
 
 			if derivative_required {
-				let new_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
-					.map(|x| {
-						if let Some(i) = x_data.get_index(x) {
-							self.derivative_data[i]
-						} else {
-							Value::new(*x, self.function.get_derivative_1(*x))
-						}
-					})
-					.collect();
-
-				debug_assert_eq!(new_derivative_data.len(), settings.plot_width + 1);
-
-				self.derivative_data = new_derivative_data;
+				debug_assert!(derivative_data_1[0].is_some());
+				self.derivative_data = derivative_data_1
+					.into_iter()
+					.map(|ele| unsafe { ele.unwrap_unchecked() })
+					.collect::<Vec<Value>>();
 			} else {
 				self.invalidate_derivative();
 			}

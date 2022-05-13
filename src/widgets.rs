@@ -1,5 +1,7 @@
+use std::hash::Hash;
+
 pub fn widgets_ontop<R>(
-	ui: &egui::Ui, id: String, re: &egui::Response, y_offset: f32,
+	ui: &egui::Ui, id: impl Hash, re: &egui::Response, y_offset: f32,
 	add_contents: impl FnOnce(&mut egui::Ui) -> R,
 ) -> R {
 	let area = egui::Area::new(id)

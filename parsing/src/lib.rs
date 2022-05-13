@@ -13,7 +13,7 @@ pub use crate::{
 	autocomplete_hashmap::compile_hashmap,
 	parsing::{process_func_str, BackingFunction},
 	suggestions::{
-		generate_hint, get_last_term, split_function, split_function_chars, Hint, HINT_EMPTY,
-		SUPPORTED_FUNCTIONS,
+		generate_hint, get_last_term, split_function, split_function_chars, Hint, SplitType,
+		HINT_EMPTY, SUPPORTED_FUNCTIONS,
 	},
 };

@@ -298,15 +298,29 @@ pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
 	debug_assert_eq!(hash.len(), HASH_LENGTH);
 	debug_assert!(data.len() > 0);
 
+	unsafe {
+		assume(data.len() > 0);
+		assume(!data.is_empty());
+		assume(hash.len() == HASH_LENGTH);
+	}
+
 	let new_data = [hash, data].concat();
 	debug_assert_eq!(new_data.len(), data.len() + hash.len());
-	base64::encode(new_data)
+
+	// cannot use `from_utf8` seems to break on wasm. no clue why
+	new_data.iter().map(|b| *b as char).collect::<String>()
 }
 
 #[allow(dead_code)]
 pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
-	let decoded_1 = base64::decode(data).expect("unable to read data");
-	debug_assert!(decoded_1.len() > HASH_LENGTH);
+	debug_assert!(data.len() > HASH_LENGTH);
+	unsafe {
+		assume(!data.is_empty());
+		assume(data.len() > 0);
+	}
+
+	// can't use data.as_bytes() here for some reason, seems to break on wasm?
+	let decoded_1 = data.chars().map(|c| c as u8).collect::<Vec<u8>>();
 
 	let (hash, cached_data) = decoded_1.split_at(8);
 	debug_assert_eq!(hash.len(), HASH_LENGTH);
