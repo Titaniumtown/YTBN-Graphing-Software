@@ -662,7 +662,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
+source = "git+https://github.com/Titaniumtown/egui.git#63980778541f105b139e6db0095c10a0f2ce4ad1"
 dependencies = [
  "bytemuck",
  "egui",
@@ -682,7 +682,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
+source = "git+https://github.com/Titaniumtown/egui.git#63980778541f105b139e6db0095c10a0f2ce4ad1"
 dependencies = [
  "ahash",
  "epaint",
@@ -693,7 +693,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
+source = "git+https://github.com/Titaniumtown/egui.git#63980778541f105b139e6db0095c10a0f2ce4ad1"
 dependencies = [
  "arboard",
  "egui",
@@ -706,7 +706,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
+source = "git+https://github.com/Titaniumtown/egui.git#63980778541f105b139e6db0095c10a0f2ce4ad1"
 dependencies = [
  "bytemuck",
  "egui",
@@ -726,7 +726,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
+source = "git+https://github.com/Titaniumtown/egui.git#63980778541f105b139e6db0095c10a0f2ce4ad1"
 dependencies = [
  "bytemuck",
  "libm",
@@ -736,7 +736,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#1797df1670ae95b5da81fb99324531f6737826e9"
+source = "git+https://github.com/Titaniumtown/egui.git#63980778541f105b139e6db0095c10a0f2ce4ad1"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -1845,9 +1845,9 @@ dependencies = [
 
 [[package]]
 name = "rayon-core"
-version = "1.9.2"
+version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f51245e1e62e1f1629cbfec37b5793bbabcaeb90f30e94d2ba03564687353e4"
+checksum = "258bcdb5ac6dad48491bb2992db6b7cf74878b0384908af124823d118c99683f"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-deque",
@@ -1923,7 +1923,7 @@ dependencies = [
 [[package]]
 name = "ruzstd"
 version = "0.2.4"
-source = "git+https://github.com/Titaniumtown/zstd-rs.git?branch=ringbuffer#1b2f128459f6a899788465bc005d75f0240c9eae"
+source = "git+https://github.com/Titaniumtown/zstd-rs.git?branch=ringbuffer#56972fa1fe8b188ad2f1f54fe1fe35d9479a2d9f"
 dependencies = [
  "byteorder",
  "twox-hash",

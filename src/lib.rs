@@ -28,8 +28,14 @@ pub use crate::{
 	function_entry::{FunctionEntry, Riemann},
 	math_app::AppSettings,
 	misc::{
-		decimal_round, format_bytes, hashed_storage_create, hashed_storage_read,
-		option_vec_printer, resolution_helper, step_helper, SteppedVector,
+		// decimal_round,
+		format_bytes,
+		hashed_storage_create,
+		hashed_storage_read,
+		option_vec_printer,
+		resolution_helper,
+		step_helper,
+		SteppedVector,
 	},
 };
 

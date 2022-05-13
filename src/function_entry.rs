@@ -531,7 +531,7 @@ impl FunctionEntry {
 				}
 
 				// return value rounded to 8 decimal places
-				Some(crate::misc::decimal_round(integral_data.1, 8))
+				Some(emath::round_to_decimals(integral_data.1, 8))
 			}
 			_ => None,
 		}

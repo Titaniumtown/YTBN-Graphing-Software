@@ -188,13 +188,13 @@ impl EguiHelper for Vec<Value> {
 	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
 }
 
-/// Rounds f64 to `n` decimal places
-pub fn decimal_round(x: f64, n: usize) -> f64 {
-	let large_number: f64 = 10.0_f64.powf(n as f64); // 10^n
+// /// Rounds f64 to `n` decimal places
+// pub fn decimal_round(x: f64, n: usize) -> f64 {
+// 	let large_number: f64 = 10.0_f64.powf(n as f64); // 10^n
 
-	// round and devide in order to cutoff after the `n`th decimal place
-	(x * large_number).round() / large_number
-}
+// 	// round and devide in order to cutoff after the `n`th decimal place
+// 	(x * large_number).round() / large_number
+// }
 
 /// Helper that assists with using newton's method of finding roots, iterating over data `data`
 /// `threshold` is the target accuracy threshold

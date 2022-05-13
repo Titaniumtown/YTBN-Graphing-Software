@@ -26,26 +26,26 @@ fn stepped_vector() {
 	assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
 }
 
-/// Ensures [`decimal_round`] returns correct values
-#[test]
-fn decimal_round() {
-	use ytbn_graphing_software::decimal_round;
+// /// Ensures [`decimal_round`] returns correct values
+// #[test]
+// fn decimal_round() {
+// 	use ytbn_graphing_software::decimal_round;
 
-	assert_eq!(decimal_round(0.00001, 1), 0.0);
-	assert_eq!(decimal_round(0.00001, 2), 0.0);
-	assert_eq!(decimal_round(0.00001, 3), 0.0);
-	assert_eq!(decimal_round(0.00001, 4), 0.0);
-	assert_eq!(decimal_round(0.00001, 5), 0.00001);
+// 	assert_eq!(decimal_round(0.00001, 1), 0.0);
+// 	assert_eq!(decimal_round(0.00001, 2), 0.0);
+// 	assert_eq!(decimal_round(0.00001, 3), 0.0);
+// 	assert_eq!(decimal_round(0.00001, 4), 0.0);
+// 	assert_eq!(decimal_round(0.00001, 5), 0.00001);
 
-	assert_eq!(decimal_round(0.12345, 1), 0.1);
-	assert_eq!(decimal_round(0.12345, 2), 0.12);
-	assert_eq!(decimal_round(0.12345, 3), 0.123);
-	assert_eq!(decimal_round(0.12345, 4), 0.1235); // rounds up
-	assert_eq!(decimal_round(0.12345, 5), 0.12345);
+// 	assert_eq!(decimal_round(0.12345, 1), 0.1);
+// 	assert_eq!(decimal_round(0.12345, 2), 0.12);
+// 	assert_eq!(decimal_round(0.12345, 3), 0.123);
+// 	assert_eq!(decimal_round(0.12345, 4), 0.1235); // rounds up
+// 	assert_eq!(decimal_round(0.12345, 5), 0.12345);
 
-	assert_eq!(decimal_round(1.9, 0), 2.0);
-	assert_eq!(decimal_round(1.9, 1), 1.9);
-}
+// 	assert_eq!(decimal_round(1.9, 0), 2.0);
+// 	assert_eq!(decimal_round(1.9, 1), 1.9);
+// }
 
 /// Tests [`resolution_helper`] to make sure it returns expected output
 #[test]
