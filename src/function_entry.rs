@@ -15,6 +15,7 @@ use std::{
 	fmt::{self, Debug},
 	intrinsics::assume,
 };
+use unzip_n::unzip_n;
 
 #[cfg(threading)]
 use rayon::iter::ParallelIterator;
@@ -307,25 +308,38 @@ impl FunctionEntry {
 			let x_data_1: Vec<f64> = self.back_data.iter().map(|ele| ele.x).collect::<Vec<f64>>();
 			let x_data: SteppedVector = x_data_1.as_slice().into();
 
-			let (back_data, derivative_data_1): (Vec<Value>, Vec<Option<Value>>) =
-				dyn_iter(&resolution_iter)
-					.map(|x| {
-						if let Some(i) = x_data.get_index(x) {
-							(
-								self.back_data[i],
-								derivative_required.then(|| self.derivative_data[i]),
-							)
-						} else {
-							(
-								Value::new(*x, self.function.get(*x)),
-								derivative_required
-									.then(|| Value::new(*x, self.function.get_derivative_1(*x))),
-							)
-						}
-					})
-					.collect::<Vec<(Value, Option<Value>)>>()
-					.into_iter()
-					.unzip();
+			let do_nth_derivative = self.nth_derviative && self.nth_derivative_data.is_some();
+
+			let nth_derivative_data = self.nth_derivative_data.as_ref();
+			unzip_n!(3);
+			let (back_data, derivative_data_1, new_nth_derivative_data): (
+				Vec<Value>,
+				Vec<Option<Value>>,
+				Vec<Option<Value>>,
+			) = dyn_iter(&resolution_iter)
+				.map(|x| {
+					if let Some(i) = x_data.get_index(x) {
+						return (
+							self.back_data[i],
+							derivative_required.then(|| self.derivative_data[i]),
+							do_nth_derivative.then(|| unsafe {
+								nth_derivative_data.map(|data| data[i]).unwrap_unchecked()
+							}),
+						);
+					} else {
+						return (
+							Value::new(*x, self.function.get(*x)),
+							derivative_required
+								.then(|| Value::new(*x, self.function.get_derivative_1(*x))),
+							do_nth_derivative.then(|| {
+								Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
+							}),
+						);
+					}
+				})
+				.collect::<Vec<(Value, Option<Value>, Option<Value>)>>()
+				.into_iter()
+				.unzip_n_vec();
 
 			debug_assert_eq!(back_data.len(), settings.plot_width + 1);
 			debug_assert_eq!(derivative_data_1.len(), settings.plot_width + 1);
@@ -342,20 +356,13 @@ impl FunctionEntry {
 				self.invalidate_derivative();
 			}
 
-			if self.nth_derviative && let Some(nth_derivative_data) = &self.nth_derivative_data {
-				let new_nth_derivative_data: Vec<Value> = dyn_iter(&resolution_iter)
-					.map(|x| {
-						if let Some(i) = x_data.get_index(x) {
-							(*nth_derivative_data)[i]
-						} else {
-							Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
-						}
-					})
-					.collect();
-
-				debug_assert_eq!(new_nth_derivative_data.len(), settings.plot_width + 1);
-
-				self.nth_derivative_data = Some(new_nth_derivative_data);
+			if do_nth_derivative {
+				self.nth_derivative_data = Some(
+					new_nth_derivative_data
+						.into_iter()
+						.map(|c| unsafe { c.unwrap_unchecked() })
+						.collect(),
+				);
 			} else {
 				self.invalidate_nth();
 			}
