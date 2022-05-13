@@ -16,8 +16,7 @@
 6. Turn Dynamic Iterator functions into traits
 7. Better handling of roots and extrema finding
 8. Add closing animation for function entry
-9. Create actual icon(s) for PWA/favicon (using placeholder from eframe_template)
-10. Fix mobile text input
-11. Write custom plotter
-12. Add Url hashes loading and setting
-13. Store settings in LocalStorage/Cookies and persist state
+9. Fix mobile text input
+10. Write custom plotter
+11. Add Url hashes loading and setting
+12. Store settings in LocalStorage/Cookies and persist state
