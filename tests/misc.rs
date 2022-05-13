@@ -115,7 +115,8 @@ fn format_bytes() {
 	use std::collections::HashMap;
 	use ytbn_graphing_software::format_bytes;
 
-	let values: HashMap<usize, &str> = HashMap::from([(1000, "1000 B"), (10000, "10.00 KB")]);
+	let values: HashMap<usize, &str> =
+		HashMap::from([(1000, "1000 B"), (10000, "10.00 KB"), (1100000, "1.10 MB")]);
 
 	for (key, value) in values {
 		assert_eq!(format_bytes(key), value);

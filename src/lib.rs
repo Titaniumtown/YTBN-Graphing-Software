@@ -5,6 +5,8 @@
 #![feature(core_intrinsics)]
 #![feature(const_convert)]
 #![feature(const_default_impls)]
+#![feature(const_fn_floating_point_arithmetic)]
+#![feature(const_assume)]
 
 #[macro_use]
 extern crate static_assertions;
@@ -39,15 +41,8 @@ cfg_if::cfg_if! {
 		#[wasm_bindgen(start)]
 		pub fn start() -> Result<(), wasm_bindgen::JsValue> {
 			tracing::info!("Initializing...");
-
 			// Used in order to hook into `panic!()` to log in the browser's console
-			tracing::info!("Initializing panic hooks...");
-			console_error_panic_hook::set_once();
 			tracing_wasm::set_as_global_default();
-			tracing::info!("Initialized panic hooks!");
-
-			tracing::info!("Finished initializing!");
-
 			tracing::info!("Starting App...");
 			eframe::start_web("canvas", Box::new(|cc| Box::new(math_app::MathApp::new(cc))))
 		}

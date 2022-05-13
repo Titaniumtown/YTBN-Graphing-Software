@@ -1,6 +1,6 @@
 use std::intrinsics::assume;
 
-use eframe::egui::plot::{Line, Points, Value as EguiValue, Values};
+use eframe::egui::plot::{Line, Points, Value, Values};
 use itertools::Itertools;
 
 #[cfg(threading)]
@@ -75,9 +75,9 @@ impl<'a> FunctionHelper<'a> {
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
 /// index was calculated with `.iter().position(....` which was horribly
 /// inefficient
-pub struct SteppedVector {
+pub struct SteppedVector<'a> {
 	/// Actual data being referenced. HAS to be sorted from minimum to maximum
-	data: Vec<f64>,
+	data: &'a [f64],
 
 	/// Minimum value
 	min: f64,
@@ -89,7 +89,7 @@ pub struct SteppedVector {
 	step: f64,
 }
 
-impl SteppedVector {
+impl<'a> SteppedVector<'a> {
 	/// Returns `Option<usize>` with index of element with value `x`. and `None` if `x` does not exist in `data`
 	pub fn get_index(&self, x: &f64) -> Option<usize> {
 		// If `x` is outside range, just go ahead and return `None` as it *shouldn't* be in `data`
@@ -125,16 +125,14 @@ impl SteppedVector {
 	pub const fn get_max(&self) -> f64 { self.max }
 
 	#[allow(dead_code)]
-	pub fn get_data(&self) -> &Vec<f64> { &self.data }
+	pub fn get_data(&self) -> &'a [f64] { &self.data }
 }
 
 // Convert `&[f64]` into [`SteppedVector`]
-impl From<&[f64]> for SteppedVector {
-	fn from(data: &[f64]) -> SteppedVector {
+impl<'a> From<&'a [f64]> for SteppedVector<'a> {
+	fn from(data: &'a [f64]) -> SteppedVector {
 		// Ensure data is of correct length
-		if data.len() < 2 {
-			panic!("SteppedVector: data should have a length longer than 2");
-		}
+		debug_assert!(data.len() > 2);
 
 		unsafe {
 			assume(data.len() > 2);
@@ -145,22 +143,14 @@ impl From<&[f64]> for SteppedVector {
 		let max: f64 = data[data.len() - 1]; // The max value should be the first element
 		let min: f64 = data[0]; // The minimum value should be the last element
 
-		if min > max {
-			panic!("SteppedVector: min is larger than max");
-			/*
-			tracing::debug!("SteppedVector: min is larger than max, sorting.");
-			data.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
-			max = data[data_i_length];
-			min = data[0];
-			*/
-		}
+		debug_assert!(max > min);
 
 		// Calculate the step between elements
 		let step = (max - min).abs() / (data.len() as f64);
 
 		// Create and return the struct
 		SteppedVector {
-			data: data.to_vec(),
+			data,
 			min,
 			max,
 			step,
@@ -180,7 +170,7 @@ pub trait EguiHelper {
 	fn to_tuple(&self) -> Vec<(f64, f64)>;
 }
 
-impl EguiHelper for Vec<EguiValue> {
+impl EguiHelper for Vec<Value> {
 	fn to_line(&self) -> Line { Line::new(Values::from_values(self.clone())) }
 
 	fn to_points(&self) -> Points { Points::new(Values::from_values(self.clone())) }
@@ -203,9 +193,16 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
-	threshold: &f64, range: &std::ops::Range<f64>, data: &[EguiValue], f: &dyn Fn(f64) -> f64,
+	threshold: &f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
+	debug_assert!(!data.is_empty());
+
+	unsafe {
+		assume(!data.is_empty());
+		assume(data.len() > 0);
+	}
+
 	data.iter()
 		.tuple_windows()
 		.filter(|(prev, curr)| !prev.y.is_nan() && !curr.y.is_nan())
@@ -254,6 +251,13 @@ pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String
 where
 	T: ToString,
 {
+	debug_assert!(!data.is_empty());
+
+	unsafe {
+		assume(!data.is_empty());
+		assume(data.len() > 0);
+	}
+
 	let max_i: i32 = (data.len() as i32) - 1;
 	[
 		"[",
@@ -302,13 +306,15 @@ pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
 		assume(data.len() > 0);
 		assume(!data.is_empty());
 		assume(hash.len() == HASH_LENGTH);
+		assume(!hash.is_empty());
 	}
 
-	let new_data = [hash, data].concat();
-	debug_assert_eq!(new_data.len(), data.len() + hash.len());
-
 	// cannot use `from_utf8` seems to break on wasm. no clue why
-	new_data.iter().map(|b| *b as char).collect::<String>()
+	[hash, data]
+		.concat()
+		.iter()
+		.map(|b| *b as char)
+		.collect::<String>()
 }
 
 #[allow(dead_code)]
@@ -325,6 +331,14 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	let (hash, cached_data) = decoded_1.split_at(8);
 	debug_assert_eq!(hash.len(), HASH_LENGTH);
 	debug_assert!(cached_data.len() > 0);
+
+	unsafe {
+		assume(!cached_data.is_empty());
+		assume(cached_data.len() > 0);
+
+		assume(!hash.is_empty());
+		assume(hash.len() > 0);
+	}
 
 	(
 		hash.iter().map(|c| *c as char).collect::<String>(),

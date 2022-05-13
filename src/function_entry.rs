@@ -180,7 +180,7 @@ impl FunctionEntry {
 			return;
 		}
 
-		self.raw_func_str = raw_func_str.to_string();
+		self.raw_func_str = raw_func_str.to_owned();
 		let processed_func = process_func_str(raw_func_str);
 		let new_func_result = BackingFunction::new(&processed_func);
 
@@ -304,13 +304,8 @@ impl FunctionEntry {
 		} else if min_max_changed && !self.back_data.is_empty() {
 			partial_regen = true;
 
-			let x_data: SteppedVector = self
-				.back_data
-				.iter()
-				.map(|ele| ele.x)
-				.collect::<Vec<f64>>()
-				.as_slice()
-				.into();
+			let x_data_1: Vec<f64> = self.back_data.iter().map(|ele| ele.x).collect::<Vec<f64>>();
+			let x_data: SteppedVector = x_data_1.as_slice().into();
 
 			let (back_data, derivative_data_1): (Vec<Value>, Vec<Option<Value>>) =
 				dyn_iter(&resolution_iter)
