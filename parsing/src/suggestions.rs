@@ -49,7 +49,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 	}
 
 	// Resulting split-up data
-	let mut data: Vec<String> = vec![chars[0].to_string()];
+	let mut data: Vec<String> = std::vec::from_elem(chars[0].to_string(), 1);
 
 	/// Used to store info about a character
 	struct BoolSlice {
@@ -202,13 +202,14 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 pub fn get_last_term(chars: &[char]) -> String {
 	assert!(!chars.is_empty());
 
-	let result = split_function_chars(chars, SplitType::Term);
+	let mut result = split_function_chars(chars, SplitType::Term);
 	unsafe {
 		assume(!result.is_empty());
 		assume(result.len() > 0);
-		result.last().unwrap_unchecked()
+		let output = result.pop();
+		assume(output.is_some());
+		output.unwrap_unchecked()
 	}
-	.to_owned()
 }
 
 #[derive(PartialEq, Clone, Copy)]

@@ -11,6 +11,7 @@ use egui::{
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::{Duration, Instant};
+use std::intrinsics::assume;
 use std::{io::Read, ops::BitXorAssign};
 
 #[cfg(threading)]
@@ -120,7 +121,6 @@ impl MathApp {
 
 		cfg_if::cfg_if! {
 			if #[cfg(target_arch = "wasm32")] {
-				use wasm_bindgen::JsCast;
 				if let Some(web_info) = &cc.integration_info.web_info {
 					tracing::info!("Web Info: {:?}", web_info);
 				}
@@ -133,23 +133,27 @@ impl MathApp {
 					get_window().local_storage().expect("failed to get localstorage1").expect("failed to get localstorage2")
 				}
 
-				let loading_element = get_window().document()
-					.expect("Could not get web_sys document")
-					.get_element_by_id("loading")
-					.expect("Couldn't get loading indicator element")
-					.dyn_into::<web_sys::HtmlElement>()
-					.unwrap();
-
-
-				fn update_loading(loading_element: &web_sys::HtmlElement, add: i32) {
-					let value = loading_element.get_attribute("value").expect("unable to get loading_elements's `value`").parse::<i32>().expect("unable to parse value as i32");
-					loading_element.set_attribute("value", &(add + value).to_string()).expect("unable to set loading_element's `value`");
-				}
-
 				const DATA_NAME: &str = "YTBN-DECOMPRESSED";
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
 					let data = get_localstorage().get_item(DATA_NAME).ok()??;
+
+					debug_assert!(!data.is_empty());
+					unsafe {
+						assume(!data.is_empty());
+						assume(data.len() > 0);
+					}
+
 					let (commit, cached_data) = crate::misc::hashed_storage_read(data);
+
+					debug_assert!(!commit.is_empty());
+					debug_assert!(!cached_data.is_empty());
+
+					unsafe {
+						assume(commit.len() > 0);
+						assume(cached_data.len() > 0);
+						assume(!commit.is_empty());
+						assume(!cached_data.is_empty());
+					}
 
 					if commit == build::SHORT_COMMIT {
 						tracing::info!("Reading decompression cache. Bytes: {}, or: {}", cached_data.len(), crate::misc::format_bytes(cached_data.len()));
@@ -163,6 +167,13 @@ impl MathApp {
 				}
 
 				fn set_storage_decompressed(data: &[u8]) {
+					debug_assert!(!data.is_empty());
+
+					unsafe {
+						assume(data.len() > 0);
+						assume(!data.is_empty());
+					}
+
 					tracing::info!("Setting decompression cache");
 					let saved_data = &crate::misc::hashed_storage_create(&build::SHORT_COMMIT.as_bytes(), data);
 					tracing::info!("Bytes: {}, or: {}", saved_data.len(), crate::misc::format_bytes(data.len()));
@@ -173,9 +184,20 @@ impl MathApp {
 					if let Ok(Some(data)) = get_localstorage().get_item("YTBN-FUNCTIONS") {
 						let (commit, func_data) = crate::misc::hashed_storage_read(data);
 
+						debug_assert!(!commit.is_empty());
+						debug_assert!(!func_data.is_empty());
+
+
+						unsafe {
+							assume(commit.len() > 0);
+							assume(func_data.len() > 0);
+							assume(!commit.is_empty());
+							assume(!func_data.is_empty());
+						}
+
 						if commit == build::SHORT_COMMIT {
 							tracing::info!("Reading previous function data");
-							let function_manager: FunctionManager = bincode::deserialize(&func_data).unwrap();
+							let function_manager: FunctionManager = unsafe { bincode::deserialize(&func_data).unwrap_unchecked() };
 							return Some(function_manager);
 						} else {
 							tracing::info!("Previous functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
@@ -215,11 +237,15 @@ impl MathApp {
 			data
 		};
 
-		let data: crate::data::TotalData =
-			bincode::deserialize(data_decompressed.as_slice()).unwrap();
+		debug_assert!(data_decompressed.is_empty());
 
-		#[cfg(target_arch = "wasm32")]
-		update_loading(&loading_element, 30);
+		unsafe {
+			assume(data_decompressed.len() > 0);
+			assume(!data_decompressed.is_empty());
+		}
+
+		let data: crate::data::TotalData =
+			unsafe { bincode::deserialize(data_decompressed.as_slice()).unwrap_unchecked() };
 
 		tracing::info!("Reading assets...");
 
@@ -230,14 +256,7 @@ impl MathApp {
 		// Set dark mode by default
 		cc.egui_ctx.set_visuals(Visuals::dark());
 
-		#[cfg(target_arch = "wasm32")]
-		update_loading(&loading_element, 20);
-
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
-
-		// Remove loading indicator on wasm
-		#[cfg(target_arch = "wasm32")]
-		loading_element.remove();
 
 		Self {
 			functions: get_functions().unwrap_or_default(),

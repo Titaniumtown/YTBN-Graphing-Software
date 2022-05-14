@@ -24,7 +24,8 @@ wasm-bindgen target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm -
 
 if test "$TYPE" == "release"; then
     echo "running wasm-opt..."
-    time wasm-opt --converge -Oz --dae --dce --code-folding --const-hoisting --coalesce-locals-learning --vacuum --merge-locals --merge-blocks --fast-math --precompute --rse --low-memory-unused --traps-never-happen  --ignore-implicit-traps -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+    time wasm-opt --converge -Oz --dae --dce --code-folding --const-hoisting --coalesce-locals-learning --vacuum --merge-locals --merge-blocks --fast-math --precompute --rse --low-memory-unused --traps-never-happen --ignore-implicit-traps --once-reduction --optimize-instructions --licm --intrinsic-lowering \
+    -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
     mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
 fi
 
