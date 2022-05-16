@@ -190,7 +190,7 @@ impl MathApp {
 
 						if commit == build::SHORT_COMMIT {
 							tracing::info!("Reading previous function data");
-							let function_manager: FunctionManager = unsafe { bincode::deserialize(&func_data).unwrap_unchecked() };
+							let function_manager: FunctionManager = bincode::deserialize(&func_data).ok()?;
 							return Some(function_manager);
 						} else {
 							tracing::info!("Previous functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
