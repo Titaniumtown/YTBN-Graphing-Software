@@ -559,8 +559,6 @@ impl FunctionEntry {
 			self.calculate(true, true, &settings);
 			assert!(!self.back_data.is_empty());
 			assert_eq!(self.back_data.len(), settings.plot_width + 1);
-			let back_vec_tuple = self.back_data.to_tuple();
-			assert_eq!(back_vec_tuple, back_target);
 
 			assert!(self.integral);
 			assert!(self.derivative);
@@ -570,9 +568,36 @@ impl FunctionEntry {
 			assert!(!self.derivative_data.is_empty());
 			assert!(self.integral_data.is_some());
 
-			assert_eq!(self.derivative_data.to_tuple(), derivative_target);
-
 			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
+
+			let a = self.derivative_data.to_tuple();
+
+			assert_eq!(a.len(), derivative_target.len());
+
+			for i in 0..a.len() {
+				if !emath::almost_equal(a[i].0 as f32, derivative_target[i].0 as f32, f32::EPSILON)
+					| !emath::almost_equal(
+						a[i].1 as f32,
+						derivative_target[i].1 as f32,
+						f32::EPSILON,
+					) {
+					panic!("Expected: {:?}\nGot: {:?}", a, derivative_target);
+				}
+			}
+
+			let a_1 = self.back_data.to_tuple();
+
+			assert_eq!(a_1.len(), back_target.len());
+
+			assert_eq!(a.len(), back_target.len());
+
+			for i in 0..a.len() {
+				if !emath::almost_equal(a_1[i].0 as f32, back_target[i].0 as f32, f32::EPSILON)
+					| !emath::almost_equal(a_1[i].1 as f32, back_target[i].1 as f32, f32::EPSILON)
+				{
+					panic!("Expected: {:?}\nGot: {:?}", a_1, back_target);
+				}
+			}
 		}
 
 		{
@@ -580,41 +605,59 @@ impl FunctionEntry {
 			settings.max_x += 1.0;
 			self.calculate(true, true, &settings);
 
-			assert_eq!(
-				self.derivative_data
-					.to_tuple()
-					.iter()
-					.take(6)
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>(),
-				derivative_target
-					.iter()
-					.rev()
-					.take(6)
-					.rev()
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>()
-			);
+			let a = self
+				.derivative_data
+				.to_tuple()
+				.iter()
+				.take(6)
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
 
-			assert_eq!(
-				self.back_data
-					.to_tuple()
-					.iter()
-					.take(6)
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>(),
-				back_target
-					.iter()
-					.rev()
-					.take(6)
-					.rev()
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>()
-			);
+			let b = derivative_target
+				.iter()
+				.rev()
+				.take(6)
+				.rev()
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
+
+			assert_eq!(a.len(), b.len());
+
+			for i in 0..a.len() {
+				if !emath::almost_equal(a[i].0 as f32, b[i].0 as f32, f32::EPSILON)
+					| !emath::almost_equal(a[i].1 as f32, b[i].1 as f32, f32::EPSILON)
+				{
+					panic!("Expected: {:?}\nGot: {:?}", a, b);
+				}
+			}
+
+			let a_1 = self
+				.back_data
+				.to_tuple()
+				.iter()
+				.take(6)
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
+
+			let b_1 = back_target
+				.iter()
+				.rev()
+				.take(6)
+				.rev()
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
+
+			assert_eq!(a_1.len(), b_1.len());
+
+			assert_eq!(a.len(), b_1.len());
+
+			for i in 0..a.len() {
+				if !emath::almost_equal(a_1[i].0 as f32, b_1[i].0 as f32, f32::EPSILON)
+					| !emath::almost_equal(a_1[i].1 as f32, b_1[i].1 as f32, f32::EPSILON)
+				{
+					panic!("Expected: {:?}\nGot: {:?}", a_1, b_1);
+				}
+			}
 		}
 
 		{
@@ -622,41 +665,59 @@ impl FunctionEntry {
 			settings.max_x -= 2.0;
 			self.calculate(true, true, &settings);
 
-			assert_eq!(
-				self.derivative_data
-					.to_tuple()
-					.iter()
-					.rev()
-					.take(6)
-					.rev()
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>(),
-				derivative_target
-					.iter()
-					.take(6)
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>()
-			);
+			let a = self
+				.derivative_data
+				.to_tuple()
+				.iter()
+				.rev()
+				.take(6)
+				.rev()
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
 
-			assert_eq!(
-				self.back_data
-					.to_tuple()
-					.iter()
-					.rev()
-					.take(6)
-					.rev()
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>(),
-				back_target
-					.iter()
-					.take(6)
-					.cloned()
-					.map(|(a, b)| (a.round(), b.round())) // round to account for floating point issues
-					.collect::<Vec<(f64, f64)>>()
-			);
+			let b = derivative_target
+				.iter()
+				.take(6)
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
+
+			assert_eq!(a.len(), b.len());
+
+			for i in 0..a.len() {
+				if !emath::almost_equal(a[i].0 as f32, b[i].0 as f32, f32::EPSILON)
+					| !emath::almost_equal(a[i].1 as f32, b[i].1 as f32, f32::EPSILON)
+				{
+					panic!("Expected: {:?}\nGot: {:?}", a, b);
+				}
+			}
+
+			let a_1 = self
+				.back_data
+				.to_tuple()
+				.iter()
+				.rev()
+				.take(6)
+				.rev()
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
+
+			let b_1 = back_target
+				.iter()
+				.take(6)
+				.cloned()
+				.collect::<Vec<(f64, f64)>>();
+
+			assert_eq!(a_1.len(), b_1.len());
+
+			assert_eq!(a.len(), b_1.len());
+
+			for i in 0..a.len() {
+				if !emath::almost_equal(a_1[i].0 as f32, b_1[i].0 as f32, f32::EPSILON)
+					| !emath::almost_equal(a_1[i].1 as f32, b_1[i].1 as f32, f32::EPSILON)
+				{
+					panic!("Expected: {:?}\nGot: {:?}", a_1, b_1);
+				}
+			}
 		}
 
 		{
