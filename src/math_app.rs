@@ -591,13 +591,7 @@ impl App for MathApp {
 						self.settings.max_x = max_x;
 
 						dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
-							function.calculate(
-								&min_x,
-								&max_x,
-								width_changed,
-								min_max_changed,
-								&self.settings,
-							)
+							function.calculate(width_changed, min_max_changed, &self.settings)
 						});
 
 						self.last_info.0 = self

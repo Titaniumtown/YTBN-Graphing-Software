@@ -59,8 +59,6 @@ fn do_test(sum: Riemann, area_target: f64) {
 		BACK_TARGET.to_vec(),
 		DERIVATIVE_TARGET.to_vec(),
 		area_target,
-		-1.0,
-		1.0,
 	);
 }
 

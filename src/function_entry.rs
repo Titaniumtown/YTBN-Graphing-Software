@@ -210,13 +210,7 @@ impl FunctionEntry {
 	fn integral_rectangles(
 		&self, integral_min_x: &f64, integral_max_x: &f64, sum: &Riemann, integral_num: &usize,
 	) -> (Vec<(f64, f64)>, f64) {
-		if integral_min_x.is_nan() {
-			panic!("integral_min_x is NaN")
-		} else if integral_max_x.is_nan() {
-			panic!("integral_max_x is NaN")
-		}
-
-		let step = (integral_min_x - integral_max_x).abs() / (*integral_num as f64);
+		let step = (integral_max_x - integral_min_x) / (*integral_num as f64);
 
 		let sum_func = self.get_sum_func(*sum);
 
@@ -234,7 +228,7 @@ impl FunctionEntry {
 
 				(x + (step_offset / 2.0), y)
 			})
-			.filter(|(_, y)| !y.is_nan())
+			.filter(|(_, y)| y.is_finite())
 			.collect();
 
 		let area = data2.iter().map(|(_, y)| y * step).sum();
@@ -271,15 +265,15 @@ impl FunctionEntry {
 
 	/// Does the calculations and stores results in `self`
 	pub fn calculate(
-		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, min_max_changed: bool,
-		settings: &AppSettings,
+		&mut self, width_changed: bool, min_max_changed: bool, settings: &AppSettings,
 	) {
 		if self.test_result.is_some() {
 			return;
 		}
 
-		let resolution: f64 = settings.plot_width as f64 / (max_x.abs() + min_x.abs());
-		let resolution_iter = resolution_helper(&settings.plot_width + 1, min_x, &resolution);
+		let step = (settings.plot_width as f64) / (settings.max_x - settings.min_x);
+		debug_assert!(step > 0.0);
+		let resolution_iter = resolution_helper(&settings.plot_width + 1, &settings.min_x, &step);
 
 		unsafe { assume(!resolution_iter.is_empty()) }
 
@@ -416,7 +410,7 @@ impl FunctionEntry {
 			self.invalidate_integral();
 		}
 
-		let threshold: f64 = resolution / 2.0;
+		let threshold: f64 = step / 2.0;
 		let x_range = settings.min_x..settings.max_x;
 
 		// Calculates extrema
@@ -440,10 +434,11 @@ impl FunctionEntry {
 		}
 
 		let derivative_str = self.function.get_derivative_str();
-		let step = (settings.integral_min_x - settings.integral_max_x).abs()
-			/ (settings.integral_num as f64);
+		let step =
+			(settings.integral_max_x - settings.integral_min_x) / (settings.integral_num as f64);
 
-		let resolution = (settings.min_x - settings.max_x).abs() / (settings.plot_width as f64);
+		let resolution = (settings.max_x - settings.min_x) / (settings.plot_width as f64);
+		debug_assert!(resolution > 0.0);
 
 		// Plot back data
 		if !self.back_data.is_empty() {
@@ -557,10 +552,11 @@ impl FunctionEntry {
 	#[allow(dead_code)]
 	pub fn tests(
 		&mut self, settings: AppSettings, back_target: Vec<(f64, f64)>,
-		derivative_target: Vec<(f64, f64)>, area_target: f64, min_x: f64, max_x: f64,
+		derivative_target: Vec<(f64, f64)>, area_target: f64,
 	) {
+		let mut settings = settings;
 		{
-			self.calculate(&min_x, &max_x, true, true, &settings);
+			self.calculate(true, true, &settings);
 			assert!(!self.back_data.is_empty());
 			assert_eq!(self.back_data.len(), settings.plot_width + 1);
 			let back_vec_tuple = self.back_data.to_tuple();
@@ -580,7 +576,9 @@ impl FunctionEntry {
 		}
 
 		{
-			self.calculate(&(min_x + 1.0), &(max_x + 1.0), true, true, &settings);
+			settings.min_x += 1.0;
+			settings.max_x += 1.0;
+			self.calculate(true, true, &settings);
 
 			assert_eq!(
 				self.derivative_data
@@ -620,7 +618,9 @@ impl FunctionEntry {
 		}
 
 		{
-			self.calculate(&(min_x - 1.0), &(max_x - 1.0), true, true, &settings);
+			settings.min_x -= 2.0;
+			settings.max_x -= 2.0;
+			self.calculate(true, true, &settings);
 
 			assert_eq!(
 				self.derivative_data
@@ -676,7 +676,10 @@ impl FunctionEntry {
 			assert!(self.extrema_data.is_empty());
 			assert!(self.derivative_data.is_empty());
 
-			self.calculate(&min_x, &max_x, true, true, &settings);
+			settings.min_x -= 1.0;
+			settings.max_x -= 1.0;
+
+			self.calculate(true, true, &settings);
 
 			assert!(!self.back_data.is_empty());
 			assert!(self.integral_data.is_none());
