@@ -119,16 +119,3 @@ fn hashed_storage() {
 	assert_eq!(read.0.chars().map(|c| c as u8).collect::<Vec<u8>>(), commit);
 	assert_eq!(read.1, data);
 }
-
-#[test]
-fn format_bytes() {
-	use std::collections::HashMap;
-	use ytbn_graphing_software::format_bytes;
-
-	let values: HashMap<usize, &str> =
-		HashMap::from([(1000, "1000 B"), (10000, "10.00 KB"), (1100000, "1.10 MB")]);
-
-	for (key, value) in values {
-		assert_eq!(format_bytes(key), value);
-	}
-}

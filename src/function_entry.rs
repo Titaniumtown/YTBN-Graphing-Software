@@ -349,7 +349,7 @@ impl FunctionEntry {
 			if derivative_required {
 				debug_assert!(derivative_data_1[0].is_some());
 				self.derivative_data = derivative_data_1
-					.into_iter()
+					.iter()
 					.map(|ele| unsafe { ele.unwrap_unchecked() })
 					.collect::<Vec<Value>>();
 			} else {
@@ -359,7 +359,7 @@ impl FunctionEntry {
 			if do_nth_derivative {
 				self.nth_derivative_data = Some(
 					new_nth_derivative_data
-						.into_iter()
+						.iter()
 						.map(|c| unsafe { c.unwrap_unchecked() })
 						.collect(),
 				);
@@ -370,8 +370,6 @@ impl FunctionEntry {
 			self.invalidate_back();
 			self.invalidate_derivative();
 		}
-
-		let threshold: f64 = resolution / 2.0;
 
 		if !partial_regen {
 			if self.back_data.is_empty() {
@@ -425,6 +423,8 @@ impl FunctionEntry {
 		} else {
 			self.invalidate_integral();
 		}
+
+		let threshold: f64 = resolution / 2.0;
 
 		// Calculates extrema
 		if settings.do_extrema && (min_max_changed | self.extrema_data.is_empty()) {

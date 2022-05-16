@@ -156,7 +156,7 @@ impl MathApp {
 					}
 
 					if commit == build::SHORT_COMMIT {
-						tracing::info!("Reading decompression cache. Bytes: {}, or: {}", cached_data.len(), crate::misc::format_bytes(cached_data.len()));
+						tracing::info!("Reading decompression cache. Bytes: {}", cached_data.len());
 						return Some(cached_data.to_vec());
 					} else {
 						tracing::info!("Decompression cache are invalid (build: {}, previous: {})", build::SHORT_COMMIT, commit);
@@ -176,7 +176,7 @@ impl MathApp {
 
 					tracing::info!("Setting decompression cache");
 					let saved_data = &crate::misc::hashed_storage_create(&build::SHORT_COMMIT.as_bytes(), data);
-					tracing::info!("Bytes: {}, or: {}", saved_data.len(), crate::misc::format_bytes(data.len()));
+					tracing::info!("Bytes: {}", saved_data.len());
 					get_localstorage().set_item(DATA_NAME, saved_data).expect("failed to set local storage cache");
 				}
 
@@ -186,7 +186,6 @@ impl MathApp {
 
 						debug_assert!(!commit.is_empty());
 						debug_assert!(!func_data.is_empty());
-
 
 						unsafe {
 							assume(commit.len() > 0);

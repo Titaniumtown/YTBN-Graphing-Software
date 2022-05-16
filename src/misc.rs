@@ -173,6 +173,9 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 		// Calculate the step between elements
 		let step = (max - min).abs() / (data.len() as f64);
 
+		debug_assert!(step.is_sign_positive());
+		debug_assert!(step.is_finite());
+
 		// Create and return the struct
 		SteppedVector { data, step }
 	}
@@ -224,7 +227,7 @@ pub fn newtons_method_helper(
 
 	data.iter()
 		.tuple_windows()
-		.filter(|(prev, curr)| !prev.y.is_nan() && !curr.y.is_nan())
+		.filter(|(prev, curr)| prev.y.is_finite() && curr.y.is_finite())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
 		.map(|(start, _)| newtons_method(f, f_1, &start.x, range, threshold))
 		.filter(|x| x.is_some())
@@ -334,6 +337,7 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	debug_assert!(data.len() > HASH_LENGTH);
 	unsafe {
 		assume(!data.is_empty());
+		assume(data.len() > HASH_LENGTH);
 	}
 
 	// can't use data.as_bytes() here for some reason, seems to break on wasm?
@@ -346,17 +350,11 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	unsafe {
 		assume(!cached_data.is_empty());
 		assume(!hash.is_empty());
+		assume(hash.len() == HASH_LENGTH);
 	}
 
 	(
 		hash.iter().map(|c| *c as char).collect::<String>(),
 		cached_data.to_vec(),
 	)
-}
-
-#[allow(dead_code)]
-pub fn format_bytes(bytes: usize) -> String {
-	byte_unit::Byte::from_bytes(bytes as u64)
-		.get_appropriate_unit(false)
-		.to_string()
 }
