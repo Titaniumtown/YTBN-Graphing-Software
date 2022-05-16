@@ -262,7 +262,8 @@ impl FunctionEntry {
 			_ => unreachable!(),
 		};
 
-		dyn_iter(&newtons_method_output)
+		newtons_method_output
+			.iter()
 			.map(|x| Value::new(*x, self.function.get(*x)))
 			.collect()
 	}

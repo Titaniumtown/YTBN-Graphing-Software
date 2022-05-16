@@ -242,11 +242,14 @@ impl<'a> std::fmt::Debug for Hint<'a> {
 }
 
 impl<'a> Hint<'a> {
+	#[inline]
 	pub const fn is_none(&self) -> bool { matches!(&self, &Hint::None) }
 
+	#[inline]
 	#[allow(dead_code)]
 	pub const fn is_some(&self) -> bool { !self.is_none() }
 
+	#[inline]
 	#[allow(dead_code)]
 	pub const fn is_single(&self) -> bool { matches!(&self, &Hint::Single(_)) }
 
