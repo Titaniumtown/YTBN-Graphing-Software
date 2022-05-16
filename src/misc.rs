@@ -260,7 +260,7 @@ fn newtons_method(
 	}
 
 	// return x2 as loop breaks before x1 is set to x2
-	return Some(x2);
+	Some(x2)
 }
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
@@ -310,9 +310,9 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 pub fn almost_variable(x: f64) -> Option<char> {
 	const EPSILON: f32 = f32::EPSILON * 2.0;
 	if emath::almost_equal(x as f32, std::f32::consts::E, EPSILON) {
-		return Some('e');
+		Some('e')
 	} else if emath::almost_equal(x as f32, std::f32::consts::PI, EPSILON) {
-		return Some('π');
+		Some('π')
 	} else {
 		None
 	}
