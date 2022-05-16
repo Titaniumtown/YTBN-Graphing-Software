@@ -458,7 +458,8 @@ impl FunctionEntry {
 						.cloned()
 						.collect::<Vec<Value>>()
 						.to_line()
-						.color(Color32::BLUE)
+						.stroke(epaint::Stroke::none())
+						.color(Color32::from_rgb(4, 4, 255))
 						.name(&self.raw_func_str)
 						.fill(0.0),
 				);
