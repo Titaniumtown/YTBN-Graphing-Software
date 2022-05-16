@@ -244,7 +244,7 @@ fn newtons_method(
 	let mut x2: f64;
 	loop {
 		x2 = x1 - (f(x1) / f_1(x1));
-		if !range.contains(&x2) {
+		if !x2.is_finite() | !range.contains(&x2) {
 			return None;
 		}
 
