@@ -273,3 +273,18 @@ fn get_last_term() {
 		);
 	}
 }
+
+#[test]
+fn hint_accessor() {
+	assert_eq!(Hint::Single("hint").many(), None);
+	assert_eq!(Hint::Single("hint").single(), Some(&"hint"));
+
+	assert_eq!(Hint::Many(&["hint", "hint2"]).single(), None);
+	assert_eq!(
+		Hint::Many(&["hint", "hint2"]).many(),
+		Some(&["hint", "hint2"].as_slice())
+	);
+
+	assert_eq!(Hint::None.single(), None);
+	assert_eq!(Hint::None.many(), None);
+}

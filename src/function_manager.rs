@@ -3,7 +3,6 @@ use crate::function_entry::FunctionEntry;
 use crate::widgets::widgets_ontop;
 use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
-use parsing::Hint;
 use parsing::Movement;
 use serde::ser::SerializeStruct;
 use serde::Deserialize;
@@ -104,7 +103,7 @@ impl FunctionManager {
 					.id(*te_id) // Set widget's id to `te_id`
 					.hint_text({
 						// If there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
-						if let Hint::Single(single_hint) = function.autocomplete.hint {
+						if let Some(single_hint) = function.autocomplete.hint.single() {
 							*single_hint
 						} else {
 							""
@@ -138,7 +137,7 @@ impl FunctionManager {
 
 					function.autocomplete.register_movement(&movement);
 
-					if movement != Movement::Complete && let Hint::Many(hints) = function.autocomplete.hint {
+					if movement != Movement::Complete && let Some(hints) = function.autocomplete.hint.many() {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
                     let popup_id = ui.make_persistent_id("autocomplete_popup");
 

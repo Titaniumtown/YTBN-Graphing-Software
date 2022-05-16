@@ -249,6 +249,26 @@ impl<'a> Hint<'a> {
 
 	#[allow(dead_code)]
 	pub const fn is_single(&self) -> bool { matches!(&self, &Hint::Single(_)) }
+
+	#[inline]
+	#[allow(dead_code)]
+	pub const fn single(&self) -> Option<&&str> {
+		if let Hint::Single(data) = self {
+			Some(data)
+		} else {
+			None
+		}
+	}
+
+	#[inline]
+	#[allow(dead_code)]
+	pub const fn many(&self) -> Option<&&[&str]> {
+		if let Hint::Many(data) = self {
+			Some(data)
+		} else {
+			None
+		}
+	}
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
