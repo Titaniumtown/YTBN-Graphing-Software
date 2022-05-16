@@ -201,13 +201,15 @@ impl EguiHelper for Vec<Value> {
 	fn to_tuple(&self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
 }
 
-// /// Rounds f64 to `n` decimal places
-// pub fn decimal_round(x: f64, n: usize) -> f64 {
-// 	let large_number: f64 = 10.0_f64.powf(n as f64); // 10^n
+/*
+/// Rounds f64 to `n` decimal places
+pub fn decimal_round(x: f64, n: usize) -> f64 {
+	let large_number: f64 = 10.0_f64.powf(n as f64); // 10^n
 
-// 	// round and devide in order to cutoff after the `n`th decimal place
-// 	(x * large_number).round() / large_number
-// }
+	// round and devide in order to cutoff after the `n`th decimal place
+	(x * large_number).round() / large_number
+}
+*/
 
 /// Helper that assists with using newton's method of finding roots, iterating over data `data`
 /// `threshold` is the target accuracy threshold
@@ -219,12 +221,6 @@ pub fn newtons_method_helper(
 	threshold: &f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
-	debug_assert!(!data.is_empty());
-
-	unsafe {
-		assume(!data.is_empty());
-	}
-
 	data.iter()
 		.tuple_windows()
 		.filter(|(prev, curr)| prev.y.is_finite() && curr.y.is_finite())
@@ -268,12 +264,6 @@ pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String
 where
 	T: ToString,
 {
-	debug_assert!(!data.is_empty());
-
-	unsafe {
-		assume(!data.is_empty());
-	}
-
 	let max_i: i32 = (data.len() as i32) - 1;
 	[
 		"[",
