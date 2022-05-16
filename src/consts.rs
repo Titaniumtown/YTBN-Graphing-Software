@@ -1,4 +1,3 @@
-use crate::function_entry::Riemann;
 use std::ops::RangeInclusive;
 
 use const_format::formatc;
@@ -34,10 +33,6 @@ const_assert!(INTEGRAL_X_MAX > INTEGRAL_X_MIN);
 pub const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
 
 // Default values
-
-/// Default Riemann Sum to calculate
-pub const DEFAULT_RIEMANN: Riemann = Riemann::Left;
-
 /// Default minimum X value to display
 pub const DEFAULT_MIN_X: f64 = -10.0;
 

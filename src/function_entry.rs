@@ -32,6 +32,10 @@ impl fmt::Display for Riemann {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
+impl const Default for Riemann {
+	fn default() -> Riemann { Riemann::Left }
+}
+
 /// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
 #[derive(PartialEq, Clone)]
 pub struct FunctionEntry {

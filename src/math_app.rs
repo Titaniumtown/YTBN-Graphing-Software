@@ -53,7 +53,7 @@ impl const Default for AppSettings {
 	/// Default implementation of `AppSettings`, this is how the application starts up
 	fn default() -> Self {
 		Self {
-			riemann_sum: DEFAULT_RIEMANN,
+			riemann_sum: Riemann::default(),
 			integral_min_x: DEFAULT_MIN_X,
 			integral_max_x: DEFAULT_MAX_X,
 			min_x: 0.0,
