@@ -304,6 +304,20 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
+/// Attempts to see what variable `x` is almost
+// TODO: use in hovering over points
+#[allow(dead_code)]
+pub fn almost_variable(x: f64) -> Option<char> {
+	const EPSILON: f32 = f32::EPSILON * 2.0;
+	if emath::almost_equal(x as f32, std::f32::consts::E, EPSILON) {
+		return Some('e');
+	} else if emath::almost_equal(x as f32, std::f32::consts::PI, EPSILON) {
+		return Some('π');
+	} else {
+		None
+	}
+}
+
 pub const HASH_LENGTH: usize = 8;
 
 #[allow(dead_code)]
