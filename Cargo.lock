@@ -346,12 +346,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "color-hex"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ecdffb913a326b6c642290a0d0ec8e8d6597291acdc07cc4c9cb4b3635d44cf9"
-
-[[package]]
 name = "combine"
 version = "4.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -659,7 +653,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#865fecd46ab376c3c09f631216b8a8c7b127d8a1"
+source = "git+https://github.com/Titaniumtown/egui.git#ab3318c7251f464bc15ccfbbc0c727e90fd3b634"
 dependencies = [
  "bytemuck",
  "egui",
@@ -679,7 +673,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#865fecd46ab376c3c09f631216b8a8c7b127d8a1"
+source = "git+https://github.com/Titaniumtown/egui.git#ab3318c7251f464bc15ccfbbc0c727e90fd3b634"
 dependencies = [
  "ahash",
  "epaint",
@@ -690,11 +684,12 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#865fecd46ab376c3c09f631216b8a8c7b127d8a1"
+source = "git+https://github.com/Titaniumtown/egui.git#ab3318c7251f464bc15ccfbbc0c727e90fd3b634"
 dependencies = [
  "arboard",
  "egui",
  "instant",
+ "smithay-clipboard",
  "tracing",
  "webbrowser",
  "winit",
@@ -703,7 +698,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#865fecd46ab376c3c09f631216b8a8c7b127d8a1"
+source = "git+https://github.com/Titaniumtown/egui.git#ab3318c7251f464bc15ccfbbc0c727e90fd3b634"
 dependencies = [
  "bytemuck",
  "egui",
@@ -723,25 +718,22 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#865fecd46ab376c3c09f631216b8a8c7b127d8a1"
+source = "git+https://github.com/Titaniumtown/egui.git#ab3318c7251f464bc15ccfbbc0c727e90fd3b634"
 dependencies = [
  "bytemuck",
- "libm",
  "serde",
 ]
 
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#865fecd46ab376c3c09f631216b8a8c7b127d8a1"
+source = "git+https://github.com/Titaniumtown/egui.git#ab3318c7251f464bc15ccfbbc0c727e90fd3b634"
 dependencies = [
  "ab_glyph",
  "ahash",
  "atomic_refcell",
  "bytemuck",
- "color-hex",
  "emath",
- "libm",
  "nohash-hasher",
  "parking_lot 0.12.0",
  "serde",
@@ -1145,11 +1137,6 @@ dependencies = [
  "cfg-if 1.0.0",
  "winapi",
 ]
-
-[[package]]
-name = "libm"
-version = "0.2.2"
-source = "git+https://github.com/phip1611/libm.git?branch=const-functions#d447daef3b9a4de4b1aaf6b87f09fbe20f5ded09"
 
 [[package]]
 name = "libz-sys"
@@ -2070,6 +2057,16 @@ dependencies = [
  "wayland-client",
  "wayland-cursor",
  "wayland-protocols",
+]
+
+[[package]]
+name = "smithay-clipboard"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "610b551bd25378bfd2b8e7a0fcbd83d427e8f2f6a40c47ae0f70688e9949dd55"
+dependencies = [
+ "smithay-client-toolkit",
+ "wayland-client",
 ]
 
 [[package]]
