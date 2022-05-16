@@ -106,6 +106,5 @@ fn hashed_storage() {
 	);
 
 	let read = hashed_storage_read(storage);
-	assert_eq!(read.0.to_vec(), commit);
-	assert_eq!(read.1, data);
+	assert_eq!(read.map(|(a, b)| (a.to_vec(), b)), Some((commit, data)));
 }

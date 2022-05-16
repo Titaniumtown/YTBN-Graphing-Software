@@ -312,12 +312,6 @@ pub const HASH_LENGTH: usize = 8;
 
 #[allow(dead_code)]
 pub fn hashed_storage_create(hash: [u8; HASH_LENGTH], data: &[u8]) -> String {
-	debug_assert!(!data.is_empty());
-
-	unsafe {
-		assume(!data.is_empty());
-	}
-
 	// cannot use `from_utf8` seems to break on wasm. no clue why
 	[&hash, data]
 		.concat()
@@ -327,28 +321,16 @@ pub fn hashed_storage_create(hash: [u8; HASH_LENGTH], data: &[u8]) -> String {
 }
 
 #[allow(dead_code)]
-pub fn hashed_storage_read(data: String) -> ([u8; HASH_LENGTH], Vec<u8>) {
-	debug_assert!(data.len() > HASH_LENGTH);
-	unsafe {
-		assume(!data.is_empty());
-		assume(data.len() > HASH_LENGTH);
+pub fn hashed_storage_read(data: String) -> Option<([u8; HASH_LENGTH], Vec<u8>)> {
+	if HASH_LENGTH >= data.len() {
+		return None;
 	}
 
 	// can't use data.as_bytes() here for some reason, seems to break on wasm?
 	let decoded_1 = data.chars().map(|c| c as u8).collect::<Vec<u8>>();
 
-	let (hash, cached_data) = decoded_1.split_at(8);
-	debug_assert_eq!(hash.len(), HASH_LENGTH);
+	let (hash, cached_data) = decoded_1.split_array_ref::<HASH_LENGTH>();
 	debug_assert!(!cached_data.is_empty());
 
-	unsafe {
-		assume(!cached_data.is_empty());
-		assume(!hash.is_empty());
-		assume(hash.len() == HASH_LENGTH);
-	}
-
-	(
-		unsafe { hash.try_into().unwrap_unchecked() },
-		cached_data.to_vec(),
-	)
+	Some((*hash, cached_data.to_vec()))
 }

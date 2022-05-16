@@ -9,6 +9,7 @@
 #![feature(const_assume)]
 #![feature(const_option_ext)]
 #![feature(const_slice_index)]
+#![feature(split_array)]
 
 #[macro_use]
 extern crate static_assertions;
