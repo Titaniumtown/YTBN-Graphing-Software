@@ -311,7 +311,7 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
-const HASH_LENGTH: usize = 8;
+pub const HASH_LENGTH: usize = 8;
 
 #[allow(dead_code)]
 pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {

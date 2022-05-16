@@ -104,6 +104,11 @@ pub struct MathApp {
 	since_last_save: Instant,
 }
 
+#[cfg(target_arch = "wasm32")]
+const DATA_NAME: &str = "YTBN-DECOMPRESSED";
+#[cfg(target_arch = "wasm32")]
+const FUNC_NAME: &str = "YTBN-FUNCTIONS";
+
 impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of [`MathApp`] and return it
@@ -133,13 +138,10 @@ impl MathApp {
 					get_window().local_storage().expect("failed to get localstorage1").expect("failed to get localstorage2")
 				}
 
-				const DATA_NAME: &str = "YTBN-DECOMPRESSED";
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
 					let data = get_localstorage().get_item(DATA_NAME).ok()??;
-
-					debug_assert!(!data.is_empty());
-					unsafe {
-						assume(!data.is_empty());
+					if crate::misc::HASH_LENGTH >= data.len() {
+						return None;
 					}
 
 					let (commit, cached_data) = crate::misc::hashed_storage_read(data);
@@ -177,28 +179,28 @@ impl MathApp {
 				}
 
 				fn get_functions() -> Option<FunctionManager> {
-					if let Ok(Some(data)) = get_localstorage().get_item("YTBN-FUNCTIONS") {
-						let (commit, func_data) = crate::misc::hashed_storage_read(data);
+					let data = get_localstorage().get_item(FUNC_NAME).ok()??;
+					if crate::misc::HASH_LENGTH >= data.len() {
+						return None;
+					}
 
-						debug_assert!(!commit.is_empty());
-						debug_assert!(!func_data.is_empty());
+					let (commit, func_data) = crate::misc::hashed_storage_read(data);
 
-						unsafe {
-							assume(!commit.is_empty());
-							assume(!func_data.is_empty());
-						}
+					debug_assert!(!commit.is_empty());
+					debug_assert!(!func_data.is_empty());
 
-						if commit == build::SHORT_COMMIT {
-							tracing::info!("Reading previous function data");
-							let function_manager: FunctionManager = bincode::deserialize(&func_data).ok()?;
-							return Some(function_manager);
-						} else {
-							tracing::info!("Previous functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
-							// is invalid
-							None
-						}
+					unsafe {
+						assume(!commit.is_empty());
+						assume(!func_data.is_empty());
+					}
 
+					if commit == build::SHORT_COMMIT {
+						tracing::info!("Reading previous function data");
+						let function_manager: FunctionManager = bincode::deserialize(&func_data).ok()?;
+						return Some(function_manager);
 					} else {
+						tracing::info!("Previous functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
+						// is invalid
 						None
 					}
 				}
@@ -620,7 +622,7 @@ impl App for MathApp {
 					);
 					// tracing::info!("Bytes: {}", saved_data.len());
 					local_storage
-						.set_item("YTBN-FUNCTIONS", saved_data)
+						.set_item(FUNC_NAME, saved_data)
 						.expect("failed to set local function storage");
 				} else {
 					panic!("unable to get local storage")
