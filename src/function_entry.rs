@@ -271,9 +271,9 @@ impl FunctionEntry {
 			return;
 		}
 
-		let step = (settings.plot_width as f64) / (settings.max_x - settings.min_x);
-		debug_assert!(step > 0.0);
-		let resolution_iter = resolution_helper(&settings.plot_width + 1, &settings.min_x, &step);
+		let resolution = (settings.max_x - settings.min_x) / (settings.plot_width as f64);
+		debug_assert!(resolution > 0.0);
+		let resolution_iter = step_helper(&settings.plot_width + 1, &settings.min_x, &resolution);
 
 		unsafe { assume(!resolution_iter.is_empty()) }
 
@@ -410,7 +410,7 @@ impl FunctionEntry {
 			self.invalidate_integral();
 		}
 
-		let threshold: f64 = step / 2.0;
+		let threshold: f64 = resolution / 2.0;
 		let x_range = settings.min_x..settings.max_x;
 
 		// Calculates extrema

@@ -299,13 +299,6 @@ where
 	.concat()
 }
 
-/// Returns a vector of length `max_i` starting at value `min_x` with resolution of `resolution`
-pub fn resolution_helper(max_i: usize, min_x: &f64, resolution: &f64) -> Vec<f64> {
-	(0..max_i)
-		.map(|x| (x as f64 / resolution) + min_x)
-		.collect()
-}
-
 /// Returns a vector of length `max_i` starting at value `min_x` with step of `step`
 pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
