@@ -256,8 +256,8 @@ fn newtons_method(
 		x1 = x2;
 	}
 
-	// If failed, return NaN, which is then filtered out
-	return Some(x1);
+	// return x2 as loop breaks before x1 is set to x2
+	return Some(x2);
 }
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
