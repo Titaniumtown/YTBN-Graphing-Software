@@ -41,10 +41,6 @@ pub struct FunctionEntry {
 	/// Stores a function string (that hasn't been processed via `process_func_str`) to display to the user
 	raw_func_str: String,
 
-	/// Minimum and Maximum values of what do display
-	min_x: f64,
-	max_x: f64,
-
 	/// If calculating/displayingintegrals are enabled
 	pub integral: bool,
 
@@ -127,8 +123,6 @@ impl FunctionEntry {
 	pub const EMPTY: FunctionEntry = FunctionEntry {
 		function: BackingFunction::EMPTY,
 		raw_func_str: String::new(),
-		min_x: -1.0,
-		max_x: 1.0,
 		integral: false,
 		derivative: false,
 		nth_derviative: false,
@@ -249,19 +243,20 @@ impl FunctionEntry {
 	}
 
 	/// Helps with processing newton's method depending on level of derivative
-	fn newtons_method_helper(&self, threshold: &f64, derivative_level: usize) -> Vec<Value> {
-		let range = self.min_x..self.max_x;
+	fn newtons_method_helper(
+		&self, threshold: &f64, derivative_level: usize, range: &std::ops::Range<f64>,
+	) -> Vec<Value> {
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
 				threshold,
-				&range,
+				range,
 				self.back_data.as_slice(),
 				&|x: f64| self.function.get(x),
 				&|x: f64| self.function.get_derivative_1(x),
 			),
 			1 => newtons_method_helper(
 				threshold,
-				&range,
+				range,
 				self.derivative_data.as_slice(),
 				&|x: f64| self.function.get_derivative_1(x),
 				&|x: f64| self.function.get_derivative_2(x),
@@ -276,7 +271,8 @@ impl FunctionEntry {
 
 	/// Does the calculations and stores results in `self`
 	pub fn calculate(
-		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, settings: &AppSettings,
+		&mut self, min_x: &f64, max_x: &f64, width_changed: bool, min_max_changed: bool,
+		settings: &AppSettings,
 	) {
 		if self.test_result.is_some() {
 			return;
@@ -293,12 +289,8 @@ impl FunctionEntry {
 		}
 
 		let mut partial_regen = false;
-		let min_max_changed = (min_x != &self.min_x) | (max_x != &self.max_x);
-
 		let derivative_required = settings.do_extrema | self.derivative;
 
-		self.min_x = *min_x;
-		self.max_x = *max_x;
 		if width_changed {
 			self.invalidate_back();
 			self.invalidate_derivative();
@@ -425,15 +417,16 @@ impl FunctionEntry {
 		}
 
 		let threshold: f64 = resolution / 2.0;
+		let x_range = settings.min_x..settings.max_x;
 
 		// Calculates extrema
 		if settings.do_extrema && (min_max_changed | self.extrema_data.is_empty()) {
-			self.extrema_data = self.newtons_method_helper(&threshold, 1);
+			self.extrema_data = self.newtons_method_helper(&threshold, 1, &x_range);
 		}
 
 		// Calculates roots
 		if settings.do_roots && (min_max_changed | self.root_data.is_empty()) {
-			self.root_data = self.newtons_method_helper(&threshold, 0);
+			self.root_data = self.newtons_method_helper(&threshold, 0, &x_range);
 		}
 	}
 
@@ -450,7 +443,7 @@ impl FunctionEntry {
 		let step = (settings.integral_min_x - settings.integral_max_x).abs()
 			/ (settings.integral_num as f64);
 
-		let resolution = (self.min_x - self.max_x).abs() / (settings.plot_width as f64);
+		let resolution = (settings.min_x - settings.max_x).abs() / (settings.plot_width as f64);
 
 		// Plot back data
 		if !self.back_data.is_empty() {
@@ -566,7 +559,7 @@ impl FunctionEntry {
 		derivative_target: Vec<(f64, f64)>, area_target: f64, min_x: f64, max_x: f64,
 	) {
 		{
-			self.calculate(&min_x, &max_x, true, &settings);
+			self.calculate(&min_x, &max_x, true, true, &settings);
 			assert!(!self.back_data.is_empty());
 			assert_eq!(self.back_data.len(), settings.plot_width + 1);
 			let back_vec_tuple = self.back_data.to_tuple();
@@ -586,7 +579,7 @@ impl FunctionEntry {
 		}
 
 		{
-			self.calculate(&(min_x + 1.0), &(max_x + 1.0), true, &settings);
+			self.calculate(&(min_x + 1.0), &(max_x + 1.0), true, true, &settings);
 
 			assert_eq!(
 				self.derivative_data
@@ -626,7 +619,7 @@ impl FunctionEntry {
 		}
 
 		{
-			self.calculate(&(min_x - 1.0), &(max_x - 1.0), true, &settings);
+			self.calculate(&(min_x - 1.0), &(max_x - 1.0), true, true, &settings);
 
 			assert_eq!(
 				self.derivative_data
@@ -682,7 +675,7 @@ impl FunctionEntry {
 			assert!(self.extrema_data.is_empty());
 			assert!(self.derivative_data.is_empty());
 
-			self.calculate(&min_x, &max_x, true, &settings);
+			self.calculate(&min_x, &max_x, true, true, &settings);
 
 			assert!(!self.back_data.is_empty());
 			assert!(self.integral_data.is_none());

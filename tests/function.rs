@@ -1,12 +1,15 @@
 use ytbn_graphing_software::{AppSettings, FunctionEntry, Riemann};
 
 fn app_settings_constructor(
-	sum: Riemann, integral_min_x: f64, integral_max_x: f64, pixel_width: usize, integral_num: usize,
+	sum: Riemann, integral_min_x: f64, integral_max_x: f64, pixel_width: usize,
+	integral_num: usize, min_x: f64, max_x: f64,
 ) -> AppSettings {
 	AppSettings {
 		riemann_sum: sum,
 		integral_min_x,
 		integral_max_x,
+		min_x,
+		max_x,
 		integral_changed: true,
 		integral_num,
 		do_extrema: false,
@@ -44,7 +47,7 @@ static DERIVATIVE_TARGET: [(f64, f64); 11] = [
 ];
 
 fn do_test(sum: Riemann, area_target: f64) {
-	let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10);
+	let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10, -1.0, 1.0);
 
 	let mut function = FunctionEntry::EMPTY;
 	function.update_string("x^2");

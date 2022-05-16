@@ -29,6 +29,10 @@ pub struct AppSettings {
 	/// Max value for calculating an
 	pub integral_max_x: f64,
 
+	pub min_x: f64,
+
+	pub max_x: f64,
+
 	/// Stores whether or not integral settings have changed
 	pub integral_changed: bool,
 
@@ -52,6 +56,8 @@ impl const Default for AppSettings {
 			riemann_sum: DEFAULT_RIEMANN,
 			integral_min_x: DEFAULT_MIN_X,
 			integral_max_x: DEFAULT_MAX_X,
+			min_x: 0.0,
+			max_x: 0.0,
 			integral_changed: true,
 			integral_num: DEFAULT_INTEGRAL_NUM,
 			do_extrema: true,
@@ -577,14 +583,19 @@ impl App for MathApp {
 					.legend(egui::plot::Legend::default())
 					.show(ui, |plot_ui| {
 						let bounds = plot_ui.plot_bounds();
-						let minx_bounds: f64 = bounds.min()[0];
-						let maxx_bounds: f64 = bounds.max()[0];
+						let min_x: f64 = bounds.min()[0];
+						let max_x: f64 = bounds.max()[0];
+						let min_max_changed =
+							(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
+						self.settings.min_x = min_x;
+						self.settings.max_x = max_x;
 
 						dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
 							function.calculate(
-								&minx_bounds,
-								&maxx_bounds,
+								&min_x,
+								&max_x,
 								width_changed,
+								min_max_changed,
 								&self.settings,
 							)
 						});
