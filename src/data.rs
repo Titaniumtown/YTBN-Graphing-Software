@@ -1,6 +1,4 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, serde::Serialize, serde::Deserialize)]
 pub struct TextData {
 	pub help_expr: String,
 	pub help_vars: String,
@@ -11,7 +9,7 @@ pub struct TextData {
 	pub welcome: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
 pub struct TotalData {
 	pub text: TextData,
 	pub fonts: epaint::text::FontDefinitions,
