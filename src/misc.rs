@@ -118,7 +118,7 @@ impl<'a> SteppedVector<'a> {
 		let possible_i = ((x - min).abs() / self.step) as usize;
 
 		// Make sure that the index is valid by checking the data returned vs the actual data (just in case)
-		if self.data[possible_i] == x {
+		if self.data.get(possible_i) == Some(&x) {
 			// It is valid!
 			Some(possible_i)
 		} else {
