@@ -140,7 +140,6 @@ impl MathApp {
 					debug_assert!(!data.is_empty());
 					unsafe {
 						assume(!data.is_empty());
-						assume(data.len() > 0);
 					}
 
 					let (commit, cached_data) = crate::misc::hashed_storage_read(data);
@@ -149,8 +148,6 @@ impl MathApp {
 					debug_assert!(!cached_data.is_empty());
 
 					unsafe {
-						assume(commit.len() > 0);
-						assume(cached_data.len() > 0);
 						assume(!commit.is_empty());
 						assume(!cached_data.is_empty());
 					}
@@ -170,7 +167,6 @@ impl MathApp {
 					debug_assert!(!data.is_empty());
 
 					unsafe {
-						assume(data.len() > 0);
 						assume(!data.is_empty());
 					}
 
@@ -188,8 +184,6 @@ impl MathApp {
 						debug_assert!(!func_data.is_empty());
 
 						unsafe {
-							assume(commit.len() > 0);
-							assume(func_data.len() > 0);
 							assume(!commit.is_empty());
 							assume(!func_data.is_empty());
 						}
