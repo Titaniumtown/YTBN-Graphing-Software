@@ -125,7 +125,6 @@ impl<'a> SteppedVector<'a> {
 	pub const fn get_min(&self) -> &f64 {
 		unsafe {
 			assume(!self.data.is_empty());
-			assume(!self.data.is_empty());
 			self.data.get_unchecked(0)
 		}
 	}
@@ -133,7 +132,6 @@ impl<'a> SteppedVector<'a> {
 	#[inline]
 	pub const fn get_max(&self) -> &f64 {
 		unsafe {
-			assume(!self.data.is_empty());
 			assume(!self.data.is_empty());
 			self.data.last().unwrap_unchecked()
 		}
@@ -210,7 +208,6 @@ pub fn newtons_method_helper(
 
 	unsafe {
 		assume(!data.is_empty());
-		assume(!data.is_empty());
 	}
 
 	data.iter()
@@ -265,7 +262,6 @@ where
 
 	unsafe {
 		assume(!data.is_empty());
-		assume(!data.is_empty());
 	}
 
 	let max_i: i32 = (data.len() as i32) - 1;
@@ -313,7 +309,6 @@ pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
 	debug_assert!(!data.is_empty());
 
 	unsafe {
-		assume(!data.is_empty());
 		assume(!data.is_empty());
 		assume(hash.len() == HASH_LENGTH);
 		assume(!hash.is_empty());

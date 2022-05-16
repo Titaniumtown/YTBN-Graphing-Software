@@ -240,7 +240,6 @@ impl MathApp {
 		debug_assert!(data_decompressed.is_empty());
 
 		unsafe {
-			assume(data_decompressed.len() > 0);
 			assume(!data_decompressed.is_empty());
 		}
 
