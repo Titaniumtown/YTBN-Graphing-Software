@@ -116,8 +116,8 @@ impl FunctionManager {
 			if ui.ctx().animate_bool(*te_id, re.has_focus()) >= 1.0 {
 				function.autocomplete.update_string(&new_string);
 
-				if !function.autocomplete.hint.is_none() {
-					if !is_mobile() && !function.autocomplete.hint.is_single() {
+				if function.autocomplete.hint.is_some() {
+					if !function.autocomplete.hint.is_single() && !is_mobile() {
 						if ui.input().key_pressed(Key::ArrowDown) {
 							movement = Movement::Down;
 						} else if ui.input().key_pressed(Key::ArrowUp) {
