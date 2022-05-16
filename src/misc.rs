@@ -158,6 +158,10 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 
 		debug_assert!(max > min);
 
+		unsafe {
+			assume(max > min);
+		}
+
 		// Calculate the step between elements
 		let step = (max - min).abs() / (data.len() as f64);
 
@@ -214,9 +218,9 @@ pub fn newtons_method_helper(
 		.tuple_windows()
 		.filter(|(prev, curr)| !prev.y.is_nan() && !curr.y.is_nan())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
-		.map(|(prev, _)| prev.x)
-		.map(|start_x| newtons_method(f, f_1, &start_x, range, threshold).unwrap_or(f64::NAN))
-		.filter(|x| !x.is_nan())
+		.map(|(start, _)| newtons_method(f, f_1, &start.x, range, threshold))
+		.filter(|x| x.is_some())
+		.map(|x| unsafe { x.unwrap_unchecked() })
 		.collect()
 }
 
@@ -230,12 +234,10 @@ fn newtons_method(
 ) -> Option<f64> {
 	let mut x1: f64 = *start_x;
 	let mut x2: f64;
-	let mut fail: bool = false;
 	loop {
 		x2 = x1 - (f(x1) / f_1(x1));
 		if !range.contains(&x2) {
-			fail = true;
-			break;
+			return None;
 		}
 
 		// If below threshold, break
@@ -247,10 +249,7 @@ fn newtons_method(
 	}
 
 	// If failed, return NaN, which is then filtered out
-	match fail {
-		true => None,
-		false => Some(x1),
-	}
+	return Some(x1);
 }
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
@@ -327,7 +326,6 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	debug_assert!(data.len() > HASH_LENGTH);
 	unsafe {
 		assume(!data.is_empty());
-		assume(!data.is_empty());
 	}
 
 	// can't use data.as_bytes() here for some reason, seems to break on wasm?
@@ -339,9 +337,6 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 
 	unsafe {
 		assume(!cached_data.is_empty());
-		assume(!cached_data.is_empty());
-
-		assume(!hash.is_empty());
 		assume(!hash.is_empty());
 	}
 
