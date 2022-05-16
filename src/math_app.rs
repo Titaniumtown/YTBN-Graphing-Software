@@ -237,7 +237,7 @@ impl MathApp {
 			data
 		};
 
-		debug_assert!(data_decompressed.is_empty());
+		debug_assert!(!data_decompressed.is_empty());
 
 		unsafe {
 			assume(!data_decompressed.is_empty());
