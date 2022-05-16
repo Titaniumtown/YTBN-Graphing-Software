@@ -86,10 +86,16 @@ pub struct SteppedVector<'a> {
 impl<'a> SteppedVector<'a> {
 	/// Returns `Option<usize>` with index of element with value `x`. and `None` if `x` does not exist in `data`
 	pub fn get_index(&self, x: f64) -> Option<usize> {
+		debug_assert!(!x.is_nan());
+		debug_assert!(self.step > 0.0);
+		debug_assert!(self.step.is_sign_positive());
+		debug_assert!(self.data.len() >= 2);
+
 		unsafe {
 			assume(!self.step.is_nan());
 			assume(self.step > 0.0);
 			assume(self.step.is_sign_positive());
+			assume(self.data.len() >= 2);
 		}
 
 		let max = self.get_max();
@@ -123,6 +129,7 @@ impl<'a> SteppedVector<'a> {
 
 	#[inline]
 	pub const fn get_min(&self) -> &f64 {
+		debug_assert!(self.data.len() >= 2);
 		unsafe {
 			assume(!self.data.is_empty());
 			self.data.get_unchecked(0)
@@ -131,6 +138,7 @@ impl<'a> SteppedVector<'a> {
 
 	#[inline]
 	pub const fn get_max(&self) -> &f64 {
+		debug_assert!(self.data.len() >= 2);
 		unsafe {
 			assume(!self.data.is_empty());
 			self.data.last().unwrap_unchecked()
