@@ -160,13 +160,10 @@ impl MathApp {
 						assume(!cached_data.is_empty());
 					}
 
-					if commit == build::SHORT_COMMIT {
+					if commit == build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>().as_slice() {
 						tracing::info!("Reading decompression cache. Bytes: {}", cached_data.len());
 						return Some(cached_data.to_vec());
 					} else {
-						tracing::info!("Decompression cache are invalid (build: {}, previous: {})", build::SHORT_COMMIT, commit);
-
-						// is invalid
 						None
 					}
 				}
@@ -179,7 +176,8 @@ impl MathApp {
 					}
 
 					tracing::info!("Setting decompression cache");
-					let saved_data = &crate::misc::hashed_storage_create(&build::SHORT_COMMIT.as_bytes(), data);
+					let commit: [u8; crate::misc::HASH_LENGTH] = unsafe { build::SHORT_COMMIT.as_bytes().try_into().unwrap_unchecked() };
+					let saved_data = &crate::misc::hashed_storage_create(commit, data);
 					tracing::info!("Bytes: {}", saved_data.len());
 					get_localstorage().set_item(DATA_NAME, saved_data).expect("failed to set local storage cache");
 				}
@@ -200,13 +198,11 @@ impl MathApp {
 						assume(!func_data.is_empty());
 					}
 
-					if commit == build::SHORT_COMMIT {
+					if commit == build::SHORT_COMMIT.chars().map(|c| c as u8).collect::<Vec<u8>>().as_slice() {
 						tracing::info!("Reading previous function data");
 						let function_manager: FunctionManager = bincode::deserialize(&func_data).ok()?;
 						return Some(function_manager);
 					} else {
-						tracing::info!("Previous functions are invalid due to differing commits (build: {}, previous: {})", build::SHORT_COMMIT, commit);
-						// is invalid
 						None
 					}
 				}
@@ -619,10 +615,15 @@ impl App for MathApp {
 				{
 					tracing::info!("Setting current functions");
 					let saved_data = &crate::misc::hashed_storage_create(
-						&build::SHORT_COMMIT
-							.chars()
-							.map(|c| c as u8)
-							.collect::<Vec<u8>>(),
+						unsafe {
+							build::SHORT_COMMIT
+								.chars()
+								.map(|c| c as u8)
+								.collect::<Vec<u8>>()
+								.as_slice()
+								.try_into()
+								.unwrap_unchecked()
+						},
 						bincode::serialize(&self.functions).unwrap().as_slice(),
 					);
 					// tracing::info!("Bytes: {}", saved_data.len());

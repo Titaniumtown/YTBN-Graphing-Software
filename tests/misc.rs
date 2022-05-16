@@ -97,9 +97,15 @@ fn hashed_storage() {
 		.chars()
 		.map(|c| c as u8)
 		.collect::<Vec<u8>>();
-	let storage = hashed_storage_create(commit.as_slice(), data.as_slice());
+	let storage = hashed_storage_create(
+		commit
+			.as_slice()
+			.try_into()
+			.expect("cannot turn into [u8; 8]"),
+		data.as_slice(),
+	);
 
 	let read = hashed_storage_read(storage);
-	assert_eq!(read.0.chars().map(|c| c as u8).collect::<Vec<u8>>(), commit);
+	assert_eq!(read.0.to_vec(), commit);
 	assert_eq!(read.1, data);
 }

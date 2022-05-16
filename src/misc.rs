@@ -311,18 +311,15 @@ pub fn almost_variable(x: f64) -> Option<char> {
 pub const HASH_LENGTH: usize = 8;
 
 #[allow(dead_code)]
-pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
-	debug_assert_eq!(hash.len(), HASH_LENGTH);
+pub fn hashed_storage_create(hash: [u8; HASH_LENGTH], data: &[u8]) -> String {
 	debug_assert!(!data.is_empty());
 
 	unsafe {
 		assume(!data.is_empty());
-		assume(hash.len() == HASH_LENGTH);
-		assume(!hash.is_empty());
 	}
 
 	// cannot use `from_utf8` seems to break on wasm. no clue why
-	[hash, data]
+	[&hash, data]
 		.concat()
 		.iter()
 		.map(|b| *b as char)
@@ -330,7 +327,7 @@ pub fn hashed_storage_create(hash: &[u8], data: &[u8]) -> String {
 }
 
 #[allow(dead_code)]
-pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
+pub fn hashed_storage_read(data: String) -> ([u8; HASH_LENGTH], Vec<u8>) {
 	debug_assert!(data.len() > HASH_LENGTH);
 	unsafe {
 		assume(!data.is_empty());
@@ -351,7 +348,7 @@ pub fn hashed_storage_read(data: String) -> (String, Vec<u8>) {
 	}
 
 	(
-		hash.iter().map(|c| *c as char).collect::<String>(),
+		unsafe { hash.try_into().unwrap_unchecked() },
 		cached_data.to_vec(),
 	)
 }
