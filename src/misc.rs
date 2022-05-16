@@ -309,10 +309,12 @@ pub fn almost_variable(x: f64) -> Option<char> {
 }
 
 pub const HASH_LENGTH: usize = 8;
-type CommitBits = [u8; HASH_LENGTH];
+
+/// Represents bytes used to represent hash info
+type HashBytes = [u8; HASH_LENGTH];
 
 #[allow(dead_code)]
-pub fn hashed_storage_create(hash: CommitBits, data: &[u8]) -> String {
+pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
 	// cannot use `from_utf8` seems to break on wasm. no clue why
 	[&hash, data]
 		.concat()
@@ -322,7 +324,7 @@ pub fn hashed_storage_create(hash: CommitBits, data: &[u8]) -> String {
 }
 
 #[allow(dead_code)]
-pub fn hashed_storage_read(data: String) -> Option<(CommitBits, Vec<u8>)> {
+pub fn hashed_storage_read(data: String) -> Option<(HashBytes, Vec<u8>)> {
 	if HASH_LENGTH >= data.len() {
 		return None;
 	}
@@ -337,7 +339,7 @@ pub fn hashed_storage_read(data: String) -> Option<(CommitBits, Vec<u8>)> {
 
 	let (hash, cached_data) = {
 		let (a, b) = unsafe { decoded_1.split_at_unchecked(HASH_LENGTH) };
-		unsafe { (&*(a.as_ptr() as *const CommitBits), b) }
+		unsafe { (&*(a.as_ptr() as *const HashBytes), b) }
 	};
 
 	debug_assert!(!cached_data.is_empty());
