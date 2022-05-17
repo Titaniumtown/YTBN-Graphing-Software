@@ -15,6 +15,43 @@ use run_script::ScriptOptions;
 
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/data.rs"));
 
+fn font_stripper(from: &str, out: &str, unicodes: &[&str]) -> Result<Vec<u8>, String> {
+	let new_path = [&env::var("OUT_DIR").unwrap(), out].concat();
+	let unicodes_formatted = unicodes
+		.iter()
+		.map(|u| format!("U+{}", u))
+		.collect::<Vec<String>>()
+		.join(",");
+
+	let script_result = run_script::run(
+		&format!(
+			"
+			pyftsubset {}/assets/{} --unicodes={}
+			mv {}/assets/{} {}
+         ",
+			env!("CARGO_MANIFEST_DIR"),
+			from,
+			unicodes_formatted,
+			env!("CARGO_MANIFEST_DIR"),
+			from.replace(".ttf", ".subset.ttf"),
+			new_path
+		),
+		&(vec![]),
+		&ScriptOptions::new(),
+	);
+
+	if let Ok((_, _, error)) = script_result {
+		if error.is_empty() {
+			return Ok(std::fs::read(new_path).unwrap());
+		} else {
+			return Err(error);
+		}
+	} else if let Err(error) = script_result {
+		return Err(error.to_string());
+	}
+	unreachable!()
+}
+
 fn main() {
 	// rebuild if new commit or contents of `assets` folder changed
 	println!("cargo:rerun-if-changed=.git/logs/HEAD");
@@ -24,40 +61,6 @@ fn main() {
 
 	// let font_hack = FontData::from_static(include_bytes!("assets/Hack-Regular.ttf"));
 	let font_ubuntu_light = FontData::from_static(include_bytes!("assets/Ubuntu-Light.ttf"));
-	let new_noto_path = [&env::var("OUT_DIR").unwrap(), "/noto-emoji.ttf"].concat();
-	let new_emoji_icon_path = [&env::var("OUT_DIR").unwrap(), "/emoji-icon.ttf"].concat();
-
-	let (_code, _output, error) = run_script::run(
-		&format!(
-			"
-		pyftsubset {}/assets/NotoEmoji-Regular.ttf --unicodes=U+1F31E,U+1F319,U+2716
-		mv {}/assets/NotoEmoji-Regular.subset.ttf {}
-         ",
-			env!("CARGO_MANIFEST_DIR"),
-			env!("CARGO_MANIFEST_DIR"),
-			new_noto_path
-		),
-		&(vec![]),
-		&ScriptOptions::new(),
-	)
-	.unwrap();
-	assert_eq!(error, String::new());
-
-	let (_code, _output, error) = run_script::run(
-		&format!(
-			"
-		pyftsubset {}/assets/emoji-icon-font.ttf --unicodes=U+2699
-		mv {}/assets/emoji-icon-font.subset.ttf {}
-         ",
-			env!("CARGO_MANIFEST_DIR"),
-			env!("CARGO_MANIFEST_DIR"),
-			new_emoji_icon_path
-		),
-		&(vec![]),
-		&ScriptOptions::new(),
-	)
-	.unwrap();
-	assert_eq!(error, String::new());
 
 	let fonts = FontDefinitions {
 		font_data: BTreeMap::from([
@@ -66,13 +69,18 @@ fn main() {
 			(
 				"NotoEmoji-Regular".to_owned(),
 				FontData::from_owned(
-					std::fs::read(new_noto_path).expect("unable to read noto emoji font"),
+					font_stripper(
+						"NotoEmoji-Regular.ttf",
+						"noto-emoji.ttf",
+						&["1F31E", "1F319", "2716"],
+					)
+					.unwrap(),
 				),
 			),
 			(
 				"emoji-icon-font".to_owned(),
 				FontData::from_owned(
-					std::fs::read(new_emoji_icon_path).expect("unable to read emoji icon font"),
+					font_stripper("emoji-icon-font.ttf", "emoji-icon.ttf", &["2699"]).unwrap(),
 				)
 				.tweak(FontTweak {
 					scale: 0.8,
