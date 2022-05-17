@@ -11,7 +11,6 @@ use egui::{
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::{Duration, Instant};
-use std::intrinsics::assume;
 use std::{io::Read, ops::BitXorAssign};
 
 #[cfg(threading)]
@@ -132,6 +131,8 @@ impl MathApp {
 
 		cfg_if::cfg_if! {
 			if #[cfg(target_arch = "wasm32")] {
+				use core::intrinsics::assume;
+
 				if let Some(web_info) = &cc.integration_info.web_info {
 					tracing::info!("Web Info: {:?}", web_info);
 				}
@@ -178,7 +179,7 @@ impl MathApp {
 					get_localstorage().set_item(DATA_NAME, saved_data).expect("failed to set local storage cache");
 				}
 
-				fn get_functions() -> Option<FunctionManager> {
+				fn load_functions() -> Option<FunctionManager> {
 					let data = get_localstorage().get_item(FUNC_NAME).ok()??;
 					if crate::misc::HASH_LENGTH >= data.len() {
 						return None;
@@ -203,20 +204,10 @@ impl MathApp {
 					}
 				}
 
-			} else {
-				const fn get_storage_decompressed() -> Option<Vec<u8>> {
-					None
-				}
-
-				const fn set_storage_decompressed(_: &Vec<u8>) {}
-
-				const fn get_functions() -> Option<FunctionManager> { None }
 			}
 		}
 
-		let data_decompressed: Vec<u8> = if let Some(cached_data) = get_storage_decompressed() {
-			cached_data
-		} else {
+		fn decomress_data() -> crate::data::TotalData {
 			let mut data = Vec::new();
 			let _ = unsafe {
 				ruzstd::StreamingDecoder::new(
@@ -226,18 +217,23 @@ impl MathApp {
 				.read_to_end(&mut data)
 				.unwrap_unchecked()
 			};
+			#[cfg(target = "wasm32")]
 			set_storage_decompressed(&data);
-			data
-		};
 
-		debug_assert!(!data_decompressed.is_empty());
-
-		unsafe {
-			assume(!data_decompressed.is_empty());
+			unsafe { bincode::deserialize(data.as_slice()).unwrap_unchecked() }
 		}
 
-		let data: crate::data::TotalData =
-			unsafe { bincode::deserialize(data_decompressed.as_slice()).unwrap_unchecked() };
+		#[cfg(target = "wasm32")]
+		let data: crate::data::TotalData = if let Some(Ok(data)) =
+			get_storage_decompressed().map(|data| bincode::deserialize(data.as_slice()))
+		{
+			data
+		} else {
+			decomress_data()
+		};
+
+		#[cfg(not(target = "wasm32"))]
+		let data: crate::data::TotalData = decomress_data();
 
 		tracing::info!("Reading assets...");
 
@@ -251,7 +247,12 @@ impl MathApp {
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
 		Self {
-			functions: get_functions().unwrap_or_default(),
+			#[cfg(target_arch = "wasm32")]
+			functions: load_functions().unwrap_or_default(),
+
+			#[cfg(not(target_arch = "wasm32"))]
+			functions: FunctionManager::default(),
+
 			last_info: (vec![None], None),
 			dark_mode: true, // dark mode is default and is previously set
 			text: data.text,
