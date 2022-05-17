@@ -20,14 +20,14 @@ fn main() {
 
 	shadow_rs::new().expect("Could not initialize shadow_rs");
 
-	let font_hack = FontData::from_static(include_bytes!("assets/Hack-Regular.ttf"));
+	// let font_hack = FontData::from_static(include_bytes!("assets/Hack-Regular.ttf"));
 	let font_ubuntu_light = FontData::from_static(include_bytes!("assets/Ubuntu-Light.ttf"));
 	let font_notoemoji = FontData::from_static(include_bytes!("assets/NotoEmoji-Regular.ttf"));
 	let font_emoji_icon = FontData::from_static(include_bytes!("assets/emoji-icon-font.ttf"));
 
 	let fonts = FontDefinitions {
 		font_data: BTreeMap::from([
-			("Hack".to_owned(), font_hack),
+			// ("Hack".to_owned(), font_hack),
 			("Ubuntu-Light".to_owned(), font_ubuntu_light),
 			("NotoEmoji-Regular".to_owned(), font_notoemoji),
 			("emoji-icon-font".to_owned(), font_emoji_icon),
@@ -36,7 +36,7 @@ fn main() {
 			(
 				FontFamily::Monospace,
 				vec![
-					"Hack".to_owned(),
+					// "Hack".to_owned(),
 					"Ubuntu-Light".to_owned(),
 					"NotoEmoji-Regular".to_owned(),
 					"emoji-icon-font".to_owned(),
@@ -78,9 +78,9 @@ fn main() {
 	})
 	.unwrap();
 
-	let max_zstd_level = zstd::compression_level_range();
+	let zstd_levels = zstd::compression_level_range();
 	let data_compressed =
-		zstd::encode_all(data.as_slice(), *max_zstd_level.end()).expect("Could not compress data");
+		zstd::encode_all(data.as_slice(), *zstd_levels.end()).expect("Could not compress data");
 
 	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("compressed_data");
 	let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
