@@ -12,10 +12,9 @@
 3. Allow constants in min/max integral input (like pi or euler's number)
 4. Sliding values for functions (like a user-interactable slider that adjusts a variable in the function, like desmos)
 5. Fix integral display
-6. Turn Dynamic Iterator functions into traits
-7. Better handling of roots and extrema finding
-8. Add closing animation for function entry
-9. Fix mobile text input
-10. Write custom plotter
-11. Add Url hashes loading and setting
-12. Store settings in LocalStorage/Cookies and persist state
+6. Better handling of roots and extrema finding
+7. Add closing animation for function entry
+8. Fix mobile text input
+9. Write custom plotter
+10. Add Url hashes loading and setting
+11. Store settings in LocalStorage/Cookies and persist state
