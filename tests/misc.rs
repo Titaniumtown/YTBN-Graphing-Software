@@ -105,12 +105,12 @@ fn hashed_storage() {
 		data.as_slice(),
 	);
 
-	let read = hashed_storage_read(storage);
+	let read = hashed_storage_read(&storage);
 	assert_eq!(read.map(|(a, b)| (a.to_vec(), b)), Some((commit, data)));
 }
 
 #[test]
 fn invalid_hashed_storage() {
 	use ytbn_graphing_software::hashed_storage_read;
-	assert_eq!(hashed_storage_read(String::from("aaaa")), None);
+	assert_eq!(hashed_storage_read("aaaa"), None);
 }

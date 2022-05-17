@@ -1,4 +1,4 @@
-use std::intrinsics::assume;
+use std::{hint::unreachable_unchecked, intrinsics::assume};
 
 use crate::{generate_hint, Hint, HINT_EMPTY};
 
@@ -61,13 +61,16 @@ impl<'a> AutoComplete<'a> {
 
 	#[allow(dead_code)]
 	pub fn register_movement(&mut self, movement: &Movement) {
-		if movement.is_none() {
+		if movement.is_none() | self.hint.is_none() {
 			return;
 		}
 
 		match self.hint {
 			Hint::Many(hints) => {
 				// Impossible for plural hints to be singular or non-existant
+				debug_assert!(hints.len() > 1); // check on debug
+
+				// Hint to the compiler
 				unsafe {
 					assume(hints.len() > 1);
 					assume(!hints.is_empty());
@@ -75,14 +78,15 @@ impl<'a> AutoComplete<'a> {
 
 				match movement {
 					Movement::Up => {
-						// if self.i is below 1, it's at
-						match self.i {
-							0 => self.i = hints.len() - 1,
-							_ => self.i -= 1,
+						// Wrap self.i to maximum `i` value if needed
+						if self.i == 0 {
+							self.i = hints.len() - 1;
+						} else {
+							self.i -= 1;
 						}
 					}
 					Movement::Down => {
-						// add one, if resulting value is above maximum i value, set i to 0
+						// Add one, if resulting value is above maximum `i` value, set `i` to 0
 						self.i += 1;
 						if self.i > (hints.len() - 1) {
 							self.i = 0;
@@ -91,7 +95,7 @@ impl<'a> AutoComplete<'a> {
 					Movement::Complete => {
 						self.apply_hint(unsafe { hints.get_unchecked(self.i) });
 					}
-					_ => unreachable!(),
+					_ => unsafe { unreachable_unchecked() },
 				}
 			}
 			Hint::Single(hint) => {
@@ -99,7 +103,7 @@ impl<'a> AutoComplete<'a> {
 					self.apply_hint(hint);
 				}
 			}
-			Hint::None => {}
+			Hint::None => unsafe { unreachable_unchecked() },
 		}
 	}
 

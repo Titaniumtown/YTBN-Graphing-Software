@@ -324,7 +324,7 @@ pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
 }
 
 #[allow(dead_code)]
-pub fn hashed_storage_read(data: String) -> Option<(HashBytes, Vec<u8>)> {
+pub fn hashed_storage_read(data: &str) -> Option<(HashBytes, Vec<u8>)> {
 	if HASH_LENGTH >= data.len() {
 		return None;
 	}
@@ -335,6 +335,7 @@ pub fn hashed_storage_read(data: String) -> Option<(HashBytes, Vec<u8>)> {
 	}
 
 	// can't use data.as_bytes() here for some reason, seems to break on wasm?
+	// Other memory trickery seems to not worm on wasm. so I was unable to implement a more effecient manner of doing this
 	let decoded_1 = data.chars().map(|c| c as u8).collect::<Vec<u8>>();
 
 	let (hash, cached_data) = {
