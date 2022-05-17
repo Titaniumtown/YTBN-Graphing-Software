@@ -138,7 +138,13 @@ impl BackingFunction {
 	pub fn get_derivative_2(&self, x: f64) -> f64 { self.derivative_2.eval(&[x]) }
 
 	/// Get string relating to the nth derivative
-	pub fn get_nth_derivative_str(&self) -> &str { &self.nth_derivative.as_ref().unwrap().2 }
+	pub fn get_nth_derivative_str(&self) -> &str {
+		&self
+			.nth_derivative
+			.as_ref()
+			.map(|a| a.2.as_str())
+			.unwrap_or("")
+	}
 
 	pub fn get_nth_derivative(&mut self, n: usize, x: f64) -> f64 {
 		match n {
