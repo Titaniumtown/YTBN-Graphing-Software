@@ -114,6 +114,29 @@ fn multi() {
 }
 
 #[test]
+fn none() {
+	// string that should give no hints
+	let random = "qwert987gybhj";
+
+	ac_tester(&[
+		Action::SetString(random),
+		Action::AssertHint(""),
+		Action::Move(Movement::Up),
+		Action::AssertIndex(0),
+		Action::AssertString(random),
+		Action::AssertHint(""),
+		Action::Move(Movement::Down),
+		Action::AssertIndex(0),
+		Action::AssertString(random),
+		Action::AssertHint(""),
+		Action::Move(Movement::Complete),
+		Action::AssertString(random),
+		Action::AssertHint(""),
+		Action::AssertIndex(0),
+	]);
+}
+
+#[test]
 fn parens() {
 	ac_tester(&[
 		Action::SetString("sin(x"),

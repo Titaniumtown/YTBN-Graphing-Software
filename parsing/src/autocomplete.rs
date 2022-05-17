@@ -99,7 +99,7 @@ impl<'a> AutoComplete<'a> {
 					self.apply_hint(hint);
 				}
 			}
-			_ => unreachable!(),
+			Hint::None => {}
 		}
 	}
 
