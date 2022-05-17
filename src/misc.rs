@@ -335,15 +335,12 @@ pub fn hashed_storage_read(data: &str) -> Option<(HashBytes, Vec<u8>)> {
 	}
 
 	// can't use data.as_bytes() here for some reason, seems to break on wasm?
-	// Other memory trickery seems to not worm on wasm. so I was unable to implement a more effecient manner of doing this
-	let decoded_1 = data.chars().map(|c| c as u8).collect::<Vec<u8>>();
+	let decoded_1: Vec<u8> = data.chars().map(|c| c as u8).collect::<Vec<u8>>();
 
-	let (hash, cached_data) = {
-		let (a, b) = unsafe { decoded_1.split_at_unchecked(HASH_LENGTH) };
-		unsafe { (&*(a.as_ptr() as *const HashBytes), b) }
-	};
+	let hash: HashBytes = unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) };
+	let cached_data = decoded_1[HASH_LENGTH..].to_vec();
 
 	debug_assert!(!cached_data.is_empty());
 
-	Some((*hash, cached_data.to_vec()))
+	Some((hash, cached_data))
 }
