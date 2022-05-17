@@ -1,6 +1,6 @@
 {
 	"help_expr": [
-		"abs, signum, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, floor, round, ceil, trunc, fract, exp, sqrt, cbrt, ln, log2, log10"
+		"abs, signum, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, floor, round, ceil, trunc, fract, exp, sqrt, cbrt, ln, log2, log10, log"
 	],
 	"help_vars": [
 		"- Euler's number is supported via 'e' or 'E'",
@@ -15,18 +15,17 @@
 	],
 	"help_function": [
 		"(From Left to Right)",
-		"- The `✖` allows you to delete the function in question. Deleting a function is prevented if only 1 function exists.",
-		"- The `∫` indicates whether to integrate the function in question.",
-		"- The `d/dx` toggles the calculation of derivatives.",
-		"- The `⚙` opens a window to tweak function options."
+		"`✖` allows you to delete the selected function. Deleting a function is prevented if only 1 function exists.",
+		"`∫` toggles integration.",
+		"`d/dx` toggles the calculation of derivatives.",
+		"`⚙` opens a window to tweak function options."
 	],
 	"help_other": [
-		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points on the graph. You can toggle these in the Side Panel.",
-		"- In some edge cases, math functions may not parse correctly. More specifically with implicit multiplication. If you incounter this issue, please do report it on the project's Github page (linked on the side panel). But a current workaround would be explicitly stating a multiplication operation through the use of an asterisk."
+		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points located on the graph. You can toggle these in the Side Panel."
 	],
-	"license_info": "The AGPL license ensures that the end user, even if not hosting the program itself, is still guaranteed access to the source code of the project in question.",
+	"license_info": "The AGPL license ensures that the user of this web app has the ability to view the project's source code, as well as contribute to it.",
 	"welcome": [
 		"Welcome to the (Yet-to-be-named) Graphing Software!",
-		"This project aims to provide an intuitive experience graphing mathematical functions with features such as Integration, differentiation, extrema, roots, and much more! (see Help menu for more details)"
+		"This project aims to provide an intuitive experience graphing mathematical functions with features such as Integration, Differentiation, Extrema, Roots, and much more! (see the Help Window for more details)"
 	]
 }
