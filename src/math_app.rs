@@ -476,8 +476,6 @@ impl App for MathApp {
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
-				ui.heading("Help With...");
-
 				ui.collapsing("Supported Expressions", |ui| {
 					ui.label(&self.text.help_expr);
 				});
