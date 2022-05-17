@@ -89,9 +89,7 @@ impl<'a> AutoComplete<'a> {
 						}
 					}
 					Movement::Complete => {
-						unsafe { assume(hints.len() >= (self.i + 1)) }
-
-						self.apply_hint(hints[self.i]);
+						self.apply_hint(unsafe { hints.get_unchecked(self.i) });
 					}
 					_ => unreachable!(),
 				}
