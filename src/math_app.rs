@@ -566,17 +566,13 @@ impl App for MathApp {
 
 				let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
 				let width_changed = available_width != self.settings.plot_width;
-
-				if width_changed {
-					self.settings.plot_width = available_width;
-				}
+				self.settings.plot_width = available_width;
 
 				// Create and setup plot
 				Plot::new("plot")
 					.set_margin_fraction(Vec2::ZERO)
 					.data_aspect(1.0)
 					.include_y(0)
-					.legend(egui::plot::Legend::default())
 					.show(ui, |plot_ui| {
 						let bounds = plot_ui.plot_bounds();
 						let min_x: f64 = bounds.min()[0];

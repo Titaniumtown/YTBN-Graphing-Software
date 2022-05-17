@@ -378,10 +378,6 @@ impl FunctionEntry {
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.derivative_data = data;
-
-				unsafe {
-					assume(!self.derivative_data.is_empty());
-				}
 			}
 
 			if self.nth_derviative && self.nth_derivative_data.is_none() {
@@ -390,10 +386,6 @@ impl FunctionEntry {
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.nth_derivative_data = Some(data);
-
-				unsafe {
-					assume(self.nth_derivative_data.is_some());
-				}
 			}
 		}
 
@@ -407,9 +399,6 @@ impl FunctionEntry {
 				);
 				self.integral_data =
 					Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
-				unsafe {
-					assume(self.integral_data.is_some());
-				}
 			}
 		} else {
 			self.invalidate_integral();

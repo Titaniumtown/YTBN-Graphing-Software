@@ -7,7 +7,6 @@
 	- Prevent user from making too many function entries
 	- Display function errors as tooltips or a warning box (not preventing the display of the graph)
 	- Clone functions
-	- Better integration with egui's legend
 2. Smart display of graph
 	- Display of intersections between functions
 3. Allow constants in min/max integral input (like pi or euler's number)
