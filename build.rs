@@ -7,9 +7,11 @@ use std::{
 };
 
 use epaint::{
-	text::{FontData, FontDefinitions},
+	text::{FontData, FontDefinitions, FontTweak},
 	FontFamily,
 };
+
+use run_script::ScriptOptions;
 
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/data.rs"));
 
@@ -22,15 +24,62 @@ fn main() {
 
 	// let font_hack = FontData::from_static(include_bytes!("assets/Hack-Regular.ttf"));
 	let font_ubuntu_light = FontData::from_static(include_bytes!("assets/Ubuntu-Light.ttf"));
-	let font_notoemoji = FontData::from_static(include_bytes!("assets/NotoEmoji-Regular.ttf"));
-	let font_emoji_icon = FontData::from_static(include_bytes!("assets/emoji-icon-font.ttf"));
+	let new_noto_path = [&env::var("OUT_DIR").unwrap(), "/noto-emoji.ttf"].concat();
+	let new_emoji_icon_path = [&env::var("OUT_DIR").unwrap(), "/emoji-icon.ttf"].concat();
+
+	let (_code, _output, error) = run_script::run(
+		&format!(
+			"
+		pyftsubset {}/assets/NotoEmoji-Regular.ttf --unicodes=U+1F31E,U+1F319,U+2716
+		mv {}/assets/NotoEmoji-Regular.subset.ttf {}
+         ",
+			env!("CARGO_MANIFEST_DIR"),
+			env!("CARGO_MANIFEST_DIR"),
+			new_noto_path
+		),
+		&(vec![]),
+		&ScriptOptions::new(),
+	)
+	.unwrap();
+	assert_eq!(error, String::new());
+
+	let (_code, _output, error) = run_script::run(
+		&format!(
+			"
+		pyftsubset {}/assets/emoji-icon-font.ttf --unicodes=U+2699
+		mv {}/assets/emoji-icon-font.subset.ttf {}
+         ",
+			env!("CARGO_MANIFEST_DIR"),
+			env!("CARGO_MANIFEST_DIR"),
+			new_emoji_icon_path
+		),
+		&(vec![]),
+		&ScriptOptions::new(),
+	)
+	.unwrap();
+	assert_eq!(error, String::new());
 
 	let fonts = FontDefinitions {
 		font_data: BTreeMap::from([
 			// ("Hack".to_owned(), font_hack),
 			("Ubuntu-Light".to_owned(), font_ubuntu_light),
-			("NotoEmoji-Regular".to_owned(), font_notoemoji),
-			("emoji-icon-font".to_owned(), font_emoji_icon),
+			(
+				"NotoEmoji-Regular".to_owned(),
+				FontData::from_owned(
+					std::fs::read(new_noto_path).expect("unable to read noto emoji font"),
+				),
+			),
+			(
+				"emoji-icon-font".to_owned(),
+				FontData::from_owned(
+					std::fs::read(new_emoji_icon_path).expect("unable to read emoji icon font"),
+				)
+				.tweak(FontTweak {
+					scale: 0.8,
+					y_offset_factor: 0.07,
+					y_offset: 0.0,
+				}),
+			),
 		]),
 		families: BTreeMap::from([
 			(
