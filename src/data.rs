@@ -5,7 +5,6 @@ pub struct TextData {
 	pub help_panel: egui::RichText,
 	pub help_function: egui::RichText,
 	pub help_other: egui::RichText,
-	pub license_info: egui::RichText,
 	pub welcome: egui::RichText,
 }
 
@@ -16,7 +15,6 @@ pub struct TextDataRaw {
 	pub help_panel: String,
 	pub help_function: String,
 	pub help_other: String,
-	pub license_info: String,
 	pub welcome: String,
 }
 
@@ -31,7 +29,6 @@ impl TextDataRaw {
 			help_panel: RichText::from(self.help_panel),
 			help_function: RichText::from(self.help_function),
 			help_other: RichText::from(self.help_other),
-			license_info: RichText::from(self.license_info),
 			welcome: RichText::from(self.welcome).size(SIZE + 1.0),
 		}
 	}

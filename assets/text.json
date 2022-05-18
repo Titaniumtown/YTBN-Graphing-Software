@@ -23,7 +23,6 @@
 	"help_other": [
 		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points located on the graph. You can toggle these in the Side Panel."
 	],
-	"license_info": "The AGPL license ensures that the user of this web app has the ability to view the project's source code, as well as contribute to it.",
 	"welcome": [
 		"Welcome to the (Yet-to-be-named) Graphing Software!",
 		"This project aims to provide an intuitive experience graphing mathematical functions with features such as Integration, Differentiation, Extrema, Roots, and much more! (see the Help Window for more details)"

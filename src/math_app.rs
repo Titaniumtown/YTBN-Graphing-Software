@@ -5,8 +5,8 @@ use crate::function_manager::FunctionManager;
 use crate::misc::{dyn_mut_iter, option_vec_printer};
 use eframe::App;
 use egui::{
-	plot::Plot, style::Margin, Button, CentralPanel, Color32, ComboBox, Context, Frame, Key, Label,
-	Layout, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
+	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,
+	SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
@@ -362,12 +362,6 @@ impl MathApp {
 				if ui.available_height() > 0.0 {
 					ui.with_layout(Layout::bottom_up(Align::Min), |ui| {
 						// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
-
-						// Licensing information
-						ui.add(Label::new(
-							RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
-						))
-						.on_hover_text(self.text.license_info.clone());
 
 						// Hyperlink to project's github
 						ui.hyperlink_to(
