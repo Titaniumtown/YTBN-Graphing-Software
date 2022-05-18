@@ -253,8 +253,14 @@ pub fn newtons_method(
 ) -> Option<f64> {
 	let mut x1: f64 = *start_x;
 	let mut x2: f64;
+	let mut derivative: f64;
 	loop {
-		x2 = x1 - (f(x1) / f_1(x1));
+		derivative = f_1(x1);
+		if !derivative.is_finite() {
+			return None;
+		}
+
+		x2 = x1 - (f(x1) / derivative);
 		if !x2.is_finite() | !range.contains(&x2) {
 			return None;
 		}

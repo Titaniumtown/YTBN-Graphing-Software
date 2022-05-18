@@ -201,4 +201,22 @@ fn newtons_method() {
 		&f64::EPSILON,
 	);
 	assert_eq!(data, None);
+
+	let data = newtons_method(
+		&|_: f64| f64::INFINITY,
+		&|x: f64| x.sin(),
+		&0.0,
+		&(-10.0..10.0),
+		&f64::EPSILON,
+	);
+	assert_eq!(data, None);
+
+	let data = newtons_method(
+		&|x: f64| x.sin(),
+		&|_: f64| f64::INFINITY,
+		&0.0,
+		&(-10.0..10.0),
+		&f64::EPSILON,
+	);
+	assert_eq!(data, None);
 }
