@@ -5,8 +5,8 @@ use crate::function_manager::FunctionManager;
 use crate::misc::{dyn_mut_iter, option_vec_printer};
 use eframe::App;
 use egui::{
-	plot::Plot, style::Margin, vec2, Button, CentralPanel, Color32, ComboBox, Context, Frame, Key,
-	Label, Layout, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
+	plot::Plot, style::Margin, Button, CentralPanel, Color32, ComboBox, Context, Frame, Key, Label,
+	Layout, RichText, SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
@@ -367,7 +367,7 @@ impl MathApp {
 						ui.add(Label::new(
 							RichText::new("(and licensed under AGPLv3)").color(Color32::LIGHT_GRAY),
 						))
-						.on_hover_text(&self.text.license_info);
+						.on_hover_text(self.text.license_info.clone());
 
 						// Hyperlink to project's github
 						ui.hyperlink_to(
@@ -477,34 +477,34 @@ impl App for MathApp {
 			.collapsible(false)
 			.show(ctx, |ui| {
 				ui.collapsing("Supported Expressions", |ui| {
-					ui.label(&self.text.help_expr);
+					ui.label(self.text.help_expr.clone());
 				});
 
 				ui.collapsing("Supported Constants", |ui| {
-					ui.label(&self.text.help_vars);
+					ui.label(self.text.help_vars.clone());
 				});
 
 				ui.collapsing("Panel", |ui| {
-					ui.label(&self.text.help_panel);
+					ui.label(self.text.help_panel.clone());
 				});
 
 				ui.collapsing("Functions", |ui| {
-					ui.label(&self.text.help_function);
+					ui.label(self.text.help_function.clone());
 				});
 
 				ui.collapsing("Other", |ui| {
-					ui.label(&self.text.help_other);
+					ui.label(self.text.help_other.clone());
 				});
 			});
 
 		// Welcome window
 		Window::new("Welcome!")
 			.open(&mut self.opened.welcome)
-			.anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+			.anchor(Align2::CENTER_CENTER, Vec2::ZERO)
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
-				ui.label(&self.text.welcome);
+				ui.label(self.text.welcome.clone());
 			});
 
 		// Window with information about the build and current commit

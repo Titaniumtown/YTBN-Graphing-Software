@@ -126,11 +126,11 @@ fn main() {
 		}
 	}
 
-	let text_data: TextData = serde_json::from_value(serde_json::Value::Object(json_file_array))
-		.expect("Failed to convert data to TextData");
+	let text_data: TextDataRaw = serde_json::from_value(serde_json::Value::Object(json_file_array))
+		.expect("Failed to convert data to TextDataRaw");
 
 	let data = bincode::serialize(&TotalData {
-		text: text_data,
+		text: text_data.into_rich(),
 		fonts,
 	})
 	.unwrap();
