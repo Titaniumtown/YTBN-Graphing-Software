@@ -18,3 +18,4 @@
 9. Write custom plotter
 10. Add Url hashes loading and setting
 11. Store settings in LocalStorage/Cookies and persist state
+12. Set x value to go to
