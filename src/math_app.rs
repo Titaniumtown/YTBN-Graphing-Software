@@ -91,7 +91,7 @@ pub struct MathApp {
 	functions: FunctionManager,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
-	last_info: (Vec<Option<f64>>, Option<String>),
+	last_info: (Option<String>, Option<String>),
 
 	/// Whether or not dark mode is enabled
 	dark_mode: bool,
@@ -253,7 +253,7 @@ impl MathApp {
 			#[cfg(not(target_arch = "wasm32"))]
 			functions: FunctionManager::default(),
 
-			last_info: (vec![None], None),
+			last_info: (None, None),
 			dark_mode: true, // dark mode is default and is previously set
 			text: data.text,
 			opened: Opened::default(),
@@ -460,8 +460,8 @@ impl App for MathApp {
 				}
 
 				// Display Area and time of last frame
-				if self.last_info.0.iter().any(|e| e.is_some()) {
-					ui.label(format!("Area: {}", option_vec_printer(&self.last_info.0)));
+				if let Some(ref area) = self.last_info.0 {
+					ui.label(area);
 				}
 			});
 		});
@@ -578,7 +578,7 @@ impl App for MathApp {
 							function.calculate(width_changed, min_max_changed, &self.settings)
 						});
 
-						self.last_info.0 = self
+						let area: Vec<Option<f64>> = self
 							.functions
 							.get_entries()
 							.iter()
@@ -587,6 +587,12 @@ impl App for MathApp {
 								function.display(plot_ui, &self.settings, COLORS[i])
 							})
 							.collect();
+
+						self.last_info.0 = if area.iter().any(|e| e.is_some()) {
+							Some(format!("Area: {}", option_vec_printer(area.as_slice())))
+						} else {
+							None
+						};
 					});
 			});
 
