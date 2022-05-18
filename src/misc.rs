@@ -194,10 +194,13 @@ pub trait EguiHelper {
 }
 
 impl EguiHelper for Vec<Value> {
+	#[inline(always)]
 	fn to_line(self) -> Line { Line::new(Values::from_values(self)) }
 
+	#[inline(always)]
 	fn to_points(self) -> Points { Points::new(Values::from_values(self)) }
 
+	#[inline(always)]
 	fn to_tuple(self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
 }
 
