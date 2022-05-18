@@ -116,6 +116,17 @@ fn invalid_hashed_storage() {
 }
 
 #[test]
+fn to_values() {
+	use egui::plot::{Value, Values};
+	use ytbn_graphing_software::EguiHelper;
+	let data_raw = vec![(0.0, 1.0), (1.0, 3.0), (2.0, 4.0)];
+	let data: Vec<Value> = data_raw.iter().map(|(x, y)| Value::new(*x, *y)).collect();
+	let values: Values = data.clone().to_values();
+
+	assert_eq!(*values.get_values(), data);
+}
+
+#[test]
 fn to_tuple() {
 	use egui::plot::Value;
 	use ytbn_graphing_software::EguiHelper;

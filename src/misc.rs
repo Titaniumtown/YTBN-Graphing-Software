@@ -183,6 +183,9 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 
 /// Implements traits that are useful when dealing with Vectors of egui's `Value`
 pub trait EguiHelper {
+	/// Converts to `egui::plot::Values`
+	fn to_values(self) -> Values;
+
 	/// Converts to `egui::plot::Line`
 	fn to_line(self) -> Line;
 
@@ -195,13 +198,19 @@ pub trait EguiHelper {
 
 impl EguiHelper for Vec<Value> {
 	#[inline(always)]
-	fn to_line(self) -> Line { Line::new(Values::from_values(self)) }
+	fn to_values(self) -> Values { Values::from_values(self) }
 
 	#[inline(always)]
-	fn to_points(self) -> Points { Points::new(Values::from_values(self)) }
+	fn to_line(self) -> Line { Line::new(self.to_values()) }
 
 	#[inline(always)]
-	fn to_tuple(self) -> Vec<(f64, f64)> { self.iter().map(|ele| (ele.x, ele.y)).collect() }
+	fn to_points(self) -> Points { Points::new(self.to_values()) }
+
+	#[inline(always)]
+	fn to_tuple(self) -> Vec<(f64, f64)> {
+		// self.iter().map(|ele| (ele.x, ele.y)).collect()
+		unsafe { std::mem::transmute::<Vec<Value>, Vec<(f64, f64)>>(self) }
+	}
 }
 
 /*
