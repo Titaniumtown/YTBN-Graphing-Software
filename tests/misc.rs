@@ -114,3 +114,40 @@ fn invalid_hashed_storage() {
 	use ytbn_graphing_software::hashed_storage_read;
 	assert_eq!(hashed_storage_read("aaaa"), None);
 }
+
+#[test]
+fn to_tuple() {
+	use egui::plot::Value;
+	use ytbn_graphing_software::EguiHelper;
+	let data_raw = vec![(0.0, 1.0), (1.0, 3.0), (2.0, 4.0)];
+	let data: Vec<Value> = data_raw.iter().map(|(x, y)| Value::new(*x, *y)).collect();
+	let tupled_data = data.to_tuple();
+
+	assert_eq!(tupled_data, data_raw);
+}
+
+#[test]
+fn to_line() {
+	use egui::plot::{Line, Value};
+	use ytbn_graphing_software::EguiHelper;
+	let data_raw: Vec<Value> = vec![(0.0, 1.0), (1.0, 3.0), (2.0, 4.0)]
+		.iter()
+		.map(|(x, y)| Value::new(*x, *y))
+		.collect();
+	let data: Line = data_raw.clone().to_line();
+
+	assert_eq!(*data.get_series().get_values(), data_raw);
+}
+
+#[test]
+fn to_points() {
+	use egui::plot::{Points, Value};
+	use ytbn_graphing_software::EguiHelper;
+	let data_raw: Vec<Value> = vec![(0.0, 1.0), (1.0, 3.0), (2.0, 4.0)]
+		.iter()
+		.map(|(x, y)| Value::new(*x, *y))
+		.collect();
+	let data: Points = data_raw.clone().to_points();
+
+	assert_eq!(*data.get_series().get_values(), data_raw);
+}

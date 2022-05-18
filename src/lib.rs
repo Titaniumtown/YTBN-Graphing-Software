@@ -33,6 +33,7 @@ pub use crate::{
 		hashed_storage_read,
 		option_vec_printer,
 		step_helper,
+		EguiHelper,
 		SteppedVector,
 	},
 };

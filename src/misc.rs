@@ -1,6 +1,6 @@
 use std::intrinsics::assume;
 
-use eframe::egui::plot::{Line, Points, Value, Values};
+use egui::plot::{Line, Points, Value, Values};
 use itertools::Itertools;
 
 #[cfg(not(threading))]
