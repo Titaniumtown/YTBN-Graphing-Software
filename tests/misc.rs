@@ -170,8 +170,35 @@ fn newtons_method() {
 		&|x: f64| x.powf(2.0) - 1.0,
 		&|x: f64| 2.0 * x,
 		&3.0,
-		&(0.0..10.0),
+		&(0.0..5.0),
 		&f64::EPSILON,
 	);
 	assert_eq!(data, Some(1.0));
+
+	let data = newtons_method(
+		&|x: f64| x.sin(),
+		&|x: f64| x.cos(),
+		&3.0,
+		&(2.95..3.18),
+		&f64::EPSILON,
+	);
+	assert_eq!(data, Some(std::f64::consts::PI));
+
+	let data = newtons_method(
+		&|x: f64| x.sin(),
+		&|_: f64| f64::NAN,
+		&0.0,
+		&(-10.0..10.0),
+		&f64::EPSILON,
+	);
+	assert_eq!(data, None);
+
+	let data = newtons_method(
+		&|_: f64| f64::NAN,
+		&|x: f64| x.sin(),
+		&0.0,
+		&(-10.0..10.0),
+		&f64::EPSILON,
+	);
+	assert_eq!(data, None);
 }
