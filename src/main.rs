@@ -22,6 +22,7 @@ mod function_entry;
 mod function_manager;
 mod math_app;
 mod misc;
+mod style;
 mod widgets;
 
 // For running the program natively! (Because why not?)

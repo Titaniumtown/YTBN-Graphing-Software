@@ -6,7 +6,7 @@ use crate::misc::{dyn_mut_iter, option_vec_printer};
 use eframe::App;
 use egui::{
 	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,
-	SidePanel, Slider, TopBottomPanel, Vec2, Visuals, Window,
+	SidePanel, Slider, TopBottomPanel, Vec2, Window,
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
@@ -92,9 +92,6 @@ pub struct MathApp {
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
 	last_info: (Option<String>, Option<String>),
-
-	/// Whether or not dark mode is enabled
-	dark_mode: bool,
 
 	/// Stores opened windows/elements for later reference
 	opened: Opened,
@@ -242,7 +239,12 @@ impl MathApp {
 		cc.egui_ctx.set_fonts(data.fonts);
 
 		// Set dark mode by default
-		cc.egui_ctx.set_visuals(Visuals::dark());
+		cc.egui_ctx.set_visuals(crate::style::STYLE);
+
+		// Set spacing
+		let mut style: egui::Style = (*cc.egui_ctx.style()).clone();
+		style.spacing = crate::style::SPACING;
+		cc.egui_ctx.set_style(style);
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
@@ -254,7 +256,6 @@ impl MathApp {
 			functions: FunctionManager::default(),
 
 			last_info: (None, None),
-			dark_mode: true, // dark mode is default and is previously set
 			text: data.text,
 			opened: Opened::default(),
 			settings: Default::default(),
@@ -440,25 +441,6 @@ impl App for MathApp {
 						.clicked(),
 				);
 
-				// Toggles dark/light mode
-				if ui
-					.add(Button::new(match self.dark_mode {
-						true => "🌞",
-						false => "🌙",
-					}))
-					.on_hover_text(match self.dark_mode {
-						true => "Turn the Lights on!",
-						false => "Turn the Lights off.",
-					})
-					.clicked()
-				{
-					ctx.set_visuals(match self.dark_mode {
-						true => Visuals::light(),
-						false => Visuals::dark(),
-					});
-					self.dark_mode.bitxor_assign(true);
-				}
-
 				// Display Area and time of last frame
 				if let Some(ref area) = self.last_info.0 {
 					ui.label(area);
@@ -495,14 +477,23 @@ impl App for MathApp {
 			});
 
 		// Welcome window
-		Window::new("Welcome!")
-			.open(&mut self.opened.welcome)
-			.anchor(Align2::CENTER_CENTER, Vec2::ZERO)
-			.resizable(false)
-			.collapsible(false)
-			.show(ctx, |ui| {
-				ui.label(self.text.welcome.clone());
-			});
+		if self.opened.welcome {
+			let welcome_response = Window::new("Welcome!")
+				.open(&mut self.opened.welcome)
+				.anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+				.resizable(false)
+				.collapsible(false)
+				.show(ctx, |ui| {
+					ui.label(self.text.welcome.clone());
+				});
+
+			if let Some(response) = welcome_response {
+				// if user clicks off welcome window, close it
+				if response.response.clicked_elsewhere() {
+					self.opened.welcome = false;
+				}
+			}
+		}
 
 		// Window with information about the build and current commit
 		Window::new("Info")
@@ -523,78 +514,75 @@ impl App for MathApp {
 			self.side_panel(ctx);
 		}
 
-		// Central panel which contains the central plot (or an error created when
-		// parsing)
-		CentralPanel::default()
-			.frame(Frame {
-				inner_margin: Margin::symmetric(0.0, 0.0),
-				rounding: Rounding::none(),
-				fill: ctx.style().visuals.window_fill(),
-				..Default::default()
-			})
-			.show(ctx, |ui| {
-				// Display an error if it exists
-				let errors_formatted: String = self
-					.functions
-					.get_entries()
-					.iter()
-					.map(|(_, func)| func.get_test_result())
-					.enumerate()
-					.filter(|(_, error)| error.is_some())
-					.map(|(i, error)| {
-						// use unwrap_unchecked as None Errors are already filtered out
-						unsafe {
-							format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked())
-						}
-					})
-					.collect::<String>();
+		const EMPTY_FRAME: Frame = Frame {
+			inner_margin: Margin::symmetric(0.0, 0.0),
+			rounding: Rounding::none(),
+			fill: crate::style::STYLE.window_fill(),
+			..Frame::none()
+		};
 
-				if !errors_formatted.is_empty() {
-					ui.centered_and_justified(|ui| {
-						ui.heading(errors_formatted);
+		// Central panel which contains the central plot (or an error created when parsing)
+		CentralPanel::default().frame(EMPTY_FRAME).show(ctx, |ui| {
+			// Display an error if it exists
+			let errors_formatted: String = self
+				.functions
+				.get_entries()
+				.iter()
+				.map(|(_, func)| func.get_test_result())
+				.enumerate()
+				.filter(|(_, error)| error.is_some())
+				.map(|(i, error)| {
+					// use unwrap_unchecked as None Errors are already filtered out
+					unsafe { format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked()) }
+				})
+				.collect::<String>();
+
+			if !errors_formatted.is_empty() {
+				ui.centered_and_justified(|ui| {
+					ui.heading(errors_formatted);
+				});
+				return;
+			}
+
+			let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
+			let width_changed = available_width != self.settings.plot_width;
+			self.settings.plot_width = available_width;
+
+			// Create and setup plot
+			Plot::new("plot")
+				.set_margin_fraction(Vec2::ZERO)
+				.data_aspect(1.0)
+				.include_y(0)
+				.show(ui, |plot_ui| {
+					let bounds = plot_ui.plot_bounds();
+					let min_x: f64 = bounds.min()[0];
+					let max_x: f64 = bounds.max()[0];
+					let min_max_changed =
+						(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
+					self.settings.min_x = min_x;
+					self.settings.max_x = max_x;
+
+					dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
+						function.calculate(width_changed, min_max_changed, &self.settings)
 					});
-					return;
-				}
 
-				let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
-				let width_changed = available_width != self.settings.plot_width;
-				self.settings.plot_width = available_width;
+					let area: Vec<Option<f64>> = self
+						.functions
+						.get_entries()
+						.iter()
+						.enumerate()
+						.map(|(i, (_, function))| {
+							function.display(plot_ui, &self.settings, COLORS[i])
+						})
+						.collect();
 
-				// Create and setup plot
-				Plot::new("plot")
-					.set_margin_fraction(Vec2::ZERO)
-					.data_aspect(1.0)
-					.include_y(0)
-					.show(ui, |plot_ui| {
-						let bounds = plot_ui.plot_bounds();
-						let min_x: f64 = bounds.min()[0];
-						let max_x: f64 = bounds.max()[0];
-						let min_max_changed =
-							(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
-						self.settings.min_x = min_x;
-						self.settings.max_x = max_x;
-
-						dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
-							function.calculate(width_changed, min_max_changed, &self.settings)
-						});
-
-						let area: Vec<Option<f64>> = self
-							.functions
-							.get_entries()
-							.iter()
-							.enumerate()
-							.map(|(i, (_, function))| {
-								function.display(plot_ui, &self.settings, COLORS[i])
-							})
-							.collect();
-
-						self.last_info.0 = if area.iter().any(|e| e.is_some()) {
-							Some(format!("Area: {}", option_vec_printer(area.as_slice())))
-						} else {
-							None
-						};
-					});
-			});
+					self.last_info.0 = if area.iter().any(|e| e.is_some()) {
+						Some(format!("Area: {}", option_vec_printer(area.as_slice())))
+					} else {
+						None
+					};
+				});
+		});
 
 		// Calculate and store the last time it took to draw the frame
 		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
