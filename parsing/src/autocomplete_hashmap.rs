@@ -47,6 +47,15 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 			panic!("Number of values for {key} is 0!");
 		}
 	}
+
+	// sort
+	output.sort_unstable_by(|a, b| {
+		let new_a = format!(r#"("{}", {})"#, a.0, a.1);
+		let new_b = format!(r#"("{}", {})"#, b.0, b.1);
+
+		compare_len_reverse_alpha(&new_b, &new_a)
+	});
+
 	output
 }
 

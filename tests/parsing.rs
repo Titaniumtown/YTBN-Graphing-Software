@@ -5,15 +5,15 @@ use std::collections::HashMap;
 fn hashmap_gen_test() {
 	let data = vec!["time", "text", "test"];
 	let expect = vec![
-		("t", r#"Hint::Many(&["ime(", "ext(", "est("])"#),
-		("ti", r#"Hint::Single("me(")"#),
-		("tim", r#"Hint::Single("e(")"#),
-		("time", r#"Hint::Single("(")"#),
-		("te", r#"Hint::Many(&["xt(", "st("])"#),
-		("tex", r#"Hint::Single("t(")"#),
-		("text", r#"Hint::Single("(")"#),
-		("tes", r#"Hint::Single("t(")"#),
-		("test", r#"Hint::Single("(")"#),
+		("t", "Hint::Many(&[\"ime(\", \"ext(\", \"est(\"])"),
+		("te", "Hint::Many(&[\"xt(\", \"st(\"])"),
+		("tes", "Hint::Single(\"t(\")"),
+		("test", "Hint::Single(\"(\")"),
+		("tex", "Hint::Single(\"t(\")"),
+		("text", "Hint::Single(\"(\")"),
+		("ti", "Hint::Single(\"me(\")"),
+		("tim", "Hint::Single(\"e(\")"),
+		("time", "Hint::Single(\"(\")"),
 	];
 
 	assert_eq!(
