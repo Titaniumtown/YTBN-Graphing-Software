@@ -455,6 +455,7 @@ impl FunctionEntry {
 			}
 			plot_ui.line(
 				self.back_data
+					.clone()
 					.to_line()
 					.stroke(egui::Stroke::new(2.0, main_plot_color))
 					.name(&self.raw_func_str),
@@ -465,6 +466,7 @@ impl FunctionEntry {
 		if self.derivative && !self.derivative_data.is_empty() {
 			plot_ui.line(
 				self.derivative_data
+					.clone()
 					.to_line()
 					.color(Color32::GREEN)
 					.name(derivative_str),
@@ -475,6 +477,7 @@ impl FunctionEntry {
 		if settings.do_extrema && !self.extrema_data.is_empty() {
 			plot_ui.points(
 				self.extrema_data
+					.clone()
 					.to_points()
 					.color(Color32::YELLOW)
 					.name("Extrema")
@@ -486,6 +489,7 @@ impl FunctionEntry {
 		if settings.do_roots && !self.root_data.is_empty() {
 			plot_ui.points(
 				self.root_data
+					.clone()
 					.to_points()
 					.color(Color32::LIGHT_BLUE)
 					.name("Root")
@@ -493,9 +497,10 @@ impl FunctionEntry {
 			);
 		}
 
-		if self.nth_derviative && let Some(nth_derviative) = &self.nth_derivative_data {
+		if self.nth_derviative && let Some(ref nth_derviative) = self.nth_derivative_data {
 			plot_ui.line(
 				(*nth_derviative)
+					.clone()
 					.to_line()
 					.color(Color32::DARK_RED)
 					.name(self.function.get_nth_derivative_str()),
@@ -564,7 +569,7 @@ impl FunctionEntry {
 
 			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
 
-			let a = self.derivative_data.to_tuple();
+			let a = self.derivative_data.clone().to_tuple();
 
 			assert_eq!(a.len(), derivative_target.len());
 
@@ -579,7 +584,7 @@ impl FunctionEntry {
 				}
 			}
 
-			let a_1 = self.back_data.to_tuple();
+			let a_1 = self.back_data.clone().to_tuple();
 
 			assert_eq!(a_1.len(), back_target.len());
 
@@ -601,6 +606,7 @@ impl FunctionEntry {
 
 			let a = self
 				.derivative_data
+				.clone()
 				.to_tuple()
 				.iter()
 				.take(6)
@@ -627,6 +633,7 @@ impl FunctionEntry {
 
 			let a_1 = self
 				.back_data
+				.clone()
 				.to_tuple()
 				.iter()
 				.take(6)
@@ -661,6 +668,7 @@ impl FunctionEntry {
 
 			let a = self
 				.derivative_data
+				.clone()
 				.to_tuple()
 				.iter()
 				.rev()
@@ -687,6 +695,7 @@ impl FunctionEntry {
 
 			let a_1 = self
 				.back_data
+				.clone()
 				.to_tuple()
 				.iter()
 				.rev()
