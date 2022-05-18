@@ -247,7 +247,7 @@ pub fn newtons_method_helper(
 /// `f` is f(x)
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns an `Option<f64>` of the x value at which a root occurs
-fn newtons_method(
+pub fn newtons_method(
 	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: &f64, range: &std::ops::Range<f64>,
 	threshold: &f64,
 ) -> Option<f64> {

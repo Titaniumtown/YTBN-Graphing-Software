@@ -162,3 +162,16 @@ fn to_points() {
 
 	assert_eq!(*data.get_series().get_values(), data_raw);
 }
+
+#[test]
+fn newtons_method() {
+	use ytbn_graphing_software::newtons_method;
+	let data = newtons_method(
+		&|x: f64| x.powf(2.0) - 1.0,
+		&|x: f64| 2.0 * x,
+		&3.0,
+		&(0.0..10.0),
+		&f64::EPSILON,
+	);
+	assert_eq!(data, Some(1.0));
+}

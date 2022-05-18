@@ -31,6 +31,7 @@ pub use crate::{
 		// decimal_round,
 		hashed_storage_create,
 		hashed_storage_read,
+		newtons_method,
 		option_vec_printer,
 		step_helper,
 		EguiHelper,
