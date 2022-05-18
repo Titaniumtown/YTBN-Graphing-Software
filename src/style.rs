@@ -69,8 +69,6 @@ pub const fn dark() -> Visuals {
 	}
 }
 
-pub const SPACING: Spacing = spacing();
-
 pub const fn spacing() -> Spacing {
 	Spacing {
 		item_spacing: vec2(8.0, 3.0),

@@ -239,11 +239,11 @@ impl MathApp {
 		cc.egui_ctx.set_fonts(data.fonts);
 
 		// Set dark mode by default
-		cc.egui_ctx.set_visuals(crate::style::STYLE);
+		cc.egui_ctx.set_visuals(const { crate::style::dark() });
 
 		// Set spacing
 		let mut style: egui::Style = (*cc.egui_ctx.style()).clone();
-		style.spacing = crate::style::SPACING;
+		style.spacing = const { crate::style::spacing() };
 		cc.egui_ctx.set_style(style);
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
@@ -514,75 +514,81 @@ impl App for MathApp {
 			self.side_panel(ctx);
 		}
 
-		const EMPTY_FRAME: Frame = Frame {
-			inner_margin: Margin::symmetric(0.0, 0.0),
-			rounding: Rounding::none(),
-			fill: crate::style::STYLE.window_fill(),
-			..Frame::none()
-		};
-
 		// Central panel which contains the central plot (or an error created when parsing)
-		CentralPanel::default().frame(EMPTY_FRAME).show(ctx, |ui| {
-			// Display an error if it exists
-			let errors_formatted: String = self
-				.functions
-				.get_entries()
-				.iter()
-				.map(|(_, func)| func.get_test_result())
-				.enumerate()
-				.filter(|(_, error)| error.is_some())
-				.map(|(i, error)| {
-					// use unwrap_unchecked as None Errors are already filtered out
-					unsafe { format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked()) }
-				})
-				.collect::<String>();
+		CentralPanel::default()
+			.frame(
+				const {
+					Frame {
+						inner_margin: Margin::symmetric(0.0, 0.0),
+						rounding: Rounding::none(),
+						fill: crate::style::STYLE.window_fill(),
+						..Frame::none()
+					}
+				},
+			)
+			.show(ctx, |ui| {
+				// Display an error if it exists
+				let errors_formatted: String = self
+					.functions
+					.get_entries()
+					.iter()
+					.map(|(_, func)| func.get_test_result())
+					.enumerate()
+					.filter(|(_, error)| error.is_some())
+					.map(|(i, error)| {
+						// use unwrap_unchecked as None Errors are already filtered out
+						unsafe {
+							format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked())
+						}
+					})
+					.collect::<String>();
 
-			if !errors_formatted.is_empty() {
-				ui.centered_and_justified(|ui| {
-					ui.heading(errors_formatted);
-				});
-				return;
-			}
-
-			let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
-			let width_changed = available_width != self.settings.plot_width;
-			self.settings.plot_width = available_width;
-
-			// Create and setup plot
-			Plot::new("plot")
-				.set_margin_fraction(Vec2::ZERO)
-				.data_aspect(1.0)
-				.include_y(0)
-				.show(ui, |plot_ui| {
-					let bounds = plot_ui.plot_bounds();
-					let min_x: f64 = bounds.min()[0];
-					let max_x: f64 = bounds.max()[0];
-					let min_max_changed =
-						(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
-					self.settings.min_x = min_x;
-					self.settings.max_x = max_x;
-
-					dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
-						function.calculate(width_changed, min_max_changed, &self.settings)
+				if !errors_formatted.is_empty() {
+					ui.centered_and_justified(|ui| {
+						ui.heading(errors_formatted);
 					});
+					return;
+				}
 
-					let area: Vec<Option<f64>> = self
-						.functions
-						.get_entries()
-						.iter()
-						.enumerate()
-						.map(|(i, (_, function))| {
-							function.display(plot_ui, &self.settings, COLORS[i])
-						})
-						.collect();
+				let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
+				let width_changed = available_width != self.settings.plot_width;
+				self.settings.plot_width = available_width;
 
-					self.last_info.0 = if area.iter().any(|e| e.is_some()) {
-						Some(format!("Area: {}", option_vec_printer(area.as_slice())))
-					} else {
-						None
-					};
-				});
-		});
+				// Create and setup plot
+				Plot::new("plot")
+					.set_margin_fraction(Vec2::ZERO)
+					.data_aspect(1.0)
+					.include_y(0)
+					.show(ui, |plot_ui| {
+						let bounds = plot_ui.plot_bounds();
+						let min_x: f64 = bounds.min()[0];
+						let max_x: f64 = bounds.max()[0];
+						let min_max_changed =
+							(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
+						self.settings.min_x = min_x;
+						self.settings.max_x = max_x;
+
+						dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
+							function.calculate(width_changed, min_max_changed, &self.settings)
+						});
+
+						let area: Vec<Option<f64>> = self
+							.functions
+							.get_entries()
+							.iter()
+							.enumerate()
+							.map(|(i, (_, function))| {
+								function.display(plot_ui, &self.settings, COLORS[i])
+							})
+							.collect();
+
+						self.last_info.0 = if area.iter().any(|e| e.is_some()) {
+							Some(format!("Area: {}", option_vec_printer(area.as_slice())))
+						} else {
+							None
+						};
+					});
+			});
 
 		// Calculate and store the last time it took to draw the frame
 		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
