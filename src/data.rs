@@ -23,6 +23,7 @@ pub struct TextDataRaw {
 impl TextDataRaw {
 	#[allow(dead_code)]
 	fn into_rich(self) -> TextData {
+		const SIZE: f32 = 14.0;
 		use egui::RichText;
 		TextData {
 			help_expr: RichText::from(self.help_expr),
@@ -30,8 +31,8 @@ impl TextDataRaw {
 			help_panel: RichText::from(self.help_panel),
 			help_function: RichText::from(self.help_function),
 			help_other: RichText::from(self.help_other),
-			license_info: RichText::from(self.license_info),
-			welcome: RichText::from(self.welcome).size(16.0),
+			license_info: RichText::from(self.license_info).size(SIZE * 0.95),
+			welcome: RichText::from(self.welcome).size(SIZE + 2.0),
 		}
 	}
 }
