@@ -10,7 +10,7 @@ use egui::{
 };
 use emath::{Align, Align2};
 use epaint::Rounding;
-use instant::{Duration, Instant};
+use instant::Instant;
 use std::{io::Read, ops::BitXorAssign};
 
 #[cfg(threading)]
@@ -91,7 +91,7 @@ pub struct MathApp {
 	functions: FunctionManager,
 
 	/// Contains the list of Areas calculated (the vector of f64) and time it took for the last frame (the Duration). Stored in a Tuple.
-	last_info: (Vec<Option<f64>>, Option<Duration>),
+	last_info: (Vec<Option<f64>>, Option<String>),
 
 	/// Whether or not dark mode is enabled
 	dark_mode: bool,
@@ -381,6 +381,9 @@ impl App for MathApp {
 		let start = if self.opened.info {
 			Some(instant::Instant::now())
 		} else {
+			// if disabled, clear the stored formatted time
+			self.last_info.1 = None;
+
 			None
 		};
 
@@ -510,8 +513,8 @@ impl App for MathApp {
 			.show(ctx, |ui| {
 				ui.add(egui::Label::new(&*BUILD_INFO));
 
-				if let Some(took) = self.last_info.1 {
-					ui.label(format!("Took: {:?}", took));
+				if let Some(ref took) = self.last_info.1 {
+					ui.label(took);
 				}
 			});
 
@@ -588,7 +591,7 @@ impl App for MathApp {
 			});
 
 		// Calculate and store the last time it took to draw the frame
-		self.last_info.1 = start.map(|a| a.elapsed());
+		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
 
 		#[cfg(target_arch = "wasm32")]
 		{
