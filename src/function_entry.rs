@@ -442,16 +442,16 @@ impl FunctionEntry {
 			return None;
 		}
 
-		let derivative_str = self.function.get_derivative_str();
-		let step =
+		let integral_step =
 			(settings.integral_max_x - settings.integral_min_x) / (settings.integral_num as f64);
+		debug_assert!(integral_step > 0.0);
 
-		let resolution = (settings.max_x - settings.min_x) / (settings.plot_width as f64);
-		debug_assert!(resolution > 0.0);
+		let step = (settings.max_x - settings.min_x) / (settings.plot_width as f64);
+		debug_assert!(step > 0.0);
 
 		// Plot back data
 		if !self.back_data.is_empty() {
-			if self.integral && (resolution >= step) {
+			if self.integral && (step >= integral_step) {
 				plot_ui.line(
 					self.back_data
 						.iter()
@@ -484,7 +484,7 @@ impl FunctionEntry {
 					.clone()
 					.to_line()
 					.color(Color32::GREEN)
-					.name(derivative_str),
+					.name(self.function.get_derivative_str()),
 			);
 		}
 
@@ -514,8 +514,7 @@ impl FunctionEntry {
 
 		if self.nth_derviative && let Some(ref nth_derviative) = self.nth_derivative_data {
 			plot_ui.line(
-				(*nth_derviative)
-					.clone()
+				nth_derviative.clone()
 					.to_line()
 					.color(Color32::DARK_RED)
 					.name(self.function.get_nth_derivative_str()),
@@ -525,11 +524,11 @@ impl FunctionEntry {
 		// Plot integral data
 		match &self.integral_data {
 			Some(integral_data) => {
-				if step > resolution {
+				if integral_step > step {
 					plot_ui.bar_chart(
 						BarChart::new(integral_data.0.clone())
 							.color(Color32::BLUE)
-							.width(step),
+							.width(integral_step),
 					);
 				}
 
