@@ -312,8 +312,8 @@ pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
 	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
 }
 
-/// Attempts to see what variable `x` is almost
 // TODO: use in hovering over points
+/// Attempts to see what variable `x` is almost
 #[allow(dead_code)]
 pub fn almost_variable(x: f64) -> Option<char> {
 	const EPSILON: f32 = f32::EPSILON * 2.0;
