@@ -21,17 +21,6 @@ pub const BUILD_INFO: &str = formatc!(
 /// Range of acceptable input values for integral_num
 pub const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=50000;
 
-/// Minimum X value for calculating an Integral
-pub const INTEGRAL_X_MIN: f64 = -1000.0;
-
-/// Maximum X value for calculating an Integral
-pub const INTEGRAL_X_MAX: f64 = 1000.0;
-
-const_assert!(INTEGRAL_X_MAX > INTEGRAL_X_MIN);
-
-/// Range of acceptable x coordinates for calculating an integral
-pub const INTEGRAL_X_RANGE: RangeInclusive<f64> = INTEGRAL_X_MIN..=INTEGRAL_X_MAX;
-
 // Default values
 /// Default minimum X value to display
 pub const DEFAULT_MIN_X: f64 = -10.0;

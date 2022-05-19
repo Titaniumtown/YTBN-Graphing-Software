@@ -8,6 +8,7 @@ use egui::{
 	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,
 	SidePanel, Slider, TopBottomPanel, Vec2, Window,
 };
+use egui::{DragValue, Ui};
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Instant;
@@ -271,9 +272,10 @@ impl MathApp {
 		SidePanel::left("side_panel")
 			.resizable(false)
 			.show(ctx, |ui| {
+				let any_using_integral = self.functions.any_using_integral();
 				let prev_sum = self.settings.riemann_sum;
 				// ComboBox for selecting what Riemann sum type to use
-				ui.add_enabled_ui(self.functions.any_using_integral(), |ui| {
+				ui.add_enabled_ui(any_using_integral, |ui| {
 					ComboBox::from_label("Riemann Sum")
 						.selected_text(self.settings.riemann_sum.to_string())
 						.show_ui(ui, |ui| {
@@ -293,9 +295,57 @@ impl MathApp {
 								"Right",
 							);
 						});
-				});
 
-				let riemann_changed = prev_sum != self.settings.riemann_sum;
+					let riemann_changed = prev_sum != self.settings.riemann_sum;
+
+					let min_x_old = self.settings.integral_min_x;
+					let max_x_old = self.settings.integral_max_x;
+
+					let (min_x_changed, max_x_changed) = ui
+						.horizontal(|ui: &mut Ui| {
+							let spacing_mut = ui.spacing_mut();
+
+							spacing_mut.item_spacing = Vec2::new(1.0, 0.0);
+							spacing_mut.interact_size *= 0.5;
+
+							ui.label("Integral: [");
+							let min_x_changed = ui
+								.add(DragValue::new(&mut self.settings.integral_min_x))
+								.changed();
+							ui.label(",");
+							let max_x_changed = ui
+								.add(DragValue::new(&mut self.settings.integral_max_x))
+								.changed();
+							ui.label("]");
+							(min_x_changed, max_x_changed)
+						})
+						.inner;
+
+					// Checks integral bounds, and if they are invalid, fix them
+					if self.settings.integral_min_x >= self.settings.integral_max_x {
+						if max_x_changed {
+							self.settings.integral_max_x = max_x_old;
+						} else if min_x_changed {
+							self.settings.integral_min_x = min_x_old;
+						} else {
+							// No clue how this would happen, but just in case
+							self.settings.integral_min_x = DEFAULT_MIN_X;
+							self.settings.integral_max_x = DEFAULT_MAX_X;
+						}
+					}
+
+					// Number of Rectangles for Riemann sum
+					let integral_num_changed = ui
+						.add_enabled(
+							any_using_integral,
+							Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
+								.text("Interval"),
+						)
+						.changed();
+
+					self.settings.integral_changed = any_using_integral
+						&& (max_x_changed | min_x_changed | integral_num_changed | riemann_changed);
+				});
 
 				ui.horizontal(|ui| {
 					self.settings.do_extrema.bitxor_assign(
@@ -317,50 +367,10 @@ impl MathApp {
 					);
 				});
 
-				let min_x_old = self.settings.integral_min_x;
-				let min_x_changed = ui
-					.add(
-						Slider::new(&mut self.settings.integral_min_x, INTEGRAL_X_RANGE)
-							.text("Min X"),
-					)
-					.changed();
-
-				let max_x_old = self.settings.integral_max_x;
-				let max_x_changed = ui
-					.add(
-						Slider::new(&mut self.settings.integral_max_x, INTEGRAL_X_RANGE)
-							.text("Max X"),
-					)
-					.changed();
-
-				// Checks integral bounds, and if they are invalid, fix them
-				if self.settings.integral_min_x >= self.settings.integral_max_x {
-					if max_x_changed {
-						self.settings.integral_max_x = max_x_old;
-					} else if min_x_changed {
-						self.settings.integral_min_x = min_x_old;
-					} else {
-						// No clue how this would happen, but just in case
-						self.settings.integral_min_x = DEFAULT_MIN_X;
-						self.settings.integral_max_x = DEFAULT_MAX_X;
-					}
-				}
-
-				// Number of Rectangles for Riemann sum
-				let integral_num_changed = ui
-					.add(
-						Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
-							.text("Interval"),
-					)
-					.changed();
-
-				self.settings.integral_changed =
-					max_x_changed | min_x_changed | integral_num_changed | riemann_changed;
-
 				self.functions.display_entries(ui);
 
 				// Only render if there's enough space
-				if ui.available_height() > 0.0 {
+				if ui.available_height() > 14.0 {
 					ui.with_layout(Layout::bottom_up(Align::Min), |ui| {
 						// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
 
