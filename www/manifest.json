@@ -1,6 +1,6 @@
 {
-    "name": "YTBN Graphing Software PWA",
-    "short_name": "ytbn-graphing-software-pwa",
+    "name": "YTBN Graphing Software",
+    "short_name": "ytbn-pwa",
     "icons": [
         {
             "src": "./icon-256.png",
@@ -14,7 +14,7 @@
         }
     ],
     "lang": "en-US",
-    "id": "/index.html",
+    "id": "./index.html",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "black",
