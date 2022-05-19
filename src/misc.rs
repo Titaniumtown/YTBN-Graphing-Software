@@ -233,7 +233,7 @@ pub fn newtons_method_helper(
 	threshold: &f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
-	data.iter()
+	data.into_iter()
 		.tuple_windows()
 		.filter(|(prev, curr)| prev.y.is_finite() && curr.y.is_finite())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
@@ -337,7 +337,7 @@ pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
 }
 
 #[allow(dead_code)]
-pub fn hashed_storage_read(data: &str) -> Option<(HashBytes, Vec<u8>)> {
+pub fn hashed_storage_read(data: String) -> Option<(HashBytes, Vec<u8>)> {
 	if HASH_LENGTH >= data.len() {
 		return None;
 	}
@@ -347,7 +347,7 @@ pub fn hashed_storage_read(data: &str) -> Option<(HashBytes, Vec<u8>)> {
 		assume(data.len() > HASH_LENGTH);
 	}
 
-	let decoded_1: Vec<u8> = unsafe { std::mem::transmute::<&str, &[u8]>(data) }.to_vec();
+	let decoded_1: Vec<u8> = unsafe { std::mem::transmute::<String, Vec<u8>>(data) };
 
 	let hash: HashBytes = unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) };
 	let cached_data = decoded_1[HASH_LENGTH..].to_vec();

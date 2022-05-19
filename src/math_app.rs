@@ -145,7 +145,7 @@ impl MathApp {
 
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
 					let data = get_localstorage().get_item(DATA_NAME).ok()??;
-					let (commit, cached_data) = crate::misc::hashed_storage_read(&data)?;
+					let (commit, cached_data) = crate::misc::hashed_storage_read(data)?;
 
 					debug_assert!(!commit.is_empty());
 					debug_assert!(!cached_data.is_empty());
@@ -183,7 +183,7 @@ impl MathApp {
 						return None;
 					}
 
-					let (commit, func_data) = crate::misc::hashed_storage_read(&data)?;
+					let (commit, func_data) = crate::misc::hashed_storage_read(data)?;
 
 					debug_assert!(!commit.is_empty());
 					debug_assert!(!func_data.is_empty());

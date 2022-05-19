@@ -218,14 +218,15 @@ impl FunctionEntry {
 
 		let sum_func = self.get_sum_func(*sum);
 
-		let data2: Vec<(f64, f64)> = dyn_iter(&step_helper(*integral_num, integral_min_x, &step))
+		let data2: Vec<(f64, f64)> = step_helper(*integral_num, integral_min_x, &step)
+			.into_iter()
 			.map(|x| {
 				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
 				let x2: f64 = x + step_offset;
 
 				let (left_x, right_x) = match x.is_sign_positive() {
-					true => (*x, x2),
-					false => (x2, *x),
+					true => (x, x2),
+					false => (x2, x),
 				};
 
 				let y = sum_func.get(left_x, right_x);
@@ -263,8 +264,8 @@ impl FunctionEntry {
 		};
 
 		newtons_method_output
-			.iter()
-			.map(|x| Value::new(*x, self.function.get(*x)))
+			.into_iter()
+			.map(|x| Value::new(x, self.function.get(x)))
 			.collect()
 	}
 
@@ -338,9 +339,14 @@ impl FunctionEntry {
 			self.back_data = back_data;
 
 			if derivative_required {
-				debug_assert!(derivative_data_1[0].is_some());
+				/*
+				debug_assert!(derivative_data_1.iter().any(|x| x.is_none()));
+				self.derivative_data = unsafe {
+					std::mem::transmute::<Vec<Option<Value>>, Vec<Value>>(derivative_data_1)
+				};
+				*/
 				self.derivative_data = derivative_data_1
-					.iter()
+					.into_iter()
 					.map(|ele| unsafe { ele.unwrap_unchecked() })
 					.collect::<Vec<Value>>();
 			} else {
@@ -348,10 +354,16 @@ impl FunctionEntry {
 			}
 
 			if do_nth_derivative {
+				/*
+				debug_assert!(new_nth_derivative_data.iter().any(|x| x.is_none()));
+				self.nth_derivative_data = Some(unsafe {
+					std::mem::transmute::<Vec<Option<Value>>, Vec<Value>>(new_nth_derivative_data)
+				});
+				*/
 				self.nth_derivative_data = Some(
 					new_nth_derivative_data
-						.iter()
-						.map(|c| unsafe { c.unwrap_unchecked() })
+						.into_iter()
+						.map(|ele| unsafe { ele.unwrap_unchecked() })
 						.collect(),
 				);
 			} else {
@@ -397,8 +409,11 @@ impl FunctionEntry {
 					&settings.riemann_sum,
 					&settings.integral_num,
 				);
-				self.integral_data =
-					Some((data.iter().map(|(x, y)| Bar::new(*x, *y)).collect(), area));
+
+				self.integral_data = Some((
+					data.into_iter().map(|(x, y)| Bar::new(x, y)).collect(),
+					area,
+				));
 			}
 		} else {
 			self.invalidate_integral();
