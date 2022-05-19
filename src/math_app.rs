@@ -6,7 +6,7 @@ use crate::misc::{dyn_mut_iter, option_vec_printer};
 use eframe::App;
 use egui::{
 	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,
-	SidePanel, Slider, TopBottomPanel, Vec2, Window,
+	SidePanel, TopBottomPanel, Vec2, Window,
 };
 use egui::{DragValue, Ui};
 use emath::{Align, Align2};
@@ -276,6 +276,10 @@ impl MathApp {
 				let prev_sum = self.settings.riemann_sum;
 				// ComboBox for selecting what Riemann sum type to use
 				ui.add_enabled_ui(any_using_integral, |ui| {
+					let spacing_mut = ui.spacing_mut();
+
+					spacing_mut.item_spacing.x = 1.0;
+					spacing_mut.interact_size *= 0.5;
 					ComboBox::from_label("Riemann Sum")
 						.selected_text(self.settings.riemann_sum.to_string())
 						.show_ui(ui, |ui| {
@@ -303,10 +307,10 @@ impl MathApp {
 
 					let (min_x_changed, max_x_changed) = ui
 						.horizontal(|ui: &mut Ui| {
-							let spacing_mut = ui.spacing_mut();
+							// let spacing_mut = ui.spacing_mut();
 
-							spacing_mut.item_spacing = Vec2::new(1.0, 0.0);
-							spacing_mut.interact_size *= 0.5;
+							// spacing_mut.item_spacing = Vec2::new(1.0, 0.0);
+							// spacing_mut.interact_size *= 0.5;
 
 							ui.label("Integral: [");
 							let min_x_changed = ui
@@ -336,12 +340,15 @@ impl MathApp {
 
 					// Number of Rectangles for Riemann sum
 					let integral_num_changed = ui
-						.add_enabled(
-							any_using_integral,
-							Slider::new(&mut self.settings.integral_num, INTEGRAL_NUM_RANGE)
-								.text("Interval"),
-						)
-						.changed();
+						.horizontal(|ui| {
+							let spacing_mut = ui.spacing_mut();
+
+							spacing_mut.item_spacing.x = 1.5;
+							ui.label("Interval:");
+							ui.add(DragValue::new(&mut self.settings.integral_num))
+								.changed()
+						})
+						.inner;
 
 					self.settings.integral_changed = any_using_integral
 						&& (max_x_changed | min_x_changed | integral_num_changed | riemann_changed);

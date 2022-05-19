@@ -1,5 +1,3 @@
-use std::ops::RangeInclusive;
-
 use const_format::formatc;
 use epaint::Color32;
 use shadow_rs::shadow;
@@ -17,9 +15,6 @@ pub const BUILD_INFO: &str = formatc!(
 );
 
 // Hard-Coded limits
-
-/// Range of acceptable input values for integral_num
-pub const INTEGRAL_NUM_RANGE: RangeInclusive<usize> = 1..=50000;
 
 // Default values
 /// Default minimum X value to display
