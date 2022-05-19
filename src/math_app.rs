@@ -350,6 +350,10 @@ impl MathApp {
 						})
 						.inner;
 
+					if integral_num_changed {
+						self.settings.integral_num = self.settings.integral_num.clamp(0, 500000)
+					}
+
 					self.settings.integral_changed = any_using_integral
 						&& (max_x_changed | min_x_changed | integral_num_changed | riemann_changed);
 				});
