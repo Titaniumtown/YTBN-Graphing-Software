@@ -333,12 +333,7 @@ type HashBytes = [u8; HASH_LENGTH];
 
 #[allow(dead_code)]
 pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
-	// cannot use `from_utf8` seems to break on wasm. no clue why
-	[&hash, data]
-		.concat()
-		.iter()
-		.map(|b| *b as char)
-		.collect::<String>()
+	unsafe { std::mem::transmute::<Vec<u8>, String>([&hash, data].concat()) }
 }
 
 #[allow(dead_code)]
@@ -352,8 +347,7 @@ pub fn hashed_storage_read(data: &str) -> Option<(HashBytes, Vec<u8>)> {
 		assume(data.len() > HASH_LENGTH);
 	}
 
-	// can't use data.as_bytes() here for some reason, seems to break on wasm?
-	let decoded_1: Vec<u8> = data.chars().map(|c| c as u8).collect::<Vec<u8>>();
+	let decoded_1: Vec<u8> = unsafe { std::mem::transmute::<&str, &[u8]>(data) }.to_vec();
 
 	let hash: HashBytes = unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) };
 	let cached_data = decoded_1[HASH_LENGTH..].to_vec();
