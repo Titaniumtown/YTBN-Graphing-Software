@@ -488,11 +488,11 @@ impl App for MathApp {
 
 		// Welcome window
 		if self.opened.welcome {
-			let welcome_response = Window::new("Welcome!")
-				.open(&mut self.opened.welcome)
+			let welcome_response = Window::new("Welcome")
 				.anchor(Align2::CENTER_CENTER, Vec2::ZERO)
 				.resizable(false)
 				.collapsible(false)
+				.title_bar(false)
 				.show(ctx, |ui| {
 					ui.label(self.text.welcome.clone());
 				});
