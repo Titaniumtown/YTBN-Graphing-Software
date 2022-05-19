@@ -18,7 +18,7 @@ jobs:
           override: true
 
       - name: Install fonttools
-        run: sudo apt-get install -y fonttools
+        run: sudo apt-get update && sudo apt-get install -y fonttools
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1
