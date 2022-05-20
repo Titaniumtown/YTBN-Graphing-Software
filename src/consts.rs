@@ -3,7 +3,7 @@ use epaint::Color32;
 use shadow_rs::shadow;
 shadow!(build);
 
-// Constant string that has a string containing information about the build.
+/// Constant string that has a string containing information about the build.
 pub const BUILD_INFO: &str = formatc!(
 	"Commit: {} ({})\nBuild Date: {}\nPackage Version: {}\nRust Channel: {}\nRust Version: {}",
 	&build::SHORT_COMMIT,
@@ -13,8 +13,6 @@ pub const BUILD_INFO: &str = formatc!(
 	&build::RUST_CHANNEL,
 	&build::RUST_VERSION,
 );
-
-// Hard-Coded limits
 
 // Default values
 /// Default minimum X value to display
