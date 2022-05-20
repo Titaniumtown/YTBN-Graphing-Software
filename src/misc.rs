@@ -337,7 +337,7 @@ pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
 }
 
 #[allow(dead_code)]
-pub fn hashed_storage_read(data: String) -> Option<(HashBytes, Vec<u8>)> {
+pub const fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
 	if HASH_LENGTH >= data.len() {
 		return None;
 	}
@@ -347,12 +347,9 @@ pub fn hashed_storage_read(data: String) -> Option<(HashBytes, Vec<u8>)> {
 		assume(data.len() > HASH_LENGTH);
 	}
 
-	let decoded_1: Vec<u8> = unsafe { std::mem::transmute::<String, Vec<u8>>(data) };
+	let decoded_1: &[u8] = unsafe { std::mem::transmute::<&str, &[u8]>(data) };
 
 	let hash: HashBytes = unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) };
-	let cached_data = decoded_1[HASH_LENGTH..].to_vec();
 
-	debug_assert!(!cached_data.is_empty());
-
-	Some((hash, cached_data))
+	Some((hash, &decoded_1[HASH_LENGTH..]))
 }
