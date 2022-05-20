@@ -329,7 +329,7 @@ pub fn almost_variable(x: f64) -> Option<char> {
 pub const HASH_LENGTH: usize = 8;
 
 /// Represents bytes used to represent hash info
-type HashBytes = [u8; HASH_LENGTH];
+pub type HashBytes = [u8; HASH_LENGTH];
 
 #[allow(dead_code)]
 pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
