@@ -3,45 +3,7 @@ use std::intrinsics::assume;
 use egui::plot::{Line, Points, Value, Values};
 use itertools::Itertools;
 
-#[cfg(not(threading))]
-#[inline]
-pub fn dyn_iter<'a, T>(input: &'a [T]) -> impl Iterator<Item = &'a T>
-where
-	&'a [T]: IntoIterator,
-{
-	input.iter()
-}
-
-#[cfg(threading)]
-#[inline]
-pub fn dyn_iter<'a, I>(input: &'a I) -> <&'a I as IntoParallelIterator>::Iter
-where
-	&'a I: IntoParallelIterator,
-{
-	use rayon::prelude::*;
-
-	input.par_iter()
-}
-
-#[cfg(not(threading))]
-#[inline]
-pub fn dyn_mut_iter<'a, T>(input: &'a mut [T]) -> impl Iterator<Item = &'a mut T>
-where
-	&'a mut [T]: IntoIterator,
-{
-	input.iter_mut()
-}
-
-#[cfg(threading)]
-#[inline]
-pub fn dyn_mut_iter<'a, I>(input: &'a mut I) -> <&'a mut I as IntoParallelIterator>::Iter
-where
-	&'a mut I: IntoParallelIterator,
-{
-	use rayon::prelude::*;
-	input.par_iter_mut()
-}
-
+/*
 pub struct FunctionHelper<'a> {
 	#[cfg(threading)]
 	f: async_lock::Mutex<Box<dyn Fn(f64, f64) -> f64 + 'a + Sync + Send>>,
@@ -69,6 +31,7 @@ impl<'a> FunctionHelper<'a> {
 	#[cfg(not(threading))]
 	pub fn get(&self, x: f64, x1: f64) -> f64 { (self.f)(x, x1) }
 }
+*/
 
 /// [`SteppedVector`] is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
@@ -230,14 +193,14 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
-	threshold: &f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
+	threshold: f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	data.into_iter()
 		.tuple_windows()
 		.filter(|(prev, curr)| prev.y.is_finite() && curr.y.is_finite())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
-		.map(|(start, _)| newtons_method(f, f_1, &start.x, range, threshold))
+		.map(|(start, _)| newtons_method(f, f_1, start.x, range, threshold))
 		.filter(|x| x.is_some())
 		.map(|x| unsafe { x.unwrap_unchecked() })
 		.collect()
@@ -248,10 +211,10 @@ pub fn newtons_method_helper(
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns an `Option<f64>` of the x value at which a root occurs
 pub fn newtons_method(
-	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: &f64, range: &std::ops::Range<f64>,
-	threshold: &f64,
+	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: f64, range: &std::ops::Range<f64>,
+	threshold: f64,
 ) -> Option<f64> {
-	let mut x1: f64 = *start_x;
+	let mut x1: f64 = start_x;
 	let mut x2: f64;
 	let mut derivative: f64;
 	loop {
@@ -266,7 +229,7 @@ pub fn newtons_method(
 		}
 
 		// If below threshold, break
-		if (x2 - x1).abs() < *threshold {
+		if (x2 - x1).abs() < threshold {
 			break;
 		}
 
@@ -287,7 +250,7 @@ where
 		"[",
 		&data
 			.iter()
-			.map(|x| {
+			.map(move |x| {
 				x.as_ref()
 					.map(|x_1| x_1.to_string())
 					.unwrap_or_else(|| "None".to_owned())
@@ -308,8 +271,10 @@ where
 }
 
 /// Returns a vector of length `max_i` starting at value `min_x` with step of `step`
-pub fn step_helper(max_i: usize, min_x: &f64, step: &f64) -> Vec<f64> {
-	(0..max_i).map(|x| (x as f64 * step) + min_x).collect()
+pub fn step_helper(max_i: usize, min_x: f64, step: f64) -> Vec<f64> {
+	(0..max_i)
+		.map(move |x: usize| (x as f64 * step) + min_x)
+		.collect()
 }
 
 // TODO: use in hovering over points

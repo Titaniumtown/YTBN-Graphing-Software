@@ -17,9 +17,6 @@ use std::{
 };
 use unzip_n::unzip_n;
 
-#[cfg(threading)]
-use rayon::iter::ParallelIterator;
-
 /// Represents the possible variations of Riemann Sums
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub enum Riemann {
@@ -195,6 +192,7 @@ impl FunctionEntry {
 		}
 	}
 
+	/*
 	/// Get function that can be used to calculate integral based on Riemann Sum type
 	fn get_sum_func(&self, sum: Riemann) -> FunctionHelper {
 		match sum {
@@ -209,19 +207,20 @@ impl FunctionEntry {
 			}),
 		}
 	}
+	*/
 
 	/// Creates and does the math for creating all the rectangles under the graph
 	fn integral_rectangles(
-		&self, integral_min_x: &f64, integral_max_x: &f64, sum: &Riemann, integral_num: &usize,
+		&self, integral_min_x: f64, integral_max_x: f64, sum: Riemann, integral_num: usize,
 	) -> (Vec<(f64, f64)>, f64) {
-		let step = (integral_max_x - integral_min_x) / (*integral_num as f64);
+		let step = (integral_max_x - integral_min_x) / (integral_num as f64);
 
-		let sum_func = self.get_sum_func(*sum);
+		// let sum_func = self.get_sum_func(sum);
 
-		let data2: Vec<(f64, f64)> = step_helper(*integral_num, integral_min_x, &step)
+		let data2: Vec<(f64, f64)> = step_helper(integral_num, integral_min_x, step)
 			.into_iter()
 			.map(|x| {
-				let step_offset = step * x.signum(); // store the offset here so it doesn't have to be calculated multiple times
+				let step_offset = step.copysign(x); // store the offset here so it doesn't have to be calculated multiple times
 				let x2: f64 = x + step_offset;
 
 				let (left_x, right_x) = match x.is_sign_positive() {
@@ -229,21 +228,27 @@ impl FunctionEntry {
 					false => (x2, x),
 				};
 
-				let y = sum_func.get(left_x, right_x);
+				let y = match sum {
+					Riemann::Left => self.function.get(left_x),
+					Riemann::Right => self.function.get(right_x),
+					Riemann::Middle => {
+						(self.function.get(left_x) + self.function.get(right_x)) / 2.0
+					}
+				};
 
 				(x + (step_offset / 2.0), y)
 			})
 			.filter(|(_, y)| y.is_finite())
 			.collect();
 
-		let area = data2.iter().map(|(_, y)| y * step).sum();
+		let area = data2.iter().map(move |(_, y)| y * step).sum();
 
 		(data2, area)
 	}
 
 	/// Helps with processing newton's method depending on level of derivative
 	fn newtons_method_helper(
-		&self, threshold: &f64, derivative_level: usize, range: &std::ops::Range<f64>,
+		&self, threshold: f64, derivative_level: usize, range: &std::ops::Range<f64>,
 	) -> Vec<Value> {
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
@@ -279,7 +284,7 @@ impl FunctionEntry {
 
 		let resolution = (settings.max_x - settings.min_x) / (settings.plot_width as f64);
 		debug_assert!(resolution > 0.0);
-		let resolution_iter = step_helper(&settings.plot_width + 1, &settings.min_x, &resolution);
+		let resolution_iter = step_helper(settings.plot_width + 1, settings.min_x, resolution);
 
 		unsafe { assume(!resolution_iter.is_empty()) }
 
@@ -308,9 +313,11 @@ impl FunctionEntry {
 				Vec<Value>,
 				Vec<Option<Value>>,
 				Vec<Option<Value>>,
-			) = dyn_iter(&resolution_iter)
+			) = resolution_iter
+				.clone()
+				.into_iter()
 				.map(|x| {
-					if let Some(i) = x_data.get_index(*x) {
+					if let Some(i) = x_data.get_index(x) {
 						(
 							self.back_data[i],
 							derivative_required.then(|| self.derivative_data[i]),
@@ -320,11 +327,11 @@ impl FunctionEntry {
 						)
 					} else {
 						(
-							Value::new(*x, self.function.get(*x)),
+							Value::new(x, self.function.get(x)),
 							derivative_required
-								.then(|| Value::new(*x, self.function.get_derivative_1(*x))),
+								.then(|| Value::new(x, self.function.get_derivative_1(x))),
 							do_nth_derivative.then(|| {
-								Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x))
+								Value::new(x, self.function.get_nth_derivative(self.curr_nth, x))
 							}),
 						)
 					}
@@ -376,8 +383,10 @@ impl FunctionEntry {
 
 		if !partial_regen {
 			if self.back_data.is_empty() {
-				let data: Vec<Value> = dyn_iter(&resolution_iter)
-					.map(|x| Value::new(*x, self.function.get(*x)))
+				let data: Vec<Value> = resolution_iter
+					.clone()
+					.into_iter()
+					.map(|x| Value::new(x, self.function.get(x)))
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 
@@ -385,16 +394,19 @@ impl FunctionEntry {
 			}
 
 			if derivative_required && self.derivative_data.is_empty() {
-				let data: Vec<Value> = dyn_iter(&resolution_iter)
-					.map(|x| Value::new(*x, self.function.get_derivative_1(*x)))
+				let data: Vec<Value> = resolution_iter
+					.clone()
+					.into_iter()
+					.map(|x| Value::new(x, self.function.get_derivative_1(x)))
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.derivative_data = data;
 			}
 
 			if self.nth_derviative && self.nth_derivative_data.is_none() {
-				let data: Vec<Value> = dyn_iter(&resolution_iter)
-					.map(|x| Value::new(*x, self.function.get_nth_derivative(self.curr_nth, *x)))
+				let data: Vec<Value> = resolution_iter
+					.into_iter()
+					.map(|x| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
 					.collect();
 				debug_assert_eq!(data.len(), settings.plot_width + 1);
 				self.nth_derivative_data = Some(data);
@@ -404,10 +416,10 @@ impl FunctionEntry {
 		if self.integral {
 			if self.integral_data.is_none() {
 				let (data, area) = self.integral_rectangles(
-					&settings.integral_min_x,
-					&settings.integral_max_x,
-					&settings.riemann_sum,
-					&settings.integral_num,
+					settings.integral_min_x,
+					settings.integral_max_x,
+					settings.riemann_sum,
+					settings.integral_num,
 				);
 
 				self.integral_data = Some((
@@ -424,12 +436,12 @@ impl FunctionEntry {
 
 		// Calculates extrema
 		if settings.do_extrema && (min_max_changed | self.extrema_data.is_empty()) {
-			self.extrema_data = self.newtons_method_helper(&threshold, 1, &x_range);
+			self.extrema_data = self.newtons_method_helper(threshold, 1, &x_range);
 		}
 
 		// Calculates roots
 		if settings.do_roots && (min_max_changed | self.root_data.is_empty()) {
-			self.root_data = self.newtons_method_helper(&threshold, 0, &x_range);
+			self.root_data = self.newtons_method_helper(threshold, 0, &x_range);
 		}
 	}
 

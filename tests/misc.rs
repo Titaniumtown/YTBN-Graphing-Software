@@ -54,7 +54,7 @@ fn step_helper() {
 	use ytbn_graphing_software::step_helper;
 
 	assert_eq!(
-		step_helper(10, &2.0, &3.0),
+		step_helper(10, 2.0, 3.0),
 		vec![2.0, 5.0, 8.0, 11.0, 14.0, 17.0, 20.0, 23.0, 26.0, 29.0]
 	);
 }
@@ -172,54 +172,54 @@ fn newtons_method() {
 	let data = newtons_method(
 		&|x: f64| x.powf(2.0) - 1.0,
 		&|x: f64| 2.0 * x,
-		&3.0,
+		3.0,
 		&(0.0..5.0),
-		&f64::EPSILON,
+		f64::EPSILON,
 	);
 	assert_eq!(data, Some(1.0));
 
 	let data = newtons_method(
 		&|x: f64| x.sin(),
 		&|x: f64| x.cos(),
-		&3.0,
+		3.0,
 		&(2.95..3.18),
-		&f64::EPSILON,
+		f64::EPSILON,
 	);
 	assert_eq!(data, Some(std::f64::consts::PI));
 
 	let data = newtons_method(
 		&|x: f64| x.sin(),
 		&|_: f64| f64::NAN,
-		&0.0,
+		0.0,
 		&(-10.0..10.0),
-		&f64::EPSILON,
+		f64::EPSILON,
 	);
 	assert_eq!(data, None);
 
 	let data = newtons_method(
 		&|_: f64| f64::NAN,
 		&|x: f64| x.sin(),
-		&0.0,
+		0.0,
 		&(-10.0..10.0),
-		&f64::EPSILON,
+		f64::EPSILON,
 	);
 	assert_eq!(data, None);
 
 	let data = newtons_method(
 		&|_: f64| f64::INFINITY,
 		&|x: f64| x.sin(),
-		&0.0,
+		0.0,
 		&(-10.0..10.0),
-		&f64::EPSILON,
+		f64::EPSILON,
 	);
 	assert_eq!(data, None);
 
 	let data = newtons_method(
 		&|x: f64| x.sin(),
 		&|_: f64| f64::INFINITY,
-		&0.0,
+		0.0,
 		&(-10.0..10.0),
-		&f64::EPSILON,
+		f64::EPSILON,
 	);
 	assert_eq!(data, None);
 }

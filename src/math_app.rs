@@ -2,7 +2,7 @@ use crate::consts::*;
 use crate::data::TextData;
 use crate::function_entry::Riemann;
 use crate::function_manager::FunctionManager;
-use crate::misc::{dyn_mut_iter, option_vec_printer};
+use crate::misc::option_vec_printer;
 use eframe::App;
 use egui::{
 	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,
@@ -13,9 +13,6 @@ use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Instant;
 use std::{io::Read, ops::BitXorAssign};
-
-#[cfg(threading)]
-use rayon::iter::{IndexedParallelIterator, ParallelIterator};
 
 /// Stores current settings/state of [`MathApp`]
 #[derive(Copy, Clone)]
@@ -591,9 +588,12 @@ impl App for MathApp {
 						self.settings.min_x = min_x;
 						self.settings.max_x = max_x;
 
-						dyn_mut_iter(self.functions.get_entries_mut()).for_each(|(_, function)| {
-							function.calculate(width_changed, min_max_changed, &self.settings)
-						});
+						self.functions
+							.get_entries_mut()
+							.iter_mut()
+							.for_each(|(_, function)| {
+								function.calculate(width_changed, min_max_changed, &self.settings)
+							});
 
 						let area: Vec<Option<f64>> = self
 							.functions
