@@ -196,7 +196,7 @@ pub fn newtons_method_helper(
 	threshold: f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
-	data.into_iter()
+	data.iter()
 		.tuple_windows()
 		.filter(|(prev, curr)| prev.y.is_finite() && curr.y.is_finite())
 		.filter(|(prev, curr)| prev.y.signum() != curr.y.signum())
