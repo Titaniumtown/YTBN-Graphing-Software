@@ -294,7 +294,6 @@ impl FunctionEntry {
 		}
 
 		let mut partial_regen = false;
-		let derivative_required = settings.do_extrema | self.derivative;
 
 		if width_changed {
 			self.invalidate_back();
@@ -311,7 +310,7 @@ impl FunctionEntry {
 			unzip_n!(3);
 			let (back_data, derivative_data_1, new_nth_derivative_data): (
 				Vec<Value>,
-				Vec<Option<Value>>,
+				Vec<Value>,
 				Vec<Option<Value>>,
 			) = resolution_iter
 				.clone()
@@ -320,7 +319,7 @@ impl FunctionEntry {
 					if let Some(i) = x_data.get_index(x) {
 						(
 							self.back_data[i],
-							derivative_required.then(|| self.derivative_data[i]),
+							self.derivative_data[i],
 							do_nth_derivative.then(|| unsafe {
 								nth_derivative_data.map(|data| data[i]).unwrap_unchecked()
 							}),
@@ -328,15 +327,14 @@ impl FunctionEntry {
 					} else {
 						(
 							Value::new(x, self.function.get(x)),
-							derivative_required
-								.then(|| Value::new(x, self.function.get_derivative_1(x))),
+							Value::new(x, self.function.get_derivative_1(x)),
 							do_nth_derivative.then(|| {
 								Value::new(x, self.function.get_nth_derivative(self.curr_nth, x))
 							}),
 						)
 					}
 				})
-				.collect::<Vec<(Value, Option<Value>, Option<Value>)>>()
+				.collect::<Vec<(Value, Value, Option<Value>)>>()
 				.into_iter()
 				.unzip_n_vec();
 
@@ -345,20 +343,7 @@ impl FunctionEntry {
 
 			self.back_data = back_data;
 
-			if derivative_required {
-				/*
-				debug_assert!(derivative_data_1.iter().any(|x| x.is_none()));
-				self.derivative_data = unsafe {
-					std::mem::transmute::<Vec<Option<Value>>, Vec<Value>>(derivative_data_1)
-				};
-				*/
-				self.derivative_data = derivative_data_1
-					.into_iter()
-					.map(|ele| unsafe { ele.unwrap_unchecked() })
-					.collect::<Vec<Value>>();
-			} else {
-				self.invalidate_derivative();
-			}
+			self.derivative_data = derivative_data_1;
 
 			if do_nth_derivative {
 				/*
@@ -393,7 +378,7 @@ impl FunctionEntry {
 				self.back_data = data;
 			}
 
-			if derivative_required && self.derivative_data.is_empty() {
+			if self.derivative_data.is_empty() {
 				let data: Vec<Value> = resolution_iter
 					.clone()
 					.into_iter()
@@ -775,7 +760,7 @@ impl FunctionEntry {
 			assert!(self.integral_data.is_none());
 			assert!(self.root_data.is_empty());
 			assert!(self.extrema_data.is_empty());
-			assert!(self.derivative_data.is_empty());
+			assert!(!self.derivative_data.is_empty());
 		}
 	}
 }
