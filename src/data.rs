@@ -8,7 +8,7 @@ pub struct TextData {
 	pub welcome: egui::RichText,
 }
 
-#[derive(PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct TextDataRaw {
 	pub help_expr: String,
 	pub help_vars: String,

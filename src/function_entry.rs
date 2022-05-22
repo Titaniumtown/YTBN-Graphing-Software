@@ -18,7 +18,7 @@ use std::{
 use unzip_n::unzip_n;
 
 /// Represents the possible variations of Riemann Sums
-#[derive(PartialEq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub enum Riemann {
 	Left,
 	Middle,
