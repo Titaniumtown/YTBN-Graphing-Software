@@ -76,7 +76,7 @@ impl<'a> SteppedVector<'a> {
 		}
 
 		// Do some math in order to calculate the expected index value
-		let possible_i = ((x - self.get_min()).abs() / self.step) as usize;
+		let possible_i = (x - self.get_min() / self.step) as usize;
 
 		// Make sure that the index is valid by checking the data returned vs the actual data (just in case)
 		if self.data.get(possible_i) == Some(&x) {
@@ -125,7 +125,7 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 		}
 
 		// Calculate the step between elements
-		let step = (max - min).abs() / (data.len() as f64);
+		let step = (max - min) / (data.len() as f64);
 
 		debug_assert!(step.is_sign_positive());
 		debug_assert!(step.is_finite());
