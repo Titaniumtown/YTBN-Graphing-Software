@@ -54,12 +54,14 @@ impl<'a> SteppedVector<'a> {
 		debug_assert!(!x.is_nan());
 		debug_assert!(self.step > 0.0);
 		debug_assert!(self.step.is_sign_positive());
+		debug_assert!(self.step.is_finite());
 		debug_assert!(self.data.len() >= 2);
 
 		unsafe {
 			assume(!self.step.is_nan());
 			assume(self.step > 0.0);
 			assume(self.step.is_sign_positive());
+			assume(self.step.is_finite());
 			assume(self.data.len() >= 2);
 		}
 
@@ -104,6 +106,9 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 		// Ensure data is of correct length
 		debug_assert!(data.len() > 2);
 
+		// check on debug if data is sorted
+		debug_assert!(data.windows(2).all(|w| w[0] <= w[1]));
+
 		unsafe {
 			assume(data.len() > 2);
 			assume(!data.is_empty());
@@ -124,6 +129,7 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 
 		debug_assert!(step.is_sign_positive());
 		debug_assert!(step.is_finite());
+		debug_assert!(step > 0.0);
 
 		// Create and return the struct
 		SteppedVector {
