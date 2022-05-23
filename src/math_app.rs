@@ -99,9 +99,6 @@ pub struct MathApp {
 
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
-
-	#[cfg(target_arch = "wasm32")]
-	since_last_save: Instant,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -259,8 +256,6 @@ impl MathApp {
 			text: data.text,
 			opened: Opened::default(),
 			settings: Default::default(),
-			#[cfg(target_arch = "wasm32")]
-			since_last_save: Instant::now(),
 		}
 	}
 
@@ -615,31 +610,27 @@ impl App for MathApp {
 
 		// Calculate and store the last time it took to draw the frame
 		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
+	}
 
-		#[cfg(target_arch = "wasm32")]
+	#[cfg(target_arch = "wasm32")]
+	fn save(&mut self, _: &mut dyn eframe::Storage) {
+		if let Ok(Some(local_storage)) = web_sys::window()
+			.expect("Could not get web_sys window")
+			.local_storage()
 		{
-			if self.since_last_save.elapsed().as_millis() > 10000 {
-				self.since_last_save = Instant::now();
-				if let Ok(Some(local_storage)) = web_sys::window()
-					.expect("Could not get web_sys window")
-					.local_storage()
-				{
-					tracing::info!("Setting current functions");
-					let hash: crate::misc::HashBytes = unsafe {
-						std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
-					};
-					let saved_data = &crate::misc::hashed_storage_create(
-						hash,
-						bincode::serialize(&self.functions).unwrap().as_slice(),
-					);
-					// tracing::info!("Bytes: {}", saved_data.len());
-					local_storage
-						.set_item(FUNC_NAME, saved_data)
-						.expect("failed to set local function storage");
-				} else {
-					panic!("unable to get local storage")
-				}
-			}
+			tracing::info!("Saving function data");
+			let hash: crate::misc::HashBytes =
+				unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) };
+			let saved_data = &crate::misc::hashed_storage_create(
+				hash,
+				bincode::serialize(&self.functions).unwrap().as_slice(),
+			);
+			// tracing::info!("Bytes: {}", saved_data.len());
+			local_storage
+				.set_item(FUNC_NAME, saved_data)
+				.expect("failed to set local function storage");
+		} else {
+			panic!("unable to get local storage")
 		}
 	}
 }
