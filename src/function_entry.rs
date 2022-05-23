@@ -192,23 +192,6 @@ impl FunctionEntry {
 		}
 	}
 
-	/*
-	/// Get function that can be used to calculate integral based on Riemann Sum type
-	fn get_sum_func(&self, sum: Riemann) -> FunctionHelper {
-		match sum {
-			Riemann::Left => {
-				FunctionHelper::new(|left_x: f64, _: f64| -> f64 { self.function.get(left_x) })
-			}
-			Riemann::Right => {
-				FunctionHelper::new(|_: f64, right_x: f64| -> f64 { self.function.get(right_x) })
-			}
-			Riemann::Middle => FunctionHelper::new(|left_x: f64, right_x: f64| -> f64 {
-				(self.function.get(left_x) + self.function.get(right_x)) / 2.0
-			}),
-		}
-	}
-	*/
-
 	/// Creates and does the math for creating all the rectangles under the graph
 	fn integral_rectangles(
 		&self, integral_min_x: f64, integral_max_x: f64, sum: Riemann, integral_num: usize,

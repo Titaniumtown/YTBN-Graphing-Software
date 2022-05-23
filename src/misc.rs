@@ -3,36 +3,6 @@ use std::{intrinsics::assume, ops::RangeInclusive};
 use egui::plot::{Line, Points, Value, Values};
 use itertools::Itertools;
 
-/*
-pub struct FunctionHelper<'a> {
-	#[cfg(threading)]
-	f: async_lock::Mutex<Box<dyn Fn(f64, f64) -> f64 + 'a + Sync + Send>>,
-
-	#[cfg(not(threading))]
-	f: Box<dyn Fn(f64, f64) -> f64 + 'a>,
-}
-
-impl<'a> FunctionHelper<'a> {
-	#[cfg(threading)]
-	pub fn new(f: impl Fn(f64, f64) -> f64 + 'a) -> FunctionHelper<'a> {
-		FunctionHelper {
-			f: async_lock::Mutex::new(Box::new(f)),
-		}
-	}
-
-	#[cfg(not(threading))]
-	pub fn new(f: impl Fn(f64, f64) -> f64 + 'a) -> FunctionHelper<'a> {
-		FunctionHelper { f: Box::new(f) }
-	}
-
-	#[cfg(threading)]
-	pub async fn get(&self, x: f64, x1: f64) -> f64 { (self.f.lock().await)(x, x1) }
-
-	#[cfg(not(threading))]
-	pub fn get(&self, x: f64, x1: f64) -> f64 { (self.f)(x, x1) }
-}
-*/
-
 /// [`SteppedVector`] is used in order to efficiently sort through an ordered
 /// `Vec<f64>` Used in order to speedup the processing of cached data when
 /// moving horizontally without zoom in `FunctionEntry`. Before this struct, the
