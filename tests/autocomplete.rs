@@ -118,6 +118,7 @@ fn multi() {
 fn none() {
 	// string that should give no hints
 	let random = "qwert987gybhj";
+	assert_eq!(parsing::generate_hint(random), &Hint::None);
 
 	ac_tester(&[
 		SetString(random),
