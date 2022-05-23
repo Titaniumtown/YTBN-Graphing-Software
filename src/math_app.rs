@@ -239,11 +239,11 @@ impl MathApp {
 		cc.egui_ctx.set_fonts(data.fonts);
 
 		// Set dark mode by default
-		cc.egui_ctx.set_visuals(const { crate::style::dark() });
+		cc.egui_ctx.set_visuals(crate::style::STYLE);
 
 		// Set spacing
 		let mut style: egui::Style = (*cc.egui_ctx.style()).clone();
-		style.spacing = const { crate::style::spacing() };
+		style.spacing = crate::style::SPACING;
 		cc.egui_ctx.set_style(style);
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());

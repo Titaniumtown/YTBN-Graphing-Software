@@ -46,8 +46,9 @@ const fn widgets_dark() -> Widgets {
 }
 
 pub const STYLE: Visuals = dark();
+pub const SPACING: Spacing = spacing();
 
-pub const fn dark() -> Visuals {
+const fn dark() -> Visuals {
 	Visuals {
 		dark_mode: true,
 		override_text_color: None,
@@ -69,7 +70,7 @@ pub const fn dark() -> Visuals {
 	}
 }
 
-pub const fn spacing() -> Spacing {
+const fn spacing() -> Spacing {
 	Spacing {
 		item_spacing: vec2(8.0, 3.0),
 		window_margin: Margin::same(6.0),
