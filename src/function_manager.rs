@@ -77,13 +77,9 @@ impl FunctionManager {
 		// ui.label("Functions:");
 		let can_remove = self.functions.len() > 1;
 
-		// Update if font settings are ever changed
-		const ROW_HEIGHT: f32 = 14.0;
-		// ui.fonts().row_height(&egui::FontSelection::default().resolve(ui.style()));
-
 		let available_width = ui.available_width();
 		let mut remove_i: Option<usize> = None;
-		let target_size = vec2(available_width, ROW_HEIGHT);
+		let target_size = vec2(available_width, crate::data::FONT_SIZE);
 		for (i, (te_id, function)) in self.functions.iter_mut().enumerate() {
 			let mut new_string = function.autocomplete.string.clone();
 			function.update_string(&new_string);
@@ -181,7 +177,7 @@ impl FunctionManager {
 					ui,
 					format!("buttons_area_{}", i),
 					&re,
-					ROW_HEIGHT * BUTTONS_Y_OFFSET,
+					crate::data::FONT_SIZE * BUTTONS_Y_OFFSET,
 					|ui| {
 						ui.horizontal(|ui| {
 							// There's more than 1 function! Functions can now be deleted

@@ -380,7 +380,7 @@ impl MathApp {
 				self.functions.display_entries(ui);
 
 				// Only render if there's enough space
-				if ui.available_height() > 14.0 {
+				if ui.available_height() > crate::data::FONT_SIZE {
 					ui.with_layout(Layout::bottom_up(Align::Min), |ui| {
 						// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
 

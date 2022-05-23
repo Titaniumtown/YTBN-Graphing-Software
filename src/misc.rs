@@ -1,4 +1,4 @@
-use std::intrinsics::assume;
+use std::{intrinsics::assume, ops::RangeInclusive};
 
 use egui::plot::{Line, Points, Value, Values};
 use itertools::Itertools;
@@ -44,6 +44,8 @@ pub struct SteppedVector<'a> {
 
 	/// Since all entries in `data` are evenly spaced, this field stores the step between 2 adjacent elements
 	step: f64,
+
+	range: RangeInclusive<f64>,
 }
 
 impl<'a> SteppedVector<'a> {
@@ -61,24 +63,18 @@ impl<'a> SteppedVector<'a> {
 			assume(self.data.len() >= 2);
 		}
 
-		let max = self.get_max();
-		if &x > max {
+		if !self.range.contains(&x) {
 			return None;
 		}
 
-		let min = self.get_min();
-		if min > &x {
-			return None;
-		}
-
-		if &x == min {
+		if &x == self.get_min() {
 			return Some(0);
-		} else if &x == max {
+		} else if &x == self.get_max() {
 			return Some(self.data.len() - 1);
 		}
 
 		// Do some math in order to calculate the expected index value
-		let possible_i = ((x - min).abs() / self.step) as usize;
+		let possible_i = ((x - self.get_min()).abs() / self.step) as usize;
 
 		// Make sure that the index is valid by checking the data returned vs the actual data (just in case)
 		if self.data.get(possible_i) == Some(&x) {
@@ -91,22 +87,12 @@ impl<'a> SteppedVector<'a> {
 	}
 
 	#[inline]
-	pub const fn get_min(&self) -> &f64 {
-		debug_assert!(self.data.len() >= 2);
-		unsafe {
-			assume(!self.data.is_empty());
-			self.data.get_unchecked(0)
-		}
-	}
+	#[allow(dead_code)]
+	pub const fn get_min(&self) -> &f64 { self.range.start() }
 
 	#[inline]
-	pub const fn get_max(&self) -> &f64 {
-		debug_assert!(self.data.len() >= 2);
-		unsafe {
-			assume(!self.data.is_empty());
-			self.data.last().unwrap_unchecked()
-		}
-	}
+	#[allow(dead_code)]
+	pub const fn get_max(&self) -> &f64 { self.range.end() }
 
 	#[allow(dead_code)]
 	pub fn get_data(&self) -> &'a [f64] { self.data }
@@ -140,7 +126,11 @@ impl<'a> From<&'a [f64]> for SteppedVector<'a> {
 		debug_assert!(step.is_finite());
 
 		// Create and return the struct
-		SteppedVector { data, step }
+		SteppedVector {
+			data,
+			step,
+			range: min..=max,
+		}
 	}
 }
 

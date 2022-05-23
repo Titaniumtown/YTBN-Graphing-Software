@@ -18,10 +18,12 @@ pub struct TextDataRaw {
 	pub welcome: String,
 }
 
+pub const FONT_SIZE: f32 = 14.0;
+// ui.fonts().crate::data::FONT_SIZE(&egui::FontSelection::default().resolve(ui.style()));
+
 impl TextDataRaw {
 	#[allow(dead_code)]
 	fn into_rich(self) -> TextData {
-		const SIZE: f32 = 14.0;
 		use egui::RichText;
 		TextData {
 			help_expr: RichText::from(self.help_expr),
@@ -29,7 +31,7 @@ impl TextDataRaw {
 			help_panel: RichText::from(self.help_panel),
 			help_function: RichText::from(self.help_function),
 			help_other: RichText::from(self.help_other),
-			welcome: RichText::from(self.welcome).size(SIZE + 1.0),
+			welcome: RichText::from(self.welcome).size(FONT_SIZE + 1.0),
 		}
 	}
 }
