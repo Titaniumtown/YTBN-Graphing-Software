@@ -20,6 +20,7 @@ pub struct SteppedVector<'a> {
 
 impl<'a> SteppedVector<'a> {
 	/// Returns `Option<usize>` with index of element with value `x`. and `None` if `x` does not exist in `data`
+	#[inline]
 	pub fn get_index(&self, x: f64) -> Option<usize> {
 		debug_assert!(!x.is_nan());
 		debug_assert!(self.step > 0.0);
