@@ -633,4 +633,8 @@ impl App for MathApp {
 			panic!("unable to get local storage")
 		}
 	}
+
+	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
+		crate::style::STYLE.window_fill().into()
+	}
 }
