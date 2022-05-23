@@ -658,7 +658,7 @@ checksum = "453440c271cf5577fd2a40e4942540cb7d0d2f85e27c8d07dd0023c925a67541"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#d6b7a5dfb7b6e4834df2b3c57ee4cf61ce203835"
+source = "git+https://github.com/Titaniumtown/egui.git#e78cfc8076db95174f25d0460664d2ffd47a96d7"
 dependencies = [
  "bytemuck",
  "egui",
@@ -678,7 +678,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#d6b7a5dfb7b6e4834df2b3c57ee4cf61ce203835"
+source = "git+https://github.com/Titaniumtown/egui.git#e78cfc8076db95174f25d0460664d2ffd47a96d7"
 dependencies = [
  "ahash",
  "epaint",
@@ -690,7 +690,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#d6b7a5dfb7b6e4834df2b3c57ee4cf61ce203835"
+source = "git+https://github.com/Titaniumtown/egui.git#e78cfc8076db95174f25d0460664d2ffd47a96d7"
 dependencies = [
  "arboard",
  "egui",
@@ -704,7 +704,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#d6b7a5dfb7b6e4834df2b3c57ee4cf61ce203835"
+source = "git+https://github.com/Titaniumtown/egui.git#e78cfc8076db95174f25d0460664d2ffd47a96d7"
 dependencies = [
  "bytemuck",
  "egui",
@@ -724,7 +724,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#d6b7a5dfb7b6e4834df2b3c57ee4cf61ce203835"
+source = "git+https://github.com/Titaniumtown/egui.git#e78cfc8076db95174f25d0460664d2ffd47a96d7"
 dependencies = [
  "bytemuck",
  "serde",
@@ -733,7 +733,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#d6b7a5dfb7b6e4834df2b3c57ee4cf61ce203835"
+source = "git+https://github.com/Titaniumtown/egui.git#e78cfc8076db95174f25d0460664d2ffd47a96d7"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -1560,9 +1560,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.11.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
+checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
 
 [[package]]
 name = "oorandom"
@@ -2127,9 +2127,9 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "symbolic-common"
-version = "8.7.2"
+version = "8.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65098afa1f1ca8991e4c6f4a6c03a661838e8f464c8bbafab9c2f1a3fa913b7f"
+checksum = "c276d5b296f30f0fb30d2128b6be6f9804be7669f1edef46c4d8c017de4c77c3"
 dependencies = [
  "debugid",
  "memmap2 0.5.3",
@@ -2139,9 +2139,9 @@ dependencies = [
 
 [[package]]
 name = "symbolic-demangle"
-version = "8.7.2"
+version = "8.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be2718eec240c927afaed217f7c99dc9905c53466726f37607566ae0aa34ae66"
+checksum = "b096bd4794e4d05584144dc9536a4fde8844da73f84cdb7652ed78b59e37a218"
 dependencies = [
  "cpp_demangle",
  "rustc-demangle",
