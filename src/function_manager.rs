@@ -193,9 +193,10 @@ impl FunctionManager {
 								remove_i = Some(i);
 							}
 
+							let func_some = function.is_some();
 							// Toggle integral being enabled or not
 							function.integral.bitxor_assign(
-								ui.add_enabled(function.is_some(), button_area_button("∫"))
+								ui.add_enabled(func_some, button_area_button("∫"))
 									.on_hover_text(match function.integral {
 										true => "Don't integrate",
 										false => "Integrate",
@@ -205,7 +206,7 @@ impl FunctionManager {
 
 							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
 							function.derivative.bitxor_assign(
-								ui.add_enabled(function.is_some(), button_area_button("d/dx"))
+								ui.add_enabled(func_some, button_area_button("d/dx"))
 									.on_hover_text(match function.derivative {
 										true => "Don't Differentiate",
 										false => "Differentiate",
@@ -214,7 +215,7 @@ impl FunctionManager {
 							);
 
 							function.settings_opened.bitxor_assign(
-								ui.add_enabled(function.is_some(), button_area_button("⚙"))
+								ui.add_enabled(func_some, button_area_button("⚙"))
 									.on_hover_text(match function.settings_opened {
 										true => "Close Settings",
 										false => "Open Settings",
