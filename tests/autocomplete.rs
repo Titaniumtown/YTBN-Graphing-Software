@@ -7,12 +7,13 @@ enum Action<'a> {
 	SetString(&'a str),
 	Move(Movement),
 }
+use Action::*;
 
 fn ac_tester(actions: &[Action]) {
 	let mut ac = AutoComplete::default();
 	for action in actions.iter() {
 		match action {
-			Action::AssertIndex(target_i) => {
+			AssertIndex(target_i) => {
 				if &ac.i != target_i {
 					panic!(
 						"AssertIndex failed: Current: '{}' Expected: '{}'",
@@ -20,7 +21,7 @@ fn ac_tester(actions: &[Action]) {
 					)
 				}
 			}
-			Action::AssertString(target_string) => {
+			AssertString(target_string) => {
 				if &ac.string != target_string {
 					panic!(
 						"AssertString failed: Current: '{}' Expected: '{}'",
@@ -28,7 +29,7 @@ fn ac_tester(actions: &[Action]) {
 					)
 				}
 			}
-			Action::AssertHint(target_hint) => match ac.hint {
+			AssertHint(target_hint) => match ac.hint {
 				Hint::None => {
 					if !target_hint.is_empty() {
 						panic!(
@@ -55,10 +56,10 @@ fn ac_tester(actions: &[Action]) {
 					}
 				}
 			},
-			Action::SetString(target_string) => {
+			SetString(target_string) => {
 				ac.update_string(target_string);
 			}
-			Action::Move(target_movement) => {
+			Move(target_movement) => {
 				ac.register_movement(target_movement);
 			}
 		}
@@ -68,48 +69,48 @@ fn ac_tester(actions: &[Action]) {
 #[test]
 fn single() {
 	ac_tester(&[
-		Action::SetString(""),
-		Action::AssertHint("x^2"),
-		Action::Move(Movement::Up),
-		Action::AssertIndex(0),
-		Action::AssertString(""),
-		Action::AssertHint("x^2"),
-		Action::Move(Movement::Down),
-		Action::AssertIndex(0),
-		Action::AssertString(""),
-		Action::AssertHint("x^2"),
-		Action::Move(Movement::Complete),
-		Action::AssertString("x^2"),
-		Action::AssertHint(""),
-		Action::AssertIndex(0),
+		SetString(""),
+		AssertHint("x^2"),
+		Move(Movement::Up),
+		AssertIndex(0),
+		AssertString(""),
+		AssertHint("x^2"),
+		Move(Movement::Down),
+		AssertIndex(0),
+		AssertString(""),
+		AssertHint("x^2"),
+		Move(Movement::Complete),
+		AssertString("x^2"),
+		AssertHint(""),
+		AssertIndex(0),
 	]);
 }
 
 #[test]
 fn multi() {
 	ac_tester(&[
-		Action::SetString("s"),
-		Action::AssertHint("in("),
-		Action::Move(Movement::Up),
-		Action::AssertIndex(3),
-		Action::AssertString("s"),
-		Action::AssertHint("ignum("),
-		Action::Move(Movement::Down),
-		Action::AssertIndex(0),
-		Action::AssertString("s"),
-		Action::AssertHint("in("),
-		Action::Move(Movement::Down),
-		Action::AssertIndex(1),
-		Action::AssertString("s"),
-		Action::AssertHint("qrt("),
-		Action::Move(Movement::Up),
-		Action::AssertIndex(0),
-		Action::AssertString("s"),
-		Action::AssertHint("in("),
-		Action::Move(Movement::Complete),
-		Action::AssertString("sin("),
-		Action::AssertHint(")"),
-		Action::AssertIndex(0),
+		SetString("s"),
+		AssertHint("in("),
+		Move(Movement::Up),
+		AssertIndex(3),
+		AssertString("s"),
+		AssertHint("ignum("),
+		Move(Movement::Down),
+		AssertIndex(0),
+		AssertString("s"),
+		AssertHint("in("),
+		Move(Movement::Down),
+		AssertIndex(1),
+		AssertString("s"),
+		AssertHint("qrt("),
+		Move(Movement::Up),
+		AssertIndex(0),
+		AssertString("s"),
+		AssertHint("in("),
+		Move(Movement::Complete),
+		AssertString("sin("),
+		AssertHint(")"),
+		AssertIndex(0),
 	]);
 }
 
@@ -119,39 +120,39 @@ fn none() {
 	let random = "qwert987gybhj";
 
 	ac_tester(&[
-		Action::SetString(random),
-		Action::AssertHint(""),
-		Action::Move(Movement::Up),
-		Action::AssertIndex(0),
-		Action::AssertString(random),
-		Action::AssertHint(""),
-		Action::Move(Movement::Down),
-		Action::AssertIndex(0),
-		Action::AssertString(random),
-		Action::AssertHint(""),
-		Action::Move(Movement::Complete),
-		Action::AssertString(random),
-		Action::AssertHint(""),
-		Action::AssertIndex(0),
+		SetString(random),
+		AssertHint(""),
+		Move(Movement::Up),
+		AssertIndex(0),
+		AssertString(random),
+		AssertHint(""),
+		Move(Movement::Down),
+		AssertIndex(0),
+		AssertString(random),
+		AssertHint(""),
+		Move(Movement::Complete),
+		AssertString(random),
+		AssertHint(""),
+		AssertIndex(0),
 	]);
 }
 
 #[test]
 fn parens() {
 	ac_tester(&[
-		Action::SetString("sin(x"),
-		Action::AssertHint(")"),
-		Action::Move(Movement::Up),
-		Action::AssertIndex(0),
-		Action::AssertString("sin(x"),
-		Action::AssertHint(")"),
-		Action::Move(Movement::Down),
-		Action::AssertIndex(0),
-		Action::AssertString("sin(x"),
-		Action::AssertHint(")"),
-		Action::Move(Movement::Complete),
-		Action::AssertString("sin(x)"),
-		Action::AssertHint(""),
-		Action::AssertIndex(0),
+		SetString("sin(x"),
+		AssertHint(")"),
+		Move(Movement::Up),
+		AssertIndex(0),
+		AssertString("sin(x"),
+		AssertHint(")"),
+		Move(Movement::Down),
+		AssertIndex(0),
+		AssertString("sin(x"),
+		AssertHint(")"),
+		Move(Movement::Complete),
+		AssertString("sin(x)"),
+		AssertHint(""),
+		AssertIndex(0),
 	]);
 }
