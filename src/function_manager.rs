@@ -1,5 +1,6 @@
 use crate::consts::is_mobile;
 use crate::function_entry::FunctionEntry;
+use crate::misc::random_u64;
 use crate::widgets::widgets_ontop;
 use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
@@ -10,7 +11,6 @@ use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
 use std::ops::BitXorAssign;
-use uuid::Uuid;
 
 pub struct FunctionManager {
 	functions: Vec<(Id, FunctionEntry)>,
@@ -18,11 +18,9 @@ pub struct FunctionManager {
 
 impl Default for FunctionManager {
 	fn default() -> Self {
-		// hash of 684fc8be-4ba0-408d-96ef-480b0642126f
-		// is 11414819524356497634
 		Self {
 			functions: vec![(
-				Id::new_from_u64(11414819524356497634), // Random uuid here to avoid call to `Uuid::new_v4()`
+				Id::new_from_u64(11414819524356497634), // Random number here to avoid call to random
 				FunctionEntry::EMPTY,
 			)],
 		}
@@ -237,7 +235,7 @@ impl FunctionManager {
 	/// Create and push new empty function entry
 	pub fn push_empty(&mut self) {
 		self.functions
-			.push((Id::new(Uuid::new_v4()), FunctionEntry::EMPTY));
+			.push((Id::new_from_u64(random_u64()), FunctionEntry::EMPTY));
 	}
 
 	/// Detect if any functions are using integrals

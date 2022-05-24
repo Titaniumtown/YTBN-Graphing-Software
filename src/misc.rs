@@ -1,6 +1,7 @@
 use std::{intrinsics::assume, ops::RangeInclusive};
 
 use egui::plot::{Line, Points, Value, Values};
+use getrandom::getrandom;
 use itertools::Itertools;
 
 /// [`SteppedVector`] is used in order to efficiently sort through an ordered
@@ -285,4 +286,10 @@ pub const fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
 		unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) },
 		&decoded_1[HASH_LENGTH..],
 	))
+}
+
+pub fn random_u64() -> u64 {
+	let mut data: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
+	getrandom(&mut data).expect("unable to generate random number");
+	u64::from_be_bytes(data)
 }
