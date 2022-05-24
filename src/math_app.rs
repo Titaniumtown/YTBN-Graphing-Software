@@ -102,6 +102,17 @@ pub struct MathApp {
 }
 
 #[cfg(target_arch = "wasm32")]
+fn get_window() -> web_sys::Window { web_sys::window().expect("Could not get web_sys window") }
+
+#[cfg(target_arch = "wasm32")]
+fn get_localstorage() -> web_sys::Storage {
+	get_window()
+		.local_storage()
+		.expect("failed to get localstorage1")
+		.expect("failed to get localstorage2")
+}
+
+#[cfg(target_arch = "wasm32")]
 const DATA_NAME: &str = "YTBN-DECOMPRESSED";
 #[cfg(target_arch = "wasm32")]
 const FUNC_NAME: &str = "YTBN-FUNCTIONS";
@@ -129,14 +140,6 @@ impl MathApp {
 					tracing::info!("Web Info: {:?}", web_info);
 				}
 
-				fn get_window() -> web_sys::Window {
-					web_sys::window().expect("Could not get web_sys window")
-				}
-
-				fn get_localstorage() -> web_sys::Storage {
-					get_window().local_storage().expect("failed to get localstorage1").expect("failed to get localstorage2")
-				}
-
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
 					let data = get_localstorage().get_item(DATA_NAME).ok()??;
 					let (commit, cached_data) = crate::misc::hashed_storage_read(&data)?;
@@ -155,20 +158,6 @@ impl MathApp {
 					} else {
 						None
 					}
-				}
-
-				fn set_storage_decompressed(data: &[u8]) {
-					debug_assert!(!data.is_empty());
-
-					unsafe {
-						assume(!data.is_empty());
-					}
-
-					tracing::info!("Setting decompression cache");
-					let commit: crate::misc::HashBytes = const { unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) } };
-					let saved_data = &crate::misc::hashed_storage_create(commit, data);
-					tracing::info!("Bytes: {}", saved_data.len());
-					get_localstorage().set_item(DATA_NAME, saved_data).expect("failed to set local storage cache");
 				}
 
 				fn load_functions() -> Option<FunctionManager> {
@@ -212,7 +201,25 @@ impl MathApp {
 				.unwrap_unchecked()
 			};
 			#[cfg(target = "wasm32")]
-			set_storage_decompressed(&data);
+			{
+				debug_assert!(!data.is_empty());
+
+				unsafe {
+					assume(!data.is_empty());
+				}
+
+				tracing::info!("Setting decompression cache");
+				let commit: crate::misc::HashBytes = const {
+					unsafe {
+						std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
+					}
+				};
+				let saved_data = &crate::misc::hashed_storage_create(commit, data);
+				tracing::info!("Bytes: {}", saved_data.len());
+				get_localstorage()
+					.set_item(DATA_NAME, saved_data)
+					.expect("failed to set local storage cache");
+			}
 
 			unsafe { bincode::deserialize(data.as_slice()).unwrap_unchecked() }
 		}
@@ -612,24 +619,17 @@ impl App for MathApp {
 
 	#[cfg(target_arch = "wasm32")]
 	fn save(&mut self, _: &mut dyn eframe::Storage) {
-		if let Ok(Some(local_storage)) = web_sys::window()
-			.expect("Could not get web_sys window")
-			.local_storage()
-		{
-			tracing::info!("Saving function data");
-			let hash: crate::misc::HashBytes =
-				unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) };
-			let saved_data = &crate::misc::hashed_storage_create(
-				hash,
-				bincode::serialize(&self.functions).unwrap().as_slice(),
-			);
-			// tracing::info!("Bytes: {}", saved_data.len());
-			local_storage
-				.set_item(FUNC_NAME, saved_data)
-				.expect("failed to set local function storage");
-		} else {
-			panic!("unable to get local storage")
-		}
+		tracing::info!("Saving function data");
+		let hash: crate::misc::HashBytes =
+			unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) };
+		let saved_data = &crate::misc::hashed_storage_create(
+			hash,
+			bincode::serialize(&self.functions).unwrap().as_slice(),
+		);
+		// tracing::info!("Bytes: {}", saved_data.len());
+		get_localstorage()
+			.set_item(FUNC_NAME, saved_data)
+			.expect("failed to set local function storage");
 	}
 
 	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
