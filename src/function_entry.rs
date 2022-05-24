@@ -276,12 +276,19 @@ impl FunctionEntry {
 
 		let mut partial_regen = false;
 
+		let overlaps = if self.back_data.is_empty() {
+			false
+		} else {
+			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
+			let prev_max = unsafe { self.back_data.first().unwrap_unchecked() }.x;
+			(settings.min_x <= prev_max) && (settings.max_x >= prev_min)
+		};
+
 		if width_changed {
 			self.invalidate_back();
 			self.invalidate_derivative();
-		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom {
+		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom && overlaps {
 			partial_regen = true;
-
 			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
 
 			if prev_min < settings.min_x {
@@ -320,6 +327,7 @@ impl FunctionEntry {
 					debug_assert_eq!(data.len(), settings.plot_width + 1);
 				}
 			} else {
+				// TODO: fix weird values on the far right when scrolling fast left-ward
 				let min_i = ((settings.max_x - prev_min) as f64 / resolution) as usize;
 				let min_i_2 = settings.plot_width - min_i;
 
