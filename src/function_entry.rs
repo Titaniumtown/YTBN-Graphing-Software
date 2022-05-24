@@ -1,5 +1,3 @@
-#![allow(clippy::too_many_arguments)] // Clippy, shut
-
 use crate::math_app::AppSettings;
 use crate::misc::*;
 use egui::{
