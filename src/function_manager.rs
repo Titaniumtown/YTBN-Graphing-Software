@@ -18,9 +18,11 @@ pub struct FunctionManager {
 
 impl Default for FunctionManager {
 	fn default() -> Self {
+		// hash of 684fc8be-4ba0-408d-96ef-480b0642126f
+		// is 11414819524356497634
 		Self {
 			functions: vec![(
-				Id::new(uuid!("684fc8be-4ba0-408d-96ef-480b0642126f")), // Random uuid here to avoid call to `Uuid::new_v4()`
+				Id::new_from_u64(11414819524356497634), // Random uuid here to avoid call to `Uuid::new_v4()`
 				FunctionEntry::EMPTY,
 			)],
 		}
