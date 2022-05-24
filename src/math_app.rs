@@ -199,7 +199,7 @@ impl MathApp {
 			}
 		}
 
-		fn decomress_data() -> crate::data::TotalData {
+		fn decompress_data() -> crate::data::TotalData {
 			let mut data = Vec::new();
 			let _ = unsafe {
 				ruzstd::StreamingDecoder::new(
@@ -223,11 +223,11 @@ impl MathApp {
 		{
 			data
 		} else {
-			decomress_data()
+			decompress_data()
 		};
 
 		#[cfg(not(target = "wasm32"))]
-		let data: crate::data::TotalData = decomress_data();
+		let data: crate::data::TotalData = decompress_data();
 
 		tracing::info!("Reading assets...");
 
