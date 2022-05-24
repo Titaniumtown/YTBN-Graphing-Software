@@ -239,9 +239,7 @@ impl MathApp {
 		cc.egui_ctx.set_visuals(crate::style::STYLE);
 
 		// Set spacing
-		let mut style: egui::Style = (*cc.egui_ctx.style()).clone();
-		style.spacing = crate::style::SPACING;
-		cc.egui_ctx.set_style(style);
+		cc.egui_ctx.set_spacing(crate::style::SPACING);
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
