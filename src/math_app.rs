@@ -26,8 +26,10 @@ pub struct AppSettings {
 	/// Max value for calculating an
 	pub integral_max_x: f64,
 
+	/// Minimum x bound of plot
 	pub min_x: f64,
 
+	/// Maximum x bound of plot
 	pub max_x: f64,
 
 	/// Stores whether or not integral settings have changed
@@ -66,9 +68,16 @@ impl const Default for AppSettings {
 
 /// Used to store the opened of windows/widgets
 struct Opened {
+	/// Help window
 	pub help: bool,
+
+	/// Info window
 	pub info: bool,
+
+	/// Sidepanel
 	pub side_panel: bool,
+
+	/// Welcome introduction
 	pub welcome: bool,
 }
 
