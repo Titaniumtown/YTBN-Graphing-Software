@@ -74,7 +74,6 @@ const fn button_area_button(text: impl Into<WidgetText>) -> Button {
 
 impl FunctionManager {
 	pub fn display_entries(&mut self, ui: &mut egui::Ui) {
-		// ui.label("Functions:");
 		let can_remove = self.functions.len() > 1;
 
 		let available_width = ui.available_width();
@@ -89,9 +88,8 @@ impl FunctionManager {
 			let re = ui.add_sized(
 				target_size
 					* vec2(1.0, {
-						let ctx = ui.ctx();
-						let had_focus = ctx.memory().has_focus(*te_id);
-						(ctx.animate_bool(*te_id, had_focus) * 1.5) + 1.0
+						let had_focus = ui.ctx().memory().has_focus(*te_id);
+						(ui.ctx().animate_bool(*te_id, had_focus) * 1.5) + 1.0
 					}),
 				egui::TextEdit::singleline(&mut new_string)
 					.hint_forward(true) // Make the hint appear after the last text in the textbox
@@ -99,10 +97,9 @@ impl FunctionManager {
 					.id(*te_id) // Set widget's id to `te_id`
 					.hint_text({
 						// If there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
-						if let Some(single_hint) = function.autocomplete.hint.single() {
-							*single_hint
-						} else {
-							""
+						match function.autocomplete.hint.single() {
+							Some(single_hint) => *single_hint,
+							None => "",
 						}
 					}),
 			);
@@ -172,55 +169,50 @@ impl FunctionManager {
 
 				/// The y offset multiplier of the `buttons_area` area
 				const BUTTONS_Y_OFFSET: f32 = 1.32;
+				const Y_OFFSET: f32 = crate::data::FONT_SIZE * BUTTONS_Y_OFFSET;
 
-				widgets_ontop(
-					ui,
-					format!("buttons_area_{}", i),
-					&re,
-					crate::data::FONT_SIZE * BUTTONS_Y_OFFSET,
-					|ui| {
-						ui.horizontal(|ui| {
-							// There's more than 1 function! Functions can now be deleted
-							if ui
-								.add_enabled(can_remove, button_area_button("✖"))
-								.on_hover_text("Delete Function")
-								.clicked()
-							{
-								remove_i = Some(i);
-							}
+				widgets_ontop(ui, format!("buttons_area_{}", i), &re, Y_OFFSET, |ui| {
+					ui.horizontal(|ui| {
+						// There's more than 1 function! Functions can now be deleted
+						if ui
+							.add_enabled(can_remove, button_area_button("✖"))
+							.on_hover_text("Delete Function")
+							.clicked()
+						{
+							remove_i = Some(i);
+						}
 
-							let func_some = function.is_some();
-							// Toggle integral being enabled or not
-							function.integral.bitxor_assign(
-								ui.add_enabled(func_some, button_area_button("∫"))
-									.on_hover_text(match function.integral {
-										true => "Don't integrate",
-										false => "Integrate",
-									})
-									.clicked(),
-							);
+						let func_some = function.is_some();
+						// Toggle integral being enabled or not
+						function.integral.bitxor_assign(
+							ui.add_enabled(func_some, button_area_button("∫"))
+								.on_hover_text(match function.integral {
+									true => "Don't integrate",
+									false => "Integrate",
+								})
+								.clicked(),
+						);
 
-							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-							function.derivative.bitxor_assign(
-								ui.add_enabled(func_some, button_area_button("d/dx"))
-									.on_hover_text(match function.derivative {
-										true => "Don't Differentiate",
-										false => "Differentiate",
-									})
-									.clicked(),
-							);
+						// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
+						function.derivative.bitxor_assign(
+							ui.add_enabled(func_some, button_area_button("d/dx"))
+								.on_hover_text(match function.derivative {
+									true => "Don't Differentiate",
+									false => "Differentiate",
+								})
+								.clicked(),
+						);
 
-							function.settings_opened.bitxor_assign(
-								ui.add_enabled(func_some, button_area_button("⚙"))
-									.on_hover_text(match function.settings_opened {
-										true => "Close Settings",
-										false => "Open Settings",
-									})
-									.clicked(),
-							);
-						});
-					},
-				);
+						function.settings_opened.bitxor_assign(
+							ui.add_enabled(func_some, button_area_button("⚙"))
+								.on_hover_text(match function.settings_opened {
+									true => "Close Settings",
+									false => "Open Settings",
+								})
+								.clicked(),
+						);
+					});
+				});
 			}
 
 			function.settings_window(ui.ctx());
