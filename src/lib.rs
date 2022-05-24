@@ -34,7 +34,6 @@ pub use crate::{
 		option_vec_printer,
 		step_helper,
 		EguiHelper,
-		SteppedVector,
 	},
 };
 

@@ -594,6 +594,8 @@ impl App for MathApp {
 						let max_x: f64 = bounds.max()[0];
 						let min_max_changed =
 							(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
+						let did_zoom = (max_x - min_x).abs()
+							!= (self.settings.max_x - self.settings.min_x).abs();
 						self.settings.min_x = min_x;
 						self.settings.max_x = max_x;
 
@@ -601,7 +603,12 @@ impl App for MathApp {
 							.get_entries_mut()
 							.iter_mut()
 							.for_each(|(_, function)| {
-								function.calculate(width_changed, min_max_changed, &self.settings)
+								function.calculate(
+									width_changed,
+									min_max_changed,
+									did_zoom,
+									&self.settings,
+								)
 							});
 
 						let area: Vec<Option<f64>> = self

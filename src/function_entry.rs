@@ -13,7 +13,6 @@ use std::{
 	fmt::{self, Debug},
 	intrinsics::assume,
 };
-use unzip_n::unzip_n;
 
 /// Represents the possible variations of Riemann Sums
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
@@ -257,7 +256,8 @@ impl FunctionEntry {
 
 	/// Does the calculations and stores results in `self`
 	pub fn calculate(
-		&mut self, width_changed: bool, min_max_changed: bool, settings: &AppSettings,
+		&mut self, width_changed: bool, min_max_changed: bool, did_zoom: bool,
+		settings: &AppSettings,
 	) {
 		if self.test_result.is_some() {
 			return;
@@ -279,68 +279,99 @@ impl FunctionEntry {
 		if width_changed {
 			self.invalidate_back();
 			self.invalidate_derivative();
-		} else if min_max_changed && !self.back_data.is_empty() {
+		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom {
 			partial_regen = true;
 
-			let x_data_1: Vec<f64> = self.back_data.iter().map(|ele| ele.x).collect::<Vec<f64>>();
-			let x_data: SteppedVector = x_data_1.as_slice().into();
+			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
 
-			let do_nth_derivative = self.nth_derviative && self.nth_derivative_data.is_some();
+			if prev_min < settings.min_x {
+				let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
 
-			let nth_derivative_data = self.nth_derivative_data.as_ref();
-			unzip_n!(3);
-			let (back_data, derivative_data_1, new_nth_derivative_data): (
-				Vec<Value>,
-				Vec<Value>,
-				Vec<Option<Value>>,
-			) = resolution_iter
-				.clone()
-				.into_iter()
-				.map(|x| {
-					if let Some(i) = x_data.get_index(x) {
-						(
-							self.back_data[i],
-							self.derivative_data[i],
-							do_nth_derivative.then(|| unsafe {
-								nth_derivative_data.map(|data| data[i]).unwrap_unchecked()
-							}),
-						)
-					} else {
-						(
-							Value::new(x, self.function.get(x)),
-							Value::new(x, self.function.get_derivative_1(x)),
-							do_nth_derivative.then(|| {
-								Value::new(x, self.function.get_nth_derivative(self.curr_nth, x))
-							}),
-						)
-					}
-				})
-				.collect::<Vec<(Value, Value, Option<Value>)>>()
-				.into_iter()
-				.unzip_n_vec();
+				{
+					let (cut_data, _) = self.back_data.split_at(min_i);
 
-			debug_assert_eq!(back_data.len(), settings.plot_width + 1);
-			debug_assert_eq!(derivative_data_1.len(), settings.plot_width + 1);
+					let new_data: Vec<Value> = (min_i..=settings.plot_width)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get(x)))
+						.collect();
+					self.back_data = [cut_data, &new_data].concat();
+					debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
+				}
 
-			self.back_data = back_data;
+				{
+					let (cut_data, _) = self.derivative_data.split_at(min_i);
 
-			self.derivative_data = derivative_data_1;
+					let new_data: Vec<Value> = (min_i..=settings.plot_width)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
+						.collect();
+					self.derivative_data = [cut_data, &new_data].concat();
+					debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
+				}
 
-			if do_nth_derivative {
-				/*
-				debug_assert!(new_nth_derivative_data.iter().any(|x| x.is_none()));
-				self.nth_derivative_data = Some(unsafe {
-					std::mem::transmute::<Vec<Option<Value>>, Vec<Value>>(new_nth_derivative_data)
-				});
-				*/
-				self.nth_derivative_data = Some(
-					new_nth_derivative_data
-						.into_iter()
-						.map(|ele| unsafe { ele.unwrap_unchecked() })
-						.collect(),
-				);
+				if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
+					let (cut_data, _) = data.split_at(min_i);
+
+					let new_data: Vec<Value> = (min_i..=settings.plot_width)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
+						.collect();
+					*data = [cut_data, &new_data].concat();
+					debug_assert_eq!(data.len(), settings.plot_width + 1);
+				}
 			} else {
-				self.invalidate_nth();
+				let min_i = ((settings.max_x - prev_min) as f64 / resolution) as usize;
+				let min_i_2 = settings.plot_width - min_i;
+
+				{
+					let (_, cut_data) = self.back_data.split_at(min_i);
+
+					let new_data_1: Vec<Value> = (0..min_i)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get(x)))
+						.collect();
+
+					let new_data_2: Vec<Value> = (min_i..min_i_2)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get(x)))
+						.collect();
+
+					self.back_data = [&new_data_1, cut_data, &new_data_2].concat();
+					debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
+				}
+
+				{
+					let (_, cut_data) = self.derivative_data.split_at(min_i);
+
+					let new_data_1: Vec<Value> = (0..min_i)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
+						.collect();
+
+					let new_data_2: Vec<Value> = (min_i..min_i_2)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
+						.collect();
+
+					self.derivative_data = [&new_data_1, cut_data, &new_data_2].concat();
+					debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
+				}
+
+				if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
+					let (_, cut_data) = data.split_at(min_i);
+
+					let new_data_1: Vec<Value> = (0..min_i)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
+						.collect();
+
+						let new_data_2: Vec<Value> = (min_i..min_i_2)
+						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
+						.collect();
+					*data = [&new_data_1, cut_data, &new_data_2].concat();
+					debug_assert_eq!(data.len(), settings.plot_width + 1);
+				}
 			}
 		} else {
 			self.invalidate_back();
@@ -547,7 +578,7 @@ impl FunctionEntry {
 	) {
 		let mut settings = settings;
 		{
-			self.calculate(true, true, &settings);
+			self.calculate(true, true, false, &settings);
 			assert!(!self.back_data.is_empty());
 			assert_eq!(self.back_data.len(), settings.plot_width + 1);
 
@@ -594,7 +625,7 @@ impl FunctionEntry {
 		{
 			settings.min_x += 1.0;
 			settings.max_x += 1.0;
-			self.calculate(true, true, &settings);
+			self.calculate(true, true, false, &settings);
 
 			let a = self
 				.derivative_data
@@ -656,7 +687,7 @@ impl FunctionEntry {
 		{
 			settings.min_x -= 2.0;
 			settings.max_x -= 2.0;
-			self.calculate(true, true, &settings);
+			self.calculate(true, true, false, &settings);
 
 			let a = self
 				.derivative_data
@@ -735,7 +766,7 @@ impl FunctionEntry {
 			settings.min_x -= 1.0;
 			settings.max_x -= 1.0;
 
-			self.calculate(true, true, &settings);
+			self.calculate(true, true, false, &settings);
 
 			assert!(!self.back_data.is_empty());
 			assert!(self.integral_data.is_none());

@@ -1,31 +1,3 @@
-/// Tests [`SteppedVector`] to ensure everything works properly (helped me find a bunch of issues)
-#[test]
-fn stepped_vector() {
-	use ytbn_graphing_software::SteppedVector;
-
-	let min: i32 = -1000;
-	let max: i32 = 1000;
-	let data: Vec<f64> = (min..=max).map(|x| x as f64).collect();
-	let len_data = data.len();
-	let stepped_vector: SteppedVector = SteppedVector::from(data.as_slice());
-
-	assert_eq!(*stepped_vector.get_min(), min as f64);
-	assert_eq!(*stepped_vector.get_max(), max as f64);
-
-	assert_eq!(stepped_vector.get_index(min as f64), Some(0));
-	assert_eq!(stepped_vector.get_index(max as f64), Some(len_data - 1));
-
-	for i in min..=max {
-		assert_eq!(
-			stepped_vector.get_index(i as f64),
-			Some((i + min.abs()) as usize)
-		);
-	}
-
-	assert_eq!(stepped_vector.get_index((min - 1) as f64), None);
-	assert_eq!(stepped_vector.get_index((max + 1) as f64), None);
-}
-
 /*
 /// Ensures [`decimal_round`] returns correct values
 #[test]
