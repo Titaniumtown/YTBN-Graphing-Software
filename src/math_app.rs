@@ -254,8 +254,8 @@ impl MathApp {
 
 			last_info: (None, None),
 			text: data.text,
-			opened: Opened::default(),
-			settings: Default::default(),
+			opened: const { Opened::default() },
+			settings: const { AppSettings::default() },
 		}
 	}
 
