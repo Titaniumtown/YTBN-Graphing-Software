@@ -20,6 +20,9 @@ else
     exit 1
 fi
 
+pre_size=$(du -sb target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm | awk '{ print $1 }')
+echo "compiled size: $pre_size"
+
 wasm-bindgen target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm --out-dir pkg --target web --no-typescript
 
 if test "$TYPE" == "release"; then
@@ -63,5 +66,8 @@ sed -i "s/ytbn_graphing_software.js/${new_js_name}/g" tmp/*.*
 
 
 
+new_size=$(du -b tmp/${new_wasm_name} | awk '{ print $1 }')
+diff=$(echo "scale=5 ; $new_size / $pre_size" | bc)
+percent=$(echo "scale=5 ; (1-$diff)*100" | bc)
 echo "Total size: $(du -sb tmp)"
-echo "Binary size: $(du -sb tmp/${new_wasm_name})"
+echo "Binary size: $new_size reduced: $percent%"
