@@ -83,9 +83,9 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 			}
 		}
 
-		const fn is_variable(&self) -> bool { self.variable && !self.masked_var }
+		const fn is_unmasked_variable(&self) -> bool { self.variable && !self.masked_var }
 
-		const fn is_number(&self) -> bool { self.number && !self.masked_num }
+		const fn is_unmasked_number(&self) -> bool { self.number && !self.masked_num }
 
 		const fn calculate_mask(&mut self, other: &BoolSlice) {
 			if other.masked_num && self.number {
@@ -94,7 +94,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 			} else if other.masked_var && self.variable {
 				// If previous char was a masked variable, and current char is a variable, mask current char's variable status
 				self.masked_var = true;
-			} else if other.letter && !other.is_variable() {
+			} else if other.letter && !other.is_unmasked_variable() {
 				// If letter and not a variable (or a masked variable)
 				if self.number {
 					// Mask number status if current char is number
@@ -112,24 +112,26 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 			} else if other.closing_parens {
 				// Cases like `)x`, `)2`, and `)(`
 				return (*c == '(')
-					| (self.letter && !self.is_variable())
-					| self.is_variable() | self.is_number();
+					| (self.letter && !self.is_unmasked_variable())
+					| self.is_unmasked_variable()
+					| self.is_unmasked_number();
 			} else if *c == '(' {
 				// Cases like `x(` and `2(`
-				return (other.is_variable() | other.is_number()) && !other.letter;
-			} else if other.is_number() {
+				return (other.is_unmasked_variable() | other.is_unmasked_number())
+					&& !other.letter;
+			} else if other.is_unmasked_number() {
 				// Cases like `2x` and `2sin(x)`
-				return self.is_variable() | self.letter;
-			} else if self.is_variable() | self.letter {
+				return self.is_unmasked_variable() | self.letter;
+			} else if self.is_unmasked_variable() | self.letter {
 				// Cases like `e2` and `xx`
-				return other.is_number()
-					| (other.is_variable() && self.is_variable())
-					| other.is_variable();
-			} else if (self.is_number() | self.letter | self.is_variable())
-				&& (other.is_number() | other.letter)
+				return other.is_unmasked_number()
+					| (other.is_unmasked_variable() && self.is_unmasked_variable())
+					| other.is_unmasked_variable();
+			} else if (self.is_unmasked_number() | self.letter | self.is_unmasked_variable())
+				&& (other.is_unmasked_number() | other.letter)
 			{
 				return true;
-			} else if self.is_number() && other.is_variable() {
+			} else if self.is_unmasked_number() && other.is_unmasked_variable() {
 				// Cases like `x2`
 				return true;
 			} else {
