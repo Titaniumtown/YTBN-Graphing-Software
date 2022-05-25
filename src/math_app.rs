@@ -638,6 +638,8 @@ impl App for MathApp {
 		self.save_functions();
 	}
 
+	fn auto_save_interval(&self) -> std::time::Duration { std::time::Duration::from_secs(10) }
+
 	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
 		crate::style::STYLE.window_fill().into()
 	}
