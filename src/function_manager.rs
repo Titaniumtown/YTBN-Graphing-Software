@@ -132,11 +132,11 @@ impl FunctionManager {
 
 					if movement != Movement::Complete && let Some(hints) = function.autocomplete.hint.many() {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
-                    let popup_id = ui.make_persistent_id("autocomplete_popup");
+					const POPUP_ID: Id = Id::new_from_u64(7574801616484505465);
 
                     let mut clicked = false;
 
-                    egui::popup_below_widget(ui, popup_id, &re, |ui| {
+                    egui::popup_below_widget(ui, POPUP_ID, &re, |ui| {
                         hints.iter().enumerate().for_each(|(i, candidate)| {
                             if ui.selectable_label(i == function.autocomplete.i, *candidate).clicked() {
                                 clicked = true;
@@ -153,7 +153,7 @@ impl FunctionManager {
 
                         movement = Movement::Complete;
                     } else {
-                        ui.memory().open_popup(popup_id);
+                        ui.memory().open_popup(POPUP_ID);
                     }
                 }
 
@@ -171,7 +171,7 @@ impl FunctionManager {
 				const BUTTONS_Y_OFFSET: f32 = 1.32;
 				const Y_OFFSET: f32 = crate::data::FONT_SIZE * BUTTONS_Y_OFFSET;
 
-				widgets_ontop(ui, format!("buttons_area_{}", i), &re, Y_OFFSET, |ui| {
+				widgets_ontop(ui, i, &re, Y_OFFSET, |ui| {
 					ui.horizontal(|ui| {
 						// There's more than 1 function! Functions can now be deleted
 						if ui
