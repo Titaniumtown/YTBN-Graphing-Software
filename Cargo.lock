@@ -96,15 +96,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-lock"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e97a171d191782fba31bb902b14ad94e24a68145032b7eedf871ab0bc0d077b6"
-dependencies = [
- "event-listener",
-]
-
-[[package]]
 name = "atomic_refcell"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -754,12 +745,6 @@ dependencies = [
  "libc",
  "str-buf",
 ]
-
-[[package]]
-name = "event-listener"
-version = "2.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77f3309417938f28bf8228fcff79a4a37103981e3e186d2ccd19c74b38f4eb71"
 
 [[package]]
 name = "exmex"
@@ -2780,7 +2765,6 @@ checksum = "d2d7d3948613f75c98fd9328cfdcc45acc4d360655289d0a7d4ec931392200a3"
 name = "ytbn_graphing_software"
 version = "0.1.0"
 dependencies = [
- "async-lock",
  "benchmarks",
  "bincode",
  "cfg-if 1.0.0",
@@ -2793,7 +2777,6 @@ dependencies = [
  "instant",
  "itertools",
  "parsing",
- "rayon",
  "run_script",
  "ruzstd",
  "serde",

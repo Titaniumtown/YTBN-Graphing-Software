@@ -9,9 +9,6 @@ description = "Crossplatform (and web-compatible) graphing calculator"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[features]
-threading = ["async-lock", "rayon"]
-
 [profile.release]
 debug = false
 codegen-units = 1
@@ -73,8 +70,6 @@ run_script = "0.9"
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = "0.1"
 tracing-subscriber = "0.3"
-rayon = { version = "1.5", optional = true }
-async-lock = { version = "2.5", optional = true }
 getrandom = { version = "0.2" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
