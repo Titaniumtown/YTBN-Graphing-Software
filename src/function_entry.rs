@@ -486,8 +486,8 @@ impl FunctionEntry {
 						.cloned()
 						.collect::<Vec<Value>>()
 						.to_line()
-						.stroke(epaint::Stroke::none())
-						.color(Color32::from_rgb(4, 4, 255))
+						.stroke(const { epaint::Stroke::none() })
+						.color(const { Color32::from_rgb(4, 4, 255) })
 						.fill(0.0),
 				);
 			}
