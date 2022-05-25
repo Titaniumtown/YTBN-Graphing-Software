@@ -14,7 +14,6 @@ phf = { version = "0.10", no-default-features = true }
 exmex = { git = "https://github.com/bertiqwerty/exmex.git", branch = "main", features = [
     "partial",
 ] }
-lazy_static = "1.4"
 
 [build-dependencies]
 phf_codegen = { version = "0.10", no-default-features = true }

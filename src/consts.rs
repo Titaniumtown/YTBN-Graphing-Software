@@ -50,25 +50,3 @@ pub const COLORS: [Color32; 13] = [
 ];
 
 const_assert!(!COLORS.is_empty());
-
-#[cfg(target_arch = "wasm32")]
-lazy_static::lazy_static! {
-	static ref IS_MOBILE: bool = {
-		// from https://github.com/emilk/egui/blob/fda8189cbab18e0acab8db972400e4a4ca0d915e/egui_web/src/text_agent.rs#L194
-		fn is_mobile() -> Option<bool> {
-			const MOBILE_DEVICE: [&str; 6] = ["Android", "iPhone", "iPad", "iPod", "webOS", "BlackBerry"];
-
-			let user_agent = web_sys::window()?.navigator().user_agent().ok()?;
-			Some(MOBILE_DEVICE.iter().any(|&name| user_agent.contains(name)))
-		}
-
-		is_mobile().unwrap_or_default()
-	};
-}
-
-#[inline]
-#[cfg(target_arch = "wasm32")]
-pub fn is_mobile() -> bool { return *IS_MOBILE; }
-
-#[cfg(not(target_arch = "wasm32"))]
-pub const fn is_mobile() -> bool { false }

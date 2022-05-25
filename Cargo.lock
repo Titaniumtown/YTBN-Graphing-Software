@@ -1640,7 +1640,6 @@ name = "parsing"
 version = "0.1.0"
 dependencies = [
  "exmex",
- "lazy_static",
  "phf",
  "phf_codegen",
 ]
@@ -2793,7 +2792,6 @@ dependencies = [
  "getrandom",
  "instant",
  "itertools",
- "lazy_static",
  "parsing",
  "rayon",
  "run_script",

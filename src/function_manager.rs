@@ -1,4 +1,3 @@
-use crate::consts::is_mobile;
 use crate::function_entry::FunctionEntry;
 use crate::misc::random_u64;
 use crate::widgets::widgets_ontop;
@@ -109,7 +108,7 @@ impl FunctionManager {
 				function.autocomplete.update_string(&new_string);
 
 				if function.autocomplete.hint.is_some() {
-					if !function.autocomplete.hint.is_single() && !is_mobile() {
+					if !function.autocomplete.hint.is_single() {
 						if ui.input().key_pressed(Key::ArrowDown) {
 							movement = Movement::Down;
 						} else if ui.input().key_pressed(Key::ArrowUp) {
@@ -118,11 +117,7 @@ impl FunctionManager {
 					}
 
 					// Put here so these key presses don't interact with other elements
-					let enter_pressed = match is_mobile() {
-						true => false,
-						false => ui.input_mut().consume_key(Modifiers::NONE, Key::Enter),
-					};
-
+					let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
 					let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
 					if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
 						movement = Movement::Complete;
