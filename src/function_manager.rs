@@ -117,10 +117,11 @@ impl FunctionManager {
 			);
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			if ui.ctx().animate_bool(*te_id, re.has_focus()) >= 1.0 {
+			if ui.ctx().animate_bool(*te_id, re.has_focus()) == 1.0 {
 				function.autocomplete.update_string(&new_string);
 
 				if function.autocomplete.hint.is_some() {
+					// only register up and down arrow movements if hint is type `Hint::Many`
 					if !function.autocomplete.hint.is_single() {
 						if ui.input().key_pressed(Key::ArrowDown) {
 							movement = Movement::Down;
@@ -136,6 +137,7 @@ impl FunctionManager {
 						movement = Movement::Complete;
 					}
 
+					// Register movement and apply proper changes
 					function.autocomplete.register_movement(&movement);
 
 					if movement != Movement::Complete && let Some(hints) = function.autocomplete.hint.many() {
@@ -192,35 +194,37 @@ impl FunctionManager {
 							remove_i = Some(i);
 						}
 
-						let func_some = function.is_some();
-						// Toggle integral being enabled or not
-						function.integral.bitxor_assign(
-							ui.add_enabled(func_some, button_area_button("∫"))
-								.on_hover_text(match function.integral {
-									true => "Don't integrate",
-									false => "Integrate",
-								})
-								.clicked(),
-						);
+						ui.add_enabled_ui(function.is_some(), |ui| {
+							// Toggle integral being enabled or not
+							function.integral.bitxor_assign(
+								ui.add(button_area_button("∫"))
+									.on_hover_text(match function.integral {
+										true => "Don't integrate",
+										false => "Integrate",
+									})
+									.clicked(),
+							);
 
-						// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
-						function.derivative.bitxor_assign(
-							ui.add_enabled(func_some, button_area_button("d/dx"))
-								.on_hover_text(match function.derivative {
-									true => "Don't Differentiate",
-									false => "Differentiate",
-								})
-								.clicked(),
-						);
+							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
+							function.derivative.bitxor_assign(
+								ui.add(button_area_button("d/dx"))
+									.on_hover_text(match function.derivative {
+										true => "Don't Differentiate",
+										false => "Differentiate",
+									})
+									.clicked(),
+							);
 
-						function.settings_opened.bitxor_assign(
-							ui.add_enabled(func_some, button_area_button("⚙"))
-								.on_hover_text(match function.settings_opened {
-									true => "Close Settings",
-									false => "Open Settings",
-								})
-								.clicked(),
-						);
+							// Toggle showing the settings window
+							function.settings_opened.bitxor_assign(
+								ui.add(button_area_button("⚙"))
+									.on_hover_text(match function.settings_opened {
+										true => "Close Settings",
+										false => "Open Settings",
+									})
+									.clicked(),
+							);
+						});
 					});
 				});
 			}
