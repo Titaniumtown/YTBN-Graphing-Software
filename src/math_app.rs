@@ -175,6 +175,7 @@ impl MathApp {
 						return None;
 					}
 
+					// TODO: stabilize FunctionManager serialize so it can persist across builds
 					let (commit, func_data) = crate::misc::hashed_storage_read(&data)?;
 
 					debug_assert!(!commit.is_empty());
