@@ -160,7 +160,7 @@ impl FunctionEntry {
 			});
 
 		if invalidate_nth {
-			self.invalidate_nth();
+			self.clear_nth();
 		}
 	}
 
@@ -271,14 +271,14 @@ impl FunctionEntry {
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {
-			self.invalidate_integral();
+			self.clear_integral();
 		}
 
 		let mut partial_regen = false;
 
 		if width_changed {
-			self.invalidate_back();
-			self.invalidate_derivative();
+			self.clear_back();
+			self.clear_derivative();
 		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom && {
 			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
 			let prev_max = unsafe { self.back_data.first().unwrap_unchecked() }.x;
@@ -378,8 +378,8 @@ impl FunctionEntry {
 				}
 			}
 		} else {
-			self.invalidate_back();
-			self.invalidate_derivative();
+			self.clear_back();
+			self.clear_derivative();
 		}
 
 		if !partial_regen {
@@ -429,7 +429,7 @@ impl FunctionEntry {
 				));
 			}
 		} else {
-			self.invalidate_integral();
+			self.clear_integral();
 		}
 
 		let threshold: f64 = resolution / 2.0;
@@ -542,26 +542,38 @@ impl FunctionEntry {
 	}
 
 	/// Invalidate entire cache
-	pub fn invalidate_whole(&mut self) {
-		self.invalidate_back();
-		self.invalidate_integral();
-		self.invalidate_derivative();
-		self.invalidate_nth();
-		self.extrema_data.clear();
-		self.root_data.clear();
+	fn invalidate_whole(&mut self) {
+		self.clear_back();
+		self.clear_integral();
+		self.clear_derivative();
+		self.clear_nth();
+		self.clear_extrema();
+		self.clear_roots();
 	}
 
 	/// Invalidate `back` data
-	pub fn invalidate_back(&mut self) { self.back_data.clear(); }
+	#[inline]
+	fn clear_back(&mut self) { self.back_data.clear(); }
 
 	/// Invalidate Integral data
-	pub fn invalidate_integral(&mut self) { self.integral_data = None; }
+	#[inline]
+	fn clear_integral(&mut self) { self.integral_data = None; }
 
 	/// Invalidate Derivative data
-	pub fn invalidate_derivative(&mut self) { self.derivative_data.clear(); }
+	#[inline]
+	fn clear_derivative(&mut self) { self.derivative_data.clear(); }
 
 	/// Invalidates `n`th derivative data
-	pub fn invalidate_nth(&mut self) { self.nth_derivative_data = None }
+	#[inline]
+	fn clear_nth(&mut self) { self.nth_derivative_data = None }
+
+	/// Invalidate extrema data
+	#[inline]
+	fn clear_extrema(&mut self) { self.extrema_data.clear() }
+
+	/// Invalidate root data
+	#[inline]
+	fn clear_roots(&mut self) { self.root_data.clear() }
 
 	/// Runs asserts to make sure everything is the expected value
 	#[allow(dead_code)]
