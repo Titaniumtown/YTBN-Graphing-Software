@@ -32,7 +32,7 @@ impl const Default for Riemann {
 }
 
 /// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc
-#[derive(PartialEq, Clone)]
+#[derive(Clone)]
 pub struct FunctionEntry {
 	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
 	function: BackingFunction,
@@ -63,7 +63,6 @@ pub struct FunctionEntry {
 	pub settings_opened: bool,
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for FunctionEntry {
 	fn hash<H: Hasher>(&self, state: &mut H) {
 		self.raw_func_str.hash(state);
