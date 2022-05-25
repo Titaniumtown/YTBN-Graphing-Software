@@ -477,7 +477,6 @@ impl FunctionEntry {
 						.to_line()
 						.stroke(epaint::Stroke::none())
 						.color(Color32::from_rgb(4, 4, 255))
-						.name(&self.raw_func_str)
 						.fill(0.0),
 				);
 			}
@@ -485,20 +484,13 @@ impl FunctionEntry {
 				self.back_data
 					.clone()
 					.to_line()
-					.stroke(egui::Stroke::new(2.0, main_plot_color))
-					.name(&self.raw_func_str),
+					.stroke(egui::Stroke::new(2.0, main_plot_color)),
 			);
 		}
 
 		// Plot derivative data
 		if self.derivative && !self.derivative_data.is_empty() {
-			plot_ui.line(
-				self.derivative_data
-					.clone()
-					.to_line()
-					.color(Color32::GREEN)
-					.name(self.function.get_derivative_str()),
-			);
+			plot_ui.line(self.derivative_data.clone().to_line().color(Color32::GREEN));
 		}
 
 		// Plot extrema points
@@ -508,7 +500,6 @@ impl FunctionEntry {
 					.clone()
 					.to_points()
 					.color(Color32::YELLOW)
-					.name("Extrema")
 					.radius(5.0), // Radius of points of Extrema
 			);
 		}
@@ -520,7 +511,6 @@ impl FunctionEntry {
 					.clone()
 					.to_points()
 					.color(Color32::LIGHT_BLUE)
-					.name("Root")
 					.radius(5.0), // Radius of points of Roots
 			);
 		}
@@ -530,7 +520,6 @@ impl FunctionEntry {
 				nth_derviative.clone()
 					.to_line()
 					.color(Color32::DARK_RED)
-					.name(self.function.get_nth_derivative_str()),
 			);
 		}
 
