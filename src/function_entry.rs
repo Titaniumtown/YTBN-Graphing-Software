@@ -11,6 +11,7 @@ use parsing::{process_func_str, BackingFunction};
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 use std::{
 	fmt::{self, Debug},
+	hash::{Hash, Hasher},
 	intrinsics::assume,
 };
 
@@ -60,6 +61,16 @@ pub struct FunctionEntry {
 	curr_nth: usize,
 
 	pub settings_opened: bool,
+}
+
+impl Hash for FunctionEntry {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.raw_func_str.hash(state);
+		self.integral.hash(state);
+		self.nth_derviative.hash(state);
+		self.curr_nth.hash(state);
+		self.settings_opened.hash(state);
+	}
 }
 
 impl Serialize for FunctionEntry {

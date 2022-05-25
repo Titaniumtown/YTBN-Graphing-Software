@@ -9,6 +9,9 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 use std::ops::BitXorAssign;
 
 pub struct FunctionManager {
@@ -19,7 +22,7 @@ impl Default for FunctionManager {
 	fn default() -> Self {
 		Self {
 			functions: vec![(
-				Id::new_from_u64(11414819524356497634), // Random number here to avoid call to random
+				Id::new_from_u64(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
 				FunctionEntry::EMPTY,
 			)],
 		}
@@ -72,7 +75,17 @@ const fn button_area_button(text: impl Into<WidgetText>) -> Button {
 }
 
 impl FunctionManager {
-	pub fn display_entries(&mut self, ui: &mut egui::Ui) {
+	#[inline]
+	fn get_hash(&self) -> u64 {
+		let mut hasher = DefaultHasher::new();
+		self.functions.hash(&mut hasher);
+		hasher.finish()
+	}
+
+	/// Displays function entries alongside returning whether or not functions have been modified
+	pub fn display_entries(&mut self, ui: &mut egui::Ui) -> bool {
+		let initial_hash = self.get_hash();
+
 		let can_remove = self.functions.len() > 1;
 
 		let available_width = ui.available_width();
@@ -127,6 +140,8 @@ impl FunctionManager {
 
 					if movement != Movement::Complete && let Some(hints) = function.autocomplete.hint.many() {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
+
+					// hashed "autocomplete_popup"
 					const POPUP_ID: Id = Id::new_from_u64(7574801616484505465);
 
                     let mut clicked = false;
@@ -217,6 +232,10 @@ impl FunctionManager {
 		if let Some(remove_i_unwrap) = remove_i {
 			self.functions.remove(remove_i_unwrap);
 		}
+
+		let final_hash = self.get_hash();
+
+		initial_hash != final_hash
 	}
 
 	/// Create and push new empty function entry

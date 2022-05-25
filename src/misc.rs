@@ -1,5 +1,3 @@
-use std::intrinsics::assume;
-
 use egui::plot::{Line, Points, Value, Values};
 use getrandom::getrandom;
 use itertools::Itertools;
@@ -163,25 +161,27 @@ pub fn hashed_storage_create(hash: HashBytes, data: &[u8]) -> String {
 
 #[allow(dead_code)]
 pub const fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
+	// Make sure data is long enough to decode
 	if HASH_LENGTH >= data.len() {
 		return None;
 	}
 
-	unsafe {
-		assume(!data.is_empty());
-		assume(data.len() > HASH_LENGTH);
-	}
-
+	// Transmute data into slice
 	let decoded_1: &[u8] = unsafe { std::mem::transmute::<&str, &[u8]>(data) };
 
+	// return hash and decoded data
 	Some((
 		unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) },
 		&decoded_1[HASH_LENGTH..],
 	))
 }
 
+/// Creates and returns random u64
 pub fn random_u64() -> Result<u64, getrandom::Error> {
+	// Buffer of 8 `u8`s that are later merged into one u64
 	let mut buf = [0u8; 8];
+	// Populate buffer with random values
 	getrandom(&mut buf)?;
+	// Merge buffer into u64
 	Ok(u64::from_be_bytes(buf))
 }

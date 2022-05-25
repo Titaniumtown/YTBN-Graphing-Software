@@ -386,7 +386,23 @@ impl MathApp {
 					);
 				});
 
-				self.functions.display_entries(ui);
+				if self.functions.display_entries(ui) {
+					#[cfg(target_arch = "wasm32")]
+					{
+						tracing::info!("Saving function data");
+						let hash: crate::misc::HashBytes = unsafe {
+							std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
+						};
+						let saved_data = &crate::misc::hashed_storage_create(
+							hash,
+							bincode::serialize(&self.functions).unwrap().as_slice(),
+						);
+						// tracing::info!("Bytes: {}", saved_data.len());
+						get_localstorage()
+							.set_item(FUNC_NAME, saved_data)
+							.expect("failed to set local function storage");
+					}
+				}
 
 				// Only render if there's enough space
 				if ui.available_height() > crate::data::FONT_SIZE {
@@ -633,31 +649,7 @@ impl App for MathApp {
 		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
 	}
 
-	fn save(&mut self, _: &mut dyn eframe::Storage) {
-		#[cfg(target_arch = "wasm32")]
-		self.save_functions();
-	}
-
-	fn auto_save_interval(&self) -> std::time::Duration { std::time::Duration::from_secs(10) }
-
 	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
 		crate::style::STYLE.window_fill().into()
-	}
-}
-
-impl MathApp {
-	#[cfg(target_arch = "wasm32")]
-	fn save_functions(&self) {
-		tracing::info!("Saving function data");
-		let hash: crate::misc::HashBytes =
-			unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) };
-		let saved_data = &crate::misc::hashed_storage_create(
-			hash,
-			bincode::serialize(&self.functions).unwrap().as_slice(),
-		);
-		// tracing::info!("Bytes: {}", saved_data.len());
-		get_localstorage()
-			.set_item(FUNC_NAME, saved_data)
-			.expect("failed to set local function storage");
 	}
 }
