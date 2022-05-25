@@ -40,8 +40,7 @@ impl Serialize for FunctionManager {
 			&self
 				.functions
 				.iter()
-				.cloned()
-				.map(|(id, func)| (id.value(), func))
+				.map(|(id, func)| (id.value(), func.clone()))
 				.collect::<Vec<(u64, FunctionEntry)>>(),
 		)?;
 		s.end()
