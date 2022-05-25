@@ -60,9 +60,7 @@ benchmarks = { path = "./benchmarks" }
 
 [build-dependencies]
 shadow-rs = "0.11"
-epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
-    "serde",
-] }
+epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
 egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
     "serde",
 ] }
