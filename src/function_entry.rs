@@ -291,35 +291,35 @@ impl FunctionEntry {
 				let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
 
 				{
-					let (cut_data, _) = self.back_data.split_at(min_i);
+					let _ = self.back_data.drain(min_i..=settings.plot_width);
 
-					let new_data: Vec<Value> = (min_i..=settings.plot_width)
+					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
 						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
 						.map(|x: f64| Value::new(x, self.function.get(x)))
 						.collect();
-					self.back_data = [cut_data, &new_data].concat();
+					self.back_data.append(&mut new_data);
 					debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
 				}
 
 				{
-					let (cut_data, _) = self.derivative_data.split_at(min_i);
+					let _ = self.derivative_data.drain(min_i..=settings.plot_width);
 
-					let new_data: Vec<Value> = (min_i..=settings.plot_width)
+					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
 						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
 						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
 						.collect();
-					self.derivative_data = [cut_data, &new_data].concat();
+					self.derivative_data.append(&mut new_data);
 					debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
 				}
 
 				if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
-					let (cut_data, _) = data.split_at(min_i);
+					let _ = data.drain(min_i..=settings.plot_width);
 
-					let new_data: Vec<Value> = (min_i..=settings.plot_width)
+					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
 						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
 						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
 						.collect();
-					*data = [cut_data, &new_data].concat();
+					data.append(&mut new_data);
 					debug_assert_eq!(data.len(), settings.plot_width + 1);
 				}
 			} else {
