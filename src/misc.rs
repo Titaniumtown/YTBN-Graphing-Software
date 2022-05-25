@@ -180,8 +180,8 @@ pub const fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
 	))
 }
 
-pub fn random_u64() -> u64 {
-	let mut data: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
-	getrandom(&mut data).expect("unable to generate random number");
-	u64::from_be_bytes(data)
+pub fn random_u64() -> Result<u64, getrandom::Error> {
+	let mut buf = [0u8; 8];
+	getrandom(&mut buf)?;
+	Ok(u64::from_be_bytes(buf))
 }

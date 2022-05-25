@@ -226,8 +226,10 @@ impl FunctionManager {
 
 	/// Create and push new empty function entry
 	pub fn push_empty(&mut self) {
-		self.functions
-			.push((Id::new_from_u64(random_u64()), FunctionEntry::EMPTY));
+		self.functions.push((
+			Id::new_from_u64(random_u64().expect("unable to generate random id")),
+			FunctionEntry::EMPTY,
+		));
 	}
 
 	/// Detect if any functions are using integrals
