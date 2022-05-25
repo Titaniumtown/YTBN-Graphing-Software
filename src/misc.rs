@@ -166,7 +166,7 @@ pub const fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
 	// Transmute data into slice
 	let decoded_1: &[u8] = unsafe { std::mem::transmute::<&str, &[u8]>(data) };
 
-	// return hash and decoded data
+	// Return hash and decoded data
 	Some((
 		unsafe { *(decoded_1[..HASH_LENGTH].as_ptr() as *const HashBytes) },
 		&decoded_1[HASH_LENGTH..],
