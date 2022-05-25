@@ -259,7 +259,7 @@ impl FunctionEntry {
 		&mut self, width_changed: bool, min_max_changed: bool, did_zoom: bool,
 		settings: &AppSettings,
 	) {
-		if self.test_result.is_some() {
+		if self.test_result.is_some() | self.function.is_none() {
 			return;
 		}
 
