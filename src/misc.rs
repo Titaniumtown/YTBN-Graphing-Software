@@ -88,14 +88,11 @@ pub fn newtons_method(
 
 		// If below threshold, break
 		if (x2 - x1).abs() < threshold {
-			break;
+			return Some(x2);
 		}
 
 		x1 = x2;
 	}
-
-	// return x2 as loop breaks before x1 is set to x2
-	Some(x2)
 }
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
