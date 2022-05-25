@@ -8,10 +8,13 @@ pub(crate) struct FlatExWrapper {
 impl FlatExWrapper {
 	const EMPTY: FlatExWrapper = FlatExWrapper { func: None };
 
+	#[inline]
 	const fn new(f: FlatEx<f64>) -> Self { Self { func: Some(f) } }
 
+	#[inline]
 	const fn is_none(&self) -> bool { self.func.is_none() }
 
+	#[inline]
 	fn eval(&self, x: &[f64]) -> f64 {
 		self.func
 			.as_ref()
@@ -19,6 +22,7 @@ impl FlatExWrapper {
 			.unwrap_or(f64::NAN)
 	}
 
+	#[inline]
 	fn partial(&self, x: usize) -> Self {
 		self.func
 			.as_ref()
@@ -26,8 +30,10 @@ impl FlatExWrapper {
 			.unwrap_or(Self::EMPTY)
 	}
 
+	#[inline]
 	fn get_string(&self) -> &str { self.func.as_ref().map(|f| f.unparse()).unwrap_or("") }
 
+	#[inline]
 	fn partial_iter(&self, x: &[usize]) -> Self {
 		self.func
 			.as_ref()
