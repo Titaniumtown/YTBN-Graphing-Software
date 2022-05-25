@@ -633,8 +633,19 @@ impl App for MathApp {
 		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
 	}
 
-	#[cfg(target_arch = "wasm32")]
 	fn save(&mut self, _: &mut dyn eframe::Storage) {
+		#[cfg(target_arch = "wasm32")]
+		self.save_functions();
+	}
+
+	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
+		crate::style::STYLE.window_fill().into()
+	}
+}
+
+impl MathApp {
+	#[cfg(target_arch = "wasm32")]
+	fn save_functions(&self) {
 		tracing::info!("Saving function data");
 		let hash: crate::misc::HashBytes =
 			unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) };
@@ -646,9 +657,5 @@ impl App for MathApp {
 		get_localstorage()
 			.set_item(FUNC_NAME, saved_data)
 			.expect("failed to set local function storage");
-	}
-
-	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
-		crate::style::STYLE.window_fill().into()
 	}
 }
