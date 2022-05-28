@@ -649,7 +649,7 @@ checksum = "453440c271cf5577fd2a40e4942540cb7d0d2f85e27c8d07dd0023c925a67541"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#2481889aadfab5622212f10a40035dab4af2e8f6"
+source = "git+https://github.com/Titaniumtown/egui.git#ea5ba8a06402482fbe0d56c717d6704cb5054f8f"
 dependencies = [
  "bytemuck",
  "egui",
@@ -669,7 +669,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#2481889aadfab5622212f10a40035dab4af2e8f6"
+source = "git+https://github.com/Titaniumtown/egui.git#ea5ba8a06402482fbe0d56c717d6704cb5054f8f"
 dependencies = [
  "ahash",
  "epaint",
@@ -681,7 +681,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#2481889aadfab5622212f10a40035dab4af2e8f6"
+source = "git+https://github.com/Titaniumtown/egui.git#ea5ba8a06402482fbe0d56c717d6704cb5054f8f"
 dependencies = [
  "arboard",
  "egui",
@@ -695,7 +695,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#2481889aadfab5622212f10a40035dab4af2e8f6"
+source = "git+https://github.com/Titaniumtown/egui.git#ea5ba8a06402482fbe0d56c717d6704cb5054f8f"
 dependencies = [
  "bytemuck",
  "egui",
@@ -715,7 +715,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#2481889aadfab5622212f10a40035dab4af2e8f6"
+source = "git+https://github.com/Titaniumtown/egui.git#ea5ba8a06402482fbe0d56c717d6704cb5054f8f"
 dependencies = [
  "bytemuck",
  "serde",
@@ -724,7 +724,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#2481889aadfab5622212f10a40035dab4af2e8f6"
+source = "git+https://github.com/Titaniumtown/egui.git#ea5ba8a06402482fbe0d56c717d6704cb5054f8f"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -1006,9 +1006,9 @@ dependencies = [
 
 [[package]]
 name = "inferno"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16d4bde3a7105e59c66a4104cfe9606453af1c7a0eac78cb7d5bc263eb762a70"
+checksum = "1a3cb215599901c8f491666421d44ffaed08d6872b4c7ced6f425683b951271e"
 dependencies = [
  "ahash",
  "atty",
@@ -1761,9 +1761,9 @@ dependencies = [
 
 [[package]]
 name = "quick-xml"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8533f14c8382aaad0d592c812ac3b826162128b65662331e1127b45c3d18536b"
+checksum = "9279fbdacaad3baf559d8cabe0acc3d06e30ea14931af31af79578ac0946decc"
 dependencies = [
  "memchr",
 ]
