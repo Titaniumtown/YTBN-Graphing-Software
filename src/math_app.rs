@@ -647,7 +647,7 @@ impl App for MathApp {
 			});
 
 		// Calculate and store the last time it took to draw the frame
-		self.last_info.1 = start.map(|a| format!("Took: {:?}", a.elapsed()));
+		self.last_info.1 = start.map(|a| format!("Took: {}ms", a.elapsed().as_micros()));
 	}
 
 	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
