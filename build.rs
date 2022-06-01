@@ -105,8 +105,6 @@ fn main() {
 		let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
 
 		write!(&mut file, "{}", chars_array).expect("unable to write chars_array");
-		// file.write_all(data_compressed.as_slice())
-		// .expect("Failed to save compressed data");
 	}
 
 	let fonts = FontDefinitions {
