@@ -21,6 +21,7 @@ mod function_manager;
 mod math_app;
 mod misc;
 mod style;
+mod unicode_helper;
 mod widgets;
 
 // For running the program natively! (Because why not?)

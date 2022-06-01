@@ -15,7 +15,12 @@ use run_script::ScriptOptions;
 
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/data.rs"));
 
-fn font_stripper(from: &str, out: &str, unicodes: &[&str]) -> Result<Vec<u8>, String> {
+include!(concat!(
+	env!("CARGO_MANIFEST_DIR"),
+	"/src/unicode_helper.rs"
+));
+
+fn font_stripper(from: &str, out: &str, unicodes: Vec<String>) -> Result<Vec<u8>, String> {
 	let new_path = [&env::var("OUT_DIR").unwrap(), out].concat();
 	let unicodes_formatted = unicodes
 		.iter()
@@ -57,18 +62,32 @@ fn main() {
 
 	shadow_rs::new().expect("Could not initialize shadow_rs");
 
-	let font_ubuntu_light = FontData::from_static(include_bytes!("assets/Ubuntu-Light.ttf"));
+	let mut main_chars: Vec<char> =
+		b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzsu0123456789?.,!(){}[]-_=+-/<>'\\ :^*`@#$%&|~"
+			.into_iter()
+			.map(|c| *c as char)
+			.collect();
+
+	main_chars.append(&mut vec!['π']);
+
+	let processed_normal: Vec<String> = main_chars.iter().map(|a| to_unicode_hash(*a)).collect();
 
 	let fonts = FontDefinitions {
 		font_data: BTreeMap::from([
-			("Ubuntu-Light".to_owned(), font_ubuntu_light),
+			(
+				"Ubuntu-Light".to_owned(),
+				FontData::from_owned(
+					font_stripper("Ubuntu-Light.ttf", "ubuntu-light.ttf", processed_normal)
+						.unwrap(),
+				),
+			),
 			(
 				"NotoEmoji-Regular".to_owned(),
 				FontData::from_owned(
 					font_stripper(
 						"NotoEmoji-Regular.ttf",
 						"noto-emoji.ttf",
-						&["1F31E", "1F319", "2716"],
+						vec!["1F31E".to_owned(), "1F319".to_owned(), "2716".to_owned()],
 					)
 					.unwrap(),
 				),
@@ -76,7 +95,12 @@ fn main() {
 			(
 				"emoji-icon-font".to_owned(),
 				FontData::from_owned(
-					font_stripper("emoji-icon-font.ttf", "emoji-icon.ttf", &["2699"]).unwrap(),
+					font_stripper(
+						"emoji-icon-font.ttf",
+						"emoji-icon.ttf",
+						vec!["2699".to_owned()],
+					)
+					.unwrap(),
 				)
 				.tweak(FontTweak {
 					scale: 0.8,

@@ -195,3 +195,9 @@ fn newtons_method() {
 	);
 	assert_eq!(data, None);
 }
+
+#[test]
+fn to_unicode_hash() {
+	use ytbn_graphing_software::to_unicode_hash;
+	assert_eq!(to_unicode_hash('\u{1f31e}'), "\\U1F31E");
+}

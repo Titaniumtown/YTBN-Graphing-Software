@@ -21,6 +21,7 @@ mod function_manager;
 mod math_app;
 mod misc;
 mod style;
+mod unicode_helper;
 mod widgets;
 
 pub use crate::{
@@ -35,6 +36,7 @@ pub use crate::{
 		step_helper,
 		EguiHelper,
 	},
+	unicode_helper::to_unicode_hash,
 };
 
 cfg_if::cfg_if! {
