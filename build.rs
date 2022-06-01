@@ -59,12 +59,10 @@ fn main() {
 
 	shadow_rs::new().expect("Could not initialize shadow_rs");
 
-	// let font_hack = FontData::from_static(include_bytes!("assets/Hack-Regular.ttf"));
 	let font_ubuntu_light = FontData::from_static(include_bytes!("assets/Ubuntu-Light.ttf"));
 
 	let fonts = FontDefinitions {
 		font_data: BTreeMap::from([
-			// ("Hack".to_owned(), font_hack),
 			("Ubuntu-Light".to_owned(), font_ubuntu_light),
 			(
 				"NotoEmoji-Regular".to_owned(),
@@ -93,7 +91,6 @@ fn main() {
 			(
 				FontFamily::Monospace,
 				vec![
-					// "Hack".to_owned(),
 					"Ubuntu-Light".to_owned(),
 					"NotoEmoji-Regular".to_owned(),
 					"emoji-icon-font".to_owned(),
