@@ -63,12 +63,12 @@ fn main() {
 	shadow_rs::new().expect("Could not initialize shadow_rs");
 
 	let mut main_chars: Vec<char> =
-		b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzsu0123456789?.,!(){}[]-_=+-/<>'\\ :^*`@#$%&|~"
+		b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzsu0123456789?.,!(){}[]-_=+-/<>'\\ :^*`@#$%&|~;"
 			.into_iter()
 			.map(|c| *c as char)
 			.collect();
 
-	main_chars.append(&mut vec!['π']);
+	main_chars.append(&mut vec!['π', '"']);
 
 	let processed_normal: Vec<String> = main_chars.iter().map(|a| to_unicode_hash(*a)).collect();
 
