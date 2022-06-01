@@ -182,3 +182,7 @@ pub fn random_u64() -> Result<u64, getrandom::Error> {
 	// Merge buffer into u64
 	Ok(u64::from_be_bytes(buf))
 }
+
+include!(concat!(env!("OUT_DIR"), "/valid_chars.rs"));
+
+pub fn is_valid_char(c: &char) -> bool { c.is_alphanumeric() | VALID_EXTRA_CHARS.contains(c) }

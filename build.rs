@@ -20,7 +20,9 @@ include!(concat!(
 	"/src/unicode_helper.rs"
 ));
 
-fn font_stripper(from: &str, out: &str, unicodes: Vec<String>) -> Result<Vec<u8>, String> {
+fn font_stripper(from: &str, out: &str, unicodes: Vec<char>) -> Result<Vec<u8>, String> {
+	let unicodes: Vec<String> = unicodes.iter().map(|c| to_unicode_hash(*c)).collect();
+
 	let new_path = [&env::var("OUT_DIR").unwrap(), out].concat();
 	let unicodes_formatted = unicodes
 		.iter()
@@ -70,15 +72,54 @@ fn main() {
 
 	main_chars.append(&mut vec!['π', '"']);
 
-	let processed_normal: Vec<String> = main_chars.iter().map(|a| to_unicode_hash(*a)).collect();
+	{
+		let filtered_chars: Vec<char> = main_chars
+			.iter()
+			.filter(|c| !c.is_alphanumeric())
+			.cloned()
+			.collect();
+
+		let chars_array = format!(
+			"const VALID_EXTRA_CHARS: [char; {}] = {};",
+			filtered_chars.len(),
+			[
+				"[",
+				&filtered_chars
+					.iter()
+					.map(|c| format!("'{}'", c.escape_unicode()))
+					.enumerate()
+					.map(|(i, x)| {
+						// Add comma and space if needed
+						match filtered_chars.len() > i + 1 {
+							true => x + ", ",
+							false => x,
+						}
+					})
+					.collect::<Vec<String>>()
+					.concat(),
+				"]",
+			]
+			.concat()
+		);
+		let path = Path::new(&env::var("OUT_DIR").unwrap()).join("valid_chars.rs");
+		let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
+
+		write!(&mut file, "{}", chars_array).expect("unable to write chars_array");
+		// file.write_all(data_compressed.as_slice())
+		// .expect("Failed to save compressed data");
+	}
 
 	let fonts = FontDefinitions {
 		font_data: BTreeMap::from([
 			(
 				"Ubuntu-Light".to_owned(),
 				FontData::from_owned(
-					font_stripper("Ubuntu-Light.ttf", "ubuntu-light.ttf", processed_normal)
-						.unwrap(),
+					font_stripper(
+						"Ubuntu-Light.ttf",
+						"ubuntu-light.ttf",
+						[main_chars, vec!['∫']].concat(),
+					)
+					.unwrap(),
 				),
 			),
 			(
@@ -87,7 +128,7 @@ fn main() {
 					font_stripper(
 						"NotoEmoji-Regular.ttf",
 						"noto-emoji.ttf",
-						vec!["1F31E".to_owned(), "1F319".to_owned(), "2716".to_owned()],
+						vec!['🌞', '🌙', '✖'],
 					)
 					.unwrap(),
 				),
@@ -95,12 +136,7 @@ fn main() {
 			(
 				"emoji-icon-font".to_owned(),
 				FontData::from_owned(
-					font_stripper(
-						"emoji-icon-font.ttf",
-						"emoji-icon.ttf",
-						vec!["2699".to_owned()],
-					)
-					.unwrap(),
+					font_stripper("emoji-icon-font.ttf", "emoji-icon.ttf", vec!['⚙']).unwrap(),
 				)
 				.tweak(FontTweak {
 					scale: 0.8,
