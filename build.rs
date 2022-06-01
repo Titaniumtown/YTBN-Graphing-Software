@@ -66,7 +66,7 @@ fn main() {
 
 	let mut main_chars: Vec<char> =
 		b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzsu0123456789?.,!(){}[]-_=+-/<>'\\ :^*`@#$%&|~;"
-			.into_iter()
+			.iter()
 			.map(|c| *c as char)
 			.collect();
 

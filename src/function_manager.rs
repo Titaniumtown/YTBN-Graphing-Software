@@ -118,7 +118,7 @@ impl FunctionManager {
 			// Only keep valid chars
 			new_string = new_string
 				.chars()
-				.filter(|c| crate::misc::is_valid_char(c))
+				.filter(crate::misc::is_valid_char)
 				.collect::<String>();
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
