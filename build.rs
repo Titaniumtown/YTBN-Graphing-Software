@@ -25,10 +25,8 @@ fn font_stripper(from: &str, out: &str, unicodes: &[&str]) -> Result<Vec<u8>, St
 
 	let script_result = run_script::run(
 		&format!(
-			"
-			pyftsubset {}/assets/{} --unicodes={}
-			mv {}/assets/{} {}
-         ",
+			"pyftsubset {}/assets/{} --unicodes={}
+			mv {}/assets/{} {}",
 			env!("CARGO_MANIFEST_DIR"),
 			from,
 			unicodes_formatted,
