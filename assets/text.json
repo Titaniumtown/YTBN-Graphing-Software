@@ -20,7 +20,7 @@
 		"`⚙` opens a window to tweak function options."
 	],
 	"help_other": [
-		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points located on the graph. You can toggle these in the Side Panel."
+		"- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points respectively located on the graph. These can be toggled in the side panel."
 	],
 	"welcome": [
 		"Welcome to the (Yet-to-be-named) Graphing Software!",
