@@ -292,38 +292,36 @@ impl FunctionEntry {
 			self.clear_derivative();
 		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom && {
 			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
-			let prev_max = unsafe { self.back_data.first().unwrap_unchecked() }.x;
-			(settings.min_x <= prev_max) && (settings.max_x >= prev_min)
+			prev_min < settings.min_x
 		} {
 			partial_regen = true;
 			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
 
-			if prev_min < settings.min_x {
-				let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
+			let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
 
-				{
-					let _ = self.back_data.drain(min_i..=settings.plot_width);
+			{
+				let _ = self.back_data.drain(min_i..=settings.plot_width);
 
-					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get(x)))
-						.collect();
-					self.back_data.append(&mut new_data);
-					debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
-				}
+				let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
+					.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+					.map(|x: f64| Value::new(x, self.function.get(x)))
+					.collect();
+				self.back_data.append(&mut new_data);
+				debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
+			}
 
-				{
-					let _ = self.derivative_data.drain(min_i..=settings.plot_width);
+			{
+				let _ = self.derivative_data.drain(min_i..=settings.plot_width);
 
-					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
-						.collect();
-					self.derivative_data.append(&mut new_data);
-					debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
-				}
+				let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
+					.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
+					.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
+					.collect();
+				self.derivative_data.append(&mut new_data);
+				debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
+			}
 
-				if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
+			if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
 					let _ = data.drain(min_i..=settings.plot_width);
 
 					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
@@ -333,61 +331,6 @@ impl FunctionEntry {
 					data.append(&mut new_data);
 					debug_assert_eq!(data.len(), settings.plot_width + 1);
 				}
-			} else {
-				// TODO: fix weird values on the far right when scrolling fast left-ward
-				let min_i = ((settings.max_x - prev_min) as f64 / resolution) as usize;
-				let min_i_2 = settings.plot_width - min_i;
-
-				{
-					let (_, cut_data) = self.back_data.split_at(min_i);
-
-					let new_data_1: Vec<Value> = (0..min_i)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get(x)))
-						.collect();
-
-					let new_data_2: Vec<Value> = (min_i..min_i_2)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get(x)))
-						.collect();
-
-					self.back_data = [&new_data_1, cut_data, &new_data_2].concat();
-					debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
-				}
-
-				{
-					let (_, cut_data) = self.derivative_data.split_at(min_i);
-
-					let new_data_1: Vec<Value> = (0..min_i)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
-						.collect();
-
-					let new_data_2: Vec<Value> = (min_i..min_i_2)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
-						.collect();
-
-					self.derivative_data = [&new_data_1, cut_data, &new_data_2].concat();
-					debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
-				}
-
-				if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
-					let (_, cut_data) = data.split_at(min_i);
-
-					let new_data_1: Vec<Value> = (0..min_i)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
-						.collect();
-
-						let new_data_2: Vec<Value> = (min_i..min_i_2)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
-						.collect();
-					*data = [&new_data_1, cut_data, &new_data_2].concat();
-					debug_assert_eq!(data.len(), settings.plot_width + 1);
-				}
-			}
 		} else {
 			self.clear_back();
 			self.clear_derivative();
