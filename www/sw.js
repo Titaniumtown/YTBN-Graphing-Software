@@ -4,7 +4,7 @@ var filesToCache = [
     './index.html',
     './ytbn_graphing_software.js',
     './ytbn_graphing_software_bg.wasm',
-    "./favicon.ico"
+    "./logo.svg"
 ];
 
 /* Start the service worker and cache all of the app's content */

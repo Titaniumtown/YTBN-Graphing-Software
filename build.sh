@@ -43,6 +43,7 @@ sed -i "s/TextEncoder('utf-8')/TextEncoder('utf-8', { ignoreBOM: true, fatal: fa
 minify pkg/ytbn_graphing_software.js > tmp/ytbn_graphing_software.js
 
 cp www/* tmp/
+cp assets/logo.svg tmp/
 minify www/index.html > tmp/index.html
 minify www/sw.js > tmp/sw.js
 
