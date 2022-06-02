@@ -201,3 +201,12 @@ fn to_unicode_hash() {
 	use ytbn_graphing_software::to_unicode_hash;
 	assert_eq!(to_unicode_hash('\u{1f31e}'), "\\U1F31E");
 }
+
+#[test]
+fn to_chars_array() {
+	use ytbn_graphing_software::to_chars_array;
+	assert_eq!(
+		to_chars_array(vec!['\u{1f31e}', '\u{2d12c}']),
+		r#"['\u{1f31e}', '\u{2d12c}']"#
+	);
+}

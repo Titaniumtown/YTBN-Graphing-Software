@@ -36,7 +36,7 @@ pub use crate::{
 		step_helper,
 		EguiHelper,
 	},
-	unicode_helper::to_unicode_hash,
+	unicode_helper::{to_chars_array, to_unicode_hash},
 };
 
 cfg_if::cfg_if! {

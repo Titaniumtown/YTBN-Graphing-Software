@@ -82,24 +82,7 @@ fn main() {
 		let chars_array = format!(
 			"const VALID_EXTRA_CHARS: [char; {}] = {};",
 			filtered_chars.len(),
-			[
-				"[",
-				&filtered_chars
-					.iter()
-					.map(|c| format!("'{}'", c.escape_unicode()))
-					.enumerate()
-					.map(|(i, x)| {
-						// Add comma and space if needed
-						match filtered_chars.len() > i + 1 {
-							true => x + ", ",
-							false => x,
-						}
-					})
-					.collect::<Vec<String>>()
-					.concat(),
-				"]",
-			]
-			.concat()
+			to_chars_array(filtered_chars),
 		);
 		let path = Path::new(&env::var("OUT_DIR").unwrap()).join("valid_chars.rs");
 		let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
