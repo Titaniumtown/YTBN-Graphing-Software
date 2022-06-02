@@ -1,8 +1,7 @@
-use crate::consts::*;
-use crate::data::TextData;
-use crate::function_entry::Riemann;
-use crate::function_manager::FunctionManager;
-use crate::misc::option_vec_printer;
+use crate::{
+	consts::*, data::TextData, function_entry::Riemann, function_manager::FunctionManager,
+	misc::option_vec_printer,
+};
 use eframe::App;
 use egui::{
 	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,

@@ -1,18 +1,13 @@
-use crate::consts::COLORS;
-use crate::function_entry::FunctionEntry;
-use crate::misc::random_u64;
-use crate::widgets::widgets_ontop;
+use crate::{
+	consts::COLORS, function_entry::FunctionEntry, misc::random_u64, widgets::widgets_ontop,
+};
 use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
 use parsing::Movement;
 use serde::ser::SerializeStruct;
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::Serialize;
-use serde::Serializer;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::hash_map::DefaultHasher;
-use std::hash::Hash;
-use std::hash::Hasher;
+use std::hash::{Hash, Hasher};
 use std::ops::BitXorAssign;
 
 type Functions = Vec<(Id, FunctionEntry)>;
