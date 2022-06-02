@@ -163,8 +163,7 @@ fn main() {
 		]),
 	};
 
-	let text_json: serde_json::Value =
-		serde_json::from_str(include_str!("assets/text.json")).unwrap();
+	let text_json: serde_json::Value = json5::from_str(include_str!("assets/text.json5")).unwrap();
 	let mut json_file_array = text_json.as_object().unwrap().clone();
 	for value in json_file_array.iter_mut() {
 		if let serde_json::Value::Array(values) = value.1 {

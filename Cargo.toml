@@ -66,6 +66,7 @@ serde = "1"
 serde_json = "1"
 zstd = "0.11"
 run_script = "0.9"
+json5 = "0.4"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 instant = "0.1"
