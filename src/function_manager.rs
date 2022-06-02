@@ -1,3 +1,4 @@
+use crate::consts::COLORS;
 use crate::function_entry::FunctionEntry;
 use crate::misc::random_u64;
 use crate::widgets::widgets_ontop;
@@ -14,18 +15,19 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::ops::BitXorAssign;
 
+type Functions = Vec<(Id, FunctionEntry)>;
 pub struct FunctionManager {
-	functions: Vec<(Id, FunctionEntry)>,
+	functions: Functions,
 }
 
 impl Default for FunctionManager {
 	fn default() -> Self {
-		Self {
-			functions: vec![(
-				Id::new_from_u64(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
-				FunctionEntry::EMPTY,
-			)],
-		}
+		let mut vec: Functions = Vec::with_capacity(COLORS.len());
+		vec.push((
+			Id::new_from_u64(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
+			FunctionEntry::EMPTY,
+		));
+		Self { functions: vec }
 	}
 }
 
@@ -264,8 +266,8 @@ impl FunctionManager {
 	pub fn len(&self) -> usize { self.functions.len() }
 
 	#[inline]
-	pub fn get_entries_mut(&mut self) -> &mut Vec<(Id, FunctionEntry)> { &mut self.functions }
+	pub fn get_entries_mut(&mut self) -> &mut Functions { &mut self.functions }
 
 	#[inline]
-	pub fn get_entries(&self) -> &Vec<(Id, FunctionEntry)> { &self.functions }
+	pub fn get_entries(&self) -> &Functions { &self.functions }
 }
