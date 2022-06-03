@@ -623,7 +623,7 @@ impl App for MathApp {
 									width_changed,
 									min_max_changed,
 									did_zoom,
-									&self.settings,
+									self.settings,
 								)
 							});
 

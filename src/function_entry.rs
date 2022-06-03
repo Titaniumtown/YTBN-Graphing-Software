@@ -38,7 +38,7 @@ pub struct FunctionEntry {
 	function: BackingFunction,
 
 	/// Stores a function string (that hasn't been processed via `process_func_str`) to display to the user
-	raw_func_str: String,
+	pub raw_func_str: String,
 
 	/// If calculating/displayingintegrals are enabled
 	pub integral: bool,
@@ -48,11 +48,11 @@ pub struct FunctionEntry {
 
 	pub nth_derviative: bool,
 
-	back_data: Vec<Value>,
-	integral_data: Option<(Vec<Bar>, f64)>,
-	derivative_data: Vec<Value>,
-	extrema_data: Vec<Value>,
-	root_data: Vec<Value>,
+	pub back_data: Vec<Value>,
+	pub integral_data: Option<(Vec<Bar>, f64)>,
+	pub derivative_data: Vec<Value>,
+	pub extrema_data: Vec<Value>,
+	pub root_data: Vec<Value>,
 	nth_derivative_data: Option<Vec<Value>>,
 
 	pub autocomplete: AutoComplete<'static>,
@@ -268,7 +268,7 @@ impl FunctionEntry {
 	/// Does the calculations and stores results in `self`
 	pub fn calculate(
 		&mut self, width_changed: bool, min_max_changed: bool, did_zoom: bool,
-		settings: &AppSettings,
+		settings: AppSettings,
 	) {
 		if self.test_result.is_some() | self.function.is_none() {
 			return;
@@ -528,210 +528,4 @@ impl FunctionEntry {
 	/// Invalidate root data
 	#[inline]
 	fn clear_roots(&mut self) { self.root_data.clear() }
-
-	/// Runs asserts to make sure everything is the expected value
-	#[allow(dead_code)]
-	pub fn tests(
-		&mut self, settings: AppSettings, back_target: Vec<(f64, f64)>,
-		derivative_target: Vec<(f64, f64)>, area_target: f64,
-	) {
-		let mut settings = settings;
-		{
-			self.calculate(true, true, false, &settings);
-			assert!(!self.back_data.is_empty());
-			assert_eq!(self.back_data.len(), settings.plot_width + 1);
-
-			assert!(self.integral);
-			assert!(self.derivative);
-
-			assert_eq!(!self.root_data.is_empty(), settings.do_roots);
-			assert_eq!(!self.extrema_data.is_empty(), settings.do_extrema);
-			assert!(!self.derivative_data.is_empty());
-			assert!(self.integral_data.is_some());
-
-			assert_eq!(self.integral_data.clone().unwrap().1, area_target);
-
-			let a = self.derivative_data.clone().to_tuple();
-
-			assert_eq!(a.len(), derivative_target.len());
-
-			for i in 0..a.len() {
-				if !emath::almost_equal(a[i].0 as f32, derivative_target[i].0 as f32, f32::EPSILON)
-					| !emath::almost_equal(
-						a[i].1 as f32,
-						derivative_target[i].1 as f32,
-						f32::EPSILON,
-					) {
-					panic!("Expected: {:?}\nGot: {:?}", a, derivative_target);
-				}
-			}
-
-			let a_1 = self.back_data.clone().to_tuple();
-
-			assert_eq!(a_1.len(), back_target.len());
-
-			assert_eq!(a.len(), back_target.len());
-
-			for i in 0..a.len() {
-				if !emath::almost_equal(a_1[i].0 as f32, back_target[i].0 as f32, f32::EPSILON)
-					| !emath::almost_equal(a_1[i].1 as f32, back_target[i].1 as f32, f32::EPSILON)
-				{
-					panic!("Expected: {:?}\nGot: {:?}", a_1, back_target);
-				}
-			}
-		}
-
-		{
-			settings.min_x += 1.0;
-			settings.max_x += 1.0;
-			self.calculate(true, true, false, &settings);
-
-			let a = self
-				.derivative_data
-				.clone()
-				.to_tuple()
-				.iter()
-				.take(6)
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			let b = derivative_target
-				.iter()
-				.rev()
-				.take(6)
-				.rev()
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			assert_eq!(a.len(), b.len());
-
-			for i in 0..a.len() {
-				if !emath::almost_equal(a[i].0 as f32, b[i].0 as f32, f32::EPSILON)
-					| !emath::almost_equal(a[i].1 as f32, b[i].1 as f32, f32::EPSILON)
-				{
-					panic!("Expected: {:?}\nGot: {:?}", a, b);
-				}
-			}
-
-			let a_1 = self
-				.back_data
-				.clone()
-				.to_tuple()
-				.iter()
-				.take(6)
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			let b_1 = back_target
-				.iter()
-				.rev()
-				.take(6)
-				.rev()
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			assert_eq!(a_1.len(), b_1.len());
-
-			assert_eq!(a.len(), b_1.len());
-
-			for i in 0..a.len() {
-				if !emath::almost_equal(a_1[i].0 as f32, b_1[i].0 as f32, f32::EPSILON)
-					| !emath::almost_equal(a_1[i].1 as f32, b_1[i].1 as f32, f32::EPSILON)
-				{
-					panic!("Expected: {:?}\nGot: {:?}", a_1, b_1);
-				}
-			}
-		}
-
-		{
-			settings.min_x -= 2.0;
-			settings.max_x -= 2.0;
-			self.calculate(true, true, false, &settings);
-
-			let a = self
-				.derivative_data
-				.clone()
-				.to_tuple()
-				.iter()
-				.rev()
-				.take(6)
-				.rev()
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			let b = derivative_target
-				.iter()
-				.take(6)
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			assert_eq!(a.len(), b.len());
-
-			for i in 0..a.len() {
-				if !emath::almost_equal(a[i].0 as f32, b[i].0 as f32, f32::EPSILON)
-					| !emath::almost_equal(a[i].1 as f32, b[i].1 as f32, f32::EPSILON)
-				{
-					panic!("Expected: {:?}\nGot: {:?}", a, b);
-				}
-			}
-
-			let a_1 = self
-				.back_data
-				.clone()
-				.to_tuple()
-				.iter()
-				.rev()
-				.take(6)
-				.rev()
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			let b_1 = back_target
-				.iter()
-				.take(6)
-				.cloned()
-				.collect::<Vec<(f64, f64)>>();
-
-			assert_eq!(a_1.len(), b_1.len());
-
-			assert_eq!(a.len(), b_1.len());
-
-			for i in 0..a.len() {
-				if !emath::almost_equal(a_1[i].0 as f32, b_1[i].0 as f32, f32::EPSILON)
-					| !emath::almost_equal(a_1[i].1 as f32, b_1[i].1 as f32, f32::EPSILON)
-				{
-					panic!("Expected: {:?}\nGot: {:?}", a_1, b_1);
-				}
-			}
-		}
-
-		{
-			self.update_string("sin(x)");
-			assert!(self.get_test_result().is_none());
-			assert_eq!(&self.raw_func_str, "sin(x)");
-
-			self.integral = false;
-			self.derivative = false;
-
-			assert!(!self.integral);
-			assert!(!self.derivative);
-
-			assert!(self.back_data.is_empty());
-			assert!(self.integral_data.is_none());
-			assert!(self.root_data.is_empty());
-			assert!(self.extrema_data.is_empty());
-			assert!(self.derivative_data.is_empty());
-
-			settings.min_x -= 1.0;
-			settings.max_x -= 1.0;
-
-			self.calculate(true, true, false, &settings);
-
-			assert!(!self.back_data.is_empty());
-			assert!(self.integral_data.is_none());
-			assert!(self.root_data.is_empty());
-			assert!(self.extrema_data.is_empty());
-			assert!(!self.derivative_data.is_empty());
-		}
-	}
 }

@@ -1,4 +1,4 @@
-use ytbn_graphing_software::{AppSettings, FunctionEntry, Riemann};
+use ytbn_graphing_software::{AppSettings, EguiHelper, FunctionEntry, Riemann};
 
 fn app_settings_constructor(
 	sum: Riemann, integral_min_x: f64, integral_max_x: f64, pixel_width: usize,
@@ -46,6 +46,7 @@ static DERIVATIVE_TARGET: [(f64, f64); 11] = [
 	(1.0, 2.0),
 ];
 
+#[cfg(test)]
 fn do_test(sum: Riemann, area_target: f64) {
 	let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10, -1.0, 1.0);
 
@@ -54,12 +55,201 @@ fn do_test(sum: Riemann, area_target: f64) {
 	function.integral = true;
 	function.derivative = true;
 
-	function.tests(
-		settings,
-		BACK_TARGET.to_vec(),
-		DERIVATIVE_TARGET.to_vec(),
-		area_target,
-	);
+	let mut settings = settings;
+	{
+		function.calculate(true, true, false, settings);
+		assert!(!function.back_data.is_empty());
+		assert_eq!(function.back_data.len(), settings.plot_width + 1);
+
+		assert!(function.integral);
+		assert!(function.derivative);
+
+		assert_eq!(!function.root_data.is_empty(), settings.do_roots);
+		assert_eq!(!function.extrema_data.is_empty(), settings.do_extrema);
+		assert!(!function.derivative_data.is_empty());
+		assert!(function.integral_data.is_some());
+
+		assert_eq!(function.integral_data.clone().unwrap().1, area_target);
+
+		let a = function.derivative_data.clone().to_tuple();
+
+		assert_eq!(a.len(), DERIVATIVE_TARGET.len());
+
+		for i in 0..a.len() {
+			if !emath::almost_equal(a[i].0 as f32, DERIVATIVE_TARGET[i].0 as f32, f32::EPSILON)
+				| !emath::almost_equal(a[i].1 as f32, DERIVATIVE_TARGET[i].1 as f32, f32::EPSILON)
+			{
+				panic!("Expected: {:?}\nGot: {:?}", a, DERIVATIVE_TARGET);
+			}
+		}
+
+		let a_1 = function.back_data.clone().to_tuple();
+
+		assert_eq!(a_1.len(), BACK_TARGET.len());
+
+		assert_eq!(a.len(), BACK_TARGET.len());
+
+		for i in 0..a.len() {
+			if !emath::almost_equal(a_1[i].0 as f32, BACK_TARGET[i].0 as f32, f32::EPSILON)
+				| !emath::almost_equal(a_1[i].1 as f32, BACK_TARGET[i].1 as f32, f32::EPSILON)
+			{
+				panic!("Expected: {:?}\nGot: {:?}", a_1, BACK_TARGET);
+			}
+		}
+	}
+
+	{
+		settings.min_x += 1.0;
+		settings.max_x += 1.0;
+		function.calculate(true, true, false, settings);
+
+		let a = function
+			.derivative_data
+			.clone()
+			.to_tuple()
+			.iter()
+			.take(6)
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		let b = DERIVATIVE_TARGET
+			.iter()
+			.rev()
+			.take(6)
+			.rev()
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		assert_eq!(a.len(), b.len());
+
+		for i in 0..a.len() {
+			if !emath::almost_equal(a[i].0 as f32, b[i].0 as f32, f32::EPSILON)
+				| !emath::almost_equal(a[i].1 as f32, b[i].1 as f32, f32::EPSILON)
+			{
+				panic!("Expected: {:?}\nGot: {:?}", a, b);
+			}
+		}
+
+		let a_1 = function
+			.back_data
+			.clone()
+			.to_tuple()
+			.iter()
+			.take(6)
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		let b_1 = BACK_TARGET
+			.iter()
+			.rev()
+			.take(6)
+			.rev()
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		assert_eq!(a_1.len(), b_1.len());
+
+		assert_eq!(a.len(), b_1.len());
+
+		for i in 0..a.len() {
+			if !emath::almost_equal(a_1[i].0 as f32, b_1[i].0 as f32, f32::EPSILON)
+				| !emath::almost_equal(a_1[i].1 as f32, b_1[i].1 as f32, f32::EPSILON)
+			{
+				panic!("Expected: {:?}\nGot: {:?}", a_1, b_1);
+			}
+		}
+	}
+
+	{
+		settings.min_x -= 2.0;
+		settings.max_x -= 2.0;
+		function.calculate(true, true, false, settings);
+
+		let a = function
+			.derivative_data
+			.clone()
+			.to_tuple()
+			.iter()
+			.rev()
+			.take(6)
+			.rev()
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		let b = DERIVATIVE_TARGET
+			.iter()
+			.take(6)
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		assert_eq!(a.len(), b.len());
+
+		for i in 0..a.len() {
+			if !emath::almost_equal(a[i].0 as f32, b[i].0 as f32, f32::EPSILON)
+				| !emath::almost_equal(a[i].1 as f32, b[i].1 as f32, f32::EPSILON)
+			{
+				panic!("Expected: {:?}\nGot: {:?}", a, b);
+			}
+		}
+
+		let a_1 = function
+			.back_data
+			.clone()
+			.to_tuple()
+			.iter()
+			.rev()
+			.take(6)
+			.rev()
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		let b_1 = BACK_TARGET
+			.iter()
+			.take(6)
+			.cloned()
+			.collect::<Vec<(f64, f64)>>();
+
+		assert_eq!(a_1.len(), b_1.len());
+
+		assert_eq!(a.len(), b_1.len());
+
+		for i in 0..a.len() {
+			if !emath::almost_equal(a_1[i].0 as f32, b_1[i].0 as f32, f32::EPSILON)
+				| !emath::almost_equal(a_1[i].1 as f32, b_1[i].1 as f32, f32::EPSILON)
+			{
+				panic!("Expected: {:?}\nGot: {:?}", a_1, b_1);
+			}
+		}
+	}
+
+	{
+		function.update_string("sin(x)");
+		assert!(function.get_test_result().is_none());
+		assert_eq!(&function.raw_func_str, "sin(x)");
+
+		function.integral = false;
+		function.derivative = false;
+
+		assert!(!function.integral);
+		assert!(!function.derivative);
+
+		assert!(function.back_data.is_empty());
+		assert!(function.integral_data.is_none());
+		assert!(function.root_data.is_empty());
+		assert!(function.extrema_data.is_empty());
+		assert!(function.derivative_data.is_empty());
+
+		settings.min_x -= 1.0;
+		settings.max_x -= 1.0;
+
+		function.calculate(true, true, false, settings);
+
+		assert!(!function.back_data.is_empty());
+		assert!(function.integral_data.is_none());
+		assert!(function.root_data.is_empty());
+		assert!(function.extrema_data.is_empty());
+		assert!(!function.derivative_data.is_empty());
+	}
 }
 
 #[test]
