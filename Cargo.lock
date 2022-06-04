@@ -1270,9 +1270,9 @@ dependencies = [
 
 [[package]]
 name = "memmap2"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "057a3db23999c867821a7a59feb06a578fcb03685e983dff90daf9e7d24ac08f"
+checksum = "d5172b50c23043ff43dd53e51392f36519d9b35a8f3a410d30ece5d1aedd58ae"
 dependencies = [
  "libc",
 ]
@@ -2034,7 +2034,7 @@ dependencies = [
 [[package]]
 name = "ruzstd"
 version = "0.2.4"
-source = "git+https://github.com/KillingSpark/zstd-rs.git#c2ab3e3d365d67f1c0bc52c67ae5bd6b8536b77c"
+source = "git+https://github.com/KillingSpark/zstd-rs.git#7eff233425f20c2e1d60e3c7c20a5f6fc684da78"
 dependencies = [
  "byteorder",
  "twox-hash",
@@ -2244,7 +2244,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c276d5b296f30f0fb30d2128b6be6f9804be7669f1edef46c4d8c017de4c77c3"
 dependencies = [
  "debugid",
- "memmap2 0.5.3",
+ "memmap2 0.5.4",
  "stable_deref_trait",
  "uuid",
 ]
@@ -2439,9 +2439,9 @@ dependencies = [
 
 [[package]]
 name = "ttf-parser"
-version = "0.15.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c74c96594835e10fa545e2a51e8709f30b173a092bfd6036ef2cec53376244f3"
+checksum = "42d4b50cba812f0f04f0707bb6a0eaa5fae4ae05d90fc2a377998d2f21e77a1c"
 
 [[package]]
 name = "twox-hash"
