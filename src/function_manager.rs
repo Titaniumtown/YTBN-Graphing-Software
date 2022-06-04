@@ -113,10 +113,7 @@ impl FunctionManager {
 			);
 
 			// Only keep valid chars
-			new_string = new_string
-				.chars()
-				.filter(crate::misc::is_valid_char)
-				.collect::<String>();
+			new_string.retain(|c| crate::misc::is_valid_char(&c));
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
 			if ui.ctx().animate_bool(*te_id, re.has_focus()) == 1.0 {
