@@ -292,7 +292,8 @@ impl FunctionEntry {
 			self.clear_derivative();
 		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom && {
 			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
-			prev_min < settings.min_x
+			let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
+			(prev_min < settings.min_x) && ((self.back_data.len() - 1) > min_i)
 		} {
 			partial_regen = true;
 			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
