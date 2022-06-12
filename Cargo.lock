@@ -685,7 +685,7 @@ checksum = "453440c271cf5577fd2a40e4942540cb7d0d2f85e27c8d07dd0023c925a67541"
 [[package]]
 name = "eframe"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#3d704efe12e0b8d60d3d8af254a6394fed787761"
+source = "git+https://github.com/Titaniumtown/egui.git#8defc5d340600618101a8f9a6a935cd739071b82"
 dependencies = [
  "bytemuck",
  "egui",
@@ -705,7 +705,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#3d704efe12e0b8d60d3d8af254a6394fed787761"
+source = "git+https://github.com/Titaniumtown/egui.git#8defc5d340600618101a8f9a6a935cd739071b82"
 dependencies = [
  "ahash",
  "epaint",
@@ -717,7 +717,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#3d704efe12e0b8d60d3d8af254a6394fed787761"
+source = "git+https://github.com/Titaniumtown/egui.git#8defc5d340600618101a8f9a6a935cd739071b82"
 dependencies = [
  "arboard",
  "egui",
@@ -731,7 +731,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#3d704efe12e0b8d60d3d8af254a6394fed787761"
+source = "git+https://github.com/Titaniumtown/egui.git#8defc5d340600618101a8f9a6a935cd739071b82"
 dependencies = [
  "bytemuck",
  "egui",
@@ -751,7 +751,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/Titaniumtown/egui.git#3d704efe12e0b8d60d3d8af254a6394fed787761"
+source = "git+https://github.com/Titaniumtown/egui.git#8defc5d340600618101a8f9a6a935cd739071b82"
 dependencies = [
  "bytemuck",
  "serde",
@@ -760,7 +760,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/Titaniumtown/egui.git#3d704efe12e0b8d60d3d8af254a6394fed787761"
+source = "git+https://github.com/Titaniumtown/egui.git#8defc5d340600618101a8f9a6a935cd739071b82"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -2034,7 +2034,7 @@ dependencies = [
 [[package]]
 name = "ruzstd"
 version = "0.2.4"
-source = "git+https://github.com/KillingSpark/zstd-rs.git#7eff233425f20c2e1d60e3c7c20a5f6fc684da78"
+source = "git+https://github.com/KillingSpark/zstd-rs.git#b354d185315df90a84d0cbec311703d3c5a10963"
 dependencies = [
  "byteorder",
  "twox-hash",
@@ -2069,9 +2069,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "semver"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cb243bdfdb5936c8dc3c45762a19d12ab4550cdc753bc247637d4ec35a040fd"
+checksum = "a41d061efea015927ac527063765e73601444cdc344ba855bc7bd44578b25e1c"
 
 [[package]]
 name = "serde"

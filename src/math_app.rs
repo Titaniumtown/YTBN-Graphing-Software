@@ -547,7 +547,7 @@ impl App for MathApp {
 			.resizable(false)
 			.collapsible(false)
 			.show(ctx, |ui| {
-				ui.add(egui::Label::new(&*BUILD_INFO));
+				ui.add(egui::Label::new(BUILD_INFO));
 
 				if let Some(ref took) = self.last_info.1 {
 					ui.label(took);

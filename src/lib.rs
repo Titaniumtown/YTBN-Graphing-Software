@@ -53,7 +53,11 @@ cfg_if::cfg_if! {
 			// Used in order to hook into `panic!()` to log in the browser's console
 			tracing_wasm::set_as_global_default();
 
-			eframe::start_web("canvas", Box::new(|cc| Box::new(math_app::MathApp::new(cc))))
+			eframe::start_web("canvas", eframe::WebOptions {
+				follow_system_theme: false,
+				default_theme: eframe::Theme::Dark
+			},
+				Box::new(|cc| Box::new(math_app::MathApp::new(cc))))
 		}
 	}
 }
