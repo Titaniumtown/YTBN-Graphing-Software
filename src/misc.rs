@@ -101,7 +101,6 @@ pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String
 where
 	T: ToString,
 {
-	let max_i: i32 = (data.len() as i32) - 1;
 	[
 		"[",
 		&data
@@ -111,16 +110,7 @@ where
 					.map(|x_1| x_1.to_string())
 					.unwrap_or_else(|| "None".to_owned())
 			})
-			.enumerate()
-			.map(|(i, x)| {
-				// Add comma and space if needed
-				match max_i > i as i32 {
-					true => x + ", ",
-					false => x,
-				}
-			})
-			.collect::<Vec<String>>()
-			.concat(),
+			.join(", "),
 		"]",
 	]
 	.concat()
