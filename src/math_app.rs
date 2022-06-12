@@ -223,7 +223,7 @@ impl MathApp {
 						std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
 					}
 				};
-				let saved_data = &crate::misc::hashed_storage_create(commit, data);
+				let saved_data = &crate::misc::hashed_storage_create(&commit, data);
 				tracing::info!("Bytes: {}", saved_data.len());
 				get_localstorage()
 					.set_item(DATA_NAME, saved_data)
@@ -394,7 +394,7 @@ impl MathApp {
 							std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
 						};
 						let saved_data = &crate::misc::hashed_storage_create(
-							hash,
+							&hash,
 							bincode::serialize(&self.functions).unwrap().as_slice(),
 						);
 						// tracing::info!("Bytes: {}", saved_data.len());
