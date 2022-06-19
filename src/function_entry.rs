@@ -149,7 +149,7 @@ impl FunctionEntry {
 
 	pub const fn is_some(&self) -> bool { !self.function.is_none() }
 
-	pub fn settings_window(&mut self, ctx: &Context) {
+	pub fn settings_window(&mut self, ctx: &mut Context) {
 		let mut invalidate_nth = false;
 		egui::Window::new(format!("Settings: {}", self.raw_func_str))
 			.open(&mut self.settings_opened)

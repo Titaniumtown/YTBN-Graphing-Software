@@ -93,12 +93,13 @@ impl FunctionManager {
 
 			let mut movement: Movement = Movement::default();
 
+			let size_multiplier = vec2(1.0, {
+				let had_focus = ui.ctx.memory().has_focus(*te_id);
+				(ui.ctx.animate_bool(*te_id, had_focus) * 1.5) + 1.0
+			});
+
 			let re = ui.add_sized(
-				target_size
-					* vec2(1.0, {
-						let had_focus = ui.ctx().memory().has_focus(*te_id);
-						(ui.ctx().animate_bool(*te_id, had_focus) * 1.5) + 1.0
-					}),
+				target_size * size_multiplier,
 				egui::TextEdit::singleline(&mut new_string)
 					.hint_forward(true) // Make the hint appear after the last text in the textbox
 					.lock_focus(true)
@@ -116,7 +117,8 @@ impl FunctionManager {
 			new_string.retain(|c| crate::misc::is_valid_char(&c));
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			if ui.ctx().animate_bool(*te_id, re.has_focus()) == 1.0 {
+			let animate_bool = ui.ctx.animate_bool(*te_id, re.has_focus());
+			if animate_bool == 1.0 {
 				function.autocomplete.update_string(&new_string);
 
 				if function.autocomplete.hint.is_some() {
@@ -160,21 +162,21 @@ impl FunctionManager {
                         function.autocomplete.apply_hint(hints[function.autocomplete.i]);
 
                         // Don't need this here as it simply won't be display next frame
-                        // ui.memory().close_popup();
+                        // ui.memory_mut().close_popup();
 
                         movement = Movement::Complete;
                     } else {
-                        ui.memory().open_popup(POPUP_ID);
+                        ui.memory_mut().open_popup(POPUP_ID);
                     }
                 }
 
 					// Push cursor to end if needed
 					if movement == Movement::Complete {
 						let mut state =
-							unsafe { TextEdit::load_state(ui.ctx(), *te_id).unwrap_unchecked() };
+							unsafe { TextEdit::load_state(ui.ctx, *te_id).unwrap_unchecked() };
 						let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
 						state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
-						TextEdit::store_state(ui.ctx(), *te_id, state);
+						TextEdit::store_state(ui.ctx, *te_id, state);
 					}
 				}
 
@@ -187,7 +189,7 @@ impl FunctionManager {
 						// There's more than 1 function! Functions can now be deleted
 						if ui
 							.add_enabled(can_remove, button_area_button("✖"))
-							.on_hover_text("Delete Function")
+							.on_hover_text(ui.ctx, "Delete Function")
 							.clicked()
 						{
 							remove_i = Some(i);
@@ -197,30 +199,39 @@ impl FunctionManager {
 							// Toggle integral being enabled or not
 							function.integral.bitxor_assign(
 								ui.add(button_area_button("∫"))
-									.on_hover_text(match function.integral {
-										true => "Don't integrate",
-										false => "Integrate",
-									})
+									.on_hover_text(
+										ui.ctx,
+										match function.integral {
+											true => "Don't integrate",
+											false => "Integrate",
+										},
+									)
 									.clicked(),
 							);
 
 							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
 							function.derivative.bitxor_assign(
 								ui.add(button_area_button("d/dx"))
-									.on_hover_text(match function.derivative {
-										true => "Don't Differentiate",
-										false => "Differentiate",
-									})
+									.on_hover_text(
+										ui.ctx,
+										match function.derivative {
+											true => "Don't Differentiate",
+											false => "Differentiate",
+										},
+									)
 									.clicked(),
 							);
 
 							// Toggle showing the settings window
 							function.settings_opened.bitxor_assign(
 								ui.add(button_area_button("⚙"))
-									.on_hover_text(match function.settings_opened {
-										true => "Close Settings",
-										false => "Open Settings",
-									})
+									.on_hover_text(
+										ui.ctx,
+										match function.settings_opened {
+											true => "Close Settings",
+											false => "Open Settings",
+										},
+									)
 									.clicked(),
 							);
 						});
@@ -228,7 +239,7 @@ impl FunctionManager {
 				});
 			}
 
-			function.settings_window(ui.ctx());
+			function.settings_window(ui.ctx);
 		}
 
 		// Remove function if the user requests it

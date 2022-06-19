@@ -128,7 +128,7 @@ const FUNC_NAME: &str = "YTBN-FUNCTIONS";
 impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of [`MathApp`] and return it
-	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+	pub fn new(cc: &mut eframe::CreationContext<'_, '_>) -> Self {
 		#[cfg(threading)]
 		tracing::info!("Threading: Enabled");
 
@@ -274,7 +274,7 @@ impl MathApp {
 	}
 
 	/// Creates SidePanel which contains configuration options
-	fn side_panel(&mut self, ctx: &Context) {
+	fn side_panel(&mut self, ctx: &mut Context) {
 		// Side Panel which contains vital options to the operation of the application
 		// (such as adding functions and other options)
 		SidePanel::left("side_panel")
@@ -369,19 +369,25 @@ impl MathApp {
 				ui.horizontal(|ui| {
 					self.settings.do_extrema.bitxor_assign(
 						ui.add(Button::new("Extrema"))
-							.on_hover_text(match self.settings.do_extrema {
-								true => "Disable Displaying Extrema",
-								false => "Display Extrema",
-							})
+							.on_hover_text(
+								ui.ctx,
+								match self.settings.do_extrema {
+									true => "Disable Displaying Extrema",
+									false => "Display Extrema",
+								},
+							)
 							.clicked(),
 					);
 
 					self.settings.do_roots.bitxor_assign(
 						ui.add(Button::new("Roots"))
-							.on_hover_text(match self.settings.do_roots {
-								true => "Disable Displaying Roots",
-								false => "Display Roots",
-							})
+							.on_hover_text(
+								ui.ctx,
+								match self.settings.do_roots {
+									true => "Disable Displaying Roots",
+									false => "Display Roots",
+								},
+							)
 							.clicked(),
 					);
 				});
@@ -422,7 +428,7 @@ impl MathApp {
 
 impl App for MathApp {
 	/// Called each time the UI needs repainting.
-	fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+	fn update(&mut self, ctx: &mut Context, _frame: &mut eframe::Frame) {
 		// start timer
 		let start = if self.opened.info {
 			Some(instant::Instant::now())
@@ -447,10 +453,13 @@ impl App for MathApp {
 				// Button in top bar to toggle showing the side panel
 				self.opened.side_panel.bitxor_assign(
 					ui.add(Button::new("Panel"))
-						.on_hover_text(match self.opened.side_panel {
-							true => "Hide Side Panel",
-							false => "Show Side Panel",
-						})
+						.on_hover_text(
+							ui.ctx,
+							match self.opened.side_panel {
+								true => "Hide Side Panel",
+								false => "Show Side Panel",
+							},
+						)
 						.clicked(),
 				);
 
@@ -460,7 +469,7 @@ impl App for MathApp {
 						COLORS.len() > self.functions.len(),
 						Button::new("Add Function"),
 					)
-					.on_hover_text("Create and graph new function")
+					.on_hover_text(ui.ctx, "Create and graph new function")
 					.clicked()
 				{
 					self.functions.push_empty();
@@ -469,20 +478,26 @@ impl App for MathApp {
 				// Toggles opening the Help window
 				self.opened.help.bitxor_assign(
 					ui.add(Button::new("Help"))
-						.on_hover_text(match self.opened.help {
-							true => "Close Help Window",
-							false => "Open Help Window",
-						})
+						.on_hover_text(
+							ui.ctx,
+							match self.opened.help {
+								true => "Close Help Window",
+								false => "Open Help Window",
+							},
+						)
 						.clicked(),
 				);
 
 				// Toggles opening the Info window
 				self.opened.info.bitxor_assign(
 					ui.add(Button::new("Info"))
-						.on_hover_text(match self.opened.info {
-							true => "Close Info Window",
-							false => "Open Info Window",
-						})
+						.on_hover_text(
+							ui.ctx,
+							match self.opened.info {
+								true => "Close Info Window",
+								false => "Open Info Window",
+							},
+						)
 						.clicked(),
 				);
 
