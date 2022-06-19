@@ -285,88 +285,40 @@ impl FunctionEntry {
 			self.clear_integral();
 		}
 
-		let mut partial_regen = false;
-
-		if width_changed {
+		if width_changed | min_max_changed | did_zoom {
 			self.clear_back();
 			self.clear_derivative();
-		} else if min_max_changed && !self.back_data.is_empty() && !did_zoom && {
-			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
-			let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
-			(prev_min < settings.min_x) && ((self.back_data.len() - 1) > min_i)
-		} {
-			partial_regen = true;
-			let prev_min = unsafe { self.back_data.first().unwrap_unchecked() }.x;
-
-			let min_i = ((settings.min_x - prev_min) as f64 / resolution) as usize;
-
-			{
-				let _ = self.back_data.drain(min_i..=settings.plot_width);
-
-				let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
-					.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-					.map(|x: f64| Value::new(x, self.function.get(x)))
-					.collect();
-				self.back_data.append(&mut new_data);
-				debug_assert_eq!(self.back_data.len(), settings.plot_width + 1);
-			}
-
-			{
-				let _ = self.derivative_data.drain(min_i..=settings.plot_width);
-
-				let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
-					.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-					.map(|x: f64| Value::new(x, self.function.get_derivative_1(x)))
-					.collect();
-				self.derivative_data.append(&mut new_data);
-				debug_assert_eq!(self.derivative_data.len(), settings.plot_width + 1);
-			}
-
-			if self.nth_derviative && let Some(data) = self.nth_derivative_data.as_mut() {
-					let _ = data.drain(min_i..=settings.plot_width);
-
-					let mut new_data: Vec<Value> = (min_i..=settings.plot_width)
-						.map(move |x: usize| (x as f64 * resolution) + settings.min_x)
-						.map(|x: f64| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
-						.collect();
-					data.append(&mut new_data);
-					debug_assert_eq!(data.len(), settings.plot_width + 1);
-				}
-		} else {
-			self.clear_back();
-			self.clear_derivative();
+			self.clear_nth();
 		}
 
-		if !partial_regen {
-			if self.back_data.is_empty() {
-				let data: Vec<Value> = resolution_iter
-					.clone()
-					.into_iter()
-					.map(|x| Value::new(x, self.function.get(x)))
-					.collect();
-				debug_assert_eq!(data.len(), settings.plot_width + 1);
+		if self.back_data.is_empty() {
+			let data: Vec<Value> = resolution_iter
+				.clone()
+				.into_iter()
+				.map(|x| Value::new(x, self.function.get(x)))
+				.collect();
+			debug_assert_eq!(data.len(), settings.plot_width + 1);
 
-				self.back_data = data;
-			}
+			self.back_data = data;
+		}
 
-			if self.derivative_data.is_empty() {
-				let data: Vec<Value> = resolution_iter
-					.clone()
-					.into_iter()
-					.map(|x| Value::new(x, self.function.get_derivative_1(x)))
-					.collect();
-				debug_assert_eq!(data.len(), settings.plot_width + 1);
-				self.derivative_data = data;
-			}
+		if self.derivative_data.is_empty() {
+			let data: Vec<Value> = resolution_iter
+				.clone()
+				.into_iter()
+				.map(|x| Value::new(x, self.function.get_derivative_1(x)))
+				.collect();
+			debug_assert_eq!(data.len(), settings.plot_width + 1);
+			self.derivative_data = data;
+		}
 
-			if self.nth_derviative && self.nth_derivative_data.is_none() {
-				let data: Vec<Value> = resolution_iter
-					.into_iter()
-					.map(|x| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
-					.collect();
-				debug_assert_eq!(data.len(), settings.plot_width + 1);
-				self.nth_derivative_data = Some(data);
-			}
+		if self.nth_derviative && self.nth_derivative_data.is_none() {
+			let data: Vec<Value> = resolution_iter
+				.into_iter()
+				.map(|x| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
+				.collect();
+			debug_assert_eq!(data.len(), settings.plot_width + 1);
+			self.nth_derivative_data = Some(data);
 		}
 
 		if self.integral {
