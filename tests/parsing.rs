@@ -204,6 +204,7 @@ fn split_function_multiplication() {
 		("10*10", vec!["10", "10"]),
 		("a1b2c3d4", vec!["a1b2c3d4"]),
 		("cos(sin(x)cos(x))", vec!["cos(sin(x)", "cos(x))"]),
+		("", Vec::new()),
 	]);
 
 	for (key, value) in values {
@@ -218,10 +219,13 @@ fn split_function_multiplication() {
 fn split_function_terms() {
 	use parsing::SplitType;
 
-	let values = HashMap::from([(
-		"cos(sin(x)cos(x))",
-		vec!["cos(", "sin(", "x)", "cos(", "x))"],
-	)]);
+	let values = HashMap::from([
+		(
+			"cos(sin(x)cos(x))",
+			vec!["cos(", "sin(", "x)", "cos(", "x))"],
+		),
+		("", Vec::new()),
+	]);
 
 	for (key, value) in values {
 		assert_eq!(parsing::split_function(key, SplitType::Term), value);
