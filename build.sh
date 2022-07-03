@@ -9,7 +9,7 @@ rm -fr pkg | true
 export RUSTFLAGS="--cfg=web_sys_unstable_apis"
 
 if test "$1" == "" || test "$1" == "release"; then
-    time cargo build --release --target wasm32-unknown-unknown -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --lib
+    time cargo build --release --target wasm32-unknown-unknown -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --lib --timings
     llvm-strip -s target/wasm32-unknown-unknown/release/ytbn_graphing_software.wasm
     export TYPE="release"
     elif test "$1" == "debug"; then

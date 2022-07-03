@@ -40,7 +40,7 @@ jobs:
           override: true
 
       - name: Install fonttools
-        run: sudo apt-get install -y fonttools
+        run: sudo apt-get install -y fonttools libzstd-dev
 
       - name: Install cargo-all-features
         uses: actions-rs/install@v0.1
