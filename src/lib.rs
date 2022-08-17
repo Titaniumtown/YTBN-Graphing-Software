@@ -42,8 +42,9 @@ cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
 		use wasm_bindgen::prelude::*;
 
+		use lol_alloc::FreeListAllocator;
 		#[global_allocator]
-		static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+		static ALLOCATOR: FreeListAllocator = FreeListAllocator::new();
 
 		#[wasm_bindgen(start)]
 		pub fn start() -> Result<(), wasm_bindgen::JsValue> {
