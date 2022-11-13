@@ -5,7 +5,7 @@ use egui::{
 use emath::vec2;
 use epaint::{Color32, Rounding, Shadow, Stroke};
 
-const fn widgets_dark() -> Widgets {
+fn widgets_dark() -> Widgets {
 	Widgets {
 		noninteractive: WidgetVisuals {
 			bg_fill: Color32::from_gray(27), // window background
@@ -45,10 +45,7 @@ const fn widgets_dark() -> Widgets {
 	}
 }
 
-pub const STYLE: Visuals = dark();
-pub const SPACING: Spacing = spacing();
-
-const fn dark() -> Visuals {
+pub fn style() -> Visuals {
 	Visuals {
 		dark_mode: true,
 		override_text_color: None,
@@ -70,7 +67,7 @@ const fn dark() -> Visuals {
 	}
 }
 
-const fn spacing() -> Spacing {
+pub fn spacing() -> Spacing {
 	Spacing {
 		item_spacing: vec2(8.0, 3.0),
 		window_margin: Margin::same(6.0),

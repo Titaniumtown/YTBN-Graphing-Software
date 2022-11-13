@@ -7,8 +7,8 @@ pub fn widgets_ontop<R>(
 	add_contents: impl FnOnce(&mut egui::Ui) -> R,
 ) -> InnerResponse<R> {
 	let area = egui::Area::new(id)
-		.fixed_pos(re.rect().min.offset_y(y_offset))
+		.fixed_pos(re.rect.min.offset_y(y_offset))
 		.order(egui::Order::Foreground);
 
-	area.show(ui.ctx, |ui| add_contents(ui))
+	area.show(ui.ctx(), |ui| add_contents(ui))
 }

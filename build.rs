@@ -146,26 +146,7 @@ fn main() {
 		]),
 	};
 
-	let text_json: serde_json::Value = json5::from_str(include_str!("assets/text.json5")).unwrap();
-	let mut json_file_array = text_json.as_object().unwrap().clone();
-	for value in json_file_array.iter_mut() {
-		if let serde_json::Value::Array(values) = value.1 {
-			let values_copy = values.clone();
-			*value.1 = serde_json::Value::String(
-				values_copy
-					.iter()
-					.map(|s| s.as_str().expect("failed to make a string"))
-					.collect::<Vec<&str>>()
-					.join("\n"),
-			);
-		}
-	}
-
-	let text_data: TextDataRaw = serde_json::from_value(serde_json::Value::Object(json_file_array))
-		.expect("Failed to convert data to TextDataRaw");
-
 	let data = bincode::serialize(&TotalData {
-		text: text_data.into_rich(),
 		fonts,
 	})
 	.unwrap();

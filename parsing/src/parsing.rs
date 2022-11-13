@@ -26,7 +26,12 @@ impl FlatExWrapper {
 	fn partial(&self, x: usize) -> Self {
 		self.func
 			.as_ref()
-			.map(|f| f.partial(x).map(|a| Self::new(a)).unwrap_or(Self::EMPTY))
+			.map(|f| {
+				f.clone()
+					.partial(x)
+					.map(|a| Self::new(a))
+					.unwrap_or(Self::EMPTY)
+			})
 			.unwrap_or(Self::EMPTY)
 	}
 
@@ -34,11 +39,12 @@ impl FlatExWrapper {
 	fn get_string(&self) -> &str { self.func.as_ref().map(|f| f.unparse()).unwrap_or("") }
 
 	#[inline]
-	fn partial_iter(&self, x: &[usize]) -> Self {
+	fn partial_iter(&self, n: usize) -> Self {
 		self.func
 			.as_ref()
 			.map(|f| {
-				f.partial_iter(x.iter())
+				f.clone()
+					.partial_iter((0..=n).map(|_| 0).into_iter())
 					.map(|a| Self::new(a))
 					.unwrap_or(Self::EMPTY)
 			})
@@ -163,9 +169,7 @@ impl BackingFunction {
 						return curr_n_func.eval(&[x]);
 					}
 				}
-				let new_func = self
-					.function
-					.partial_iter((1..=n).map(|_| 0).collect::<Vec<usize>>().as_slice());
+				let new_func = self.function.partial_iter(n);
 
 				self.nth_derivative = Some((
 					n,

@@ -149,7 +149,7 @@ impl FunctionEntry {
 
 	pub const fn is_some(&self) -> bool { !self.function.is_none() }
 
-	pub fn settings_window(&mut self, ctx: &mut Context) {
+	pub fn settings_window(&mut self, ctx: &Context) {
 		let mut invalidate_nth = false;
 		egui::Window::new(format!("Settings: {}", self.raw_func_str))
 			.open(&mut self.settings_opened)
@@ -382,8 +382,8 @@ impl FunctionEntry {
 						.cloned()
 						.collect::<Vec<Value>>()
 						.to_line()
-						.stroke(const { epaint::Stroke::none() })
-						.color(const { Color32::from_rgb(4, 4, 255) })
+						.stroke(epaint::Stroke::none())
+						.color(Color32::from_rgb(4, 4, 255))
 						.fill(0.0),
 				);
 			}

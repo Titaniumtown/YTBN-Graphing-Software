@@ -19,7 +19,7 @@ impl Default for FunctionManager {
 	fn default() -> Self {
 		let mut vec: Functions = Vec::with_capacity(COLORS.len());
 		vec.push((
-			Id::new_from_u64(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
+			Id(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
 			FunctionEntry::EMPTY,
 		));
 		Self { functions: vec }
@@ -37,7 +37,7 @@ impl Serialize for FunctionManager {
 			&self
 				.functions
 				.iter()
-				.map(|(id, func)| (id.value(), func.clone()))
+				.map(|(id, func)| (id.0, func.clone()))
 				.collect::<Vec<(u64, FunctionEntry)>>(),
 		)?;
 		s.end()
@@ -59,16 +59,14 @@ impl<'de> Deserialize<'de> for FunctionManager {
 				.0
 				.iter()
 				.cloned()
-				.map(|(id, func)| (egui::Id::new_from_u64(id), func))
+				.map(|(id, func)| (Id(id), func))
 				.collect::<Vec<(Id, FunctionEntry)>>(),
 		})
 	}
 }
 
 /// Function that creates button that's used with the `button_area`
-const fn button_area_button(text: impl Into<WidgetText>) -> Button {
-	Button::new(text).frame(false)
-}
+fn button_area_button(text: impl Into<WidgetText>) -> Button { Button::new(text).frame(false) }
 
 impl FunctionManager {
 	#[inline]
@@ -94,8 +92,8 @@ impl FunctionManager {
 			let mut movement: Movement = Movement::default();
 
 			let size_multiplier = vec2(1.0, {
-				let had_focus = ui.ctx.memory().has_focus(*te_id);
-				(ui.ctx.animate_bool(*te_id, had_focus) * 1.5) + 1.0
+				let had_focus = ui.ctx().memory().has_focus(*te_id);
+				(ui.ctx().animate_bool(*te_id, had_focus) * 1.5) + 1.0
 			});
 
 			let re = ui.add_sized(
@@ -117,7 +115,7 @@ impl FunctionManager {
 			new_string.retain(|c| crate::misc::is_valid_char(&c));
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			let animate_bool = ui.ctx.animate_bool(*te_id, re.has_focus());
+			let animate_bool = ui.ctx().animate_bool(*te_id, re.has_focus());
 			if animate_bool == 1.0 {
 				function.autocomplete.update_string(&new_string);
 
@@ -145,7 +143,7 @@ impl FunctionManager {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
 
 					// hashed "autocomplete_popup"
-					const POPUP_ID: Id = Id::new_from_u64(7574801616484505465);
+					const POPUP_ID: Id = Id(7574801616484505465);
 
                     let mut clicked = false;
 
@@ -166,17 +164,17 @@ impl FunctionManager {
 
                         movement = Movement::Complete;
                     } else {
-                        ui.memory_mut().open_popup(POPUP_ID);
+                        ui.memory().open_popup(POPUP_ID);
                     }
                 }
 
 					// Push cursor to end if needed
 					if movement == Movement::Complete {
 						let mut state =
-							unsafe { TextEdit::load_state(ui.ctx, *te_id).unwrap_unchecked() };
+							unsafe { TextEdit::load_state(ui.ctx(), *te_id).unwrap_unchecked() };
 						let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
 						state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
-						TextEdit::store_state(ui.ctx, *te_id, state);
+						TextEdit::store_state(ui.ctx(), *te_id, state);
 					}
 				}
 
@@ -189,7 +187,7 @@ impl FunctionManager {
 						// There's more than 1 function! Functions can now be deleted
 						if ui
 							.add_enabled(can_remove, button_area_button("✖"))
-							.on_hover_text(ui.ctx, "Delete Function")
+							.on_hover_text("Delete Function")
 							.clicked()
 						{
 							remove_i = Some(i);
@@ -199,39 +197,30 @@ impl FunctionManager {
 							// Toggle integral being enabled or not
 							function.integral.bitxor_assign(
 								ui.add(button_area_button("∫"))
-									.on_hover_text(
-										ui.ctx,
-										match function.integral {
-											true => "Don't integrate",
-											false => "Integrate",
-										},
-									)
+									.on_hover_text(match function.integral {
+										true => "Don't integrate",
+										false => "Integrate",
+									})
 									.clicked(),
 							);
 
 							// Toggle showing the derivative (even though it's already calculated this option just toggles if it's displayed or not)
 							function.derivative.bitxor_assign(
 								ui.add(button_area_button("d/dx"))
-									.on_hover_text(
-										ui.ctx,
-										match function.derivative {
-											true => "Don't Differentiate",
-											false => "Differentiate",
-										},
-									)
+									.on_hover_text(match function.derivative {
+										true => "Don't Differentiate",
+										false => "Differentiate",
+									})
 									.clicked(),
 							);
 
 							// Toggle showing the settings window
 							function.settings_opened.bitxor_assign(
 								ui.add(button_area_button("⚙"))
-									.on_hover_text(
-										ui.ctx,
-										match function.settings_opened {
-											true => "Close Settings",
-											false => "Open Settings",
-										},
-									)
+									.on_hover_text(match function.settings_opened {
+										true => "Close Settings",
+										false => "Open Settings",
+									})
 									.clicked(),
 							);
 						});
@@ -239,7 +228,7 @@ impl FunctionManager {
 				});
 			}
 
-			function.settings_window(ui.ctx);
+			function.settings_window(ui.ctx());
 		}
 
 		// Remove function if the user requests it
@@ -255,7 +244,7 @@ impl FunctionManager {
 	/// Create and push new empty function entry
 	pub fn push_empty(&mut self) {
 		self.functions.push((
-			Id::new_from_u64(random_u64().expect("unable to generate random id")),
+			Id(random_u64().expect("unable to generate random id")),
 			FunctionEntry::EMPTY,
 		));
 	}

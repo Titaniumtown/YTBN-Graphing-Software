@@ -17,7 +17,7 @@ pub trait EguiHelper {
 	fn to_tuple(self) -> Vec<(f64, f64)>;
 }
 
-impl const EguiHelper for Vec<Value> {
+impl EguiHelper for Vec<Value> {
 	#[inline(always)]
 	fn to_values(self) -> Values { Values::from_values(self) }
 

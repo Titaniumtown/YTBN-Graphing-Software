@@ -1,6 +1,5 @@
 use crate::{
-	consts::*, data::TextData, function_entry::Riemann, function_manager::FunctionManager,
-	misc::option_vec_printer,
+	consts::*, function_entry::Riemann, function_manager::FunctionManager, misc::option_vec_printer,
 };
 use eframe::App;
 use egui::{
@@ -102,9 +101,6 @@ pub struct MathApp {
 	/// Stores opened windows/elements for later reference
 	opened: Opened,
 
-	/// Stores loaded text data from `test.json`
-	text: TextData,
-
 	/// Stores settings (pretty self-explanatory)
 	settings: AppSettings,
 }
@@ -128,7 +124,7 @@ const FUNC_NAME: &str = "YTBN-FUNCTIONS";
 impl MathApp {
 	#[allow(dead_code)] // This is used lol
 	/// Create new instance of [`MathApp`] and return it
-	pub fn new(cc: &mut eframe::CreationContext<'_, '_>) -> Self {
+	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
 		#[cfg(threading)]
 		tracing::info!("Threading: Enabled");
 
@@ -252,10 +248,10 @@ impl MathApp {
 		cc.egui_ctx.set_fonts(data.fonts);
 
 		// Set dark mode by default
-		cc.egui_ctx.set_visuals(crate::style::STYLE);
+		cc.egui_ctx.set_visuals(crate::style::style());
 
 		// Set spacing
-		cc.egui_ctx.set_spacing(crate::style::SPACING);
+		// cc.egui_ctx.set_spacing(crate::style::SPACING);
 
 		tracing::info!("Initialized! Took: {:?}", start.elapsed());
 
@@ -267,14 +263,13 @@ impl MathApp {
 			functions: FunctionManager::default(),
 
 			last_info: (None, None),
-			text: data.text,
 			opened: const { Opened::default() },
 			settings: const { AppSettings::default() },
 		}
 	}
 
 	/// Creates SidePanel which contains configuration options
-	fn side_panel(&mut self, ctx: &mut Context) {
+	fn side_panel(&mut self, ctx: &Context) {
 		// Side Panel which contains vital options to the operation of the application
 		// (such as adding functions and other options)
 		SidePanel::left("side_panel")
@@ -369,25 +364,19 @@ impl MathApp {
 				ui.horizontal(|ui| {
 					self.settings.do_extrema.bitxor_assign(
 						ui.add(Button::new("Extrema"))
-							.on_hover_text(
-								ui.ctx,
-								match self.settings.do_extrema {
-									true => "Disable Displaying Extrema",
-									false => "Display Extrema",
-								},
-							)
+							.on_hover_text(match self.settings.do_extrema {
+								true => "Disable Displaying Extrema",
+								false => "Display Extrema",
+							})
 							.clicked(),
 					);
 
 					self.settings.do_roots.bitxor_assign(
 						ui.add(Button::new("Roots"))
-							.on_hover_text(
-								ui.ctx,
-								match self.settings.do_roots {
-									true => "Disable Displaying Roots",
-									false => "Display Roots",
-								},
-							)
+							.on_hover_text(match self.settings.do_roots {
+								true => "Disable Displaying Roots",
+								false => "Display Roots",
+							})
 							.clicked(),
 					);
 				});
@@ -428,7 +417,7 @@ impl MathApp {
 
 impl App for MathApp {
 	/// Called each time the UI needs repainting.
-	fn update(&mut self, ctx: &mut Context, _frame: &mut eframe::Frame) {
+	fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
 		// start timer
 		let start = if self.opened.info {
 			Some(instant::Instant::now())
@@ -453,13 +442,10 @@ impl App for MathApp {
 				// Button in top bar to toggle showing the side panel
 				self.opened.side_panel.bitxor_assign(
 					ui.add(Button::new("Panel"))
-						.on_hover_text(
-							ui.ctx,
-							match self.opened.side_panel {
-								true => "Hide Side Panel",
-								false => "Show Side Panel",
-							},
-						)
+						.on_hover_text(match self.opened.side_panel {
+							true => "Hide Side Panel",
+							false => "Show Side Panel",
+						})
 						.clicked(),
 				);
 
@@ -469,7 +455,7 @@ impl App for MathApp {
 						COLORS.len() > self.functions.len(),
 						Button::new("Add Function"),
 					)
-					.on_hover_text(ui.ctx, "Create and graph new function")
+					.on_hover_text("Create and graph new function")
 					.clicked()
 				{
 					self.functions.push_empty();
@@ -478,26 +464,20 @@ impl App for MathApp {
 				// Toggles opening the Help window
 				self.opened.help.bitxor_assign(
 					ui.add(Button::new("Help"))
-						.on_hover_text(
-							ui.ctx,
-							match self.opened.help {
-								true => "Close Help Window",
-								false => "Open Help Window",
-							},
-						)
+						.on_hover_text(match self.opened.help {
+							true => "Close Help Window",
+							false => "Open Help Window",
+						})
 						.clicked(),
 				);
 
 				// Toggles opening the Info window
 				self.opened.info.bitxor_assign(
 					ui.add(Button::new("Info"))
-						.on_hover_text(
-							ui.ctx,
-							match self.opened.info {
-								true => "Close Info Window",
-								false => "Open Info Window",
-							},
-						)
+						.on_hover_text(match self.opened.info {
+							true => "Close Info Window",
+							false => "Open Info Window",
+						})
 						.clicked(),
 				);
 
@@ -516,23 +496,23 @@ impl App for MathApp {
 			.collapsible(false)
 			.show(ctx, |ui| {
 				ui.collapsing("Supported Expressions", |ui| {
-					ui.label(self.text.help_expr.clone());
+					ui.label("abs, signum, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, floor, round, ceil, trunc, fract, exp, sqrt, cbrt, ln, log2, log10, log");
 				});
 
 				ui.collapsing("Supported Constants", |ui| {
-					ui.label(self.text.help_vars.clone());
+					ui.label("- Euler's number is supported via 'e' or 'E'\n- PI is available through 'pi' or 'π'");
 				});
 
 				ui.collapsing("Panel", |ui| {
-					ui.label(self.text.help_panel.clone());
+					ui.label("- The 'Panel' button toggles if the side bar should be shown or not. This can also be accomplished by pressing the 'h' key.\n- The 'Add Function' button adds a new function to be graphed. You can then configure that function in the side panel.\n- The 'Help' button opens and closes this window!\n- The 'Info' button provides information on the build currently running.");
 				});
 
 				ui.collapsing("Functions", |ui| {
-					ui.label(self.text.help_function.clone());
+					ui.label("(From Left to Right)\n`✖` allows you to delete the selected function. Deleting a function is prevented if only 1 function exists.\n`∫` toggles integration.\n`d/dx` toggles the calculation of derivatives.\n`⚙` opens a window to tweak function options.");
 				});
-
+		
 				ui.collapsing("Other", |ui| {
-					ui.label(self.text.help_other.clone());
+					ui.label("- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points respectively located on the graph. These can be toggled in the side panel.");
 				});
 			});
 
@@ -544,7 +524,7 @@ impl App for MathApp {
 				.collapsible(false)
 				.title_bar(false)
 				.show(ctx, |ui| {
-					ui.label(self.text.welcome.clone());
+					ui.label("Welcome to the (Yet-to-be-named) Graphing Software!\n\nThis project aims to provide an intuitive experience graphing mathematical functions with features such as Integration, Differentiation, Extrema, Roots, and much more! (see the Help Window for more details)");
 				});
 
 			if let Some(response) = welcome_response {
@@ -576,16 +556,12 @@ impl App for MathApp {
 
 		// Central panel which contains the central plot (or an error created when parsing)
 		CentralPanel::default()
-			.frame(
-				const {
-					Frame {
-						inner_margin: Margin::symmetric(0.0, 0.0),
-						rounding: Rounding::none(),
-						fill: crate::style::STYLE.window_fill(),
-						..Frame::none()
-					}
-				},
-			)
+			.frame(Frame {
+				inner_margin: Margin::symmetric(0.0, 0.0),
+				rounding: Rounding::none(),
+				// fill: crate::style::STYLE.window_fill(),
+				..Frame::none()
+			})
 			.show(ctx, |ui| {
 				// Display an error if it exists
 				let errors_formatted: String = self
@@ -662,9 +638,5 @@ impl App for MathApp {
 
 		// Calculate and store the last time it took to draw the frame
 		self.last_info.1 = start.map(|a| format!("Took: {}ms", a.elapsed().as_micros()));
-	}
-
-	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
-		crate::style::STYLE.window_fill().into()
 	}
 }
