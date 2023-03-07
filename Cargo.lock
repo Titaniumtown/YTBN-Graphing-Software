@@ -703,7 +703,7 @@ checksum = "0bd4b30a6560bbd9b4620f4de34c3f14f60848e58a9b7216801afcb4c7b31c3c"
 [[package]]
 name = "ecolor"
 version = "0.21.0"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "bytemuck",
  "serde",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "eframe"
 version = "0.21.3"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "bytemuck",
  "egui",
@@ -735,7 +735,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.21.0"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "accesskit",
  "ahash",
@@ -748,7 +748,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.21.1"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "android-activity",
  "arboard",
@@ -763,7 +763,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.21.0"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "bytemuck",
  "egui",
@@ -783,7 +783,7 @@ checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 [[package]]
 name = "emath"
 version = "0.21.0"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "bytemuck",
  "serde",
@@ -803,7 +803,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.21.0"
-source = "git+https://github.com/emilk/egui.git#f94187ab718e8513084e591fcef73356a4971d6b"
+source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -2181,9 +2181,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.152"
+version = "1.0.153"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb7d1f0d3021d347a83e556fc4683dea2ea09d87bccdf88ff5c12545d89d5efb"
+checksum = "3a382c72b4ba118526e187430bb4963cd6d55051ebf13d9b25574d379cc98d20"
 dependencies = [
  "serde_derive",
 ]
@@ -2200,9 +2200,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.152"
+version = "1.0.153"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af487d118eecd09402d70a5d72551860e788df87b464af30e5ea6a38c75c541e"
+checksum = "1ef476a5790f0f6decbc66726b6e5d63680ed518283e64c7df415989d880954f"
 dependencies = [
  "proc-macro2",
  "quote",
