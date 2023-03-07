@@ -82,6 +82,7 @@ wasm-bindgen = { version = "0.2", default-features = false, features = ["std"] }
 web-sys = "0.3"
 tracing-wasm = "0.2"
 getrandom = { version = "0.2", features = ["js"] }
+wasm-bindgen-futures = "0.4.34"
 
 [package.metadata.cargo-all-features]
 skip_optional_dependencies = true #don't test optional dependencies, only features

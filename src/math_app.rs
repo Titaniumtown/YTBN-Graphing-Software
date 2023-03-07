@@ -140,9 +140,7 @@ impl MathApp {
 			if #[cfg(target_arch = "wasm32")] {
 				use core::intrinsics::assume;
 
-				if let Some(web_info) = &cc.integration_info.web_info {
-					tracing::info!("Web Info: {:?}", web_info);
-				}
+				tracing::info!("Web Info: {:?}", &cc.integration_info.web_info);
 
 				fn get_storage_decompressed() -> Option<Vec<u8>> {
 					let data = get_localstorage().get_item(DATA_NAME).ok()??;

@@ -42,22 +42,20 @@ cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
 		use wasm_bindgen::prelude::*;
 
-		use lol_alloc::FreeListAllocator;
+		use lol_alloc::{FreeListAllocator, LockedAllocator};
 		#[global_allocator]
-		static ALLOCATOR: FreeListAllocator = FreeListAllocator::new();
+				static ALLOCATOR: LockedAllocator<FreeListAllocator> = LockedAllocator::new(FreeListAllocator::new());
 
 		#[wasm_bindgen(start)]
-		pub fn start() -> Result<(), wasm_bindgen::JsValue> {
+		pub async fn start() {
 			tracing::info!("Starting...");
 
 			// Used in order to hook into `panic!()` to log in the browser's console
 			tracing_wasm::set_as_global_default();
 
-			eframe::start_web("canvas", eframe::WebOptions {
-				follow_system_theme: false,
-				default_theme: eframe::Theme::Dark
-			},
-				Box::new(|cc| Box::new(math_app::MathApp::new(cc))))
+
+			eframe::start_web("canvas", eframe::WebOptions::default(),
+				Box::new(|cc| Box::new(math_app::MathApp::new(cc)))).await.unwrap();
 		}
 	}
 }
