@@ -16,19 +16,17 @@ use std::{
 };
 
 /// Represents the possible variations of Riemann Sums
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone, Default)]
 pub enum Riemann {
+	#[default]
 	Left,
+
 	Middle,
 	Right,
 }
 
 impl fmt::Display for Riemann {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:?}", self) }
-}
-
-impl const Default for Riemann {
-	fn default() -> Riemann { Riemann::Left }
 }
 
 /// `FunctionEntry` is a function that can calculate values, integrals, derivatives, etc etc

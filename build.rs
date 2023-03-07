@@ -85,7 +85,7 @@ fn main() {
 			to_chars_array(filtered_chars),
 		);
 		let path = Path::new(&env::var("OUT_DIR").unwrap()).join("valid_chars.rs");
-		let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
+		let mut file = BufWriter::new(File::create(path).expect("Could not save compressed_data"));
 
 		write!(&mut file, "{}", chars_array).expect("unable to write chars_array");
 	}
@@ -153,7 +153,7 @@ fn main() {
 		zstd::encode_all(data.as_slice(), *zstd_levels.end()).expect("Could not compress data");
 
 	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("compressed_data");
-	let mut file = BufWriter::new(File::create(&path).expect("Could not save compressed_data"));
+	let mut file = BufWriter::new(File::create(path).expect("Could not save compressed_data"));
 
 	file.write_all(data_compressed.as_slice())
 		.expect("Failed to save compressed data");

@@ -273,7 +273,7 @@ fn get_last_term() {
 	for (key, value) in values {
 		assert_eq!(
 			parsing::get_last_term(key.chars().collect::<Vec<char>>().as_slice()),
-			value
+			Some(value.to_owned())
 		);
 	}
 }

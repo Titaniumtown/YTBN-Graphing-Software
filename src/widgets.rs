@@ -1,6 +1,5 @@
 use crate::misc::Offset;
 use egui::{Id, InnerResponse};
-use std::hash::Hash;
 
 /// Creates an area ontop of a widget with an y offset
 pub fn widgets_ontop<R>(

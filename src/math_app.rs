@@ -46,7 +46,7 @@ pub struct AppSettings {
 	pub plot_width: usize,
 }
 
-impl const Default for AppSettings {
+impl Default for AppSettings {
 	/// Default implementation of `AppSettings`, this is how the application starts up
 	fn default() -> Self {
 		Self {
@@ -264,7 +264,7 @@ impl MathApp {
 
 			last_info: (None, None),
 			opened: const { Opened::default() },
-			settings: const { AppSettings::default() },
+			settings: AppSettings::default(),
 		}
 	}
 
