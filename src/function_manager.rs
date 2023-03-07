@@ -88,8 +88,7 @@ impl FunctionManager {
 		let available_width = ui.available_width();
 		let mut remove_i: Option<usize> = None;
 		let target_size = vec2(available_width, crate::data::FONT_SIZE);
-		for (i, (te_id, function)) in self.functions.iter_mut().enumerate() {
-			let te_id = *te_id;
+		for (i, (te_id, function)) in self.functions.iter_mut().map(|(a, b)| (*a, b)).enumerate() {
 			let mut new_string = function.autocomplete.string.clone();
 			function.update_string(&new_string);
 
@@ -109,8 +108,8 @@ impl FunctionManager {
 					.hint_text({
 						// If there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
 						match function.autocomplete.hint.single() {
-							Some(single_hint) => *single_hint,
-							None => "",
+							Some(single_hint) => function.raw_func_str.clone() + single_hint,
+							None => String::new(),
 						}
 					}),
 			);
