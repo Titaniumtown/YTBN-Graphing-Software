@@ -1,11 +1,13 @@
-use egui::plot::{Line, Points, Value, Values};
+use egui::plot::{Line, PlotPoint, PlotPoints, Points};
+use egui::Id;
+use emath::Pos2;
 use getrandom::getrandom;
 use itertools::Itertools;
 
 /// Implements traits that are useful when dealing with Vectors of egui's `Value`
 pub trait EguiHelper {
 	/// Converts to `egui::plot::Values`
-	fn to_values(self) -> Values;
+	fn to_values(self) -> PlotPoints;
 
 	/// Converts to `egui::plot::Line`
 	fn to_line(self) -> Line;
@@ -17,9 +19,13 @@ pub trait EguiHelper {
 	fn to_tuple(self) -> Vec<(f64, f64)>;
 }
 
-impl EguiHelper for Vec<Value> {
+impl EguiHelper for Vec<PlotPoint> {
 	#[inline(always)]
-	fn to_values(self) -> Values { Values::from_values(self) }
+	fn to_values(self) -> PlotPoints {
+		let a: Vec<[f64; 2]> =
+			unsafe { std::mem::transmute::<Vec<PlotPoint>, Vec<[f64; 2]>>(self) };
+		PlotPoints::from(a)
+	}
 
 	#[inline(always)]
 	fn to_line(self) -> Line { Line::new(self.to_values()) }
@@ -29,10 +35,34 @@ impl EguiHelper for Vec<Value> {
 
 	#[inline(always)]
 	fn to_tuple(self) -> Vec<(f64, f64)> {
-		// self.iter().map(|ele| (ele.x, ele.y)).collect()
-		unsafe { std::mem::transmute::<Vec<Value>, Vec<(f64, f64)>>(self) }
+		unsafe { std::mem::transmute::<Vec<PlotPoint>, Vec<(f64, f64)>>(self) }
 	}
 }
+
+pub trait Offset {
+	fn offset_y(self, y_offset: f32) -> Pos2;
+	fn offset_x(self, x_offset: f32) -> Pos2;
+}
+
+impl Offset for Pos2 {
+	fn offset_y(self, y_offset: f32) -> Pos2 {
+		Pos2 {
+			x: self.x,
+			y: self.y + y_offset,
+		}
+	}
+
+	fn offset_x(self, x_offset: f32) -> Pos2 {
+		Pos2 {
+			x: self.x + x_offset,
+			y: self.y,
+		}
+	}
+}
+
+pub const fn create_id(x: u64) -> Id { unsafe { std::mem::transmute::<u64, Id>(x) } }
+
+pub const fn get_u64_id(id: Id) -> u64 { unsafe { std::mem::transmute::<Id, u64>(id) } }
 
 /*
 /// Rounds f64 to `n` decimal places
@@ -51,7 +81,7 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
-	threshold: f64, range: &std::ops::Range<f64>, data: &[Value], f: &dyn Fn(f64) -> f64,
+	threshold: f64, range: &std::ops::Range<f64>, data: &[PlotPoint], f: &dyn Fn(f64) -> f64,
 	f_1: &dyn Fn(f64) -> f64,
 ) -> Vec<f64> {
 	data.iter()

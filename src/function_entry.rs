@@ -1,7 +1,7 @@
 use crate::math_app::AppSettings;
 use crate::misc::*;
 use egui::{
-	plot::{BarChart, PlotUi, Value},
+	plot::{BarChart, PlotPoint, PlotUi},
 	widgets::plot::Bar,
 	Checkbox, Context,
 };
@@ -48,12 +48,12 @@ pub struct FunctionEntry {
 
 	pub nth_derviative: bool,
 
-	pub back_data: Vec<Value>,
+	pub back_data: Vec<PlotPoint>,
 	pub integral_data: Option<(Vec<Bar>, f64)>,
-	pub derivative_data: Vec<Value>,
-	pub extrema_data: Vec<Value>,
-	pub root_data: Vec<Value>,
-	nth_derivative_data: Option<Vec<Value>>,
+	pub derivative_data: Vec<PlotPoint>,
+	pub extrema_data: Vec<PlotPoint>,
+	pub root_data: Vec<PlotPoint>,
+	nth_derivative_data: Option<Vec<PlotPoint>>,
 
 	pub autocomplete: AutoComplete<'static>,
 
@@ -240,7 +240,7 @@ impl FunctionEntry {
 	/// Helps with processing newton's method depending on level of derivative
 	fn newtons_method_helper(
 		&self, threshold: f64, derivative_level: usize, range: &std::ops::Range<f64>,
-	) -> Vec<Value> {
+	) -> Vec<PlotPoint> {
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
 				threshold,
@@ -261,7 +261,7 @@ impl FunctionEntry {
 
 		newtons_method_output
 			.into_iter()
-			.map(|x| Value::new(x, self.function.get(x)))
+			.map(|x| PlotPoint::new(x, self.function.get(x)))
 			.collect()
 	}
 
@@ -292,10 +292,10 @@ impl FunctionEntry {
 		}
 
 		if self.back_data.is_empty() {
-			let data: Vec<Value> = resolution_iter
+			let data: Vec<PlotPoint> = resolution_iter
 				.clone()
 				.into_iter()
-				.map(|x| Value::new(x, self.function.get(x)))
+				.map(|x| PlotPoint::new(x, self.function.get(x)))
 				.collect();
 			debug_assert_eq!(data.len(), settings.plot_width + 1);
 
@@ -303,19 +303,19 @@ impl FunctionEntry {
 		}
 
 		if self.derivative_data.is_empty() {
-			let data: Vec<Value> = resolution_iter
+			let data: Vec<PlotPoint> = resolution_iter
 				.clone()
 				.into_iter()
-				.map(|x| Value::new(x, self.function.get_derivative_1(x)))
+				.map(|x| PlotPoint::new(x, self.function.get_derivative_1(x)))
 				.collect();
 			debug_assert_eq!(data.len(), settings.plot_width + 1);
 			self.derivative_data = data;
 		}
 
 		if self.nth_derviative && self.nth_derivative_data.is_none() {
-			let data: Vec<Value> = resolution_iter
+			let data: Vec<PlotPoint> = resolution_iter
 				.into_iter()
-				.map(|x| Value::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
+				.map(|x| PlotPoint::new(x, self.function.get_nth_derivative(self.curr_nth, x)))
 				.collect();
 			debug_assert_eq!(data.len(), settings.plot_width + 1);
 			self.nth_derivative_data = Some(data);
@@ -380,9 +380,9 @@ impl FunctionEntry {
 								&& (settings.integral_max_x > value.x)
 						})
 						.cloned()
-						.collect::<Vec<Value>>()
+						.collect::<Vec<PlotPoint>>()
 						.to_line()
-						.stroke(epaint::Stroke::none())
+						.stroke(epaint::Stroke::NONE)
 						.color(Color32::from_rgb(4, 4, 255))
 						.fill(0.0),
 				);

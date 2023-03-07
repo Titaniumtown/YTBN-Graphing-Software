@@ -248,7 +248,7 @@ impl MathApp {
 		cc.egui_ctx.set_fonts(data.fonts);
 
 		// Set dark mode by default
-		cc.egui_ctx.set_visuals(crate::style::style());
+		// cc.egui_ctx.set_visuals(crate::style::style());
 
 		// Set spacing
 		// cc.egui_ctx.set_spacing(crate::style::SPACING);
@@ -433,7 +433,7 @@ impl App for MathApp {
 			// If `H` key is pressed, toggle Side Panel
 			self.opened
 				.side_panel
-				.bitxor_assign(ctx.input_mut().consume_key(egui::Modifiers::NONE, Key::H));
+				.bitxor_assign(ctx.input_mut(|x| x.consume_key(egui::Modifiers::NONE, Key::H)));
 		}
 
 		// Creates Top bar that contains some general options

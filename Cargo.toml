@@ -33,14 +33,14 @@ strip = false
 
 [dependencies]
 parsing = { path = "./parsing" }
-eframe = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
+eframe = { git = "https://github.com/emilk/egui.git", default-features = false, features = [
     "glow",
 ] }
-egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
+egui = { git = "https://github.com/emilk/egui.git", default-features = false, features = [
     "serde",
 ] }
-epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
-emath = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
+epaint = { git = "https://github.com/emilk/egui.git", default-features = false }
+emath = { git = "https://github.com/emilk/egui.git", default-features = false }
 
 shadow-rs = { version = "0.12", default-features = false }
 const_format = { version = "0.2", default-features = false, features = ["fmt"] }
@@ -57,8 +57,8 @@ benchmarks = { path = "./benchmarks" }
 
 [build-dependencies]
 shadow-rs = "0.12"
-epaint = { git = "https://github.com/Titaniumtown/egui.git", default-features = false }
-egui = { git = "https://github.com/Titaniumtown/egui.git", default-features = false, features = [
+epaint = { git = "https://github.com/emilk/egui.git", default-features = false }
+egui = { git = "https://github.com/emilk/egui.git", default-features = false, features = [
     "serde",
 ] }
 bincode = "1.3"

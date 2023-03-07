@@ -26,12 +26,7 @@ impl FlatExWrapper {
 	fn partial(&self, x: usize) -> Self {
 		self.func
 			.as_ref()
-			.map(|f| {
-				f.clone()
-					.partial(x)
-					.map(|a| Self::new(a))
-					.unwrap_or(Self::EMPTY)
-			})
+			.map(|f| f.clone().partial(x).map(Self::new).unwrap_or(Self::EMPTY))
 			.unwrap_or(Self::EMPTY)
 	}
 
@@ -44,8 +39,8 @@ impl FlatExWrapper {
 			.as_ref()
 			.map(|f| {
 				f.clone()
-					.partial_iter((0..=n).map(|_| 0).into_iter())
-					.map(|a| Self::new(a))
+					.partial_iter((0..=n).map(|_| 0))
+					.map(Self::new)
 					.unwrap_or(Self::EMPTY)
 			})
 			.unwrap_or(Self::EMPTY)
@@ -151,8 +146,7 @@ impl BackingFunction {
 
 	/// Get string relating to the nth derivative
 	pub fn get_nth_derivative_str(&self) -> &str {
-		&self
-			.nth_derivative
+		self.nth_derivative
 			.as_ref()
 			.map(|a| a.2.as_str())
 			.unwrap_or("")
@@ -207,6 +201,6 @@ pub fn process_func_str(function_in: &str) -> String {
 		return String::new();
 	}
 
-	crate::suggestions::split_function(&function_in, crate::suggestions::SplitType::Multiplication)
+	crate::suggestions::split_function(function_in, crate::suggestions::SplitType::Multiplication)
 		.join("*")
 }

@@ -25,7 +25,7 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 	let mut seen_3: HashSet<String> = HashSet::new();
 
 	for (key, value) in tuple_list_1.iter() {
-		if seen_3.contains(&*key) {
+		if seen_3.contains(key) {
 			continue;
 		}
 
@@ -33,18 +33,20 @@ pub fn compile_hashmap(data: Vec<String>) -> Vec<(String, String)> {
 
 		let count_keys = keys.iter().filter(|a| a == &&key).count();
 
-		if count_keys == 1 {
-			output.push((key.clone(), format!(r#"Hint::Single("{}")"#, value)));
-		} else if count_keys > 1 {
-			let mut multi_data = tuple_list_1
-				.iter()
-				.filter(|(a, _)| a == key)
-				.map(|(_, b)| b)
-				.collect::<Vec<&String>>();
-			multi_data.sort_unstable_by(|a, b| compare_len_reverse_alpha(a, b));
-			output.push((key.clone(), format!("Hint::Many(&{:?})", multi_data)));
-		} else {
-			panic!("Number of values for {key} is 0!");
+		match count_keys.cmp(&1usize) {
+			Ordering::Less => {
+				panic!("Number of values for {key} is 0!");
+			}
+			Ordering::Greater => {
+				let mut multi_data = tuple_list_1
+					.iter()
+					.filter(|(a, _)| a == key)
+					.map(|(_, b)| b)
+					.collect::<Vec<&String>>();
+				multi_data.sort_unstable_by(|a, b| compare_len_reverse_alpha(a, b));
+				output.push((key.clone(), format!("Hint::Many(&{:?})", multi_data)));
+			}
+			Ordering::Equal => output.push((key.clone(), format!(r#"Hint::Single("{}")"#, value))),
 		}
 	}
 

@@ -146,10 +146,7 @@ fn main() {
 		]),
 	};
 
-	let data = bincode::serialize(&TotalData {
-		fonts,
-	})
-	.unwrap();
+	let data = bincode::serialize(&TotalData { fonts }).unwrap();
 
 	let zstd_levels = zstd::compression_level_range();
 	let data_compressed =

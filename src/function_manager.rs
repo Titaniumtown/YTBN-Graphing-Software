@@ -1,5 +1,8 @@
 use crate::{
-	consts::COLORS, function_entry::FunctionEntry, misc::random_u64, widgets::widgets_ontop,
+	consts::COLORS,
+	function_entry::FunctionEntry,
+	misc::{create_id, get_u64_id, random_u64},
+	widgets::widgets_ontop,
 };
 use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
 use emath::vec2;
@@ -19,7 +22,7 @@ impl Default for FunctionManager {
 	fn default() -> Self {
 		let mut vec: Functions = Vec::with_capacity(COLORS.len());
 		vec.push((
-			Id(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
+			create_id(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
 			FunctionEntry::EMPTY,
 		));
 		Self { functions: vec }
@@ -37,7 +40,7 @@ impl Serialize for FunctionManager {
 			&self
 				.functions
 				.iter()
-				.map(|(id, func)| (id.0, func.clone()))
+				.map(|(id, func)| (get_u64_id(*id), func.clone()))
 				.collect::<Vec<(u64, FunctionEntry)>>(),
 		)?;
 		s.end()
@@ -59,7 +62,7 @@ impl<'de> Deserialize<'de> for FunctionManager {
 				.0
 				.iter()
 				.cloned()
-				.map(|(id, func)| (Id(id), func))
+				.map(|(id, func)| (create_id(id), func))
 				.collect::<Vec<(Id, FunctionEntry)>>(),
 		})
 	}
@@ -86,22 +89,23 @@ impl FunctionManager {
 		let mut remove_i: Option<usize> = None;
 		let target_size = vec2(available_width, crate::data::FONT_SIZE);
 		for (i, (te_id, function)) in self.functions.iter_mut().enumerate() {
+			let te_id = *te_id;
 			let mut new_string = function.autocomplete.string.clone();
 			function.update_string(&new_string);
 
 			let mut movement: Movement = Movement::default();
 
 			let size_multiplier = vec2(1.0, {
-				let had_focus = ui.ctx().memory().has_focus(*te_id);
-				(ui.ctx().animate_bool(*te_id, had_focus) * 1.5) + 1.0
+				let had_focus = ui.ctx().memory(|x| x.has_focus(te_id));
+				(ui.ctx().animate_bool(te_id, had_focus) * 1.5) + 1.0
 			});
 
 			let re = ui.add_sized(
 				target_size * size_multiplier,
 				egui::TextEdit::singleline(&mut new_string)
-					.hint_forward(true) // Make the hint appear after the last text in the textbox
+					// .hint_forward(true) // Make the hint appear after the last text in the textbox
 					.lock_focus(true)
-					.id(*te_id) // Set widget's id to `te_id`
+					.id(te_id) // Set widget's id to `te_id`
 					.hint_text({
 						// If there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
 						match function.autocomplete.hint.single() {
@@ -115,24 +119,31 @@ impl FunctionManager {
 			new_string.retain(|c| crate::misc::is_valid_char(&c));
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
-			let animate_bool = ui.ctx().animate_bool(*te_id, re.has_focus());
+			let animate_bool = ui.ctx().animate_bool(te_id, re.has_focus());
 			if animate_bool == 1.0 {
 				function.autocomplete.update_string(&new_string);
 
 				if function.autocomplete.hint.is_some() {
 					// only register up and down arrow movements if hint is type `Hint::Many`
 					if !function.autocomplete.hint.is_single() {
-						if ui.input().key_pressed(Key::ArrowDown) {
+						let (arrow_down, arrow_up) = ui.input(|x| {
+							(x.key_pressed(Key::ArrowDown), x.key_pressed(Key::ArrowUp))
+						});
+						if arrow_down {
 							movement = Movement::Down;
-						} else if ui.input().key_pressed(Key::ArrowUp) {
+						} else if arrow_up {
 							movement = Movement::Up;
 						}
 					}
 
 					// Put here so these key presses don't interact with other elements
-					let enter_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Enter);
-					let tab_pressed = ui.input_mut().consume_key(Modifiers::NONE, Key::Tab);
-					if enter_pressed | tab_pressed | ui.input().key_pressed(Key::ArrowRight) {
+					let (enter_pressed, tab_pressed) = ui.input_mut(|x| {
+						(
+							x.consume_key(Modifiers::NONE, Key::Enter),
+							x.consume_key(Modifiers::NONE, Key::Tab),
+						)
+					});
+					if enter_pressed | tab_pressed | ui.input(|x| x.key_pressed(Key::ArrowRight)) {
 						movement = Movement::Complete;
 					}
 
@@ -143,7 +154,7 @@ impl FunctionManager {
                     // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
 
 					// hashed "autocomplete_popup"
-					const POPUP_ID: Id = Id(7574801616484505465);
+					const POPUP_ID: Id = create_id(7574801616484505465);
 
                     let mut clicked = false;
 
@@ -164,17 +175,17 @@ impl FunctionManager {
 
                         movement = Movement::Complete;
                     } else {
-                        ui.memory().open_popup(POPUP_ID);
+                        ui.memory_mut(|x| x.open_popup(POPUP_ID));
                     }
                 }
 
 					// Push cursor to end if needed
 					if movement == Movement::Complete {
 						let mut state =
-							unsafe { TextEdit::load_state(ui.ctx(), *te_id).unwrap_unchecked() };
+							unsafe { TextEdit::load_state(ui.ctx(), te_id).unwrap_unchecked() };
 						let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
 						state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
-						TextEdit::store_state(ui.ctx(), *te_id, state);
+						TextEdit::store_state(ui.ctx(), te_id, state);
 					}
 				}
 
@@ -182,7 +193,7 @@ impl FunctionManager {
 				const BUTTONS_Y_OFFSET: f32 = 1.32;
 				const Y_OFFSET: f32 = crate::data::FONT_SIZE * BUTTONS_Y_OFFSET;
 
-				widgets_ontop(ui, i, &re, Y_OFFSET, |ui| {
+				widgets_ontop(ui, create_id(i as u64), &re, Y_OFFSET, |ui| {
 					ui.horizontal(|ui| {
 						// There's more than 1 function! Functions can now be deleted
 						if ui
@@ -244,7 +255,7 @@ impl FunctionManager {
 	/// Create and push new empty function entry
 	pub fn push_empty(&mut self) {
 		self.functions.push((
-			Id(random_u64().expect("unable to generate random id")),
+			create_id(random_u64().expect("unable to generate random id")),
 			FunctionEntry::EMPTY,
 		));
 	}

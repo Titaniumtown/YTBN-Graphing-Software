@@ -25,11 +25,11 @@ pub fn split_function(input: &str, split: SplitType) -> Vec<String> {
 		split,
 	)
 	.iter()
-	.map(|x| x.replace("\u{1fc93}", "exp")) // Convert back to `exp` text
+	.map(|x| x.replace('\u{1fc93}', "exp")) // Convert back to `exp` text
 	.collect::<Vec<String>>()
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum SplitType {
 	Multiplication,
 	Term,
@@ -108,7 +108,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 
 		const fn splitable(&self, c: &char, other: &BoolSlice, split: &SplitType) -> bool {
 			if (*c == '*') | (matches!(split, &SplitType::Term) && other.open_parens) {
-				return true;
+				true
 			} else if other.closing_parens {
 				// Cases like `)x`, `)2`, and `)(`
 				return (*c == '(')
@@ -131,11 +131,8 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 				&& (other.is_unmasked_number() | other.letter)
 			{
 				return true;
-			} else if self.is_unmasked_number() && other.is_unmasked_variable() {
-				// Cases like `x2`
-				return true;
 			} else {
-				return false;
+				return self.is_unmasked_number() && other.is_unmasked_variable();
 			}
 		}
 	}
@@ -173,7 +170,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 /// Generate a hint based on the input `input`, returns an `Option<String>`
 pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 	if input.is_empty() {
-		return &HINT_EMPTY;
+		&HINT_EMPTY
 	} else {
 		let chars: Vec<char> = input.chars().collect::<Vec<char>>();
 
@@ -181,8 +178,16 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 			assume(!chars.is_empty());
 		}
 
-		if let Some(hint) = COMPLETION_HASHMAP.get(get_last_term(&chars).as_str()) {
-			return hint;
+		let key = get_last_term(&chars);
+		match key {
+			Some(key) => {
+				if let Some(hint) = COMPLETION_HASHMAP.get(&key) {
+					return hint;
+				}
+			}
+			None => {
+				return &Hint::None;
+			}
 		}
 
 		let mut open_parens: usize = 0;
@@ -197,21 +202,17 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 			return &HINT_CLOSED_PARENS;
 		}
 
-		return &Hint::None;
+		&Hint::None
 	}
 }
 
-pub fn get_last_term(chars: &[char]) -> String {
-	assert!(!chars.is_empty());
+pub fn get_last_term(chars: &[char]) -> Option<String> {
+	if chars.is_empty() {
+		return None;
+	}
 
 	let mut result = split_function_chars(chars, SplitType::Term);
-	unsafe {
-		assume(!result.is_empty());
-		assume(result.len() > 0);
-		let output = result.pop();
-		assume(output.is_some());
-		output.unwrap_unchecked()
-	}
+	result.pop()
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -225,13 +226,13 @@ impl<'a> std::fmt::Display for Hint<'a> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Hint::Single(single_data) => {
-				return write!(f, "{}", single_data);
+				write!(f, "{}", single_data)
 			}
 			Hint::Many(multi_data) => {
-				return write!(f, "{:?}", multi_data);
+				write!(f, "{:?}", multi_data)
 			}
 			Hint::None => {
-				return write!(f, "None");
+				write!(f, "None")
 			}
 		}
 	}
@@ -277,3 +278,33 @@ impl<'a> Hint<'a> {
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+
+#[cfg(test)]
+fn assert_test(input: &str, expected: &[&str], split: SplitType) {
+	let output = split_function("sin(x)cos(x)", SplitType::Multiplication);
+	let expected_owned = expected
+		.iter()
+		.map(|&x| x.to_owned())
+		.collect::<Vec<String>>();
+	if output != expected_owned {
+		panic!(
+			"split type: {:?} of {} resulted in {:?} not {:?}",
+			split, input, output, expected
+		);
+	}
+}
+
+#[test]
+fn split_function_test() {
+	assert_test(
+		"sin(x)cos(x)",
+		&["sin(x)", "cos(x)"],
+		SplitType::Multiplication,
+	);
+
+	assert_test(
+		"tanh(cos(x)xx)cos(x)",
+		&["tanh(cos(x)", "x", "x)", "cos(x)"],
+		SplitType::Multiplication,
+	);
+}
