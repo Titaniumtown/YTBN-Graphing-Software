@@ -193,16 +193,13 @@ impl MathApp {
 
 		fn decompress_data() -> crate::data::TotalData {
 			let mut data = Vec::new();
-			let _ = unsafe {
-				ruzstd::StreamingDecoder::new(
-					&mut const {
-						include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice()
-					},
-				)
-				.unwrap_unchecked()
-				.read_to_end(&mut data)
-				.unwrap_unchecked()
-			};
+			let _ = ruzstd::StreamingDecoder::new(
+				&mut const { include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice() },
+			)
+			.expect("unable to decode compressed data")
+			.read_to_end(&mut data)
+			.expect("unable to read compressed data");
+
 			#[cfg(target = "wasm32")]
 			{
 				debug_assert!(!data.is_empty());
@@ -224,7 +221,7 @@ impl MathApp {
 					.expect("failed to set local storage cache");
 			}
 
-			unsafe { bincode::deserialize(data.as_slice()).unwrap_unchecked() }
+			bincode::deserialize(data.as_slice()).expect("unable to deserialize bincode")
 		}
 
 		#[cfg(target = "wasm32")]

@@ -389,7 +389,7 @@ impl FunctionEntry {
 				self.back_data
 					.clone()
 					.to_line()
-					.stroke(egui::Stroke::new(2.0, main_plot_color)),
+					.stroke(egui::Stroke::new(4.0, main_plot_color)),
 			);
 		}
 

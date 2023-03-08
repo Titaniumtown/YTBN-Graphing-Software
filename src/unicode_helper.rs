@@ -11,13 +11,10 @@ pub fn to_unicode_hash(c: char) -> String {
 
 #[allow(dead_code)]
 pub fn to_chars_array(chars: Vec<char>) -> String {
-	[
-		"[",
-		&chars
+	"[".to_string()
+		+ &chars
 			.iter()
 			.map(|c| format!("'{}'", c.escape_unicode()))
-			.join(", "),
-		"]",
-	]
-	.concat()
+			.join(", ")
+		+ "]"
 }
