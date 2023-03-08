@@ -585,12 +585,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cty"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
-
-[[package]]
 name = "cxx"
 version = "1.0.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -703,7 +697,7 @@ checksum = "0bd4b30a6560bbd9b4620f4de34c3f14f60848e58a9b7216801afcb4c7b31c3c"
 [[package]]
 name = "ecolor"
 version = "0.21.0"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "bytemuck",
  "serde",
@@ -712,7 +706,7 @@ dependencies = [
 [[package]]
 name = "eframe"
 version = "0.21.3"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "bytemuck",
  "egui",
@@ -735,7 +729,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.21.0"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "accesskit",
  "ahash",
@@ -748,7 +742,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.21.1"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "android-activity",
  "arboard",
@@ -763,7 +757,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.21.0"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "bytemuck",
  "egui",
@@ -783,7 +777,7 @@ checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 [[package]]
 name = "emath"
 version = "0.21.0"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "bytemuck",
  "serde",
@@ -803,7 +797,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.21.0"
-source = "git+https://github.com/titaniumtown/egui.git#2d9403efdf94e93fc193ab9e909198f47b7398a1"
+source = "git+https://github.com/titaniumtown/egui.git#638dd4c2a0da939d67d32bc87ae5bf9f32b4c947"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -2010,12 +2004,9 @@ dependencies = [
 
 [[package]]
 name = "raw-window-handle"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed7e3d950b66e19e0c372f3fa3fbbcf85b1746b571f74e0c2af6042a5c93420a"
-dependencies = [
- "cty",
-]
+checksum = "4f851a03551ceefd30132e447f07f96cb7011d6b658374f3aed847333adb5559"
 
 [[package]]
 name = "rayon"
@@ -2126,7 +2117,7 @@ dependencies = [
 [[package]]
 name = "ruzstd"
 version = "0.3.0"
-source = "git+https://github.com/KillingSpark/zstd-rs.git#16398e0c02690bed505dfa58cca90ec95792cb83"
+source = "git+https://github.com/KillingSpark/zstd-rs.git#277e67ff3182c276a7d2a6d45b2c4c5e55c738f6"
 dependencies = [
  "byteorder",
  "thiserror",
