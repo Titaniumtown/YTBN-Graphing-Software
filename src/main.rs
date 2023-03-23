@@ -25,7 +25,7 @@ mod widgets;
 
 // For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]
-fn main() {
+fn main() -> eframe::Result<()> {
 	let subscriber = tracing_subscriber::FmtSubscriber::builder()
 		.with_max_level(tracing::Level::TRACE)
 		.finish();
@@ -36,5 +36,5 @@ fn main() {
 		"(Yet-to-be-named) Graphing Software",
 		eframe::NativeOptions::default(),
 		Box::new(|cc| Box::new(math_app::MathApp::new(cc))),
-	);
+	)
 }

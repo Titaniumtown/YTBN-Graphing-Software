@@ -505,7 +505,7 @@ impl App for MathApp {
 				ui.collapsing("Functions", |ui| {
 					ui.label("(From Left to Right)\n`✖` allows you to delete the selected function. Deleting a function is prevented if only 1 function exists.\n`∫` toggles integration.\n`d/dx` toggles the calculation of derivatives.\n`⚙` opens a window to tweak function options.");
 				});
-		
+
 				ui.collapsing("Other", |ui| {
 					ui.label("- Extrema (local minimums and maximums) and Roots (intersections with the x-axis) are displayed though yellow and light blue points respectively located on the graph. These can be toggled in the side panel.");
 				});
