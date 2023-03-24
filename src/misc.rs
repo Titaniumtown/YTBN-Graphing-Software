@@ -172,9 +172,14 @@ pub const HASH_LENGTH: usize = 8;
 /// Represents bytes used to represent hash info
 pub type HashBytes = [u8; HASH_LENGTH];
 
-#[allow(dead_code)]
-pub fn hashed_storage_create(hash: &HashBytes, data: &[u8]) -> String {
-	unsafe { std::mem::transmute::<Vec<u8>, String>([hash, data].concat()) }
+pub trait HashBytesHelper {
+	fn hashed_storage_create(&self, data: &[u8]) -> String;
+}
+
+impl HashBytesHelper for HashBytes {
+	fn hashed_storage_create(&self, data: &[u8]) -> String {
+		unsafe { std::mem::transmute::<Vec<u8>, String>([self, data].concat()) }
+	}
 }
 
 #[allow(dead_code)]
@@ -206,4 +211,4 @@ pub fn random_u64() -> Result<u64, getrandom::Error> {
 
 include!(concat!(env!("OUT_DIR"), "/valid_chars.rs"));
 
-pub fn is_valid_char(c: &char) -> bool { c.is_alphanumeric() | VALID_EXTRA_CHARS.contains(c) }
+pub fn is_valid_char(c: char) -> bool { c.is_alphanumeric() | VALID_EXTRA_CHARS.contains(&c) }

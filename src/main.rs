@@ -10,6 +10,7 @@
 #![feature(const_slice_index)]
 #![feature(slice_split_at_unchecked)]
 #![feature(inline_const)]
+#![feature(const_for)]
 
 #[macro_use]
 extern crate static_assertions;

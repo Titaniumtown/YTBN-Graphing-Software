@@ -115,7 +115,7 @@ impl FunctionManager {
 			);
 
 			// Only keep valid chars
-			new_string.retain(|c| crate::misc::is_valid_char(&c));
+			new_string.retain(|c| crate::misc::is_valid_char(c));
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
 			let animate_bool = ui.ctx().animate_bool(te_id, re.has_focus());

@@ -1,5 +1,8 @@
 use crate::{
-	consts::*, function_entry::Riemann, function_manager::FunctionManager, misc::option_vec_printer,
+	consts::*,
+	function_entry::Riemann,
+	function_manager::FunctionManager,
+	misc::{option_vec_printer, HashBytesHelper},
 };
 use eframe::App;
 use egui::{
@@ -214,7 +217,7 @@ impl MathApp {
 						std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
 					}
 				};
-				let saved_data = &crate::misc::hashed_storage_create(&commit, data);
+				let saved_data = commit.hashed_storage_create(data);
 				tracing::info!("Bytes: {}", saved_data.len());
 				get_localstorage()
 					.set_item(DATA_NAME, saved_data)

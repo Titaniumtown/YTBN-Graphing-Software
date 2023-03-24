@@ -10,6 +10,7 @@
 #![feature(const_slice_index)]
 #![feature(slice_split_at_unchecked)]
 #![feature(inline_const)]
+#![feature(const_for)]
 
 #[macro_use]
 extern crate static_assertions;
@@ -26,13 +27,14 @@ pub use crate::{
 	function_entry::{FunctionEntry, Riemann},
 	math_app::AppSettings,
 	misc::{
-		// decimal_round,
-		hashed_storage_create,
 		hashed_storage_read,
 		newtons_method,
 		option_vec_printer,
 		step_helper,
 		EguiHelper,
+		// decimal_round,
+		// hashed_storage_create,
+		HashBytesHelper,
 	},
 	unicode_helper::{to_chars_array, to_unicode_hash},
 };
