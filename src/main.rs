@@ -15,7 +15,6 @@
 extern crate static_assertions;
 
 mod consts;
-mod data;
 mod function_entry;
 mod function_manager;
 mod math_app;

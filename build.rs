@@ -13,8 +13,6 @@ use epaint::{
 
 use run_script::ScriptOptions;
 
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/data.rs"));
-
 include!(concat!(
 	env!("CARGO_MANIFEST_DIR"),
 	"/src/unicode_helper.rs"
@@ -146,7 +144,7 @@ fn main() {
 		]),
 	};
 
-	let data = bincode::serialize(&TotalData { fonts }).unwrap();
+	let data = bincode::serialize(&fonts).unwrap();
 
 	let zstd_levels = zstd::compression_level_range();
 	let data_compressed =

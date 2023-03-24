@@ -14,6 +14,8 @@ pub const BUILD_INFO: &str = formatc!(
 	&build::RUST_VERSION[6..],
 );
 
+pub const FONT_SIZE: f32 = 14.0;
+
 // Default values
 /// Default minimum X value to display
 pub const DEFAULT_MIN_X: f64 = -10.0;

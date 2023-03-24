@@ -87,7 +87,7 @@ impl FunctionManager {
 
 		let available_width = ui.available_width();
 		let mut remove_i: Option<usize> = None;
-		let target_size = vec2(available_width, crate::data::FONT_SIZE);
+		let target_size = vec2(available_width, crate::consts::FONT_SIZE);
 		for (i, (te_id, function)) in self.functions.iter_mut().map(|(a, b)| (*a, b)).enumerate() {
 			let mut new_string = function.autocomplete.string.clone();
 			function.update_string(&new_string);
@@ -190,7 +190,7 @@ impl FunctionManager {
 
 				/// The y offset multiplier of the `buttons_area` area
 				const BUTTONS_Y_OFFSET: f32 = 1.32;
-				const Y_OFFSET: f32 = crate::data::FONT_SIZE * BUTTONS_Y_OFFSET;
+				const Y_OFFSET: f32 = crate::consts::FONT_SIZE * BUTTONS_Y_OFFSET;
 
 				widgets_ontop(ui, create_id(i as u64), &re, Y_OFFSET, |ui| {
 					ui.horizontal(|ui| {

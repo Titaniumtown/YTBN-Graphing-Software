@@ -191,7 +191,7 @@ impl MathApp {
 			}
 		}
 
-		fn decompress_data() -> crate::data::TotalData {
+		fn decompress_fonts() -> epaint::text::FontDefinitions {
 			let mut data = Vec::new();
 			let _ = ruzstd::StreamingDecoder::new(
 				&mut const { include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice() },
@@ -224,23 +224,23 @@ impl MathApp {
 			bincode::deserialize(data.as_slice()).expect("unable to deserialize bincode")
 		}
 
-		#[cfg(target = "wasm32")]
-		let data: crate::data::TotalData = if let Some(Ok(data)) =
-			get_storage_decompressed().map(|data| bincode::deserialize(data.as_slice()))
-		{
-			data
-		} else {
-			decompress_data()
-		};
-
-		#[cfg(not(target = "wasm32"))]
-		let data: crate::data::TotalData = decompress_data();
-
-		tracing::info!("Reading assets...");
+		tracing::info!("Reading fonts...");
 
 		// Initialize fonts
 		// This used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
-		cc.egui_ctx.set_fonts(data.fonts);
+		cc.egui_ctx.set_fonts({
+			#[cfg(target = "wasm32")]
+			if let Some(Ok(data)) =
+				get_storage_decompressed().map(|data| bincode::deserialize(data.as_slice()))
+			{
+				data
+			} else {
+				decompress_fonts()
+			}
+
+			#[cfg(not(target = "wasm32"))]
+			decompress_fonts()
+		});
 
 		// Set dark mode by default
 		// cc.egui_ctx.set_visuals(crate::style::style());
@@ -395,7 +395,7 @@ impl MathApp {
 				}
 
 				// Only render if there's enough space
-				if ui.available_height() > crate::data::FONT_SIZE {
+				if ui.available_height() > crate::consts::FONT_SIZE {
 					ui.with_layout(Layout::bottom_up(Align::Min), |ui| {
 						// Contents put in reverse order from bottom to top due to the 'buttom_up' layout
 
@@ -591,9 +591,11 @@ impl App for MathApp {
 					.data_aspect(1.0)
 					.include_y(0)
 					.show(ui, |plot_ui| {
-						let bounds = plot_ui.plot_bounds();
-						let min_x: f64 = bounds.min()[0];
-						let max_x: f64 = bounds.max()[0];
+						let (min_x, max_x): (f64, f64) = {
+							let bounds = plot_ui.plot_bounds();
+							(bounds.min()[0], bounds.max()[0])
+						};
+
 						let min_max_changed =
 							(min_x != self.settings.min_x) | (max_x != self.settings.max_x);
 						let did_zoom = (max_x - min_x).abs()
