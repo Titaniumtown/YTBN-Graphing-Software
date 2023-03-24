@@ -1,15 +1,11 @@
 use crate::{
-	consts::*,
-	function_entry::Riemann,
-	function_manager::FunctionManager,
-	misc::{option_vec_printer, HashBytesHelper},
+	consts::*, function_entry::Riemann, function_manager::FunctionManager, misc::option_vec_printer,
 };
 use eframe::App;
 use egui::{
-	plot::Plot, style::Margin, Button, CentralPanel, ComboBox, Context, Frame, Key, Layout,
-	SidePanel, TopBottomPanel, Vec2, Window,
+	plot::Plot, style::Margin, Button, CentralPanel, Color32, ComboBox, Context, DragValue, Frame,
+	Key, Layout, SidePanel, TopBottomPanel, Ui, Vec2, Window,
 };
-use egui::{DragValue, Ui};
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Instant;
@@ -558,6 +554,7 @@ impl App for MathApp {
 				inner_margin: Margin::symmetric(0.0, 0.0),
 				rounding: Rounding::none(),
 				// fill: crate::style::STYLE.window_fill(),
+				fill: Color32::from_gray(27),
 				..Frame::none()
 			})
 			.show(ctx, |ui| {

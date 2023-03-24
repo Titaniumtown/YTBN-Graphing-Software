@@ -95,7 +95,7 @@ impl FunctionManager {
 			let mut movement: Movement = Movement::default();
 
 			let size_multiplier = vec2(1.0, {
-				let had_focus = ui.ctx().memory(|x| x.has_focus(te_id));
+				let had_focus = ui.memory(|x| x.has_focus(te_id));
 				(ui.ctx().animate_bool(te_id, had_focus) * 1.5) + 1.0
 			});
 
@@ -115,7 +115,7 @@ impl FunctionManager {
 			);
 
 			// Only keep valid chars
-			new_string.retain(|c| crate::misc::is_valid_char(c));
+			new_string.retain(crate::misc::is_valid_char);
 
 			// If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
 			let animate_bool = ui.ctx().animate_bool(te_id, re.has_focus());
@@ -136,13 +136,13 @@ impl FunctionManager {
 					}
 
 					// Put here so these key presses don't interact with other elements
-					let (enter_pressed, tab_pressed) = ui.input_mut(|x| {
-						(
-							x.consume_key(Modifiers::NONE, Key::Enter),
-							x.consume_key(Modifiers::NONE, Key::Tab),
-						)
+					let movement_complete_action = ui.input_mut(|x| {
+						x.consume_key(Modifiers::NONE, Key::Enter)
+							| x.consume_key(Modifiers::NONE, Key::Tab)
+							| x.key_pressed(Key::ArrowRight)
 					});
-					if enter_pressed | tab_pressed | ui.input(|x| x.key_pressed(Key::ArrowRight)) {
+
+					if movement_complete_action {
 						movement = Movement::Complete;
 					}
 

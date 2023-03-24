@@ -27,7 +27,7 @@ mod widgets;
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
 	let subscriber = tracing_subscriber::FmtSubscriber::builder()
-		.with_max_level(tracing::Level::TRACE)
+		.with_max_level(tracing::Level::INFO)
 		.finish();
 
 	tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");

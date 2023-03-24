@@ -19,13 +19,8 @@ fn generate_hashmap() {
 	let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 	let mut file = BufWriter::new(File::create(&path).expect("Could not create file"));
 
-	let string_hashmap = compile_hashmap(
-		SUPPORTED_FUNCTIONS
-			.to_vec()
-			.iter()
-			.map(|a| a.to_string())
-			.collect(),
-	);
+	let string_hashmap =
+		compile_hashmap(SUPPORTED_FUNCTIONS.iter().map(|a| a.to_string()).collect());
 
 	let mut hashmap = phf_codegen::Map::new();
 

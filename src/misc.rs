@@ -127,23 +127,16 @@ pub fn newtons_method(
 }
 
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
-pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String
-where
-	T: ToString,
-{
-	[
-		"[",
-		&data
-			.iter()
-			.map(move |x| {
-				x.as_ref()
-					.map(|x_1| x_1.to_string())
-					.unwrap_or_else(|| "None".to_owned())
-			})
-			.join(", "),
-		"]",
-	]
-	.concat()
+pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String {
+	let formatted: String = data
+		.into_iter()
+		.map(|item| match item {
+			Some(x) => x.to_string(),
+			None => "None".to_owned(),
+		})
+		.join(", ");
+
+	format!("[{}]", formatted)
 }
 
 /// Returns a vector of length `max_i` starting at value `min_x` with step of `step`

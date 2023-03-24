@@ -258,21 +258,19 @@ impl<'a> Hint<'a> {
 
 	#[inline]
 	#[allow(dead_code)]
-	pub const fn single(&self) -> Option<&&str> {
-		if let Hint::Single(data) = self {
-			Some(data)
-		} else {
-			None
+	pub const fn single(&self) -> Option<&str> {
+		match self {
+			Hint::Single(data) => Some(data),
+			_ => None,
 		}
 	}
 
 	#[inline]
 	#[allow(dead_code)]
-	pub const fn many(&self) -> Option<&&[&str]> {
-		if let Hint::Many(data) = self {
-			Some(data)
-		} else {
-			None
+	pub const fn many(&self) -> Option<&[&str]> {
+		match self {
+			Hint::Many(data) => Some(data),
+			_ => None,
 		}
 	}
 }
