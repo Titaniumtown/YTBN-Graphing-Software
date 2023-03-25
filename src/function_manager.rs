@@ -105,13 +105,10 @@ impl FunctionManager {
 					.hint_forward(true) // Make the hint appear after the last text in the textbox
 					.lock_focus(true)
 					.id(te_id) // Set widget's id to `te_id`
-					.hint_text({
+					.hint_text(
 						// If there's a single hint, go ahead and apply the hint here, if not, set the hint to an empty string
-						match function.autocomplete.hint.single() {
-							Some(single_hint) => single_hint,
-							None => "",
-						}
-					}),
+						function.autocomplete.hint.single().unwrap_or(""),
+					),
 			);
 
 			// Only keep valid chars

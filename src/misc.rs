@@ -129,7 +129,7 @@ pub fn newtons_method(
 /// Inputs `Vec<Option<T>>` and outputs a `String` containing a pretty representation of the Vector
 pub fn option_vec_printer<T: ToString>(data: &[Option<T>]) -> String {
 	let formatted: String = data
-		.into_iter()
+		.iter()
 		.map(|item| match item {
 			Some(x) => x.to_string(),
 			None => "None".to_owned(),
