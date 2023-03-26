@@ -25,13 +25,13 @@ echo "compiled size: $pre_size"
 
 wasm-bindgen target/wasm32-unknown-unknown/${TYPE}/ytbn_graphing_software.wasm --out-dir pkg --target web --no-typescript
 
-if test "$TYPE" == "release"; then
-    echo "running wasm-opt..."
-    time wasm-opt --converge -Oz --code-folding --const-hoisting --coalesce-locals-learning --vacuum --merge-locals --merge-blocks --fast-math --precompute --rse --low-memory-unused --once-reduction --optimize-instructions --licm --intrinsic-lowering \
-    --dce --dae-optimizing --inlining-optimizing --strip-debug \
-    -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
-    mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
-fi
+#if test "$TYPE" == "release"; then
+#    echo "running wasm-opt..."
+#    time wasm-opt --converge -Oz --code-folding --const-hoisting --coalesce-locals-learning --vacuum --merge-locals --merge-blocks --fast-math --precompute --rse --low-memory-unused --once-reduction --optimize-instructions --licm --intrinsic-lowering \
+#    --dce --dae-optimizing --inlining-optimizing --strip-debug \
+#    -o pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+#    mv pkg/ytbn_graphing_software_bg_2.wasm pkg/ytbn_graphing_software_bg.wasm
+#fi
 
 mkdir tmp
 cp -r pkg/ytbn_graphing_software_bg.wasm tmp/
@@ -40,12 +40,14 @@ sed -i 's/fatal: true/fatal: false/g' pkg/ytbn_graphing_software.js
 
 sed -i "s/TextEncoder('utf-8')/TextEncoder('utf-8', { ignoreBOM: true, fatal: false })/g" pkg/ytbn_graphing_software.js
 
-minify pkg/ytbn_graphing_software.js > tmp/ytbn_graphing_software.js
+#minify pkg/ytbn_graphing_software.js > tmp/ytbn_graphing_software.js
 
 cp www/* tmp/
 cp assets/logo.svg tmp/
-minify www/index.html > tmp/index.html
-minify www/sw.js > tmp/sw.js
+#minify www/index.html > tmp/index.html
+#minify www/sw.js > tmp/sw.js
+cp www/index.html www/sw.js pkg/ytbn_graphing_software.js tmp/
+
 
 wasm_sum=($(md5sum tmp/ytbn_graphing_software_bg.wasm))
 js_sum=($(md5sum tmp/ytbn_graphing_software.js))
