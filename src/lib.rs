@@ -43,9 +43,9 @@ cfg_if::cfg_if! {
 	if #[cfg(target_arch = "wasm32")] {
 		use wasm_bindgen::prelude::*;
 
-		use lol_alloc::{FreeListAllocator, AssumeSingleThreaded};
+		use lol_alloc::{FreeListAllocator, LockedAllocator};
 		#[global_allocator]
-				static ALLOCATOR: AssumeSingleThreaded<FreeListAllocator> = unsafe { AssumeSingleThreaded::new(FreeListAllocator::new()) };
+				static ALLOCATOR: LockedAllocator<FreeListAllocator> = LockedAllocator::new(FreeListAllocator::new());
 
 		#[wasm_bindgen(start)]
 		pub async fn start() {
