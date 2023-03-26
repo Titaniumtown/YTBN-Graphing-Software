@@ -379,16 +379,16 @@ impl MathApp {
 					#[cfg(target_arch = "wasm32")]
 					{
 						tracing::info!("Saving function data");
-						let hash: crate::misc::HashBytes = unsafe {
-							std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
-						};
-						let saved_data = &crate::misc::hashed_storage_create(
-							&hash,
-							bincode::serialize(&self.functions).unwrap().as_slice(),
+						use crate::misc::{HashBytes, HashBytesHelper};
+						let hash: HashBytes =
+							unsafe { std::mem::transmute::<&str, HashBytes>(build::SHORT_COMMIT) };
+						let saved_data = hash.hashed_storage_create(
+							&bincode::serialize(&self.functions)
+								.expect("unable to deserialize functions"),
 						);
 						// tracing::info!("Bytes: {}", saved_data.len());
 						get_localstorage()
-							.set_item(FUNC_NAME, saved_data)
+							.set_item(FUNC_NAME, &saved_data)
 							.expect("failed to set local function storage");
 					}
 				}
