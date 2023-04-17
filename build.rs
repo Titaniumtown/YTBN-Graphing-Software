@@ -121,6 +121,7 @@ fn main() {
 					scale: 0.8,
 					y_offset_factor: 0.07,
 					y_offset: 0.0,
+					baseline_offset_factor: -0.0333,
 				}),
 			),
 		]),
