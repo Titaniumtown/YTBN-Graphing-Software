@@ -39,7 +39,9 @@ eframe = { git = "https://github.com/titaniumtown/egui.git", default-features = 
 egui = { git = "https://github.com/titaniumtown/egui.git", default-features = false, features = [
     "serde",
 ] }
-epaint = { git = "https://github.com/titaniumtown/egui.git", default-features = false }
+epaint = { git = "https://github.com/titaniumtown/egui.git", default-features = false , features = [
+    "bytemuck",
+] }
 emath = { git = "https://github.com/titaniumtown/egui.git", default-features = false }
 
 shadow-rs = { version = "0.12", default-features = false }
@@ -57,7 +59,9 @@ benchmarks = { path = "./benchmarks" }
 
 [build-dependencies]
 shadow-rs = "0.12"
-epaint = { git = "https://github.com/titaniumtown/egui.git", default-features = false }
+epaint = { git = "https://github.com/titaniumtown/egui.git", default-features = false, features = [
+    "bytemuck",
+] }
 egui = { git = "https://github.com/titaniumtown/egui.git", default-features = false, features = [
     "serde",
 ] }
