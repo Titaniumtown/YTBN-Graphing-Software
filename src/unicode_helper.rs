@@ -4,7 +4,7 @@ use itertools::Itertools;
 pub fn to_unicode_hash(c: char) -> String {
 	c.escape_unicode()
 		.to_string()
-		.replace(r#"\\u{"#, "")
+		.replace(r"\\u{", "")
 		.replace(['{', '}'], "")
 		.to_uppercase()
 }

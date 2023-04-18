@@ -2,8 +2,6 @@
 #![feature(let_chains)]
 #![feature(const_trait_impl)]
 #![feature(core_intrinsics)]
-#![feature(const_convert)]
-#![feature(const_default_impls)]
 #![feature(const_fn_floating_point_arithmetic)]
 #![feature(const_assume)]
 #![feature(const_option_ext)]
@@ -27,14 +25,14 @@ pub use crate::{
 	function_entry::{FunctionEntry, Riemann},
 	math_app::AppSettings,
 	misc::{
+		// decimal_round,
+		hashed_storage_create,
 		hashed_storage_read,
 		newtons_method,
 		option_vec_printer,
 		step_helper,
 		EguiHelper,
-		// decimal_round,
-		// hashed_storage_create,
-		HashBytesHelper,
+		HashBytes,
 	},
 	unicode_helper::{to_chars_array, to_unicode_hash},
 };

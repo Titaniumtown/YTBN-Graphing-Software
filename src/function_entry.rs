@@ -1,5 +1,5 @@
 use crate::math_app::AppSettings;
-use crate::misc::*;
+use crate::misc::{newtons_method_helper, step_helper, EguiHelper};
 use egui::{
 	plot::{BarChart, PlotPoint, PlotUi},
 	widgets::plot::Bar,
@@ -139,7 +139,7 @@ impl FunctionEntry {
 		extrema_data: Vec::new(),
 		root_data: Vec::new(),
 		nth_derivative_data: None,
-		autocomplete: AutoComplete::default(),
+		autocomplete: AutoComplete::EMPTY,
 		test_result: None,
 		curr_nth: 3,
 		settings_opened: false,

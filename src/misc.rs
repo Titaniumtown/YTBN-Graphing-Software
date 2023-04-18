@@ -22,9 +22,7 @@ pub trait EguiHelper {
 impl EguiHelper for Vec<PlotPoint> {
 	#[inline(always)]
 	fn to_values(self) -> PlotPoints {
-		let a: Vec<[f64; 2]> =
-			unsafe { std::mem::transmute::<Vec<PlotPoint>, Vec<[f64; 2]>>(self) };
-		PlotPoints::from(a)
+		PlotPoints::from(unsafe { std::mem::transmute::<Vec<PlotPoint>, Vec<[f64; 2]>>(self) })
 	}
 
 	#[inline(always)]
@@ -44,7 +42,7 @@ pub trait Offset {
 	fn offset_x(self, x_offset: f32) -> Pos2;
 }
 
-impl Offset for Pos2 {
+impl const Offset for Pos2 {
 	fn offset_y(self, y_offset: f32) -> Pos2 {
 		Pos2 {
 			x: self.x,
@@ -165,18 +163,13 @@ pub const HASH_LENGTH: usize = 8;
 /// Represents bytes used to represent hash info
 pub type HashBytes = [u8; HASH_LENGTH];
 
-pub trait HashBytesHelper {
-	fn hashed_storage_create(&self, data: &[u8]) -> String;
-}
-
-impl HashBytesHelper for HashBytes {
-	fn hashed_storage_create(&self, data: &[u8]) -> String {
-		unsafe { std::mem::transmute::<Vec<u8>, String>([self, data].concat()) }
-	}
+#[allow(dead_code)]
+pub fn hashed_storage_create(hashbytes: &HashBytes, data: &[u8]) -> String {
+	unsafe { std::mem::transmute::<Vec<u8>, String>([hashbytes, data].concat()) }
 }
 
 #[allow(dead_code)]
-pub const fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
+pub fn hashed_storage_read(data: &str) -> Option<(HashBytes, &[u8])> {
 	// Make sure data is long enough to decode
 	if HASH_LENGTH >= data.len() {
 		return None;

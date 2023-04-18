@@ -1,5 +1,8 @@
 use crate::{
-	consts::*, function_entry::Riemann, function_manager::FunctionManager, misc::option_vec_printer,
+	consts::{build, BUILD_INFO, COLORS, DEFAULT_INTEGRAL_NUM, DEFAULT_MAX_X, DEFAULT_MIN_X},
+	function_entry::Riemann,
+	function_manager::FunctionManager,
+	misc::option_vec_printer,
 };
 use eframe::App;
 use egui::{
@@ -9,6 +12,7 @@ use egui::{
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Instant;
+use itertools::Itertools;
 use std::{io::Read, ops::BitXorAssign};
 
 /// Stores current settings/state of [`MathApp`]
@@ -257,7 +261,7 @@ impl MathApp {
 			functions: FunctionManager::default(),
 
 			last_info: (None, None),
-			opened: const { Opened::default() },
+			opened: Opened::default(),
 			settings: AppSettings::default(),
 		}
 	}
@@ -552,7 +556,7 @@ impl App for MathApp {
 		CentralPanel::default()
 			.frame(Frame {
 				inner_margin: Margin::symmetric(0.0, 0.0),
-				rounding: Rounding::none(),
+				rounding: Rounding::ZERO,
 				// fill: crate::style::STYLE.window_fill(),
 				fill: Color32::from_gray(27),
 				..Frame::none()
@@ -572,7 +576,7 @@ impl App for MathApp {
 							format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked())
 						}
 					})
-					.collect::<String>();
+					.join("");
 
 				if !errors_formatted.is_empty() {
 					ui.centered_and_justified(|ui| {

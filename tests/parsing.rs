@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[test]
 fn hashmap_gen_test() {
-	let data = vec!["time", "text", "test"];
+	let data = ["time", "text", "test"];
 	let expect = vec![
 		("t", "Hint::Many(&[\"ime(\", \"ext(\", \"est(\"])"),
 		("te", "Hint::Many(&[\"xt(\", \"st(\"])"),

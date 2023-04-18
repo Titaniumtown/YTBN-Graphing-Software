@@ -2,8 +2,6 @@
 #![feature(let_chains)]
 #![feature(const_trait_impl)]
 #![feature(core_intrinsics)]
-#![feature(const_convert)]
-#![feature(const_default_impls)]
 #![feature(const_fn_floating_point_arithmetic)]
 #![feature(const_assume)]
 #![feature(const_option_ext)]

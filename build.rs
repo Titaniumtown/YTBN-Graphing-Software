@@ -28,6 +28,16 @@ fn font_stripper(from: &str, out: &str, unicodes: Vec<char>) -> Result<Vec<u8>, 
 		.collect::<Vec<String>>()
 		.join(",");
 
+	let pyftsubset_detect = run_script::run("whereis pyftsubset", &(vec![]), &ScriptOptions::new());
+	match pyftsubset_detect {
+		Ok((_i, s1, _s2)) => {
+			if s1 == "pyftsubset: " {
+				return Err(String::from("pyftsubset not found"));
+			}
+		}
+		Err(x) => return Err(x.to_string()),
+	}
+
 	let script_result = run_script::run(
 		&format!(
 			"pyftsubset {}/assets/{} --unicodes={}

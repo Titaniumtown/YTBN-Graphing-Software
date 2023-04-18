@@ -34,7 +34,7 @@ impl<'a> const Default for AutoComplete<'a> {
 }
 
 impl<'a> AutoComplete<'a> {
-	const EMPTY: AutoComplete<'a> = Self {
+	pub const EMPTY: AutoComplete<'a> = Self {
 		i: 0,
 		hint: &HINT_EMPTY,
 		string: String::new(),

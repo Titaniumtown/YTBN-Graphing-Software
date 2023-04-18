@@ -62,7 +62,7 @@ fn option_vec_printer() {
 
 #[test]
 fn hashed_storage() {
-	use ytbn_graphing_software::{hashed_storage_read, HashBytesHelper};
+	use ytbn_graphing_software::{hashed_storage_create, hashed_storage_read};
 
 	let commit = "abcdefeg".chars().map(|c| c as u8).collect::<Vec<u8>>();
 	let data = "really cool data"
@@ -73,7 +73,7 @@ fn hashed_storage() {
 		.as_slice()
 		.try_into()
 		.expect("cannot turn into [u8; 8]");
-	let storage = storage_tmp.hashed_storage_create(data.as_slice());
+	let storage = hashed_storage_create(&storage_tmp, data.as_slice());
 
 	let read = hashed_storage_read(&storage);
 	assert_eq!(
@@ -208,6 +208,6 @@ fn to_chars_array() {
 	use ytbn_graphing_software::to_chars_array;
 	assert_eq!(
 		to_chars_array(vec!['\u{1f31e}', '\u{2d12c}']),
-		r#"['\u{1f31e}', '\u{2d12c}']"#
+		r"['\u{1f31e}', '\u{2d12c}']"
 	);
 }

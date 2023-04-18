@@ -11,7 +11,7 @@ pub const BUILD_INFO: &str = formatc!(
 	&build::BUILD_TIME,
 	&build::PKG_VERSION,
 	&build::RUST_CHANNEL,
-	&build::RUST_VERSION[6..],
+	&build::RUST_VERSION,
 );
 
 pub const FONT_SIZE: f32 = 14.0;
