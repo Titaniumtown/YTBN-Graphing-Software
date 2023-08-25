@@ -383,10 +383,11 @@ impl MathApp {
 					#[cfg(target_arch = "wasm32")]
 					{
 						tracing::info!("Saving function data");
-						use crate::misc::{HashBytes, HashBytesHelper};
+						use crate::misc::{hashed_storage_create, HashBytes};
 						let hash: HashBytes =
 							unsafe { std::mem::transmute::<&str, HashBytes>(build::SHORT_COMMIT) };
-						let saved_data = hash.hashed_storage_create(
+						let saved_data = hashed_storage_create(
+							hash,
 							&bincode::serialize(&self.functions)
 								.expect("unable to deserialize functions"),
 						);

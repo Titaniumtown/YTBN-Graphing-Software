@@ -45,16 +45,48 @@ cfg_if::cfg_if! {
 		#[global_allocator]
 				static ALLOCATOR: LockedAllocator<FreeListAllocator> = LockedAllocator::new(FreeListAllocator::new());
 
+			use eframe::WebRunner;
+			use tracing::metadata::LevelFilter;
+			#[derive(Clone)]
+			 #[wasm_bindgen]
+			 pub struct WebHandle {
+				 runner: WebRunner,
+			 }
+
+			 #[wasm_bindgen]
+			 impl WebHandle {
+				 /// Installs a panic hook, then returns.
+				 #[allow(clippy::new_without_default)]
+				 #[wasm_bindgen(constructor)]
+				 pub fn new() -> Self {
+					 // eframe::WebLogger::init(LevelFilter::Debug).ok();
+					 tracing_wasm::set_as_global_default();
+
+					 Self {
+						 runner: WebRunner::new(),
+					 }
+				 }
+
+				 /// Call this once from JavaScript to start your app.
+				 #[wasm_bindgen]
+				 pub async fn start(&self, canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
+					 self.runner
+						 .start(
+							 canvas_id,
+							 eframe::WebOptions::default(),
+							 Box::new(|cc| Box::new(math_app::MathApp::new(cc))),
+						 )
+						 .await
+				 }
+			}
+
 		#[wasm_bindgen(start)]
 		pub async fn start() {
 			tracing::info!("Starting...");
 
-			// Used in order to hook into `panic!()` to log in the browser's console
-			tracing_wasm::set_as_global_default();
 
-
-			eframe::start_web("canvas", eframe::WebOptions::default(),
-				Box::new(|cc| Box::new(math_app::MathApp::new(cc)))).await.unwrap();
+			let web_handle = WebHandle::new();
+			web_handle.start("canvas").await.unwrap()
 		}
 	}
 }

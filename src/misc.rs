@@ -164,8 +164,8 @@ pub const HASH_LENGTH: usize = 8;
 pub type HashBytes = [u8; HASH_LENGTH];
 
 #[allow(dead_code)]
-pub fn hashed_storage_create(hashbytes: &HashBytes, data: &[u8]) -> String {
-	unsafe { std::mem::transmute::<Vec<u8>, String>([hashbytes, data].concat()) }
+pub fn hashed_storage_create(hashbytes: HashBytes, data: &[u8]) -> String {
+	unsafe { std::mem::transmute::<Vec<u8>, String>([hashbytes.to_vec(), data.to_vec()].concat()) }
 }
 
 #[allow(dead_code)]

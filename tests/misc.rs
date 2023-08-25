@@ -73,7 +73,7 @@ fn hashed_storage() {
 		.as_slice()
 		.try_into()
 		.expect("cannot turn into [u8; 8]");
-	let storage = hashed_storage_create(&storage_tmp, data.as_slice());
+	let storage = hashed_storage_create(storage_tmp, data.as_slice());
 
 	let read = hashed_storage_read(&storage);
 	assert_eq!(
