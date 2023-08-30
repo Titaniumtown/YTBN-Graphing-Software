@@ -29,7 +29,7 @@ pub fn split_function(input: &str, split: SplitType) -> Vec<String> {
 	.collect::<Vec<String>>()
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum SplitType {
 	Multiplication,
 	Term,
@@ -279,7 +279,7 @@ include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 #[cfg(test)]
 fn assert_test(input: &str, expected: &[&str], split: SplitType) {
-	let output = split_function("sin(x)cos(x)", SplitType::Multiplication);
+	let output = split_function(input, split);
 	let expected_owned = expected
 		.iter()
 		.map(|&x| x.to_owned())
@@ -303,6 +303,12 @@ fn split_function_test() {
 	assert_test(
 		"tanh(cos(x)xx)cos(x)",
 		&["tanh(cos(x)", "x", "x)", "cos(x)"],
+		SplitType::Multiplication,
+	);
+
+	assert_test(
+		"tanh(sin(cos(x)xsin(x)))",
+		&["tanh(sin(cos(x)", "x", "sin(x)))"],
 		SplitType::Multiplication,
 	);
 }

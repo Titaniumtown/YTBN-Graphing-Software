@@ -28,6 +28,7 @@ fn font_stripper(from: &str, out: &str, unicodes: Vec<char>) -> Result<Vec<u8>, 
 		.collect::<Vec<String>>()
 		.join(",");
 
+	// Test to see if pyftsubset is found
 	let pyftsubset_detect = run_script::run("whereis pyftsubset", &(vec![]), &ScriptOptions::new());
 	match pyftsubset_detect {
 		Ok((_i, s1, _s2)) => {
@@ -35,9 +36,11 @@ fn font_stripper(from: &str, out: &str, unicodes: Vec<char>) -> Result<Vec<u8>, 
 				return Err(String::from("pyftsubset not found"));
 			}
 		}
+		// It was not, return an error and abort
 		Err(x) => return Err(x.to_string()),
 	}
 
+	
 	let script_result = run_script::run(
 		&format!(
 			"pyftsubset {}/assets/{} --unicodes={}
