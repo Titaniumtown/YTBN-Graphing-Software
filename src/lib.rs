@@ -25,7 +25,6 @@ pub use crate::{
 	function_entry::{FunctionEntry, Riemann},
 	math_app::AppSettings,
 	misc::{
-		// decimal_round,
 		hashed_storage_create,
 		hashed_storage_read,
 		newtons_method,
@@ -46,7 +45,7 @@ cfg_if::cfg_if! {
 				static ALLOCATOR: LockedAllocator<FreeListAllocator> = LockedAllocator::new(FreeListAllocator::new());
 
 			use eframe::WebRunner;
-			use tracing::metadata::LevelFilter;
+			// use tracing::metadata::LevelFilter;
 			#[derive(Clone)]
 			 #[wasm_bindgen]
 			 pub struct WebHandle {

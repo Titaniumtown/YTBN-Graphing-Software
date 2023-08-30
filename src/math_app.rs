@@ -157,7 +157,7 @@ impl MathApp {
 						assume(!cached_data.is_empty());
 					}
 
-					if commit == const { unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) } } {
+					if commit == unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) } {
 						tracing::info!("Reading decompression cache. Bytes: {}", cached_data.len());
 						return Some(cached_data.to_vec());
 					} else {
@@ -182,7 +182,7 @@ impl MathApp {
 						assume(!func_data.is_empty());
 					}
 
-					if commit == const { unsafe { std::mem::transmute::<&str, &[u8]>(build::SHORT_COMMIT) } } {
+					if commit == unsafe { std::mem::transmute::<&str, &[u8]>(build::SHORT_COMMIT) } {
 						tracing::info!("Reading previous function data");
 						let function_manager: FunctionManager = bincode::deserialize(&func_data).ok()?;
 						return Some(function_manager);
