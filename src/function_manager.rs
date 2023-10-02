@@ -69,7 +69,9 @@ impl<'de> Deserialize<'de> for FunctionManager {
 }
 
 /// Function that creates button that's used with the `button_area`
-fn button_area_button(text: impl Into<WidgetText>) -> Button { Button::new(text).frame(false) }
+fn button_area_button<'a>(text: impl Into<WidgetText>) -> Button<'a> {
+	Button::new(text).frame(false)
+}
 
 impl FunctionManager {
 	#[inline]

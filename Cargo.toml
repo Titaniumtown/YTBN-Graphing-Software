@@ -43,6 +43,9 @@ epaint = { git = "https://github.com/titaniumtown/egui.git", default-features = 
     "bytemuck",
 ] }
 emath = { git = "https://github.com/titaniumtown/egui.git", default-features = false }
+egui_plot = { git = "https://github.com/titaniumtown/egui.git", default-features = false }
+
+
 
 shadow-rs = { version = "0.12", default-features = false }
 const_format = { version = "0.2", default-features = false, features = ["fmt"] }

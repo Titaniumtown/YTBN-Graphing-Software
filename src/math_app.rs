@@ -6,9 +6,11 @@ use crate::{
 };
 use eframe::App;
 use egui::{
-	plot::Plot, style::Margin, Button, CentralPanel, Color32, ComboBox, Context, DragValue, Frame,
-	Key, Layout, SidePanel, TopBottomPanel, Ui, Vec2, Window,
+	style::Margin, Button, CentralPanel, Color32, ComboBox, Context, DragValue, Frame, Key, Layout,
+	SidePanel, TopBottomPanel, Ui, Vec2, Window,
 };
+use egui_plot::Plot;
+
 use emath::{Align, Align2};
 use epaint::Rounding;
 use instant::Instant;

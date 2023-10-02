@@ -1,10 +1,8 @@
 use crate::math_app::AppSettings;
 use crate::misc::{newtons_method_helper, step_helper, EguiHelper};
-use egui::{
-	plot::{BarChart, PlotPoint, PlotUi},
-	widgets::plot::Bar,
-	Checkbox, Context,
-};
+use egui::{Checkbox, Context};
+use egui_plot::{Bar, BarChart, PlotPoint, PlotUi};
+
 use epaint::Color32;
 use parsing::{generate_hint, AutoComplete};
 use parsing::{process_func_str, BackingFunction};

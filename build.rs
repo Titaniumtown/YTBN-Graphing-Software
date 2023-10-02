@@ -40,7 +40,6 @@ fn font_stripper(from: &str, out: &str, unicodes: Vec<char>) -> Result<Vec<u8>, 
 		Err(x) => return Err(x.to_string()),
 	}
 
-	
 	let script_result = run_script::run(
 		&format!(
 			"pyftsubset {}/assets/{} --unicodes={}

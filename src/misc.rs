@@ -1,5 +1,5 @@
-use egui::plot::{Line, PlotPoint, PlotPoints, Points};
 use egui::Id;
+use egui_plot::{Line, PlotPoint, PlotPoints, Points};
 use emath::Pos2;
 use getrandom::getrandom;
 use itertools::Itertools;

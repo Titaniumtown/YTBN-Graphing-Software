@@ -25,13 +25,8 @@ pub use crate::{
 	function_entry::{FunctionEntry, Riemann},
 	math_app::AppSettings,
 	misc::{
-		hashed_storage_create,
-		hashed_storage_read,
-		newtons_method,
-		option_vec_printer,
-		step_helper,
-		EguiHelper,
-		HashBytes,
+		hashed_storage_create, hashed_storage_read, newtons_method, option_vec_printer,
+		step_helper, EguiHelper, HashBytes,
 	},
 	unicode_helper::{to_chars_array, to_unicode_hash},
 };
