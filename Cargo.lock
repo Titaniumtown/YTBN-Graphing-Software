@@ -660,7 +660,7 @@ checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
 [[package]]
 name = "ecolor"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "bytemuck",
  "serde",
@@ -669,7 +669,7 @@ dependencies = [
 [[package]]
 name = "eframe"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "bytemuck",
  "cocoa",
@@ -698,7 +698,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "accesskit",
  "ahash",
@@ -711,7 +711,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "arboard",
  "egui",
@@ -726,7 +726,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "bytemuck",
  "egui",
@@ -740,7 +740,7 @@ dependencies = [
 [[package]]
 name = "egui_plot"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "egui",
 ]
@@ -754,7 +754,7 @@ checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
 [[package]]
 name = "emath"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "bytemuck",
  "serde",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.23.0"
-source = "git+https://github.com/titaniumtown/egui.git#7e1052b6dd898f07e0fbcaf8acb8966f8c6d027a"
+source = "git+https://github.com/titaniumtown/egui.git#8caeeb3e9a47c37245aa7f5d3d3e31092ae18787"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -1354,7 +1354,8 @@ checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 [[package]]
 name = "lol_alloc"
 version = "0.4.0"
-source = "git+https://github.com/Craig-Macomber/lol_alloc#ed72a23610f232d492290a90fee544efdc0fd822"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36aabc32b791f1a506e0bb90e0fa03e983500549d7b1f2dad45b5fc20ef45974"
 dependencies = [
  "spin",
 ]
@@ -2104,9 +2105,9 @@ checksum = "d626bb9dae77e28219937af045c257c28bfd3f69333c512553507f5f9798cb76"
 
 [[package]]
 name = "rustix"
-version = "0.38.24"
+version = "0.38.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ad981d6c340a49cdc40a1028d9c6084ec7e9fa33fcb839cab656a267071e234"
+checksum = "dc99bc2d4f1fed22595588a013687477aedf3cdcfb26558c559edb67b4d9b22e"
 dependencies = [
  "bitflags 2.4.1",
  "errno",
@@ -2118,7 +2119,8 @@ dependencies = [
 [[package]]
 name = "ruzstd"
 version = "0.5.0"
-source = "git+https://github.com/KillingSpark/zstd-rs.git#f7e99753b991dd7737f5250a2270ae00be42cd8f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58c4eb8a81997cf040a091d1f7e1938aeab6749d3a0dfa73af43cdc32393483d"
 dependencies = [
  "byteorder",
  "derive_more",

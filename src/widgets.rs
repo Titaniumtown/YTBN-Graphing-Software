@@ -1,3 +1,4 @@
+use crate::misc::Offset;
 use egui::{Id, InnerResponse};
 
 /// Creates an area ontop of a widget with an y offset

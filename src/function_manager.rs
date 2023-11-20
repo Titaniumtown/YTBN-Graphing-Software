@@ -148,34 +148,41 @@ impl FunctionManager {
 					// Register movement and apply proper changes
 					function.autocomplete.register_movement(&movement);
 
-					if movement != Movement::Complete && let Some(hints) = function.autocomplete.hint.many() {
-                    // Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
+					if movement != Movement::Complete
+						&& let Some(hints) = function.autocomplete.hint.many()
+					{
+						// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
 
-					// hashed "autocomplete_popup"
-					const POPUP_ID: Id = create_id(7574801616484505465);
+						// hashed "autocomplete_popup"
+						const POPUP_ID: Id = create_id(7574801616484505465);
 
-                    let mut clicked = false;
+						let mut clicked = false;
 
-                    egui::popup_below_widget(ui, POPUP_ID, &re, |ui| {
-                        hints.iter().enumerate().for_each(|(i, candidate)| {
-                            if ui.selectable_label(i == function.autocomplete.i, *candidate).clicked() {
-                                clicked = true;
-                                function.autocomplete.i = i;
-                            }
-                        });
-                    });
+						egui::popup_below_widget(ui, POPUP_ID, &re, |ui| {
+							hints.iter().enumerate().for_each(|(i, candidate)| {
+								if ui
+									.selectable_label(i == function.autocomplete.i, *candidate)
+									.clicked()
+								{
+									clicked = true;
+									function.autocomplete.i = i;
+								}
+							});
+						});
 
-                    if clicked {
-                        function.autocomplete.apply_hint(hints[function.autocomplete.i]);
+						if clicked {
+							function
+								.autocomplete
+								.apply_hint(hints[function.autocomplete.i]);
 
-                        // Don't need this here as it simply won't be display next frame
-                        // ui.memory_mut().close_popup();
+							// Don't need this here as it simply won't be display next frame
+							// ui.memory_mut().close_popup();
 
-                        movement = Movement::Complete;
-                    } else {
-                        ui.memory_mut(|x| x.open_popup(POPUP_ID));
-                    }
-                }
+							movement = Movement::Complete;
+						} else {
+							ui.memory_mut(|x| x.open_popup(POPUP_ID));
+						}
+					}
 
 					// Push cursor to end if needed
 					if movement == Movement::Complete {

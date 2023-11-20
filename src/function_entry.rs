@@ -418,12 +418,10 @@ impl FunctionEntry {
 			);
 		}
 
-		if self.nth_derviative && let Some(ref nth_derviative) = self.nth_derivative_data {
-			plot_ui.line(
-				nth_derviative.clone()
-					.to_line()
-					.color(Color32::DARK_RED)
-			);
+		if self.nth_derviative
+			&& let Some(ref nth_derviative) = self.nth_derivative_data
+		{
+			plot_ui.line(nth_derviative.clone().to_line().color(Color32::DARK_RED));
 		}
 
 		// Plot integral data
