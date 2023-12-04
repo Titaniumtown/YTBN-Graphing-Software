@@ -15,6 +15,7 @@ pub fn split_function(input: &str, split: SplitType) -> Vec<String> {
 	.collect::<Vec<String>>()
 }
 
+// Specifies how to split a function
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub enum SplitType {
 	Multiplication,
