@@ -177,7 +177,7 @@ fn split_function_test() {
 		SplitType::Multiplication,
 	);
 
-    // Some test cases from https://github.com/GraphiteEditor/Graphite/blob/2515620a77478e57c255cd7d97c13cc7065dd99d/frontend/wasm/src/editor_api.rs#L829-L840
+	// Some test cases from https://github.com/GraphiteEditor/Graphite/blob/2515620a77478e57c255cd7d97c13cc7065dd99d/frontend/wasm/src/editor_api.rs#L829-L840
 	assert_test("2pi", &["2", "π"], SplitType::Multiplication);
 	assert_test("sin(2pi)", &["sin(2", "π)"], SplitType::Multiplication);
 	assert_test("2sin(pi)", &["2", "sin(π)"], SplitType::Multiplication);
