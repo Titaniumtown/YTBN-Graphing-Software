@@ -2,13 +2,13 @@ use exmex::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Clone, PartialEq)]
-pub(crate) struct FlatExWrapper<'a> {
+pub struct FlatExWrapper {
 	func: Option<FlatEx<f64>>,
-	func_str: Option<&'a str>,
+	func_str: Option<String>,
 }
 
-impl<'a> FlatExWrapper<'a> {
-	const EMPTY: FlatExWrapper<'a> = FlatExWrapper {
+impl FlatExWrapper {
+	const EMPTY: FlatExWrapper = FlatExWrapper {
 		func: None,
 		func_str: None,
 	};
@@ -25,7 +25,7 @@ impl<'a> FlatExWrapper<'a> {
 	const fn is_none(&self) -> bool { self.func.is_none() }
 
 	#[inline]
-	fn eval(&'a self, x: &[f64]) -> f64 {
+	pub fn eval(&self, x: &[f64]) -> f64 {
 		self.func
 			.as_ref()
 			.map(|f| f.eval(x).unwrap_or(f64::NAN))
@@ -33,7 +33,7 @@ impl<'a> FlatExWrapper<'a> {
 	}
 
 	#[inline]
-	fn partial(&'a self, x: usize) -> Self {
+	fn partial(&self, x: usize) -> Self {
 		self.func
 			.as_ref()
 			.map(|f| f.clone().partial(x).map(Self::new).unwrap_or(Self::EMPTY))
@@ -41,17 +41,19 @@ impl<'a> FlatExWrapper<'a> {
 	}
 
 	#[inline]
-	fn get_string(&'a mut self) -> &'a str {
-		if let Some(func_str) = self.func_str {
-			return func_str;
+	fn get_string(&mut self) -> String {
+		match self.func_str {
+			Some(ref func_str) => func_str.clone(),
+			None => {
+				let calculated = self.func.as_ref().map(|f| f.unparse()).unwrap_or("");
+				self.func_str = Some(calculated.to_owned());
+				calculated.to_owned()
+			}
 		}
-		let calculated = self.func.as_ref().map(|f| f.unparse()).unwrap_or("");
-		self.func_str = Some(calculated);
-		return calculated;
 	}
 
 	#[inline]
-	fn partial_iter(&'a self, n: usize) -> Self {
+	fn partial_iter(&self, n: usize) -> Self {
 		self.func
 			.as_ref()
 			.map(|f| {
@@ -64,20 +66,24 @@ impl<'a> FlatExWrapper<'a> {
 	}
 }
 
-impl<'a> const Default for FlatExWrapper<'a> {
-	fn default() -> FlatExWrapper<'a> { FlatExWrapper::EMPTY }
+impl const Default for FlatExWrapper {
+	fn default() -> FlatExWrapper { FlatExWrapper::EMPTY }
 }
 /// Function that includes f(x), f'(x), f'(x)'s string representation, and f''(x)
 #[derive(Clone, PartialEq)]
-pub struct BackingFunction<'a> {
+pub struct BackingFunction {
 	/// f(x)
-	function: FlatExWrapper<'a>,
+	function: FlatExWrapper,
 
 	/// Temporary cache for nth derivative
-	nth_derivative: HashMap<usize, FlatExWrapper<'a>>,
+	nth_derivative: HashMap<usize, FlatExWrapper>,
 }
 
-impl<'a> BackingFunction<'a> {
+impl Default for BackingFunction {
+	fn default() -> Self { Self::new("").unwrap() }
+}
+
+impl BackingFunction {
 	pub const fn is_none(&self) -> bool { self.function.is_none() }
 
 	/// Create new [`BackingFunction`] instance
@@ -123,19 +129,31 @@ impl<'a> BackingFunction<'a> {
 		})
 	}
 
-	pub fn get(&'a mut self, derivative: usize, x: f64) -> f64 {
-		match derivative {
-			0 => self.function.eval(&[x]),
-
-			_ => match self.nth_derivative.get(&derivative) {
-				Some(func) => func.eval(&[x]),
-				None => {
-					let new_func = self.function.partial_iter(derivative);
-					self.nth_derivative.insert(derivative, new_func.clone());
-					new_func.eval(&[x])
-				}
-			},
+	// TODO rewrite this logic, it's a mess
+	pub fn generate_derivative(&mut self, derivative: usize) {
+		if derivative == 0 {
+			return;
 		}
+
+		if !self.nth_derivative.contains_key(&derivative) {
+			let new_func = self.function.partial_iter(derivative);
+			self.nth_derivative.insert(derivative, new_func.clone());
+		}
+	}
+
+	pub fn get_function_derivative(&self, derivative: usize) -> &FlatExWrapper {
+		if derivative == 0 {
+			return &self.function;
+		} else {
+			return self
+				.nth_derivative
+				.get(&derivative)
+				.unwrap_or(&FlatExWrapper::EMPTY);
+		}
+	}
+
+	pub fn get(&mut self, derivative: usize, x: f64) -> f64 {
+		self.get_function_derivative(derivative).eval(&[x])
 	}
 }
 

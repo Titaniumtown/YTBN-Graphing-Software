@@ -31,7 +31,7 @@ impl fmt::Display for Riemann {
 #[derive(Clone)]
 pub struct FunctionEntry {
 	/// The `BackingFunction` instance that is used to generate `f(x)`, `f'(x)`, and `f''(x)`
-	function: BackingFunction<'static>,
+	function: BackingFunction,
 
 	/// Stores a function string (that hasn't been processed via `process_func_str`) to display to the user
 	pub raw_func_str: String,
@@ -98,7 +98,7 @@ impl<'de> Deserialize<'de> for FunctionEntry {
 		}
 
 		let helper = Helper::deserialize(deserializer)?;
-		let mut new_func_entry = FunctionEntry::EMPTY;
+		let mut new_func_entry = FunctionEntry::default();
 		let gen_func = BackingFunction::new(&helper.raw_func_str);
 		match gen_func {
 			Ok(func) => new_func_entry.function = func,
@@ -121,7 +121,25 @@ impl<'de> Deserialize<'de> for FunctionEntry {
 
 impl const Default for FunctionEntry {
 	/// Creates default FunctionEntry instance (which is empty)
-	fn default() -> FunctionEntry {}
+	fn default() -> FunctionEntry {
+		FunctionEntry {
+			function: BackingFunction::default(),
+			raw_func_str: String::new(),
+			integral: false,
+			derivative: false,
+			nth_derviative: false,
+			back_data: Vec::new(),
+			integral_data: None,
+			derivative_data: Vec::new(),
+			extrema_data: Vec::new(),
+			root_data: Vec::new(),
+			nth_derivative_data: None,
+			autocomplete: AutoComplete::EMPTY,
+			test_result: None,
+			curr_nth: 3,
+			settings_opened: false,
+		}
+	}
 }
 
 impl FunctionEntry {
@@ -149,6 +167,7 @@ impl FunctionEntry {
 			});
 
 		if invalidate_nth {
+			self.function.generate_derivative(self.curr_nth);
 			self.clear_nth();
 		}
 	}
@@ -180,7 +199,7 @@ impl FunctionEntry {
 
 	/// Creates and does the math for creating all the rectangles under the graph
 	fn integral_rectangles(
-		&self, integral_min_x: f64, integral_max_x: f64, sum: Riemann, integral_num: usize,
+		&mut self, integral_min_x: f64, integral_max_x: f64, sum: Riemann, integral_num: usize,
 	) -> (Vec<(f64, f64)>, f64) {
 		let step = (integral_max_x - integral_min_x) / (integral_num as f64);
 
@@ -217,22 +236,24 @@ impl FunctionEntry {
 
 	/// Helps with processing newton's method depending on level of derivative
 	fn newtons_method_helper(
-		&self, threshold: f64, derivative_level: usize, range: &std::ops::Range<f64>,
+		&mut self, threshold: f64, derivative_level: usize, range: &std::ops::Range<f64>,
 	) -> Vec<PlotPoint> {
+		self.function.generate_derivative(derivative_level);
+		self.function.generate_derivative(derivative_level + 1);
 		let newtons_method_output: Vec<f64> = match derivative_level {
 			0 => newtons_method_helper(
 				threshold,
 				range,
 				self.back_data.as_slice(),
-				&|x: f64| self.function.get(0, x),
-				&|x: f64| self.function.get(1, x),
+				&self.function.get_function_derivative(0),
+				&self.function.get_function_derivative(1),
 			),
 			1 => newtons_method_helper(
 				threshold,
 				range,
 				self.derivative_data.as_slice(),
-				&|x: f64| self.function.get(1, x),
-				&|x: f64| self.function.get(2, x),
+				&self.function.get_function_derivative(1),
+				&self.function.get_function_derivative(2),
 			),
 			_ => unreachable!(),
 		};
@@ -281,6 +302,7 @@ impl FunctionEntry {
 		}
 
 		if self.derivative_data.is_empty() {
+			self.function.generate_derivative(1);
 			let data: Vec<PlotPoint> = resolution_iter
 				.clone()
 				.into_iter()

@@ -3,6 +3,7 @@ use egui_plot::{Line, PlotPoint, PlotPoints, Points};
 use emath::Pos2;
 use getrandom::getrandom;
 use itertools::Itertools;
+use parsing::FlatExWrapper;
 
 /// Implements traits that are useful when dealing with Vectors of egui's `Value`
 pub trait EguiHelper {
@@ -79,8 +80,8 @@ pub fn decimal_round(x: f64, n: usize) -> f64 {
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns a Vector of `x` values where roots occur
 pub fn newtons_method_helper(
-	threshold: f64, range: &std::ops::Range<f64>, data: &[PlotPoint], f: &dyn Fn(f64) -> f64,
-	f_1: &dyn Fn(f64) -> f64,
+	threshold: f64, range: &std::ops::Range<f64>, data: &[PlotPoint], f: &FlatExWrapper,
+	f_1: &FlatExWrapper,
 ) -> Vec<f64> {
 	data.iter()
 		.tuple_windows()
@@ -98,19 +99,19 @@ pub fn newtons_method_helper(
 /// `f_1` is f'(x) aka the derivative of f(x)
 /// The function returns an `Option<f64>` of the x value at which a root occurs
 pub fn newtons_method(
-	f: &dyn Fn(f64) -> f64, f_1: &dyn Fn(f64) -> f64, start_x: f64, range: &std::ops::Range<f64>,
+	f: &FlatExWrapper, f_1: &FlatExWrapper, start_x: f64, range: &std::ops::Range<f64>,
 	threshold: f64,
 ) -> Option<f64> {
 	let mut x1: f64 = start_x;
 	let mut x2: f64;
 	let mut derivative: f64;
 	loop {
-		derivative = f_1(x1);
+		derivative = f_1.eval(&[x1]);
 		if !derivative.is_finite() {
 			return None;
 		}
 
-		x2 = x1 - (f(x1) / derivative);
+		x2 = x1 - (f.eval(&[x1]) / derivative);
 		if !x2.is_finite() | !range.contains(&x2) {
 			return None;
 		}

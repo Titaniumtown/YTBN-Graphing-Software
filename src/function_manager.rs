@@ -23,7 +23,7 @@ impl Default for FunctionManager {
 		let mut vec: Functions = Vec::with_capacity(COLORS.len());
 		vec.push((
 			create_id(11414819524356497634), // Random number here to avoid call to crate::misc::random_u64()
-			FunctionEntry::EMPTY,
+			FunctionEntry::default(),
 		));
 		Self { functions: vec }
 	}
@@ -261,7 +261,7 @@ impl FunctionManager {
 	pub fn push_empty(&mut self) {
 		self.functions.push((
 			create_id(random_u64().expect("unable to generate random id")),
-			FunctionEntry::EMPTY,
+			FunctionEntry::default(),
 		));
 	}
 

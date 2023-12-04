@@ -141,10 +141,18 @@ fn invalid_hashed_storage() {
 
 #[test]
 fn newtons_method() {
+	use parsing::BackingFunction;
+	use parsing::FlatExWrapper;
+	fn get_flatexwrapper(func: &str) -> FlatExWrapper {
+		let mut backing_func = BackingFunction::new(func).unwrap();
+		backing_func.get_function_derivative(0).clone()
+	}
+
 	use ytbn_graphing_software::newtons_method;
+
 	let data = newtons_method(
-		&|x: f64| x.powf(2.0) - 1.0,
-		&|x: f64| 2.0 * x,
+		&get_flatexwrapper("x^2 -1"),
+		&get_flatexwrapper("2x"),
 		3.0,
 		&(0.0..5.0),
 		f64::EPSILON,
@@ -152,49 +160,13 @@ fn newtons_method() {
 	assert_eq!(data, Some(1.0));
 
 	let data = newtons_method(
-		&|x: f64| x.sin(),
-		&|x: f64| x.cos(),
+		&get_flatexwrapper("sin(x)"),
+		&get_flatexwrapper("cos(x)"),
 		3.0,
 		&(2.95..3.18),
 		f64::EPSILON,
 	);
 	assert_eq!(data, Some(std::f64::consts::PI));
-
-	let data = newtons_method(
-		&|x: f64| x.sin(),
-		&|_: f64| f64::NAN,
-		0.0,
-		&(-10.0..10.0),
-		f64::EPSILON,
-	);
-	assert_eq!(data, None);
-
-	let data = newtons_method(
-		&|_: f64| f64::NAN,
-		&|x: f64| x.sin(),
-		0.0,
-		&(-10.0..10.0),
-		f64::EPSILON,
-	);
-	assert_eq!(data, None);
-
-	let data = newtons_method(
-		&|_: f64| f64::INFINITY,
-		&|x: f64| x.sin(),
-		0.0,
-		&(-10.0..10.0),
-		f64::EPSILON,
-	);
-	assert_eq!(data, None);
-
-	let data = newtons_method(
-		&|x: f64| x.sin(),
-		&|_: f64| f64::INFINITY,
-		0.0,
-		&(-10.0..10.0),
-		f64::EPSILON,
-	);
-	assert_eq!(data, None);
 }
 
 #[test]

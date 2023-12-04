@@ -50,7 +50,7 @@ static DERIVATIVE_TARGET: [(f64, f64); 11] = [
 fn do_test(sum: Riemann, area_target: f64) {
 	let settings = app_settings_constructor(sum, -1.0, 1.0, 10, 10, -1.0, 1.0);
 
-	let mut function = FunctionEntry::EMPTY;
+	let mut function = FunctionEntry::default();
 	function.update_string("x^2");
 	function.integral = true;
 	function.derivative = true;
