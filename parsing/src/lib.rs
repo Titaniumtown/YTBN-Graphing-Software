@@ -1,5 +1,4 @@
 #![feature(const_trait_impl)]
-#![feature(core_intrinsics)]
 #![feature(const_mut_refs)]
 #![feature(const_for)]
 mod autocomplete;

@@ -10,7 +10,6 @@ use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializ
 use std::{
 	fmt::{self, Debug},
 	hash::{Hash, Hasher},
-	intrinsics::assume,
 };
 
 /// Represents the possible variations of Riemann Sums
@@ -276,8 +275,6 @@ impl FunctionEntry {
 		let resolution = (settings.max_x - settings.min_x) / (settings.plot_width as f64);
 		debug_assert!(resolution > 0.0);
 		let resolution_iter = step_helper(settings.plot_width + 1, settings.min_x, resolution);
-
-		unsafe { assume(!resolution_iter.is_empty()) }
 
 		// Makes sure proper arguments are passed when integral is enabled
 		if self.integral && settings.integral_changed {

@@ -127,6 +127,7 @@ pub fn split_function_chars(chars: &[char], split: SplitType) -> Vec<String> {
 
 		// Append split
 		if curr_c.splitable(c, &prev_char, &split) {
+			// create new buffer
 			data.push(String::new());
 			last = unsafe { data.last_mut().unwrap_unchecked() };
 		}

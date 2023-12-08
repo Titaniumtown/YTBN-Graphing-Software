@@ -1,4 +1,4 @@
-use std::{hint::unreachable_unchecked, intrinsics::assume};
+use std::hint::unreachable_unchecked;
 
 use crate::{generate_hint, Hint, HINT_EMPTY};
 
@@ -69,12 +69,6 @@ impl<'a> AutoComplete<'a> {
 			Hint::Many(hints) => {
 				// Impossible for plural hints to be singular or non-existant
 				debug_assert!(hints.len() > 1); // check on debug
-
-				// Hint to the compiler
-				unsafe {
-					assume(hints.len() > 1);
-					assume(!hints.is_empty());
-				}
 
 				match movement {
 					Movement::Up => {

@@ -660,7 +660,7 @@ checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
 [[package]]
 name = "ecolor"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "bytemuck",
  "serde",
@@ -669,7 +669,7 @@ dependencies = [
 [[package]]
 name = "eframe"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "bytemuck",
  "cocoa",
@@ -698,7 +698,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "accesskit",
  "ahash",
@@ -711,7 +711,7 @@ dependencies = [
 [[package]]
 name = "egui-winit"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "arboard",
  "egui",
@@ -726,7 +726,7 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "bytemuck",
  "egui",
@@ -740,7 +740,7 @@ dependencies = [
 [[package]]
 name = "egui_plot"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "egui",
 ]
@@ -754,7 +754,7 @@ checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
 [[package]]
 name = "emath"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "bytemuck",
  "serde",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.24.1"
-source = "git+https://github.com/titaniumtown/egui.git#72751efd6014422261ba24df9a606bece4470cb9"
+source = "git+https://github.com/titaniumtown/egui.git#ffd7414780a6b4ef9f0c94d87c655a63c73cc272"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -1429,9 +1429,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.9"
+version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3dce281c5e46beae905d4de1870d8b1509a9142b62eedf18b443b011ca8343d0"
+checksum = "8f3d0b296e374a4e6f3c7b0a1f5a51d748a0d34c85e7dc48fc3fa9a87657fe09"
 dependencies = [
  "libc",
  "log",
@@ -3133,9 +3133,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.5.19"
+version = "0.5.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "829846f3e3db426d4cee4510841b71a8e58aa2a76b1132579487ae430ccd9c7b"
+checksum = "b7e87b8dfbe3baffbe687eef2e164e32286eff31a5ee16463ce03d991643ec94"
 dependencies = [
  "memchr",
 ]
@@ -3224,18 +3224,18 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
-version = "0.7.28"
+version = "0.7.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d6f15f7ade05d2a4935e34a457b936c23dc70a05cc1d97133dc99e7a3fe0f0e"
+checksum = "5d075cf85bbb114e933343e087b92f2146bac0d55b534cbb8188becf0039948e"
 dependencies = [
  "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.7.28"
+version = "0.7.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbbad221e3f78500350ecbd7dfa4e63ef945c05f4c61cb7f4d3f84cd0bba649b"
+checksum = "86cd5ca076997b97ef09d3ad65efe811fa68c9e874cb636ccb211223a813b0c2"
 dependencies = [
  "proc-macro2",
  "quote",

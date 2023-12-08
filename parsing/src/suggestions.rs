@@ -1,5 +1,4 @@
 use crate::{split_function_chars, SplitType};
-use std::intrinsics::assume;
 
 pub const HINT_EMPTY: Hint = Hint::Single("x^2");
 const HINT_CLOSED_PARENS: Hint = Hint::Single(")");
@@ -19,10 +18,6 @@ pub fn generate_hint<'a>(input: &str) -> &'a Hint<'a> {
 		&HINT_EMPTY
 	} else {
 		let chars: Vec<char> = input.chars().collect::<Vec<char>>();
-
-		unsafe {
-			assume(!chars.is_empty());
-		}
 
 		let key = get_last_term(&chars);
 		match key {
