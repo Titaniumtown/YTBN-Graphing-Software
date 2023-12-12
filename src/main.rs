@@ -1,7 +1,6 @@
 #![feature(const_mut_refs)]
 #![feature(let_chains)]
 #![feature(const_trait_impl)]
-#![feature(core_intrinsics)]
 #![feature(const_fn_floating_point_arithmetic)]
 #![feature(const_assume)]
 #![feature(const_option_ext)]

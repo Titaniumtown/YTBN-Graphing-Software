@@ -51,7 +51,7 @@ pub struct AppSettings {
 	pub plot_width: usize,
 }
 
-impl Default for AppSettings {
+impl const Default for AppSettings {
 	/// Default implementation of `AppSettings`, this is how the application starts up
 	fn default() -> Self {
 		Self {
@@ -143,7 +143,6 @@ impl MathApp {
 
 		cfg_if::cfg_if! {
 			if #[cfg(target_arch = "wasm32")] {
-				use core::intrinsics::assume;
 
 				tracing::info!("Web Info: {:?}", &cc.integration_info.web_info);
 
@@ -151,13 +150,6 @@ impl MathApp {
 					let data = get_localstorage().get_item(DATA_NAME).ok()??;
 					let (commit, cached_data) = crate::misc::hashed_storage_read(&data)?;
 
-					debug_assert!(!commit.is_empty());
-					debug_assert!(!cached_data.is_empty());
-
-					unsafe {
-						assume(!commit.is_empty());
-						assume(!cached_data.is_empty());
-					}
 
 					if commit == unsafe { std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT) } {
 						tracing::info!("Reading decompression cache. Bytes: {}", cached_data.len());
@@ -176,13 +168,6 @@ impl MathApp {
 					// TODO: stabilize FunctionManager serialize so it can persist across builds
 					let (commit, func_data) = crate::misc::hashed_storage_read(&data)?;
 
-					debug_assert!(!commit.is_empty());
-					debug_assert!(!func_data.is_empty());
-
-					unsafe {
-						assume(!commit.is_empty());
-						assume(!func_data.is_empty());
-					}
 
 					if commit == unsafe { std::mem::transmute::<&str, &[u8]>(build::SHORT_COMMIT) } {
 						tracing::info!("Reading previous function data");
@@ -207,12 +192,6 @@ impl MathApp {
 
 			#[cfg(target = "wasm32")]
 			{
-				debug_assert!(!data.is_empty());
-
-				unsafe {
-					assume(!data.is_empty());
-				}
-
 				tracing::info!("Setting decompression cache");
 				let commit: crate::misc::HashBytes = const {
 					unsafe {
