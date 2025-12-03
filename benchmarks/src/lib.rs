@@ -1,26 +1,18 @@
-#![feature(custom_test_frameworks)]
-#![test_runner(criterion::runner)]
+//! Benchmarks library - profiler utilities for flamegraphs
 
-#[allow(unused_imports)]
-use parsing::split_function_chars;
-
-#[allow(unused_imports)]
-use std::time::Duration;
 use std::{fs::File, os::raw::c_int, path::Path};
 
 use criterion::profiler::Profiler;
-#[allow(unused_imports)]
-use criterion::{BenchmarkId, Criterion};
-use criterion_macro::criterion;
 use pprof::ProfilerGuard;
 
+/// Flamegraph profiler for criterion benchmarks
 pub struct FlamegraphProfiler<'a> {
 	frequency: c_int,
 	active_profiler: Option<ProfilerGuard<'a>>,
 }
 
 impl<'a> FlamegraphProfiler<'a> {
-	#[allow(dead_code)]
+	/// Create a new flamegraph profiler with the given sampling frequency
 	pub fn new(frequency: c_int) -> Self {
 		FlamegraphProfiler {
 			frequency,
@@ -29,7 +21,7 @@ impl<'a> FlamegraphProfiler<'a> {
 	}
 }
 
-impl<'a> Profiler for FlamegraphProfiler<'a> {
+impl Profiler for FlamegraphProfiler<'_> {
 	fn start_profiling(&mut self, _benchmark_id: &str, _benchmark_dir: &Path) {
 		self.active_profiler = Some(ProfilerGuard::new(self.frequency).unwrap());
 	}
@@ -49,57 +41,3 @@ impl<'a> Profiler for FlamegraphProfiler<'a> {
 		}
 	}
 }
-
-#[allow(dead_code)] // this infact IS used by benchmarks
-fn custom_criterion() -> Criterion {
-	Criterion::default()
-		.warm_up_time(Duration::from_millis(250))
-		.sample_size(1000)
-}
-
-#[allow(dead_code)] // this infact IS used by benchmarks
-fn custom_criterion_flamegraph() -> Criterion {
-	custom_criterion().with_profiler(FlamegraphProfiler::new(100))
-}
-
-#[criterion(custom_criterion())]
-fn mutli_split_function(c: &mut Criterion) {
-	let data_chars = vec![
-		"sin(x)cos(x)",
-		"x^2",
-		"2x",
-		"log10(x)",
-		"E^x",
-		"xxxxx",
-		"xsin(x)",
-		"(2x+1)(3x+1)",
-		"x**2",
-		"pipipipipipix",
-		"pi(2x+1)",
-		"(2x+1)pi",
-	]
-	.iter()
-	.map(|a| a.chars().collect::<Vec<char>>())
-	.collect::<Vec<Vec<char>>>();
-
-	let mut group = c.benchmark_group("split_function");
-	for entry in data_chars {
-		group.bench_function(entry.iter().collect::<String>(), |b| {
-			b.iter(|| {
-				split_function_chars(&entry, parsing::suggestions::SplitType::Multiplication);
-			})
-		});
-	}
-	group.finish();
-}
-
-// #[criterion(custom_criterion_flamegraph())]
-// fn single_split_function(c: &mut Criterion) {
-// 	let data_chars = "(2x+1)(3x+1)".chars().collect::<Vec<char>>();
-
-// 	c.bench_function("split_function", |b| {
-// 		b.iter(|| {
-// 			split_function_chars(&data_chars);
-// 		});
-// 	});
-// }

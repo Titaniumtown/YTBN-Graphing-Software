@@ -1,14 +1,3 @@
-#![feature(const_mut_refs)]
-#![feature(let_chains)]
-#![feature(const_trait_impl)]
-#![feature(const_fn_floating_point_arithmetic)]
-#![feature(const_assume)]
-#![feature(const_option_ext)]
-#![feature(const_slice_index)]
-#![feature(slice_split_at_unchecked)]
-#![feature(inline_const)]
-#![feature(const_for)]
-
 #[macro_use]
 extern crate static_assertions;
 
@@ -62,12 +51,12 @@ cfg_if::cfg_if! {
 
 				 /// Call this once from JavaScript to start your app.
 				 #[wasm_bindgen]
-				 pub async fn start(&self, canvas_id: &str) -> Result<(), wasm_bindgen::JsValue> {
+				 pub async fn start(&self, canvas: web_sys::HtmlCanvasElement) -> Result<(), wasm_bindgen::JsValue> {
 					 self.runner
 						 .start(
-							 canvas_id,
+							 canvas,
 							 eframe::WebOptions::default(),
-							 Box::new(|cc| Box::new(math_app::MathApp::new(cc))),
+							 Box::new(|cc| Ok(Box::new(math_app::MathApp::new(cc)))),
 						 )
 						 .await
 				 }
@@ -77,9 +66,16 @@ cfg_if::cfg_if! {
 		pub async fn start() {
 			tracing::info!("Starting...");
 
+			let window = web_sys::window().expect("no global window exists");
+			let document = window.document().expect("should have a document on window");
+			let canvas = document
+				.get_element_by_id("canvas")
+				.expect("should have a canvas element with id 'canvas'")
+				.dyn_into::<web_sys::HtmlCanvasElement>()
+				.expect("canvas element should be an HtmlCanvasElement");
 
 			let web_handle = WebHandle::new();
-			web_handle.start("canvas").await.unwrap()
+			web_handle.start(canvas).await.unwrap()
 		}
 	}
 }

@@ -1,6 +1,3 @@
-#![feature(const_trait_impl)]
-#![feature(const_mut_refs)]
-#![feature(const_for)]
 mod autocomplete;
 mod autocomplete_hashmap;
 mod parsing;

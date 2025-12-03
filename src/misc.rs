@@ -1,20 +1,19 @@
 use egui::Id;
 use egui_plot::{Line, PlotPoint, PlotPoints, Points};
 use emath::Pos2;
-use getrandom::getrandom;
 use itertools::Itertools;
 use parsing::FlatExWrapper;
 
 /// Implements traits that are useful when dealing with Vectors of egui's `Value`
 pub trait EguiHelper {
 	/// Converts to `egui::plot::Values`
-	fn to_values(self) -> PlotPoints;
+	fn to_values(self) -> PlotPoints<'static>;
 
 	/// Converts to `egui::plot::Line`
-	fn to_line(self) -> Line;
+	fn to_line(self) -> Line<'static>;
 
 	/// Converts to `egui::plot::Points`
-	fn to_points(self) -> Points;
+	fn to_points(self) -> Points<'static>;
 
 	/// Converts Vector of Values into vector of tuples
 	fn to_tuple(self) -> Vec<(f64, f64)>;
@@ -22,15 +21,15 @@ pub trait EguiHelper {
 
 impl EguiHelper for Vec<PlotPoint> {
 	#[inline(always)]
-	fn to_values(self) -> PlotPoints {
+	fn to_values(self) -> PlotPoints<'static> {
 		PlotPoints::from(unsafe { std::mem::transmute::<Vec<PlotPoint>, Vec<[f64; 2]>>(self) })
 	}
 
 	#[inline(always)]
-	fn to_line(self) -> Line { Line::new(self.to_values()) }
+	fn to_line(self) -> Line<'static> { Line::new("", self.to_values()) }
 
 	#[inline(always)]
-	fn to_points(self) -> Points { Points::new(self.to_values()) }
+	fn to_points(self) -> Points<'static> { Points::new("", self.to_values()) }
 
 	#[inline(always)]
 	fn to_tuple(self) -> Vec<(f64, f64)> {
@@ -43,7 +42,7 @@ pub trait Offset {
 	fn offset_x(self, x_offset: f32) -> Pos2;
 }
 
-impl const Offset for Pos2 {
+impl Offset for Pos2 {
 	fn offset_y(self, y_offset: f32) -> Pos2 {
 		Pos2 {
 			x: self.x,
@@ -191,7 +190,7 @@ pub fn random_u64() -> Result<u64, getrandom::Error> {
 	// Buffer of 8 `u8`s that are later merged into one u64
 	let mut buf = [0u8; 8];
 	// Populate buffer with random values
-	getrandom(&mut buf)?;
+	getrandom::fill(&mut buf)?;
 	// Merge buffer into u64
 	Ok(u64::from_be_bytes(buf))
 }

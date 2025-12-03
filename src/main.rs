@@ -1,14 +1,3 @@
-#![feature(const_mut_refs)]
-#![feature(let_chains)]
-#![feature(const_trait_impl)]
-#![feature(const_fn_floating_point_arithmetic)]
-#![feature(const_assume)]
-#![feature(const_option_ext)]
-#![feature(const_slice_index)]
-#![feature(slice_split_at_unchecked)]
-#![feature(inline_const)]
-#![feature(const_for)]
-
 #[macro_use]
 extern crate static_assertions;
 
@@ -22,7 +11,7 @@ mod widgets;
 
 // For running the program natively! (Because why not?)
 #[cfg(not(target_arch = "wasm32"))]
-fn main() -> eframe::Result<()> {
+fn main() -> eframe::Result {
 	let subscriber = tracing_subscriber::FmtSubscriber::builder()
 		.with_max_level(tracing::Level::INFO)
 		.finish();
@@ -32,6 +21,6 @@ fn main() -> eframe::Result<()> {
 	eframe::run_native(
 		"(Yet-to-be-named) Graphing Software",
 		eframe::NativeOptions::default(),
-		Box::new(|cc| Box::new(math_app::MathApp::new(cc))),
+		Box::new(|cc| Ok(Box::new(math_app::MathApp::new(cc)))),
 	)
 }

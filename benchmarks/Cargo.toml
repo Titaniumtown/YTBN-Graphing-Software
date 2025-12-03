@@ -1,13 +1,18 @@
 [package]
 name = "benchmarks"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+rust-version = "1.88"
 license = "AGPL-3.0"
 
 [lib]
+bench = false
+
+[[bench]]
+name = "split_function"
+harness = false
 
 [dependencies]
-pprof = { version = "0.9", features = ["flamegraph"] }
-criterion = "0.3"
-criterion-macro = "0.3"
+pprof = { version = "0.14", features = ["flamegraph"] }
+criterion = { version = "0.5", features = ["html_reports"] }
 parsing = { path = "../parsing" }

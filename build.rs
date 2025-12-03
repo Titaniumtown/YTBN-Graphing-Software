@@ -4,6 +4,7 @@ use std::{
 	fs::File,
 	io::{BufWriter, Write},
 	path::Path,
+	sync::Arc,
 };
 
 use epaint::{
@@ -72,7 +73,7 @@ fn main() {
 	println!("cargo:rerun-if-changed=.git/logs/HEAD");
 	println!("cargo:rerun-if-changed=assets/*");
 
-	shadow_rs::new().expect("Could not initialize shadow_rs");
+	shadow_rs::ShadowBuilder::builder().build().expect("Could not initialize shadow_rs");
 
 	let mut main_chars: Vec<char> =
 		b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzsu0123456789?.,!(){}[]-_=+-/<>'\\ :^*`@#$%&|~;"
@@ -104,37 +105,36 @@ fn main() {
 		font_data: BTreeMap::from([
 			(
 				"Ubuntu-Light".to_owned(),
-				FontData::from_owned(
+				Arc::new(FontData::from_owned(
 					font_stripper(
 						"Ubuntu-Light.ttf",
 						"ubuntu-light.ttf",
 						[main_chars, vec!['∫']].concat(),
 					)
 					.unwrap(),
-				),
+				)),
 			),
 			(
 				"NotoEmoji-Regular".to_owned(),
-				FontData::from_owned(
+				Arc::new(FontData::from_owned(
 					font_stripper(
 						"NotoEmoji-Regular.ttf",
 						"noto-emoji.ttf",
 						vec!['🌞', '🌙', '✖'],
 					)
 					.unwrap(),
-				),
+				)),
 			),
 			(
 				"emoji-icon-font".to_owned(),
-				FontData::from_owned(
+				Arc::new(FontData::from_owned(
 					font_stripper("emoji-icon-font.ttf", "emoji-icon.ttf", vec!['⚙']).unwrap(),
 				)
 				.tweak(FontTweak {
 					scale: 0.8,
 					y_offset_factor: 0.07,
 					y_offset: 0.0,
-					baseline_offset_factor: -0.0333,
-				}),
+				})),
 			),
 		]),
 		families: BTreeMap::from([

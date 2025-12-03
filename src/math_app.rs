@@ -6,14 +6,14 @@ use crate::{
 };
 use eframe::App;
 use egui::{
-	style::Margin, Button, CentralPanel, Color32, ComboBox, Context, DragValue, Frame, Key, Layout,
-	SidePanel, TopBottomPanel, Ui, Vec2, Window,
+	Button, CentralPanel, Color32, ComboBox, Context, DragValue, Frame, Key, Layout,
+	Panel, Ui, Vec2, Window,
 };
 use egui_plot::Plot;
 
 use emath::{Align, Align2};
-use epaint::Rounding;
-use instant::Instant;
+use epaint::{CornerRadius, Margin};
+use web_time::Instant;
 use itertools::Itertools;
 use std::{io::Read, ops::BitXorAssign};
 
@@ -51,7 +51,7 @@ pub struct AppSettings {
 	pub plot_width: usize,
 }
 
-impl const Default for AppSettings {
+impl Default for AppSettings {
 	/// Default implementation of `AppSettings`, this is how the application starts up
 	fn default() -> Self {
 		Self {
@@ -84,7 +84,7 @@ struct Opened {
 	pub welcome: bool,
 }
 
-impl const Default for Opened {
+impl Default for Opened {
 	fn default() -> Opened {
 		Self {
 			help: false,
@@ -183,14 +183,14 @@ impl MathApp {
 
 		fn decompress_fonts() -> epaint::text::FontDefinitions {
 			let mut data = Vec::new();
-			let _ = ruzstd::StreamingDecoder::new(
-				&mut const { include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice() },
+			let _ = ruzstd::decoding::StreamingDecoder::new(
+				const { include_bytes!(concat!(env!("OUT_DIR"), "/compressed_data")).as_slice() },
 			)
 			.expect("unable to decode compressed data")
 			.read_to_end(&mut data)
 			.expect("unable to read compressed data");
 
-			#[cfg(target = "wasm32")]
+			#[cfg(target_arch = "wasm32")]
 			{
 				tracing::info!("Setting decompression cache");
 				let commit: crate::misc::HashBytes = const {
@@ -213,7 +213,7 @@ impl MathApp {
 		// Initialize fonts
 		// This used to be in the `update` method, but (after a ton of digging) this actually caused OOMs. that was a pain to debug
 		cc.egui_ctx.set_fonts({
-			#[cfg(target = "wasm32")]
+			#[cfg(target_arch = "wasm32")]
 			if let Some(Ok(data)) =
 				get_storage_decompressed().map(|data| bincode::deserialize(data.as_slice()))
 			{
@@ -222,7 +222,7 @@ impl MathApp {
 				decompress_fonts()
 			}
 
-			#[cfg(not(target = "wasm32"))]
+			#[cfg(not(target_arch = "wasm32"))]
 			decompress_fonts()
 		});
 
@@ -251,7 +251,7 @@ impl MathApp {
 	fn side_panel(&mut self, ctx: &Context) {
 		// Side Panel which contains vital options to the operation of the application
 		// (such as adding functions and other options)
-		SidePanel::left("side_panel")
+		Panel::left("side_panel")
 			.resizable(false)
 			.show(ctx, |ui| {
 				let any_using_integral = self.functions.any_using_integral();
@@ -400,7 +400,7 @@ impl App for MathApp {
 	fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
 		// start timer
 		let start = if self.opened.info {
-			Some(instant::Instant::now())
+			Some(Instant::now())
 		} else {
 			// if disabled, clear the stored formatted time
 			self.last_info.1 = None;
@@ -417,7 +417,7 @@ impl App for MathApp {
 		}
 
 		// Creates Top bar that contains some general options
-		TopBottomPanel::top("top_bar").show(ctx, |ui| {
+		Panel::top("top_bar").show(ctx, |ui| {
 			ui.horizontal(|ui| {
 				// Button in top bar to toggle showing the side panel
 				self.opened.side_panel.bitxor_assign(
@@ -537,11 +537,11 @@ impl App for MathApp {
 		// Central panel which contains the central plot (or an error created when parsing)
 		CentralPanel::default()
 			.frame(Frame {
-				inner_margin: Margin::symmetric(0.0, 0.0),
-				rounding: Rounding::ZERO,
+				inner_margin: Margin::ZERO,
+				corner_radius: CornerRadius::ZERO,
 				// fill: crate::style::STYLE.window_fill(),
 				fill: Color32::from_gray(27),
-				..Frame::none()
+				..Frame::NONE
 			})
 			.show(ctx, |ui| {
 				// Display an error if it exists
@@ -573,7 +573,7 @@ impl App for MathApp {
 
 				// Create and setup plot
 				Plot::new("plot")
-					.set_margin_fraction(Vec2::ZERO)
+					.set_margin_fraction(emath::Vec2::ZERO)
 					.data_aspect(1.0)
 					.include_y(0)
 					.show(ui, |plot_ui| {
@@ -620,6 +620,6 @@ impl App for MathApp {
 			});
 
 		// Calculate and store the last time it took to draw the frame
-		self.last_info.1 = start.map(|a| format!("Took: {}ms", a.elapsed().as_micros()));
+		self.last_info.1 = start.map(|a| format!("Took: {}us", a.elapsed().as_micros()));
 	}
 }

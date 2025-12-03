@@ -58,7 +58,7 @@ impl FlatExWrapper {
 			.as_ref()
 			.map(|f| {
 				f.clone()
-					.partial_iter((0..=n).map(|_| 0))
+					.partial_iter((0..n).map(|_| 0))
 					.map(Self::new)
 					.unwrap_or(Self::EMPTY)
 			})
@@ -66,7 +66,7 @@ impl FlatExWrapper {
 	}
 }
 
-impl const Default for FlatExWrapper {
+impl Default for FlatExWrapper {
 	fn default() -> FlatExWrapper { FlatExWrapper::EMPTY }
 }
 /// Function that includes f(x), f'(x), f'(x)'s string representation, and f''(x)

@@ -4,7 +4,7 @@ use crate::{
 	misc::{create_id, get_u64_id, random_u64},
 	widgets::widgets_ontop,
 };
-use egui::{Button, Id, Key, Modifiers, TextEdit, WidgetText};
+use egui::{Button, Id, Key, Modifiers, Popup, TextEdit, WidgetText};
 use emath::vec2;
 use parsing::Movement;
 use serde::ser::SerializeStruct;
@@ -151,46 +151,36 @@ impl FunctionManager {
 					if movement != Movement::Complete
 						&& let Some(hints) = function.autocomplete.hint.many()
 					{
-						// Doesn't need to have a number in id as there should only be 1 autocomplete popup in the entire gui
-
-						// hashed "autocomplete_popup"
-						const POPUP_ID: Id = create_id(7574801616484505465);
-
 						let mut clicked = false;
+						let selected_i = function.autocomplete.i;
 
-						egui::popup_below_widget(ui, POPUP_ID, &re, |ui| {
+						if let Some(popup_response) = Popup::menu(&re).show(|ui| {
 							hints.iter().enumerate().for_each(|(i, candidate)| {
 								if ui
-									.selectable_label(i == function.autocomplete.i, *candidate)
+									.selectable_label(i == selected_i, *candidate)
 									.clicked()
 								{
 									clicked = true;
 									function.autocomplete.i = i;
 								}
 							});
-						});
-
-						if clicked {
-							function
-								.autocomplete
-								.apply_hint(hints[function.autocomplete.i]);
-
-							// Don't need this here as it simply won't be display next frame
-							// ui.memory_mut().close_popup();
-
-							movement = Movement::Complete;
-						} else {
-							ui.memory_mut(|x| x.open_popup(POPUP_ID));
+						}) {
+							if clicked {
+								function
+									.autocomplete
+									.apply_hint(hints[function.autocomplete.i]);
+								movement = Movement::Complete;
+							}
 						}
 					}
 
 					// Push cursor to end if needed
 					if movement == Movement::Complete {
-						let mut state =
-							unsafe { TextEdit::load_state(ui.ctx(), te_id).unwrap_unchecked() };
-						let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
-						state.set_ccursor_range(Some(egui::text::CCursorRange::one(ccursor)));
-						TextEdit::store_state(ui.ctx(), te_id, state);
+						if let Some(mut state) = TextEdit::load_state(ui.ctx(), te_id) {
+							let ccursor = egui::text::CCursor::new(function.autocomplete.string.len());
+							state.cursor.set_char_range(Some(egui::text::CCursorRange::one(ccursor)));
+							TextEdit::store_state(ui.ctx(), te_id, state);
+						}
 					}
 				}
 

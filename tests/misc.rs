@@ -143,8 +143,9 @@ fn invalid_hashed_storage() {
 fn newtons_method() {
 	use parsing::BackingFunction;
 	use parsing::FlatExWrapper;
+	use parsing::process_func_str;
 	fn get_flatexwrapper(func: &str) -> FlatExWrapper {
-		let mut backing_func = BackingFunction::new(func).unwrap();
+		let backing_func = BackingFunction::new(&process_func_str(func)).unwrap();
 		backing_func.get_function_derivative(0).clone()
 	}
 

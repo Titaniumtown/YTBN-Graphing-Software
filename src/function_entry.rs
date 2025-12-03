@@ -118,7 +118,7 @@ impl<'de> Deserialize<'de> for FunctionEntry {
 	}
 }
 
-impl const Default for FunctionEntry {
+impl Default for FunctionEntry {
 	/// Creates default FunctionEntry instance (which is empty)
 	fn default() -> FunctionEntry {
 		FunctionEntry {
@@ -379,7 +379,7 @@ impl FunctionEntry {
 						.cloned()
 						.collect::<Vec<PlotPoint>>()
 						.to_line()
-						.stroke(epaint::Stroke::NONE)
+						.stroke((0.0, Color32::TRANSPARENT))
 						.color(Color32::from_rgb(4, 4, 255))
 						.fill(0.0),
 				);
@@ -388,7 +388,7 @@ impl FunctionEntry {
 				self.back_data
 					.clone()
 					.to_line()
-					.stroke(egui::Stroke::new(4.0, main_plot_color)),
+					.stroke((4.0, main_plot_color)),
 			);
 		}
 
@@ -430,7 +430,7 @@ impl FunctionEntry {
 			Some(integral_data) => {
 				if integral_step > step {
 					plot_ui.bar_chart(
-						BarChart::new(integral_data.0.clone())
+						BarChart::new("integral", integral_data.0.clone())
 							.color(Color32::BLUE)
 							.width(integral_step),
 					);

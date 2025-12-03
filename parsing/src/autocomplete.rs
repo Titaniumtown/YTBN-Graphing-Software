@@ -18,7 +18,7 @@ impl Movement {
 	pub const fn is_complete(&self) -> bool { matches!(&self, &Self::Complete) }
 }
 
-impl const Default for Movement {
+impl Default for Movement {
 	fn default() -> Self { Self::None }
 }
 
@@ -29,7 +29,7 @@ pub struct AutoComplete<'a> {
 	pub string: String,
 }
 
-impl<'a> const Default for AutoComplete<'a> {
+impl<'a> Default for AutoComplete<'a> {
 	fn default() -> AutoComplete<'a> { AutoComplete::EMPTY }
 }
 
