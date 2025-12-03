@@ -19,6 +19,7 @@ fn app_settings_constructor(
         integral_num,
         do_extrema: false,
         do_roots: false,
+        do_intersections: false,
         plot_width: pixel_width,
     }
 }

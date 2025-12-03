@@ -86,9 +86,14 @@ impl FunctionManager {
         let initial_hash = self.get_hash();
 
         let can_remove = self.functions.len() > 1;
+        let can_add = self.functions.len() < COLORS.len();
+        let num_functions = self.functions.len();
 
         let available_width = ui.available_width();
         let mut remove_i: Option<usize> = None;
+        let mut clone_i: Option<usize> = None;
+        let mut move_up_i: Option<usize> = None;
+        let mut move_down_i: Option<usize> = None;
         let target_size = vec2(available_width, crate::consts::FONT_SIZE);
         for (i, (te_id, function)) in self.functions.iter_mut().map(|(a, b)| (*a, b)).enumerate() {
             let mut new_string = function.autocomplete.string.clone();
@@ -115,6 +120,19 @@ impl FunctionManager {
 
             // Only keep valid chars
             new_string.retain(crate::misc::is_valid_char);
+
+            // Display error indicator with tooltip if there's a parsing error
+            if let Some(error) = function.get_test_result() {
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("⚠").color(egui::Color32::YELLOW))
+                        .on_hover_text(error);
+                    ui.label(
+                        egui::RichText::new(error)
+                            .color(egui::Color32::LIGHT_RED)
+                            .small(),
+                    );
+                });
+            }
 
             // If not fully open, return here as buttons cannot yet be displayed, therefore the user is inable to mark it for deletion
             let animate_bool = ui.ctx().animate_bool(te_id, re.has_focus());
@@ -197,6 +215,47 @@ impl FunctionManager {
                             remove_i = Some(i);
                         }
 
+                        // Toggle visibility
+                        function.visible.bitxor_assign(
+                            ui.add(button_area_button(if function.visible {
+                                "👁"
+                            } else {
+                                "○"
+                            }))
+                            .on_hover_text(match function.visible {
+                                true => "Hide Function",
+                                false => "Show Function",
+                            })
+                            .clicked(),
+                        );
+
+                        // Clone function
+                        if ui
+                            .add_enabled(can_add, button_area_button("⎘"))
+                            .on_hover_text("Clone Function")
+                            .clicked()
+                        {
+                            clone_i = Some(i);
+                        }
+
+                        // Move up (only if not first)
+                        if ui
+                            .add_enabled(i > 0, button_area_button("⬆"))
+                            .on_hover_text("Move Up")
+                            .clicked()
+                        {
+                            move_up_i = Some(i);
+                        }
+
+                        // Move down (only if not last)
+                        if ui
+                            .add_enabled(i < num_functions - 1, button_area_button("⬇"))
+                            .on_hover_text("Move Down")
+                            .clicked()
+                        {
+                            move_down_i = Some(i);
+                        }
+
                         ui.add_enabled_ui(function.is_some(), |ui| {
                             // Toggle integral being enabled or not
                             function.integral.bitxor_assign(
@@ -240,6 +299,26 @@ impl FunctionManager {
             self.functions.remove(remove_i_unwrap);
         }
 
+        // Clone function if the user requests it
+        if let Some(clone_i_unwrap) = clone_i {
+            let cloned = self.functions[clone_i_unwrap].1.clone();
+            self.push_cloned(cloned);
+        }
+
+        // Move function up if the user requests it
+        if let Some(i) = move_up_i
+            && i > 0
+        {
+            self.functions.swap(i, i - 1);
+        }
+
+        // Move function down if the user requests it
+        if let Some(i) = move_down_i
+            && i < self.functions.len() - 1
+        {
+            self.functions.swap(i, i + 1);
+        }
+
         let final_hash = self.get_hash();
 
         initial_hash != final_hash
@@ -250,6 +329,16 @@ impl FunctionManager {
         self.functions.push((
             create_id(random_u64().expect("unable to generate random id")),
             FunctionEntry::default(),
+        ));
+    }
+
+    /// Push a cloned function entry
+    pub fn push_cloned(&mut self, mut entry: FunctionEntry) {
+        // Reset settings_opened so the cloned function doesn't have settings open
+        entry.settings_opened = false;
+        self.functions.push((
+            create_id(random_u64().expect("unable to generate random id")),
+            entry,
         ));
     }
 

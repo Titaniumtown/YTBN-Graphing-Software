@@ -2,7 +2,7 @@ use crate::{
     consts::{BUILD_INFO, COLORS, DEFAULT_INTEGRAL_NUM, DEFAULT_MAX_X, DEFAULT_MIN_X, build},
     function_entry::Riemann,
     function_manager::FunctionManager,
-    misc::option_vec_printer,
+    misc::{EguiHelper, find_intersections, option_vec_printer},
 };
 use eframe::App;
 use egui::{
@@ -13,7 +13,7 @@ use egui_plot::Plot;
 
 use emath::{Align, Align2};
 use epaint::{CornerRadius, Margin};
-use itertools::Itertools;
+
 use std::{io::Read, ops::BitXorAssign};
 use web_time::Instant;
 
@@ -47,6 +47,9 @@ pub struct AppSettings {
     /// Stores whether or not displaying roots is enabled
     pub do_roots: bool,
 
+    /// Stores whether or not displaying intersections between functions is enabled
+    pub do_intersections: bool,
+
     /// Stores current plot pixel width
     pub plot_width: usize,
 }
@@ -64,6 +67,7 @@ impl Default for AppSettings {
             integral_num: DEFAULT_INTEGRAL_NUM,
             do_extrema: true,
             do_roots: true,
+            do_intersections: true,
             plot_width: 0,
         }
     }
@@ -108,6 +112,9 @@ pub struct MathApp {
 
     /// Stores settings (pretty self-explanatory)
     settings: AppSettings,
+
+    /// Stores intersection points between functions
+    intersections: Vec<egui_plot::PlotPoint>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -246,6 +253,7 @@ impl MathApp {
             last_info: (None, None),
             opened: Opened::default(),
             settings: AppSettings::default(),
+            intersections: Vec::new(),
         }
     }
 
@@ -351,6 +359,15 @@ impl MathApp {
                         .on_hover_text(match self.settings.do_roots {
                             true => "Disable Displaying Roots",
                             false => "Display Roots",
+                        })
+                        .clicked(),
+                );
+
+                self.settings.do_intersections.bitxor_assign(
+                    ui.add(Button::new("Intersections"))
+                        .on_hover_text(match self.settings.do_intersections {
+                            true => "Disable Displaying Intersections",
+                            false => "Display Intersections between functions",
                         })
                         .clicked(),
                 );
@@ -530,7 +547,7 @@ impl App for MathApp {
             self.side_panel(ctx);
         }
 
-        // Central panel which contains the central plot (or an error created when parsing)
+        // Central panel which contains the central plot
         CentralPanel::default()
             .frame(Frame {
                 inner_margin: Margin::ZERO,
@@ -540,29 +557,6 @@ impl App for MathApp {
                 ..Frame::NONE
             })
             .show(ctx, |ui| {
-                // Display an error if it exists
-                let errors_formatted: String = self
-                    .functions
-                    .get_entries()
-                    .iter()
-                    .map(|(_, func)| func.get_test_result())
-                    .enumerate()
-                    .filter(|(_, error)| error.is_some())
-                    .map(|(i, error)| {
-                        // use unwrap_unchecked as None Errors are already filtered out
-                        unsafe {
-                            format!("(Function #{}) {}\n", i, error.as_ref().unwrap_unchecked())
-                        }
-                    })
-                    .join("");
-
-                if !errors_formatted.is_empty() {
-                    ui.centered_and_justified(|ui| {
-                        ui.heading(errors_formatted);
-                    });
-                    return;
-                }
-
                 let available_width: usize = (ui.available_width() as usize) + 1; // Used in later logic
                 let width_changed = available_width != self.settings.plot_width;
                 self.settings.plot_width = available_width;
@@ -606,6 +600,41 @@ impl App for MathApp {
                                 function.display(plot_ui, &self.settings, COLORS[i])
                             })
                             .collect();
+
+                        // Calculate and display intersections between functions
+                        if self.settings.do_intersections {
+                            let entries = self.functions.get_entries();
+                            let visible_entries: Vec<_> = entries
+                                .iter()
+                                .filter(|(_, f)| f.visible && f.is_some())
+                                .collect();
+
+                            // Clear previous intersections
+                            self.intersections.clear();
+
+                            // Find intersections between all pairs of visible functions
+                            for i in 0..visible_entries.len() {
+                                for j in (i + 1)..visible_entries.len() {
+                                    let (_, func1) = visible_entries[i];
+                                    let (_, func2) = visible_entries[j];
+
+                                    let mut intersections =
+                                        find_intersections(&func1.back_data, &func2.back_data);
+                                    self.intersections.append(&mut intersections);
+                                }
+                            }
+
+                            // Display intersection points
+                            if !self.intersections.is_empty() {
+                                plot_ui.points(
+                                    self.intersections
+                                        .clone()
+                                        .to_points()
+                                        .color(Color32::from_rgb(255, 105, 180)) // Hot pink for visibility
+                                        .radius(6.0),
+                                );
+                            }
+                        }
 
                         self.last_info.0 = if area.iter().any(|e| e.is_some()) {
                             Some(format!("Area: {}", option_vec_printer(area.as_slice())))

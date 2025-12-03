@@ -45,6 +45,9 @@ pub struct FunctionEntry {
 
     pub nth_derviative: bool,
 
+    /// If the function is visible on the graph
+    pub visible: bool,
+
     pub back_data: Vec<PlotPoint>,
     pub integral_data: Option<(Vec<Bar>, f64)>,
     pub derivative_data: Vec<PlotPoint>,
@@ -67,6 +70,7 @@ impl Hash for FunctionEntry {
         self.nth_derviative.hash(state);
         self.curr_nth.hash(state);
         self.settings_opened.hash(state);
+        self.visible.hash(state);
     }
 }
 
@@ -75,11 +79,12 @@ impl Serialize for FunctionEntry {
     where
         S: Serializer,
     {
-        let mut s = serializer.serialize_struct("FunctionEntry", 4)?;
+        let mut s = serializer.serialize_struct("FunctionEntry", 5)?;
         s.serialize_field("raw_func_str", &self.raw_func_str)?;
         s.serialize_field("integral", &self.integral)?;
         s.serialize_field("derivative", &self.derivative)?;
         s.serialize_field("curr_nth", &self.curr_nth)?;
+        s.serialize_field("visible", &self.visible)?;
 
         s.end()
     }
@@ -96,6 +101,12 @@ impl<'de> Deserialize<'de> for FunctionEntry {
             integral: bool,
             derivative: bool,
             curr_nth: usize,
+            #[serde(default = "default_visible")]
+            visible: bool,
+        }
+
+        fn default_visible() -> bool {
+            true
         }
 
         let helper = Helper::deserialize(deserializer)?;
@@ -115,6 +126,7 @@ impl<'de> Deserialize<'de> for FunctionEntry {
         new_func_entry.integral = helper.integral;
         new_func_entry.derivative = helper.derivative;
         new_func_entry.curr_nth = helper.curr_nth;
+        new_func_entry.visible = helper.visible;
 
         Ok(new_func_entry)
     }
@@ -129,6 +141,7 @@ impl Default for FunctionEntry {
             integral: false,
             derivative: false,
             nth_derviative: false,
+            visible: true,
             back_data: Vec::new(),
             integral_data: None,
             derivative_data: Vec::new(),
@@ -374,7 +387,7 @@ impl FunctionEntry {
         settings: &AppSettings,
         main_plot_color: Color32,
     ) -> Option<f64> {
-        if self.test_result.is_some() | self.function.is_none() {
+        if self.test_result.is_some() | self.function.is_none() | !self.visible {
             return None;
         }
 

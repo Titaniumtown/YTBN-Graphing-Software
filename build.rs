@@ -131,7 +131,12 @@ fn main() {
                 "emoji-icon-font".to_owned(),
                 Arc::new(
                     FontData::from_owned(
-                        font_stripper("emoji-icon-font.ttf", "emoji-icon.ttf", vec!['⚙']).unwrap(),
+                        font_stripper(
+                            "emoji-icon-font.ttf",
+                            "emoji-icon.ttf",
+                            vec!['⚙', '⎘', '👁', '○', '⬆', '⬇', '⚠'],
+                        )
+                        .unwrap(),
                     )
                     .tweak(FontTweak {
                         scale: 0.8,

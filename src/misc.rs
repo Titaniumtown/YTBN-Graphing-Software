@@ -214,3 +214,47 @@ include!(concat!(env!("OUT_DIR"), "/valid_chars.rs"));
 pub fn is_valid_char(c: char) -> bool {
     c.is_alphanumeric() | VALID_EXTRA_CHARS.contains(&c)
 }
+
+/// Find intersection points between two functions given their plotted data
+/// Returns a vector of PlotPoints where the functions intersect
+pub fn find_intersections(data1: &[PlotPoint], data2: &[PlotPoint]) -> Vec<PlotPoint> {
+    if data1.is_empty() || data2.is_empty() || data1.len() != data2.len() {
+        return Vec::new();
+    }
+
+    // Calculate difference between functions at each x point
+    let differences: Vec<(f64, f64)> = data1
+        .iter()
+        .zip(data2.iter())
+        .filter(|(p1, p2)| p1.y.is_finite() && p2.y.is_finite())
+        .map(|(p1, p2)| (p1.x, p1.y - p2.y))
+        .collect();
+
+    // Find where sign changes (intersection points)
+    differences
+        .iter()
+        .tuple_windows()
+        .filter(|((_, diff1), (_, diff2))| diff1.signum() != diff2.signum())
+        .map(|((x1, diff1), (x2, diff2))| {
+            // Linear interpolation to find approximate x of intersection
+            let t = diff1.abs() / (diff1.abs() + diff2.abs());
+            let x = x1 + t * (x2 - x1);
+
+            // Find corresponding y values and average them for the intersection point
+            // We need to interpolate y values from both functions
+            let y1_at_x1 = data1
+                .iter()
+                .find(|p| (p.x - x1).abs() < f64::EPSILON)
+                .map(|p| p.y)
+                .unwrap_or(0.0);
+            let y1_at_x2 = data1
+                .iter()
+                .find(|p| (p.x - x2).abs() < f64::EPSILON)
+                .map(|p| p.y)
+                .unwrap_or(0.0);
+            let y = y1_at_x1 + t * (y1_at_x2 - y1_at_x1);
+
+            PlotPoint::new(x, y)
+        })
+        .collect()
+}
