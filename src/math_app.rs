@@ -202,15 +202,16 @@ impl MathApp {
             #[cfg(target_arch = "wasm32")]
             {
                 tracing::info!("Setting decompression cache");
-                let commit: crate::misc::HashBytes = const {
-                    unsafe {
-                        std::mem::transmute::<&str, crate::misc::HashBytes>(build::SHORT_COMMIT)
-                    }
-                };
-                let saved_data = commit.hashed_storage_create(data);
+                // Convert SHORT_COMMIT string to fixed-size byte array
+                let commit_bytes = build::SHORT_COMMIT.as_bytes();
+                let mut commit: crate::misc::HashBytes = [0u8; crate::misc::HASH_LENGTH];
+                let len = commit_bytes.len().min(crate::misc::HASH_LENGTH);
+                commit[..len].copy_from_slice(&commit_bytes[..len]);
+
+                let saved_data = crate::misc::hashed_storage_create(commit, &data);
                 tracing::info!("Bytes: {}", saved_data.len());
                 get_localstorage()
-                    .set_item(DATA_NAME, saved_data)
+                    .set_item(DATA_NAME, &saved_data)
                     .expect("failed to set local storage cache");
             }
 
