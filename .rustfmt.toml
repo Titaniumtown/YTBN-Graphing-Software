@@ -1,4 +1,0 @@
-edition = "2021"
-fn_params_layout = "Compressed"
-fn_single_line = true
-hard_tabs = true
